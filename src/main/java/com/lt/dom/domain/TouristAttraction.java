@@ -1,6 +1,6 @@
 package com.lt.dom.domain;
 
-public class CouponTemplate {
+public class TouristAttraction {
 
     private String id; //优惠券模板对象 ID，由 Ping++ 生成。
     private String object; //coupon_template
@@ -23,8 +23,7 @@ public class CouponTemplate {
     private Expiration expiration;//hash 通过该优惠券模板创建的优惠券有效期规则，详见下方 expiration 参数说明 。
 
     private int times_circulated  ;//优惠券生成数量。
-    private int 优惠券核销数量;
-   // private hash metadata ;//详见 元数据。
+    private int metadata ;//详见 元数据。
 
 
     public static class Expiration {

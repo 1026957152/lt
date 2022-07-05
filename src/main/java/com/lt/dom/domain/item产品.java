@@ -2,8 +2,8 @@ package com.lt.dom.domain;
 
 import java.util.List;
 
-@lombok.NoArgsConstructor
-@lombok.Data
+//@lombok.NoArgsConstructor
+//@lombok.Data
 public class item产品 {
 
     @com.fasterxml.jackson.annotation.JsonProperty("errorn")
@@ -19,8 +19,8 @@ public class item产品 {
     @com.fasterxml.jackson.annotation.JsonProperty("total")
     private Long total;
 
-    @lombok.NoArgsConstructor
-    @lombok.Data
+   // @lombok.NoArgsConstructor
+   // @lombok.Data
     public static class ListDTO {
         @com.fasterxml.jackson.annotation.JsonProperty("amount")
         private Long amount;
@@ -171,14 +171,14 @@ public class item产品 {
         @com.fasterxml.jackson.annotation.JsonProperty("week")
         private String week;
 
-        @lombok.NoArgsConstructor
-        @lombok.Data
+       // @lombok.NoArgsConstructor
+       // @lombok.Data
         public static class DatePricesDTO {
             @com.fasterxml.jackson.annotation.JsonProperty("2015-12-31")
             private ListDTO.DatePricesDTO._$20151231DTO $20151231;
 
-            @lombok.NoArgsConstructor
-            @lombok.Data
+           // @lombok.NoArgsConstructor
+          //  @lombok.Data
             public static class _$20151231DTO {
                 @com.fasterxml.jackson.annotation.JsonProperty("market_price")
                 private String marketPrice;
@@ -191,22 +191,22 @@ public class item产品 {
             }
         }
 
-        @lombok.NoArgsConstructor
-        @lombok.Data
+        //@lombok.NoArgsConstructor
+      //  @lombok.Data
         public static class DateStocksDTO {
             @com.fasterxml.jackson.annotation.JsonProperty("2015-12-31")
             private ListDTO.DateStocksDTO._$20151231DTO $20151231;
 
-            @lombok.NoArgsConstructor
-            @lombok.Data
+          //  @lombok.NoArgsConstructor
+          //  @lombok.Data
             public static class _$20151231DTO {
                 @com.fasterxml.jackson.annotation.JsonProperty("stock")
                 private Long stock;
             }
         }
 
-        @lombok.NoArgsConstructor
-        @lombok.Data
+       // @lombok.NoArgsConstructor
+      //  @lombok.Data
         public static class ParamsDTO {
             @com.fasterxml.jackson.annotation.JsonProperty("orders_tips")
             private String ordersTips;
@@ -291,18 +291,18 @@ public class item产品 {
             @com.fasterxml.jackson.annotation.JsonProperty("valid_to_hours")
             private String validToHours;
 
-            @lombok.NoArgsConstructor
-            @lombok.Data
+           // @lombok.NoArgsConstructor
+          //  @lombok.Data
             public static class BookingReadingDTO {
             }
 
-            @lombok.NoArgsConstructor
-            @lombok.Data
+            //@lombok.NoArgsConstructor
+          //  @lombok.Data
             public static class TimeSlotAutoDTO {
             }
 
-            @lombok.NoArgsConstructor
-            @lombok.Data
+          //  @lombok.NoArgsConstructor
+          //  @lombok.Data
             public static class TimeSlotStocksDTO {
                 @com.fasterxml.jackson.annotation.JsonProperty("mch_code")
                 private ListDTO.ParamsDTO.TimeSlotStocksDTO.MchCodeDTO mchCode;
@@ -313,14 +313,14 @@ public class item产品 {
                 @com.fasterxml.jackson.annotation.JsonProperty("stop_time")
                 private String stopTime;
 
-                @lombok.NoArgsConstructor
-                @lombok.Data
+              //  @lombok.NoArgsConstructor
+              //  @lombok.Data
                 public static class MchCodeDTO {
                 }
             }
 
-            @lombok.NoArgsConstructor
-            @lombok.Data
+           // @lombok.NoArgsConstructor
+          //  @lombok.Data
             public static class TimeSlotRefundSetDTO {
                 @com.fasterxml.jackson.annotation.JsonProperty("days")
                 private String days;
@@ -335,8 +335,8 @@ public class item产品 {
             }
         }
 
-        @lombok.NoArgsConstructor
-        @lombok.Data
+       // @lombok.NoArgsConstructor
+      //  @lombok.Data
         public static class SupplierListDTO {
             @com.fasterxml.jackson.annotation.JsonProperty("address")
             private String address;
@@ -357,16 +357,16 @@ public class item产品 {
             @com.fasterxml.jackson.annotation.JsonProperty("title")
             private String title;
 
-            @lombok.NoArgsConstructor
-            @lombok.Data
+          //  @lombok.NoArgsConstructor
+          //  @lombok.Data
             public static class ParamsDTO {
                 @com.fasterxml.jackson.annotation.JsonProperty("lng_lat")
                 private String lngLat;
             }
         }
 
-        @lombok.NoArgsConstructor
-        @lombok.Data
+      //  @lombok.NoArgsConstructor
+     //   @lombok.Data
         public static class SupplierList2DTO {
             @com.fasterxml.jackson.annotation.JsonProperty("address")
             private String address;
@@ -384,17 +384,17 @@ public class item产品 {
             private String title;
         }
 
-        @lombok.NoArgsConstructor
-        @lombok.Data
+      //  @lombok.NoArgsConstructor
+      //  @lombok.Data
         public static class SpecTypeListDTO {
-            @com.fasterxml.jackson.annotation.JsonProperty("list")
-            private ListDTO.SpecTypeListDTO.ListDTO list;
-            @com.fasterxml.jackson.annotation.JsonProperty("info")
-            private ListDTO.SpecTypeListDTO.InfoDTO info;
+          //  @com.fasterxml.jackson.annotation.JsonProperty("list")
+          //  private ListDTO.SpecTypeListDTO.ListDTO list;
+          //  @com.fasterxml.jackson.annotation.JsonProperty("info")
+          //  private ListDTO.SpecTypeListDTO.InfoDTO info;
 
-            @lombok.NoArgsConstructor
-            @lombok.Data
-            public static class ListDTO {
+         //   @lombok.NoArgsConstructor
+        //    @lombok.Data
+  /*          public static class ListDTO {
                 @com.fasterxml.jackson.annotation.JsonProperty("spec_id")
                 private String specId;
                 @com.fasterxml.jackson.annotation.JsonProperty("spec_typeid")
@@ -412,9 +412,9 @@ public class item产品 {
                 @com.fasterxml.jackson.annotation.JsonProperty("name")
                 private String name;
             }
-
-            @lombok.NoArgsConstructor
-            @lombok.Data
+*/
+         //   @lombok.NoArgsConstructor
+         //   @lombok.Data
             public static class InfoDTO {
                 @com.fasterxml.jackson.annotation.JsonProperty("spec_typeid")
                 private String specTypeid;

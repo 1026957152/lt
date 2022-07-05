@@ -3,8 +3,8 @@ package com.lt.dom;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@lombok.NoArgsConstructor
-@lombok.Data
+//@lombok.NoArgsConstructor
+//@lombok.Data
 @SpringBootApplication
 public class DomApplication {
 
@@ -12,8 +12,8 @@ public class DomApplication {
     private Long errorn;
     @com.fasterxml.jackson.annotation.JsonProperty("g_err")
     private Long gErr;
-    @com.fasterxml.jackson.annotation.JsonProperty("list")
-    private java.util.List<ListDTO> list;
+  //  @com.fasterxml.jackson.annotation.JsonProperty("list")
+  //  private java.util.List<ListDTO> list;
     @com.fasterxml.jackson.annotation.JsonProperty("message")
     private String message;
     @com.fasterxml.jackson.annotation.JsonProperty("success")

@@ -1,13 +1,13 @@
 package com.lt.dom.domain;
 
 public class specType规格类型 {
-    @com.fasterxml.jackson.annotation.JsonProperty("list")
-    private item产品.ListDTO.SpecTypeListDTO.ListDTO.SpecTypeListDTO.ListDTO list;
-    @com.fasterxml.jackson.annotation.JsonProperty("info")
-    private item产品.ListDTO.SpecTypeListDTO.ListDTO.SpecTypeListDTO.InfoDTO info;
+  //  @com.fasterxml.jackson.annotation.JsonProperty("list")
+  //  private item产品.ListDTO.SpecTypeListDTO.ListDTO.SpecTypeListDTO.ListDTO list;
+  //  @com.fasterxml.jackson.annotation.JsonProperty("info")
+  //  private item产品.ListDTO.SpecTypeListDTO.ListDTO.SpecTypeListDTO.InfoDTO info;
 
-    @lombok.NoArgsConstructor
-    @lombok.Data
+   // @lombok.NoArgsConstructor
+   // @lombok.Data
     public static class ListDTO {
         @com.fasterxml.jackson.annotation.JsonProperty("spec_id")
         private String specId;
@@ -27,8 +27,8 @@ public class specType规格类型 {
         private String name;
     }
 
-    @lombok.NoArgsConstructor
-    @lombok.Data
+   // @lombok.NoArgsConstructor
+   // @lombok.Data
     public static class InfoDTO {
         @com.fasterxml.jackson.annotation.JsonProperty("spec_typeid")
         private String specTypeid;

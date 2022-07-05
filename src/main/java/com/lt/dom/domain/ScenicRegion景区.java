@@ -21,8 +21,8 @@ public class ScenicRegion景区 {
     @com.fasterxml.jackson.annotation.JsonProperty("title")
     private String title;
 
-    @lombok.NoArgsConstructor
-    @lombok.Data
+   // @lombok.NoArgsConstructor
+   // @lombok.Data
     public static class ParamsDTO {
         @com.fasterxml.jackson.annotation.JsonProperty("lng_lat")
         private String lngLat;

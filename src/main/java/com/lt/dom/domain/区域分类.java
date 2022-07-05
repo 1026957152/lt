@@ -2,8 +2,8 @@ package com.lt.dom.domain;
 
 import java.util.List;
 
-@lombok.NoArgsConstructor
-@lombok.Data
+//@lombok.NoArgsConstructor
+//@lombok.Data
 public class 区域分类 {
 
     @com.fasterxml.jackson.annotation.JsonProperty("id")

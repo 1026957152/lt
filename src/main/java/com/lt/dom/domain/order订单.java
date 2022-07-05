@@ -2,8 +2,8 @@ package com.lt.dom.domain;
 
 import java.util.List;
 
-@lombok.NoArgsConstructor
-@lombok.Data
+//@lombok.NoArgsConstructor
+//@lombok.Data
 public class order订单 {
 
     @com.fasterxml.jackson.annotation.JsonProperty("orders_id")
@@ -143,8 +143,8 @@ public class order订单 {
     @com.fasterxml.jackson.annotation.JsonProperty("supplier_list2")
     private List<SupplierList2DTO> supplierList2;
 
-    @lombok.NoArgsConstructor
-    @lombok.Data
+    //@lombok.NoArgsConstructor
+  //  @lombok.Data
     public static class SupplierListDTO {
         @com.fasterxml.jackson.annotation.JsonProperty("id")
         private String id;
@@ -166,19 +166,19 @@ public class order订单 {
         private String county;
         @com.fasterxml.jackson.annotation.JsonProperty("county_name")
         private String countyName;
-        @com.fasterxml.jackson.annotation.JsonProperty("params")
-        private ListDTO.SupplierListDTO.ParamsDTO params;
+     //   @com.fasterxml.jackson.annotation.JsonProperty("params")
+     //   private ListDTO.SupplierListDTO.ParamsDTO params;
 
-        @lombok.NoArgsConstructor
-        @lombok.Data
+      //  @lombok.NoArgsConstructor
+      //  @lombok.Data
         public static class ParamsDTO {
             @com.fasterxml.jackson.annotation.JsonProperty("lng_lat")
             private String lngLat;
         }
     }
 
-    @lombok.NoArgsConstructor
-    @lombok.Data
+   // @lombok.NoArgsConstructor
+   // @lombok.Data
     public static class SupplierList2DTO {
         @com.fasterxml.jackson.annotation.JsonProperty("id")
         private String id;
