@@ -1,12 +1,9 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.oct.ComponentRightVounch;
 import com.lt.dom.oct.Product;
-import com.lt.dom.oct.Voucher;
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.VoucherRepository;
 import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
-import com.lt.dom.serviceOtc.ValidatorScanServiceImpl;
 import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

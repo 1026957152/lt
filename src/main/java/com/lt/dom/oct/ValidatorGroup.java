@@ -19,9 +19,6 @@ public class ValidatorGroup {
     @Transient
     AccessValidator accessValidator ;
 
-    @Transient
-    Validator validator ;
-
 
 
 
@@ -56,26 +53,8 @@ public class ValidatorGroup {
         this.accessValidatorId = accessValidatorId;
     }
 
-    @Transient
-    List<Validator> validators; // 机器的话
 
-    private long validatorId;
 
-    public long getValidatorId() {
-        return validatorId;
-    }
-
-    public void setValidatorId(long validatorId) {
-        this.validatorId = validatorId;
-    }
-
-    public List<Validator> getValidators() {
-        return validators;
-    }
-
-    public void setValidators(List<Validator> validators) {
-        this.validators = validators;
-    }
 
     public AccessValidator getAccessValidator() {
         return accessValidator;

@@ -3,10 +3,8 @@ package com.lt.dom.serviceOtc;
 import com.lt.dom.oct.*;
 import com.lt.dom.oct.ValidatorParking.ParkingStatus;
 import com.lt.dom.oct.ValidatorParking.VounchLicense;
-import com.lt.dom.repository.ComponentRightRepository;
-import com.lt.dom.repository.ComponentRightVounchRepository;
-import com.lt.dom.repository.ValidatorGroupRepository;
-import com.lt.dom.repository.VounchLicenseRepository;
+import com.lt.dom.otcenum.EnumValidatorRedemExtent;
+import com.lt.dom.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -21,7 +19,11 @@ import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatc
 
 @Service
 public class ValidatorScanServiceImpl {
+    @Autowired
+    private VoucherRepository voucherRepository;
 
+    @Autowired
+    private AccessValidatorRepository accessValidatorRepository;
 
     @Autowired
     private ComponentRightRepository componentRightRepository;
@@ -34,9 +36,9 @@ public class ValidatorScanServiceImpl {
     private ValidatorGroupRepository validatorGroupRepository;
 
     @Autowired
-    private ComponentRightVounchRepository componentRightVounchRepository;
+    private ComponentVounchRepository componentVounchRepository;
 
-    public List<ComponentRightVounch> 当前权益名单(ComponentRight componentRight) {
+    public List<ComponentVounch> 当前权益名单(ComponentRight componentRight) {
 
 
         Referral referral = new Referral();
@@ -46,26 +48,27 @@ public class ValidatorScanServiceImpl {
 
     }
 
-    public List<Validator> 当前停车设备(ComponentRight componentRight) throws Exception {
+/*    public List<Validator> 当前停车设备(ComponentRight componentRight) throws Exception {
 
-        AccessValidator accessValidator = componentRight.getAccessValidator();
+        AccessValidator accessValidator = componentRight.getAccessValidators().;
 
-        if (accessValidator.getType() == "车牌摄像头") {
-            ValidatorGroup validatorGroup = accessValidator.getValidatorGroup();
-            return validatorGroup.getValidators();
-
+        if (accessValidator.getExtend() == "车牌摄像头") {
+            return accessValidator.getValidators();
         }
 
         throw new Exception("aaa");
 
-    }
+    }*/
 
     public List<ComponentRight> 找出当前验证者管理的权益(Validator validator) throws Exception {
 
 
-        List<ValidatorGroup> validatorGroups = validatorGroupRepository.findByValidatorId(validator.getId());
+        List<AccessValidator> validatorGroups = accessValidatorRepository.findByValidatorId(validator.getId());
 
-        List<ComponentRight> componentRights = componentRightRepository.findAllById(validatorGroups.stream().map(x->x.getId()).collect(Collectors.toList()));
+        List<ComponentRight> componentRights = componentRightRepository.findAllById(validatorGroups
+                .stream()
+                .filter(x->x.getExtend().equals(EnumValidatorRedemExtent.特定权益券))
+                .map(x->x.getRalativeId()).collect(Collectors.toList()));
 
         return componentRights;
 
@@ -73,7 +76,7 @@ public class ValidatorScanServiceImpl {
 
 
 
-    private List<ComponentRightVounch> 找到当前权益(Validator validator, String license) throws Exception {
+    private List<ComponentVounch> 找到当前权益(Validator validator, String license) throws Exception {
 
 
         VounchLicense vounchLicense = vounchLicenseRepository.findByLicense(license);
@@ -85,34 +88,34 @@ public class ValidatorScanServiceImpl {
 
         ComponentRight componentRight = accessValidator.getComponentRight();
 
-        List<ComponentRightVounch> componentRightVounches = componentRightVounchRepository.findByComponentRightId(componentRight.getId());
+        List<ComponentVounch> componentVounches = componentVounchRepository.findByComponentRightId(componentRight.getId());
 
       //  List<ComponentRightVounch> componentRightVounches = componentRight.getComponentRightVounches();
 
 
-        List<ComponentRightVounch> componentRightVounchList = componentRightVounchRepository.findByVoucherId(vounchLicense.getVounchId());
+        List<ComponentVounch> componentVounchList = componentVounchRepository.findByVoucherId(vounchLicense.getVounchId());
        // List<ComponentRightVounch> componentRightVounchList = voucher.getComponentRightVounchList();
 
         ExampleMatcher modelMatcher = ExampleMatcher.matching()
                 .withIgnorePaths("id")
                 .withMatcher("model", ignoreCase());
 
-        ComponentRightVounch probe = new ComponentRightVounch();
+        ComponentVounch probe = new ComponentVounch();
         probe.setComponentRightId(componentRight.getId());
         probe.setVoucherId(vounchLicense.getVounchId());
 
-        Example<ComponentRightVounch> example = Example.of(probe, modelMatcher);
+        Example<ComponentVounch> example = Example.of(probe, modelMatcher);
 
-        List<ComponentRightVounch> componentRightVounches1 = componentRightVounchRepository.findAll(example);
+        List<ComponentVounch> componentVounches1 = componentVounchRepository.findAll(example);
 
 
 
-        return componentRightVounches1;
+        return componentVounches1;
 
 
     }
 
-    private List<ComponentRightVounch> 找到当前权益(Validator validator, Voucher voucher) throws Exception {
+    private List<ComponentVounch> 找到当前权益(Validator validator, Voucher voucher) throws Exception {
 
 
         ValidatorGroup validatorGroup = validator.getValidatorGroup();
@@ -122,55 +125,75 @@ public class ValidatorScanServiceImpl {
 
         ComponentRight componentRight = accessValidator.getComponentRight();
 
-        List<ComponentRightVounch> componentRightVounches = componentRightVounchRepository.findByComponentRightId(componentRight.getId());
+        List<ComponentVounch> componentVounches = componentVounchRepository.findByComponentRightId(componentRight.getId());
 
         //  List<ComponentRightVounch> componentRightVounches = componentRight.getComponentRightVounches();
 
 
-        List<ComponentRightVounch> componentRightVounchList = componentRightVounchRepository.findByVoucherId(voucher.getId());
+        List<ComponentVounch> componentVounchList = componentVounchRepository.findByVoucherId(voucher.getId());
 
         ExampleMatcher modelMatcher = ExampleMatcher.matching()
                 .withIgnorePaths("id")
                 .withMatcher("model", ignoreCase());
 
-        ComponentRightVounch probe = new ComponentRightVounch();
+        ComponentVounch probe = new ComponentVounch();
         probe.setComponentRightId(componentRight.getId());
         probe.setVoucherId(voucher.getId());
 
-        Example<ComponentRightVounch> example = Example.of(probe, modelMatcher);
+        Example<ComponentVounch> example = Example.of(probe, modelMatcher);
 
-        List<ComponentRightVounch> componentRightVounches1 = componentRightVounchRepository.findAll(example);
+        List<ComponentVounch> componentVounches1 = componentVounchRepository.findAll(example);
 
-
-
-        return componentRightVounches1;
+        return componentVounches1;
 
 
     }
 
 
 
-    public ComponentRightVounch 进入(Validator validator, String license) throws Exception {
+    public ComponentVounch 进入(Validator validator, String license) throws Exception {
 
-        List<ComponentRightVounch> componentRightVounch = 找到当前权益(validator, license);
+        List<ComponentVounch> componentVounches = 找到当前权益(validator, license);
         ParkingStatus parkingStatus = new ParkingStatus();
 
         parkingStatus.setStatus("进入");
-        parkingStatus.setComponentRightVounch(componentRightVounch.get(0));
-        return new ComponentRightVounch();
+        parkingStatus.setComponentRightVounch(componentVounches.get(0));
+        return new ComponentVounch();
     }
 
-    public ComponentRightVounch 出去(Validator validator, String license) throws Exception {
+    public ComponentVounch 出去(Validator validator, String license) throws Exception {
 
-        List<ComponentRightVounch> componentRightVounch = 找到当前权益(validator, license);
+        List<ComponentVounch> componentVounches = 找到当前权益(validator, license);
 
-        componentRightVounch.get(0).setCount(componentRightVounch.get(0).getCount()-1);
-        ComponentRightVounch componentRightVounch_ = componentRightVounchRepository.save(componentRightVounch.get(0));
-        return componentRightVounch_;
+        componentVounches.get(0).setCount(componentVounches.get(0).getCount()-1);
+        ComponentVounch componentVounch_ = componentVounchRepository.save(componentVounches.get(0));
+        return componentVounch_;
     }
 
 
-    public List<ComponentRightVounch> 当前核验者的权益券(Validator validator) {
-        return null;
+
+
+
+
+
+
+
+
+    public List<ComponentVounch> 当前核验者的权益券(Validator validator) {
+
+        AccessValidator probeAcc = new AccessValidator();
+        probeAcc.setValidatorId(validator.getId());
+        Example<AccessValidator> validatorExample = Example.of(probeAcc);
+
+        List<AccessValidator> accessValidators = accessValidatorRepository.findAll(validatorExample);
+        return  accessValidators
+                .stream().filter(x->x.getExtend().equals(EnumValidatorRedemExtent.特定权益券)).map(x->{
+                    ComponentVounch probe = new ComponentVounch();
+                    probe.setComponentRightId(x.getRalativeId());
+                    Example<ComponentVounch> example = Example.of(probe);
+
+                    return componentVounchRepository.findAll(example);
+                }).flatMap(List::stream).collect(Collectors.toList());
+
     }
 }

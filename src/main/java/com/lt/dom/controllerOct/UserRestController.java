@@ -6,12 +6,16 @@ import com.lt.dom.oct.AccessValidator;
 import com.lt.dom.oct.ComponentRight;
 import com.lt.dom.oct.Invitation;
 import com.lt.dom.oct.User;
+import com.lt.dom.otcReq.RealnameAuthsReq;
 import com.lt.dom.otcReq.UserPojo;
 import com.lt.dom.repository.UserRepository;
 import com.lt.dom.serviceOtc.IdGenServiceImpl;
+import com.lt.dom.serviceOtc.RealnameAuthsServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -27,6 +31,8 @@ public class UserRestController {
     @Autowired
     private IdGenServiceImpl idGenService;
 
+    @Autowired
+    private RealnameAuthsServiceImpl realnameAuthsService;
 
 
     @Autowired
@@ -64,35 +70,25 @@ public class UserRestController {
         componentRight = userRepository.save(componentRight);
         return componentRight;
     }
-/*
 
 
 
 
 
-    @PostMapping(value = "/componet_rights/{COMPONENT_RIGHTS_ID}/access_validators", produces = "application/json")
-    public AccessValidator addComponentRight_Validator(@PathVariable int COMPONENT_RIGHTS_ID, @PathVariable int COUPON_TMPL_ID) {
-        AccessValidator componentRight = new AccessValidator();
-        return componentRight;
+    @Operation(summary = "1、实名认证")
+    @PostMapping(value = "/{USER_ID}/realname-auths/individual", produces = "application/json")
+    public ResponseEntity<User> postRealnameAuths(@PathVariable long USER_ID, @RequestBody RealnameAuthsReq realnameAuthsReq) {
+
+        Optional<User> optionalUser = userRepository.findById(USER_ID);
+
+        if(optionalUser.isPresent()){
+            User user = realnameAuthsService.postRealnameAuths(optionalUser.get(),realnameAuthsReq);
+            return ResponseEntity.ok(user);
+
+        }
+        throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
     }
 
-
-    @GetMapping(value = "/{APP_ID}/{COUPON_TMPL_ID}", produces = "application/json")
-    public List<ComponentRight> listCouponTemplate(@PathVariable int APP_ID, CouponTemplatePojoList  couponTemplatePojoList) {
-        return null;
-    }
-
-
-
-
-    @PutMapping(value = "/{APP_ID}/component_right/{COMPONENT_RIGHT_ID}", produces = "application/json")
-    public ComponentRight updateComponentRight(@PathVariable int APP_ID, Map  metadata) {
-        return null;
-    }
-
-    @DeleteMapping(value = "/coupon_templates", produces = "application/json")
-    public ComponentRight createCouponTemplate(@PathVariable String id) {
-        return null;
-    }*/
 
 }

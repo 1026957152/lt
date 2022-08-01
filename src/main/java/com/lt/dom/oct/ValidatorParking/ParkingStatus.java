@@ -1,18 +1,18 @@
 package com.lt.dom.oct.ValidatorParking;
 
-import com.lt.dom.oct.ComponentRightVounch;
+import com.lt.dom.oct.ComponentVounch;
 
 public class ParkingStatus {
 
-    private ComponentRightVounch componentRightVounch;
+    private ComponentVounch componentVounch;
     private String status;
 
-    public ComponentRightVounch getComponentRightVounch() {
-        return componentRightVounch;
+    public ComponentVounch getComponentRightVounch() {
+        return componentVounch;
     }
 
-    public void setComponentRightVounch(ComponentRightVounch componentRightVounch) {
-        this.componentRightVounch = componentRightVounch;
+    public void setComponentRightVounch(ComponentVounch componentVounch) {
+        this.componentVounch = componentVounch;
     }
 
     public String getStatus() {

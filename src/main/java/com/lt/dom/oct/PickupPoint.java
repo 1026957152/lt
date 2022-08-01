@@ -1,8 +1,24 @@
 package com.lt.dom.oct;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import java.time.LocalDateTime;
+
+@Entity
 public class PickupPoint {
 
+
+    @Id
+    private long id;
+
+
+    private long pickupId;//	The name of the pickup point. This is a mandatory field.
+
     private String pickup_name;//	The name of the pickup point. This is a mandatory field.
+    private LocalDateTime pickupTime;//	The name of the pickup point. This is a mandatory field.
+
+
+
     private String description;//	Any extra information for the client, e.g. "Meet in the reception lounge"
     private String address1;//	First line of the address
     private String address2;//	Second line of the address

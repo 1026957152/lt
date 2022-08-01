@@ -22,6 +22,18 @@ public class Royalty {  //分润模板
     private long supplierId;
 
     private long parentProductId;
+    private long componentRightId;
+    private long componentId;
+
+
+
+
+    private long source_no; //关联对象的 order_no。
+    private long source_user; //分润接收方 user 对象的 id。
+    private int amount;
+    private long royaltySettlementId;
+    private long settleAccount;
+
 
     public long getId() {
         return id;
@@ -75,5 +87,45 @@ public class Royalty {  //分润模板
 
     public void setSettle_account(SettleAccount settle_account) {
         this.settle_account = settle_account;
+    }
+
+    public void setComponentRightId(long componentRightId) {
+        this.componentRightId = componentRightId;
+    }
+
+    public long getComponentRightId() {
+        return componentRightId;
+    }
+
+    public void setComponentId(long componentId) {
+        this.componentId = componentId;
+    }
+
+    public long getComponentId() {
+        return componentId;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public void setRoyaltySettlementId(long royaltySettlementId) {
+        this.royaltySettlementId = royaltySettlementId;
+    }
+
+    public long getRoyaltySettlementId() {
+        return royaltySettlementId;
+    }
+
+    public void setSettleAccount(long settleAccount) {
+        this.settleAccount = settleAccount;
+    }
+
+    public long getSettleAccount() {
+        return settleAccount;
     }
 }

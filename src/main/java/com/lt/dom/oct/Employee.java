@@ -1,7 +1,7 @@
 package com.lt.dom.oct;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.otcenum.EnumEmployeeAccessLevel;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -13,8 +13,8 @@ public class Employee {
     @Id
     private long id;
 
-    private String userId;
-    private String suplierId;
+    private long userId;
+    private long suplierId;
 
     private String firstName;
     private String lastName;
@@ -59,19 +59,19 @@ public class Employee {
     @Transient
     private EnumEmployeeAccessLevel enumEmployeeAccessLevel;
 
-    public String getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 
-    public String getSuplierId() {
+    public long getSuplierId() {
         return suplierId;
     }
 
-    public void setSuplierId(String suplierId) {
+    public void setSuplierId(long suplierId) {
         this.suplierId = suplierId;
     }
 }

@@ -18,7 +18,29 @@ public class ComponentRight {   // 这个是 下单的时候， 从 product 中�
         return id;
     }
 
+    @Transient
+    List<RatePlan> ratePlans;
 
+    private long supplierId;
+
+    public long getSupplierId() {
+        return supplierId;
+    }
+
+    public void setSupplierId(long supplierId) {
+        this.supplierId = supplierId;
+    }
+
+    @Transient
+    private RoyaltyRule royaltyRule ;
+
+    public RoyaltyRule getRoyaltyRule() {
+        return royaltyRule;
+    }
+
+    public void setRoyaltyRule(RoyaltyRule royaltyRule) {
+        this.royaltyRule = royaltyRule;
+    }
 
     public void setId(long id) {
         this.id = id;
@@ -28,7 +50,7 @@ public class ComponentRight {   // 这个是 下单的时候， 从 product 中�
     private String note;
 
     @Transient
-    private AccessValidator accessValidator ;
+    private List<AccessValidator> accessValidators ;
     private long accessValidatorId;
 
     public long getAccessValidatorId() {
@@ -40,15 +62,15 @@ public class ComponentRight {   // 这个是 下单的时候， 从 product 中�
     }
 
     @Transient
-    List<ComponentRightVounch> componentRightVounches;
+    List<ComponentVounch> componentVounches;
 
 
-    public List<ComponentRightVounch> getComponentRightVounches() {
-        return componentRightVounches;
+    public List<ComponentVounch> getComponentRightVounches() {
+        return componentVounches;
     }
 
-    public void setComponentRightVounches(List<ComponentRightVounch> componentRightVounches) {
-        this.componentRightVounches = componentRightVounches;
+    public void setComponentRightVounches(List<ComponentVounch> componentVounches) {
+        this.componentVounches = componentVounches;
     }
 
     public String getName() {
@@ -67,11 +89,11 @@ public class ComponentRight {   // 这个是 下单的时候， 从 product 中�
         this.note = note;
     }
 
-    public AccessValidator getAccessValidator() {
-        return accessValidator;
+    public List<AccessValidator> getAccessValidators() {
+        return accessValidators;
     }
 
-    public void setAccessValidator(AccessValidator accessValidator) {
-        this.accessValidator = accessValidator;
+    public void setAccessValidators(List<AccessValidator> accessValidators) {
+        this.accessValidators = accessValidators;
     }
 }

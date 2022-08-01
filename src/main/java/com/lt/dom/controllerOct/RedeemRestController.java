@@ -1,23 +1,24 @@
 package com.lt.dom.controllerOct;
 
+import com.lt.dom.OctResp.RedemptionResp;
 import com.lt.dom.domain.CouponTemplatePojo;
-import com.lt.dom.domain.TouristAttraction;
-import com.lt.dom.domain.CouponTemplatePojoList;
-import com.lt.dom.oct.ComponentRightVounch;
-import com.lt.dom.oct.Voucher;
-import com.lt.dom.repository.ComponentRightVounchRepository;
+import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.voucher_disabledException;
+import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.RedemPojo;
+import com.lt.dom.repository.CampaignRepository;
+import com.lt.dom.repository.ComponentVounchRepository;
 import com.lt.dom.repository.VoucherRepository;
 import com.lt.dom.serviceOtc.RedeemServiceImpl;
-import io.swagger.v3.oas.annotations.security.OAuthFlow;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -36,7 +37,10 @@ public class RedeemRestController {
 */
 
     @Autowired
-    private ComponentRightVounchRepository componentRightVounchRepository;
+    private ComponentVounchRepository componentVounchRepository;
+
+    @Autowired
+    private CampaignRepository campaignRepository;
 
 
     @Autowired
@@ -48,32 +52,32 @@ public class RedeemRestController {
 
 
     //TODO 这里有点问题
-    @GetMapping(value = "/vonchors/{VOUNCHOR_ID}/redeem", produces = "application/json")
-    public ComponentRightVounch 获得可验证的(Authentication authentication, @PathVariable long VOUNCHOR_ID) {
+    @GetMapping(value = "/vouchers/{VOUNCHOR_ID}/redeem", produces = "application/json")
+    public ResponseEntity<Voucher> 获得可验证的(Authentication authentication, @PathVariable long VOUNCHOR_ID) {
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        Optional<Voucher> voucher = voucherRepository.findById(VOUNCHOR_ID);
+        Optional<Voucher> optionalVoucher = voucherRepository.findById(VOUNCHOR_ID);
 
 
-        if(voucher.isPresent()){
+        if(optionalVoucher.isPresent()){
             try {
-                return redeemService.redeemVounchor(userDetails,voucher.get());
+             // ComponentVounch voucher = redeemService.redemOnceVounchor(userDetails,optionalVoucher.get());
+                return ResponseEntity.ok(optionalVoucher.get());
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         System.out.println("抛出异常");
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
+        throw new BookNotFoundException(VOUNCHOR_ID,Voucher.class.getSimpleName());
 
     }
 
     @PostMapping(value = "/componet_right_vounchs/{COMPONENT_RIGHT_ID}/redeem", produces = "application/json")
-    public ComponentRightVounch redeemComponentRightVounch(@PathVariable long COMPONENT_RIGHT_ID,CouponTemplatePojo pojo) {
+    public ComponentVounch redeemComponentRightVounch(@PathVariable long COMPONENT_RIGHT_ID, CouponTemplatePojo pojo) {
 
-        Optional<ComponentRightVounch> componentRightVounch = componentRightVounchRepository.findById(COMPONENT_RIGHT_ID);
+        Optional<ComponentVounch> componentRightVounch = componentVounchRepository.findById(COMPONENT_RIGHT_ID);
 
 
         if(componentRightVounch.isPresent()){
@@ -92,17 +96,47 @@ public class RedeemRestController {
 
 
     //TODO 这里有点问题
-    @PostMapping(value = "/vonchors/{VOUNCHOR_ID}/redeem", produces = "application/json")
-    public ComponentRightVounch redeemVonchor(Authentication authentication, @PathVariable long VOUNCHOR_ID) {
+    @PostMapping(value = "/vouchers/{VOUNCHOR_ID}/redemption", produces = "application/json")
+    public ResponseEntity<RedemptionResp> redeemVonchor(Authentication authentication, @PathVariable long VOUNCHOR_ID, @RequestBody RedemPojo pojo) {
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    //    CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
+     //   userDetails.getAuthorities().
         Optional<Voucher> voucher = voucherRepository.findById(VOUNCHOR_ID);
+/*
+        if(userDetails.getAuthorities().contains("")){
 
+        }*/
 
         if(voucher.isPresent()){
+
+            if(!voucher.get().isActive()){
+                throw new voucher_disabledException(voucher.get().getId(),"");
+
+            }
+/*            Supplier employee = userDetails.getSupplier();
+
+            if(!(voucher.get().getValidatorSupplier() == employee.getId())){
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
+            }*/
             try {
-                return redeemService.redeemVounchor(userDetails,voucher.get());
+
+                Optional<Campaign> optionalCampaign = campaignRepository.findById(voucher.get().getCampaign());
+
+                boolean v = redeemService.是否符合验证(optionalCampaign.get(),new Supplier());
+                if(v){
+                    Pair<RedemptionEntry,Redemption> pair= redeemService.bulkRedeemVounchor(voucher.get(),optionalCampaign.get(),pojo,new Supplier());
+                    return ResponseEntity.ok(RedemptionResp.from(pair));
+                }else{
+                    System.out.println("抛出异常");
+                    throw new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
+                }
+
+
+
+
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -113,6 +147,11 @@ public class RedeemRestController {
                 HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
 
     }
+
+
+
+
+
 
 
 /*

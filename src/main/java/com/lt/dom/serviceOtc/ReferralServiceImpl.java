@@ -1,37 +1,37 @@
 package com.lt.dom.serviceOtc;
 
 import com.lt.dom.oct.*;
+import com.lt.dom.repository.ReferralRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
 
+@Service
 public class ReferralServiceImpl {
 
 
-    //product_id, compainId 和 userId
-    public List<RoyaltyRuleData> redeemRoyalty(Product product, RoyaltyTemplate royaltyTemplate){
+
+    @Autowired
+    ReferralRepository referralRepository;
 
 
-        Referral referral = new Referral();
 
-        return null;
-/*
-        referral.get
-        if(royaltyRule.getRoyaltyRuleData().stream().filter(x -> (x.getLevel() == referral.getLevel())).findAny().isPresent()){
+    public void getUserAndProductByScene(String scene) {
 
-        }
-        referral.getLevel();
-        return royaltyRule.getRoyaltyRuleData().stream().map(x-> {
-            x.getLevel();
-            Royalty royalty = new Royalty();
-            royalty.setSettle_account(user.getSettleAccount());
-            return royalty;
-        }).collect(Collectors.toList());
+        Referral user = new Referral();
+        user.setCode(scene);
+        Example<Referral> example = Example.of(user);
+        Optional<Referral> referral = referralRepository.findOne(example);
 
-*/
-
+        referral.get().getProductId();
+        referral.get().getAgentId();
+        referral.get().getUserId();
 
     }
 }

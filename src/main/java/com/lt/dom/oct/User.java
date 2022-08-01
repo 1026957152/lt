@@ -1,8 +1,10 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.otcenum.EnumCapabilities;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 
 
@@ -38,6 +40,23 @@ public class User {
     private String last_updated;//	string	The date and time of when the user was last updated, in ISO 8601 format
     private String first_name;//	string	The user’s first name
     private String last_name;//	string	The user’s last name
+
+    public String getFirst_name() {
+        return first_name;
+    }
+
+    public void setFirst_name(String first_name) {
+        this.first_name = first_name;
+    }
+
+    public String getLast_name() {
+        return last_name;
+    }
+
+    public void setLast_name(String last_name) {
+        this.last_name = last_name;
+    }
+
     private String username;//	string	The user’s username*
     private String email;//	string	The user’s email address
     private String phone;//	string	The user’s phone number
@@ -72,4 +91,57 @@ public class User {
     private String realName ;
     private Integer idCardType ;
     private String idCard ;
+
+
+    public boolean isRealNameVerified() {
+        return realNameVerified;
+    }
+
+    public void setRealNameVerified(boolean realNameVerified) {
+        this.realNameVerified = realNameVerified;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
+
+    public Integer getIdCardType() {
+        return idCardType;
+    }
+
+    public void setIdCardType(Integer idCardType) {
+        this.idCardType = idCardType;
+    }
+
+    public String getIdCard() {
+        return idCard;
+    }
+
+    public void setIdCard(String idCard) {
+        this.idCard = idCard;
+    }
+
+    //favoriteTheatreId	The preferred theatre id of the loyalty account holder.
+    private boolean areTermsAndConditionsAccepted;//	Whether or not the terms and conditions have been accepted.
+    private String termsAndConditionsAcceptedVersion;//	The version of the terms and conditions that were accepted.
+    private String acceptedTermsAndConditionsDate;//		The date when the terms and conditions were accepted.
+    private int numberOfCardsIssued;//		The number of cards that are associated with the loyalty account.
+    private boolean activationType;//		The type of activation of the loyalty account.
+    //ASSO
+    //WELC
+    private Date activationDate;//		The date that the loyalty account was activiated.
+    private boolean isEarn;//		Whether or not the loyalty account is earn enabled.
+    private boolean isRedeem;//		Whether or not the loyalty account is redeem enabled.
+    private Date enrollDate;//		The enrollment date of the loyalty account.
+    private boolean receivesNotificationsViaEmail;//		Whether or not the loyalty account holder wants to receive notifications via email.
+    private boolean receivesNotificationsViaMobile;//		Whether or not the loyalty account holder wants to receive notifications via text.
+    private boolean receivesOffersViaEmail;//		Whether or not the loyalty account holder wants to receive offers via email.
+    private boolean receivesOffersViaMobile;//		Whether or not the loyalty account holder wants to receive offers via text.
+    private boolean receivesWeeklyEmails;//		Whether or not the loyalty account holder wants to receive email updates.
+
+
 }

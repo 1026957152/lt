@@ -1,57 +1,82 @@
 package com.lt.dom.controllerOct;
 
-
-import com.lt.dom.domain.TouristAttraction;
-
-import com.lt.dom.otcReq.TouristAttractionePojo;
-import com.lt.dom.otcReq.TouristAttractionePojoList;
+import com.lt.dom.oct.Attraction;
+import com.lt.dom.oct.Feature;
+import com.lt.dom.oct.Product;
+import com.lt.dom.oct.TouristAttraction;
+import com.lt.dom.repository.AttractionRepository;
+import com.lt.dom.repository.ProductRepository;
+import com.lt.dom.repository.TouristAttractionRepository;
+import com.lt.dom.repository.VoucherRepository;
+import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
+import com.lt.dom.serviceOtc.TouristAttractionServiceImpl;
+import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.Link;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Map;
+import java.awt.print.Pageable;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Optional;
 
-//@RestController
-//@RequestMapping("/dddddoct")
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
+@RestController
+@RequestMapping("/oct")
 public class TouristAttractionRestController {
-    
-    @GetMapping(value ="/{SUPPLER_ID}/touristAttractions/{Tourist_Attraction_ID}", produces = "application/json")
-    public TouristAttraction getBook(@PathVariable int SUPPLER_ID, @PathVariable int Tourist_Attraction_ID) {
-        return null;
-    }
-    @GetMapping(value ="/{SUPPLER_ID}/touristAttractions", produces = "application/json")
-    public TouristAttraction listTouristAttractione(@PathVariable int APP_ID, TouristAttractionePojoList TouristAttractionePojoList) {
-        return null;
-    }
+
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private AttractionRepository attractionRepository;
+
+    @Autowired
+    private TouristAttractionServiceImpl touristAttractionService;
+    @Autowired
+    private TouristAttractionRepository touristAttractionRepository;
 
 
 
-    @PostMapping(value ="/{SUPPLER_ID}/touristAttractions", produces = "application/json")
-    public TouristAttraction createTouristAttractione(@PathVariable int APP_ID, TouristAttractionePojo pojo) {
+    @PostMapping(value = "tourist_attractions/{TOURIST_ATTRACTION_ID}/attractions", produces = "application/json")
+    public Attraction addAttraction(@PathVariable long TOURIST_ATTRACTION_ID) {
+
+        Optional<TouristAttraction> attractionOptional = touristAttractionRepository.findById(TOURIST_ATTRACTION_ID);
+        if(attractionOptional.isPresent()){
+            try {
+                return touristAttractionService.addAttraction(attractionOptional.get());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("抛出异常");
+        throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
 
 
 
-        return null;
-    }
-
-
-    @PutMapping(value = "/{SUPPLER_ID}/touristAttractions/{Tourist_Attraction_ID}", produces = "application/json")
-    public TouristAttraction updateTouristAttraction(@PathVariable int SUPPLER_ID, @PathVariable int Tourist_Attraction_ID, Map metadata) {
-        return null;//
-    }
-
-    @DeleteMapping(value = "/{SUPPLER_ID}/touristAttractions/{Tourist_Attraction_ID}", produces = "application/json")
-    public TouristAttraction deleteTouristAttractione(@PathVariable int id) {
-
-        return null;
-    }
-
-
-
-
-    // 添加 景观
-    @PostMapping(value = "/{SUPPLER_ID}/touristAttractions/{Tourist_Attraction_ID}/attractions", produces = "application/json")
-    public TouristAttraction addAttractione(@PathVariable int id) {
-        return null;
     }
 
+
+
+    @GetMapping(value = "tourist_attractions/{TOURIST_ATTRACTION_ID}/attractions", produces = "application/json")
+    public CollectionModel<Attraction> listAttraction(@PathVariable long TOURIST_ATTRACTION_ID, Pageable pageable) {
+
+        List<Attraction> attractionOptional = attractionRepository.findByTouristAttractionId(TOURIST_ATTRACTION_ID);
+
+/*        System.out.println("抛出异常");
+        throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));*/
+
+        Link link = linkTo(TouristAttractionRestController.class).withSelfRel();
+        CollectionModel<Attraction> result = CollectionModel.of(attractionOptional, link);
+        return result;
+
+    }
 
 }

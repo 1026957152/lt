@@ -1,0 +1,205 @@
+package com.lt.dom.controllerOct;
+
+//https://blog.csdn.net/Dawn____Dawn/article/details/118080415
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.lt.dom.oct.Product;
+import com.lt.dom.oct.User;
+import com.lt.dom.repository.ProductRepository;
+import com.lt.dom.repository.VoucherRepository;
+import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
+import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import org.apache.commons.lang3.StringUtils;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpUtils;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Controller
+@RequestMapping("/")
+public class LoginController {
+
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private VoucherRepository voucherRepository;
+
+    @Autowired
+    private VonchorServiceImpl vonchorService;
+    @Autowired
+    private AvailabilityServiceImpl availabilityService;
+
+
+    //QQ审核获取的qppid和appkey
+    @Value("${qq.appid}")
+    private String appid;
+    @Value("${qq.appkey}")
+    private String appkey;
+    /**
+     * QQ登录
+     * 步骤一：用户跳转至授权页面
+     * @author 点点
+     * @date 2021年6月17日
+     */
+    @RequestMapping(value = "/qqLogin" , method = {RequestMethod.POST , RequestMethod.GET})
+    public String qqLogin(HttpServletRequest request, String display) throws IOException {
+        String redirectUri = URLEncoder.encode(request.getAttribute("baseUrl")+"/getOpenId/qq","utf-8");
+        String state = String.valueOf(UUID.randomUUID());
+       // cache.set(state, "", 30*1000);
+
+        String codeUrl = "https://graph.qq.com/oauth2.0/authorize?" +
+                "client_id=" + appid +
+                "&redirect_uri=" + redirectUri +
+                "&response_type=code" +
+                "&scope=get_user_info" +
+                "&display=" + display +
+                "&state=" + state + "#qq_redirect";
+        return "redirect:"+codeUrl;
+    }
+
+
+    /**
+     * QQ登录
+     * 步骤二：同意授权，获得code，通过code换取网页授权access_token
+     * @author 点点
+     * @date 2021年6月17日
+     */
+    @RequestMapping(value = "/getOpenId/qq", method = {RequestMethod.POST,
+            RequestMethod.GET})
+    public String getQqOpenId(String code, String state,
+                              HttpServletRequest request)
+            throws IOException {
+        //state校验，防止CSRF攻击
+        String stateCache = cache.get(state, String.class);
+        if (StringUtils.isBlank(stateCache)) {
+            //跳转登录页，state校验不通过
+            return "redirect:/login.html";
+        }
+        cache.del(state);
+        //若用户禁止授权，则重定向后不会带上code参数，仅会带上state参数
+        if(StringUtils.isBlank(code)) {
+            //跳转登录页，用户未授权
+            return "redirect:/login.html";
+        }
+
+        //申请的网站回调域需和代码中的一致，否则会报错（申请的网站回调域就是redirectUri）
+        String redirectUri = URLEncoder.encode(
+                request.getAttribute("baseUrl")+"/getOpenId/qq", "utf-8");
+        //步骤二：通过code获取access_tokens
+        String atUrl = "https://graph.qq.com/oauth2.0/token?" +
+                "grant_type=authorization_code" +
+                "&client_id=" + appid +
+                "&client_secret=" + appkey +
+                "&code=" + code +
+                "&redirect_uri=" + redirectUri +
+                "&fmt=json";
+
+        String atResult = HttpUtils.sendGet(atUrl);
+        JSONObject atObj = JSONObject.stringToValue(atResult);
+        String access_token = atObj.getString("access_token");
+        if (StringUtils.isBlank(access_token)) {
+            //跳转登录页，获取access_tokens失败
+            return "redirect:/login.html";
+        }
+
+        //步骤三：通过access_tokens获取openid
+        String openidUrl = "https://graph.qq.com/oauth2.0/me?" +
+                "access_token=" + access_token +
+                "&fmt=json";
+
+        String openidResult = HttpUtils.sendGet(openidUrl);
+        if (StringUtils.isBlank(openidResult)) {
+            //跳转登录页，获取openid失败
+            return "redirect:/login.html";
+        }
+        JsonObject openidObj = JsonParser.parseString(openidResult).getAsJsonObject();
+
+     //   JsonObject  openidObj = JsonObject.(openidResult);
+        String openid = openidObj.get("openid").getAsString();
+
+        //1.校验该用户是否已注册：
+        User user = this.userService.getModelByQqOpenid(openid);
+        if (user == null) {
+            //跳转到获取手机号页面（用户手机号码必填且唯一，不需要的可省略该步骤）
+            //注册方式registerType：3-QQ登录
+            String param = "access_token="+access_token+"&openid="+openid+"&registerType=3";
+            return "redirect:/settingPhone.html?" + param;
+        }
+        //2.登录
+        //2.1 登录校验
+        User userModel = userService.loginCheck(user);
+        if (userModel == null) {
+            //跳转登录页，账号已锁定
+            return "redirect:/login.html";
+        }
+        //2.2 登录
+        userService.login(userModel);
+
+        //登陆成功，跳转首页
+        return "redirect:/index.html";
+
+    }
+
+    /**
+     * QQ登录(第三方注册)
+     * 步骤四：通过access_token和openid，获取用户信息
+     * @author 点点
+     * @date 2021年6月17日
+     */
+    @RequestMapping(value = "/getUserInfo" , method = RequestMethod.POST)
+    public ApiResult<String> getUserInfo(String access_token, String openid,
+                                         String phone, String verificationCode)
+            throws IOException {
+        //1.校验
+        // 校验手机号
+
+        //2. 注册
+        //步骤四：通过access_token和openid，获取用户信息
+        String infoUrl = "https://graph.qq.com/user/get_user_info?" +
+                "access_token=" + access_token +
+                "&openid=" + openid +
+                "&oauth_consumer_key=" + appid;
+
+        String infoResult = HttpUtils.sendGet(infoUrl);
+
+        JsonObject jsonObject = JsonParser.parseString(infoResult).getAsJsonObject();
+
+     //   JSONObject jsonObject = JSONObject.parseObject(infoResult);
+        //jsonObject.getString("nickname"); 昵称
+        //jsonObject.getString("figureurl_1"); 头像
+        //jsonObject.getString("gender");  性别
+        //if (StringUtils.isBlank(nickname)) {
+        //    return APIResult.error("页面失效");
+        //}
+
+        User user = this.userService.qqRegister(openid, phone);
+
+        //2.登录
+        //2.1 登录校验
+        User userModel = userService.loginCheck(user);
+        if (userModel == null) {
+            return ApiResult.fail("账号已锁定");
+        }
+
+        //2.2 登录
+        userService.login(userModel);
+
+        return ApiResult.ok("登录成功");
+    }
+
+}

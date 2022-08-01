@@ -1,0 +1,150 @@
+package com.lt.dom.controllerOct;
+
+import org.apache.commons.collections4.map.HashedMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.*;
+
+@RestController
+@RequestMapping("/anon/course")
+public class WxCourseController {
+	/**
+	 * 生成确认订单信息
+	 * @param request
+	 * @param cartIds 购物车ids
+	 * @param third_session 登录用户唯一凭证
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="addConfirmOrderInfo",method = RequestMethod.POST)
+	public Map<String, Object> addConfirmOrderInfo(HttpServletRequest request) throws Exception{
+		Map<String, Object> result = new HashMap<String, Object>();
+		//把请求参数转为map
+		Map<String, Object> paramMap=GetParamToMap.getParameterMapWXCode(request,redisUtil);
+
+		String cartIds = String.valueOf(paramMap.get("cartIds"));
+		String s[]=cartIds.split(",");
+		//根据cartIds获取购物车列表信息
+		List<Map<String,Object>> cartList=courseMapper.getConfirmOrderByCartIds(cartIds.split(","));
+		List<Map<String,Object>> detaillist = new ArrayList<Map<String,Object>>();
+		String order_number=OrderNoUtil.getOrderNumber();//订单编号
+		for(Map<String,Object> data:cartList){
+			//根据课程id获取课程信息
+			Map<String,Object> productInfo=courseMapper.getCourseInfoById(data);
+			if(productInfo == null){
+				result.put(ErrorCode.MSG, "订单中有课程已不存在");
+				result.put(ErrorCode.STATE, ErrorCode.FAIl);
+				return result;
+			}else{
+				String status= String.valueOf(productInfo.get("status"));//1：已发布  2：已下架
+				String del_flag= String.valueOf(productInfo.get("del_flag"));//删除标志（0代表存在 1代表删除）
+				if(status.equals("2")){
+					result.put(ErrorCode.MSG, "订单中有课程已下架");
+					result.put(ErrorCode.STATE, ErrorCode.FAIl);
+					return result;
+				}
+				if(del_flag.equals("1")){
+					result.put(ErrorCode.MSG, "订单中有课程已删除");
+					result.put(ErrorCode.STATE, ErrorCode.FAIl);
+					return result;
+				}
+				//组装订单详情信息
+				data.put("order_number", order_number);
+				detaillist.add(data);
+			}
+		}
+
+		//根据cartIds获取购物总金额
+		double totalMoney = courseMapper.getTotalMoneyByCartIds(cartIds.split(","));
+		//过期时间15分钟
+		Date nowDate = new Date();
+		Date afterDate = new Date(nowDate.getTime()+300000*3);
+		//生成订单信息
+		Map<String, Object> orderDataMap = new HashedMap<String, Object>();
+		orderDataMap.put("order_number", order_number);//订单编号
+		orderDataMap.put("order_money", totalMoney);//订单金额
+		orderDataMap.put("order_status", 1);//订单状态 1待付款 2已付款 3已取消 4免费课程
+		orderDataMap.put("openid", paramMap.get("openid"));//下单用户openid
+		orderDataMap.put("wx_user_id", paramMap.get("MY_USERID"));//下单用户id
+		orderDataMap.put("paymoney", totalMoney);//实际支付金额
+		orderDataMap.put("remark", paramMap.get("remark"));//订单备注
+		orderDataMap.put("end_time", afterDate);//支付结束时间
+		Integer n = courseMapper.addConfirmOrderInfo(orderDataMap);
+		if(n>0){
+			//添加课程订单详情信息
+			courseMapper.addOrderDetail(detaillist);
+			//删除购物车
+			for(Map<String,Object> data:cartList){
+				courseMapper.delCourseShoppingCart(data);
+			}
+			result.put(ErrorCode.DATA, order_number);
+			result.put(ErrorCode.STATE, ErrorCode.SUCCESS);
+		}else{
+			result.put(ErrorCode.MSG, "操作失败");
+			result.put(ErrorCode.STATE, ErrorCode.FAIl);
+		}
+
+		return result;
+
+	}
+
+
+	/**
+	 * 微信统一下单接口
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="wxUnifiedorder",method = RequestMethod.POST)
+	public Map<String, Object> getPrePayInfo(HttpServletRequest request) throws Exception {
+		Map<String, Object> result = new HashMap<String, Object>();
+		//把请求参数转为map
+		Map<String, Object> paramMap=GetParamToMap.getParameterMapWXCode(request,redisUtil);
+
+
+		String order_number = String.valueOf(paramMap.get("order_number"));
+		//根据order_number获取订单总金额
+		Map<String,Object> orderInfo=courseMapper.getOrderInfo(paramMap);
+		Double totalMoney=0.0;
+		if(orderInfo!=null){
+			totalMoney = Double.valueOf(String.valueOf(orderInfo.get("order_money")));
+		}
+		Double nDouble = totalMoney*100;
+		//接口调用总金额单位为分换算一下(测试金额改成1,单位为分则是0.01,根据自己业务场景判断是转换成float类型还是int类型)
+		Integer totalFee=Integer.valueOf(nDouble.intValue());
+		//Integer totalFee = 1;
+
+		String openId = String.valueOf(paramMap.get("openid"));
+		WeChatPayDto miniDTO = new  WeChatPayDto();
+		miniDTO.setBody("xxx校园");
+		miniDTO.setOutTradeNo(order_number);
+		miniDTO.setTotalFee(String.valueOf(totalFee));//单位为分
+
+
+
+
+		WeChatPayUtil weChatPayUtil = new WeChatPayUtil();
+		//微信统一下单接口
+		Map<String, String> resultMap = weChatPayUtil.getPrePayInfo(miniDTO, openId);
+		if(resultMap != null){
+			result.put(ErrorCode.DATA, resultMap);
+			result.put(ErrorCode.STATE, ErrorCode.SUCCESS);
+		}else{
+			result.put(ErrorCode.MSG, "微信统一下单失败");
+			result.put(ErrorCode.STATE, ErrorCode.FAIl);
+		}
+		return result;
+
+	}
+
+
+
+
+
+
+}

@@ -1,6 +1,6 @@
 package com.lt.dom.oct;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.otcenum.EnumValidatorRedemExtent;
 
 import javax.persistence.*;
 import java.util.List;
@@ -12,28 +12,58 @@ public class AccessValidator {
 
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
-    @JsonProperty("id")
     private long id;
+
+
+    @Transient
+    List<Validator> validators; //
+    private long validatorId;
+
+
+    private long ralativeId;
+    private int supplierId;
+
+    public long getRalativeId() {
+        return ralativeId;
+    }
+
+    public void setRalativeId(long ralativeId) {
+        this.ralativeId = ralativeId;
+    }
 
     @Transient
     ComponentRight componentRight;
 
+    private EnumValidatorRedemExtent extend; //闸机, 车牌识别摄像头
 
-    private String type; //指定人工，机器, 所有人工
+    public long getValidatorId() {
+        return validatorId;
+    }
 
-    @Transient
-    private List<User> userList; // 人工的话
+    public void setValidatorId(long validatorId) {
+        this.validatorId = validatorId;
+    }
+
+    public EnumValidatorRedemExtent getExtend() {
+        return extend;
+    }
+
+    public void setExtend(EnumValidatorRedemExtent extend) {
+        this.extend = extend;
+    }
+
+    public List<Validator> getValidators() {
+        return validators;
+    }
+
+    public void setValidators(List<Validator> validators) {
+        this.validators = validators;
+    }
 
     @Transient
     private ValidatorGroup validatorGroup;
 
-    public String getType() {
-        return type;
-    }
 
-    public void setType(String type) {
-        this.type = type;
-    }
 
     public ValidatorGroup getValidatorGroup() {
         return validatorGroup;
@@ -50,4 +80,6 @@ public class AccessValidator {
     public void setComponentRight(ComponentRight componentRight) {
         this.componentRight = componentRight;
     }
+
+
 }

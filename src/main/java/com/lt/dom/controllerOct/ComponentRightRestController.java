@@ -1,44 +1,79 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.domain.CouponTemplatePojo;
-import com.lt.dom.domain.CouponTemplatePojoList;
+import com.lt.dom.OctResp.ComponentRightResp;
 
 
-import com.lt.dom.oct.AccessValidator;
-import com.lt.dom.oct.ComponentRight;
-import com.lt.dom.serviceOtc.IdGenServiceImpl;
-import com.lt.dom.util.Snowflake;
+import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.AccessValidatorPojo;
+import com.lt.dom.otcReq.ComponentRightPojo;
+import com.lt.dom.otcenum.EnumValidatorRedemExtent;
+import com.lt.dom.repository.AccessValidatorRepository;
+import com.lt.dom.repository.ComponentRightRepository;
+import com.lt.dom.repository.SupplierRepository;
+import com.lt.dom.repository.ValidatorRepository;
+import com.lt.dom.serviceOtc.ComponentRightServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/dddd")
+@RequestMapping("/oct")
 public class ComponentRightRestController {
 
-
+    @Autowired
+    private ComponentRightRepository componentRightRepository;
+    @Autowired
+    private ValidatorRepository validatorRepositorya;
 
 
     @Autowired
-    private IdGenServiceImpl idGenService;
+    private AccessValidatorRepository accessValidatorRepository;
 
-    @GetMapping(value = "/componet_rights/{COMPONENT_RIGHTS_ID}/access_validators/{ID}", produces = "application/json")
-    public AccessValidator getComponentRight_Validator(@PathVariable int COMPONENT_RIGHTS_ID, @PathVariable int COUPON_TMPL_ID) {
-        AccessValidator componentRight = new AccessValidator();
+    @Autowired
+    private ComponentRightServiceImpl componentRightService;
 
-        return componentRight;
+    @Autowired
+    private SupplierRepository supplierRepository;
+
+
+
+    @GetMapping(value = "/componet_rights/{COMPONENT_RIGHT_ID}/validators/{VALIDATOR_ID}", produces = "application/json")
+    public Validator getComponentRight_Validator(@PathVariable int COMPONENT_RIGHT_ID, @PathVariable int VALIDATOR_ID) {
+
+        AccessValidator probe = new AccessValidator();
+        probe.setRalativeId(COMPONENT_RIGHT_ID);
+        probe.setValidatorId(VALIDATOR_ID);
+        probe.setExtend(EnumValidatorRedemExtent.特定权益券);
+        Example<AccessValidator> example = Example.of(probe);
+        Optional<AccessValidator> accessValidator = accessValidatorRepository.findOne(example);
+
+        Optional<Validator> validatorOptional = validatorRepositorya.findById(accessValidator.get().getValidatorId());
+
+
+        return validatorOptional.get();
     }
 
-    @PostMapping(value = "/coupon_templates", produces = "application/json")
-    public ComponentRight createCouponTemplate(@RequestBody CouponTemplatePojo  pojo) {
-        ComponentRight componentRight = new ComponentRight();
 
-        componentRight.setName(pojo.getName());
-        componentRight.setNote(idGenService.nextId("Coupon_"));
-        return componentRight;
+    @Operation(summary = "1、新建权益")
+
+    @PostMapping(value = "/supliers/{SUPPLIER_ID}/component_rights", produces = "application/json")
+    public ComponentRightResp createComponentRight(@PathVariable long SUPPLIER_ID,@RequestBody ComponentRightPojo pojo) {
+
+
+        Optional<Supplier> optionalComponentRight = supplierRepository.findById(SUPPLIER_ID);
+
+        if(optionalComponentRight.isPresent()){
+            ComponentRight componentRight = componentRightService.createComponentRight(optionalComponentRight.get(),pojo);
+            return ComponentRightResp.from(componentRight);
+        }
+
+        throw new RuntimeException();
     }
 
 
@@ -46,29 +81,63 @@ public class ComponentRightRestController {
 
 
 
+
+    @Operation(summary = "1、为权益 添加核验者")
     @PostMapping(value = "/componet_rights/{COMPONENT_RIGHTS_ID}/access_validators", produces = "application/json")
-    public AccessValidator addComponentRight_Validator(@PathVariable int COMPONENT_RIGHTS_ID, @PathVariable int COUPON_TMPL_ID) {
-        AccessValidator componentRight = new AccessValidator();
-        return componentRight;
+    public AccessValidator addComponentRight_Validator(@PathVariable long COMPONENT_RIGHTS_ID, @RequestBody AccessValidatorPojo pojo) {
+        Optional<ComponentRight> optionalComponentRight = componentRightRepository.findById(COMPONENT_RIGHTS_ID);
+
+        AccessValidator accessValidator = componentRightService.addAccessValidator(optionalComponentRight.get(),pojo);
+
+        return accessValidator;
     }
 
 
-    @GetMapping(value = "/{APP_ID}/{COUPON_TMPL_ID}", produces = "application/json")
-    public List<ComponentRight> listCouponTemplate(@PathVariable int APP_ID, CouponTemplatePojoList  couponTemplatePojoList) {
-        return null;
+    @Operation(summary = "1、查询权益")
+    @GetMapping(value = "/supliers/{SUPPLIER_ID}/component_rights", produces = "application/json")
+    public List<ComponentRight> listComponentRight(@PathVariable long SUPPLIER_ID) {
+
+
+
+        ComponentRight probe = new ComponentRight();
+        probe.setSupplierId(SUPPLIER_ID);
+        Example<ComponentRight> example = Example.of(probe);
+
+        List<ComponentRight> componentRights = componentRightRepository.findAll(example);
+
+        return componentRights;
     }
 
 
 
 
+
+    @Operation(summary = "1、更新权益信息")
     @PutMapping(value = "/{APP_ID}/component_right/{COMPONENT_RIGHT_ID}", produces = "application/json")
     public ComponentRight updateComponentRight(@PathVariable int APP_ID, Map  metadata) {
         return null;
     }
 
-    @DeleteMapping(value = "/coupon_templates", produces = "application/json")
-    public ComponentRight createCouponTemplate(@PathVariable String id) {
+
+
+
+    @Operation(summary = "1、删除权益信息")
+    @DeleteMapping(value = "/component_rights/{COMPONENT_RIGHT_ID}", produces = "application/json")
+    public ComponentRight deleteCouponTemplate(@PathVariable String id) {
         return null;
     }
+
+
+
+/*
+    @Operation(summary = "1、为权益 增加分润")
+    @PostMapping(value = "/componet_rights/{COMPONENT_RIGHTS_ID}/royaltyRules", produces = "application/json")
+    public List<RoyaltyRule> addRoyaltyRule(@PathVariable long COMPONENT_RIGHTS_ID, @RequestBody RoyaltyRulePojo pojo) {
+        Optional<ComponentRight> optionalComponentRight = componentRightRepository.findById(COMPONENT_RIGHTS_ID);
+
+        List<RoyaltyRule> accessValidator = componentRightService.addRoyaltyRule(optionalComponentRight.get(),pojo);
+
+        return accessValidator;
+    }*/
 
 }

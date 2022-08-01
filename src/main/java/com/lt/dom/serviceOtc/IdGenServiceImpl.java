@@ -4,7 +4,9 @@ import com.lt.dom.oct.Product;
 import com.lt.dom.oct.Referral;
 import com.lt.dom.oct.RoyaltyRuleData;
 import com.lt.dom.oct.RoyaltyTemplate;
+import com.lt.dom.util.CodeConfig;
 import com.lt.dom.util.Snowflake;
+import com.lt.dom.util.VoucherCodes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,100 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
+
+
+
+    CodeConfig configSupplier = new CodeConfig(6,null,null,null,"sup_#######");
+
+    public String supplierNo(){
+        String no = VoucherCodes.generate(configSupplier);
+        return no;
+    }
+    CodeConfig exportConfig = new CodeConfig(6,null,null,null,"exp_#######");
+    public String exportNo(){
+
+        String no = VoucherCodes.generate(exportConfig);
+
+        return no;
+
+
+    }
+    CodeConfig tempDocumentConfig = new CodeConfig(40,null,null,null,"doc_########################################################");
+    public String tempDocumentCode(){
+
+        String no = VoucherCodes.generate(tempDocumentConfig);
+
+        return no;
+
+
+    }
+    CodeConfig documentConfig = new CodeConfig(30,null,null,null,"doc_########################################");
+    public String documentCode(){
+
+        String no = VoucherCodes.generate(documentConfig);
+
+        return no;
+
+
+    }
+
+    CodeConfig productConfig = new CodeConfig(20,null,null,null,"pro_###############################");
+    public String productNo(){
+
+        String no = VoucherCodes.generate(productConfig);
+
+        return no;
+
+
+    }
+
+    CodeConfig redemptionEntryConfig = new CodeConfig(20,null,null,null,"r_###############################");
+    public String redemptionEntryCode(){
+
+        String no = VoucherCodes.generate(redemptionEntryConfig);
+
+        return no;
+
+
+    }
+    CodeConfig importConfig = new CodeConfig(20,null,null,null,"imp_###############################");
+    public String importNo(){
+
+        String no = VoucherCodes.generate(importConfig);
+
+        return no;
+
+
+    }
+
+    CodeConfig bookingConfig = new CodeConfig(20,null,null,null,"res_###########################");
+    public String bookingNo(){
+
+        String no = VoucherCodes.generate(bookingConfig);
+
+        return no;
+
+
+    }
+    CodeConfig scenarioConfig = new CodeConfig(6,null,null,null,"sce_#######");
+    public String scenarioNo(){
+
+        String no = VoucherCodes.generate(scenarioConfig);
+
+        return no;
+
+
+    }
+    CodeConfig compaignConfig = new CodeConfig(6,null,null,null,"cam_#######");
+
+    public String campaignNo() {
+        String no = VoucherCodes.generate(compaignConfig);
+
+        return no;
+
+    }
+
+
 /*
     @Resource(name = "Redislockserviceimpl") private Redislockservice Redislockservice;
 

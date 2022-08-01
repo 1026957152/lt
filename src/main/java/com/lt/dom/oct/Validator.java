@@ -1,6 +1,7 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.otcenum.EnumValidatorType;
 
 import javax.persistence.*;
 
@@ -11,6 +12,26 @@ public class Validator {  // 这个就是机器了啊
     @JsonProperty("id")
     private long id;
     private long userId;
+
+    private long equipmentId;
+
+    public long getEquipmentId() {
+        return equipmentId;
+    }
+
+    public void setEquipmentId(long equipmentId) {
+        this.equipmentId = equipmentId;
+    }
+
+    private EnumValidatorType type; //指定人工，机器, 所有人工
+
+    public EnumValidatorType getType() {
+        return type;
+    }
+
+    public void setType(EnumValidatorType type) {
+        this.type = type;
+    }
 
     public long getUserId() {
         return userId;
@@ -29,7 +50,6 @@ public class Validator {  // 这个就是机器了啊
         this.name = name;
     }
 
-    private String type; //闸机, 车牌识别摄像头
 
     @Transient
     private ValidatorGroup validatorGroup;

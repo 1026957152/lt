@@ -1,5 +1,7 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.otcenum.EnumCheckInCheckOutTimes;
+
 public class OperationTime {
 
     private boolean Mon=false;

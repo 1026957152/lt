@@ -1,7 +1,6 @@
 package com.lt.dom.controllerOct;
 
 import com.lt.dom.oct.ComponentRight;
-import com.lt.dom.oct.ComponentRightVounch;
 import com.lt.dom.oct.Validator;
 import com.lt.dom.oct.ValidatorGroup;
 import com.lt.dom.repository.ValidatorRepository;

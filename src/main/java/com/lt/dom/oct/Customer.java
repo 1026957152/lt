@@ -4,6 +4,8 @@ import java.util.List;
 
 public class Customer {
 
+    private String title;
+
     private String givenName;
     private String surname;
     private String email;

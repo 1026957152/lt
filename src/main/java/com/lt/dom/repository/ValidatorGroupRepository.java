@@ -9,5 +9,5 @@ import java.util.List;
 public interface ValidatorGroupRepository extends JpaRepository<ValidatorGroup
 			, Long> {
 
-	List<ValidatorGroup> findByValidatorId(long id);
+
 }
