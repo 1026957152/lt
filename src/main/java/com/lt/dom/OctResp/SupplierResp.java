@@ -1,13 +1,21 @@
 package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.controllerOct.FileUploadController;
+import com.lt.dom.controllerOct.SupplierRestController;
 import com.lt.dom.domain.SettleAccount;
 import com.lt.dom.oct.Asset;
 import com.lt.dom.oct.Supplier;
+import com.lt.dom.otcenum.EnumBussinessType;
+import com.lt.dom.otcenum.EnumSupplierType;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 public class SupplierResp  extends RepresentationModel<SupplierResp> {
@@ -16,20 +24,39 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
     private String desc;
 
 
+    private String object = "supplier";
 
+    public String getObject() {
+        return object;
+    }
 
-
+    public void setObject(String object) {
+        this.object = object;
+    }
 
     private SettleAccount settleAccount;
-    private List<AssetResp> assets;
+    private List<EntityModel<AssetResp>> assets;
+    private EnumSupplierType type;
+    private EnumBussinessType business_type;
 
     public static SupplierResp from(Supplier supplier, List<Asset> assets) {
+        SupplierResp supplierResp = SupplierResp.from(supplier);
+
+        supplierResp.add(linkTo(methodOn(SupplierRestController.class).applyCertification(supplier.getId(),null)).withRel("apply_for_approval_url"));
+        supplierResp.add(linkTo(methodOn(SupplierRestController.class).pageEmployess(supplier.getId(),null)).withRel("employee_url"));
+
+
+        supplierResp.setAssets(assets.stream().map(x->AssetResp.from(x)).collect(Collectors.toList()));
+        return supplierResp;
+    }
+
+    public static SupplierResp from(Supplier supplier) {
         SupplierResp supplierResp = new SupplierResp();
         supplierResp.setCode(supplier.getCode());
         supplierResp.setName(supplier.getName());
         supplierResp.setDesc(supplier.getDesc());
-
-        supplierResp.setAssets(assets.stream().map(x->AssetResp.from(x)).collect(Collectors.toList()));
+        supplierResp.setType(supplier.getType());
+        supplierResp.setBusiness_type(supplier.getBusiness_type());
         return supplierResp;
     }
 
@@ -78,12 +105,28 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
         return desc;
     }
 
-    public void setAssets(List<AssetResp> assets) {
+    public List<EntityModel<AssetResp>> getAssets() {
+        return assets;
+    }
+
+    public void setAssets(List<EntityModel<AssetResp>> assets) {
         this.assets = assets;
     }
 
-    public List<AssetResp> getAssets() {
-        return assets;
+    public void setType(EnumSupplierType type) {
+        this.type = type;
+    }
+
+    public EnumSupplierType getType() {
+        return type;
+    }
+
+    public void setBusiness_type(EnumBussinessType business_type) {
+        this.business_type = business_type;
+    }
+
+    public EnumBussinessType getBusiness_type() {
+        return business_type;
     }
 
     public static class ContactDTO {

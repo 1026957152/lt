@@ -30,4 +30,20 @@ public class PickupPoint {
 //1 - Staff only - Can ONLY be added to a booking by staff only (not customers / travel agents)
     private String rank	;//Numeric - Can be used as an additional ordering value for hotel pickup reports
     private String  viator_name;//	If you configure the hotel name EXACTLY as configured in Viator, TourCMS will map Viator bookings to the correct pickup point
+
+
+
+/*        "id": "90e64d28-902f-4630-9932-5f0fb46992aa",
+                "name": "Americania Hotel - 121 7th St",
+                "directions": "Meet at Americania Hotel - 121 7th St.",
+                "latitude": 37.7788005,
+                "longitude": -122.4102065,
+                "localDateTime": "2020-12-01T05:40:00-08:00",
+                "googlePlaceId": "ChIJOTbxc4OAhYARrK82JwxWZFY",
+                "street": "121 7th Street",
+                "postal_code": "94103",
+                "locality": "San Francisco",
+                "region": "California",
+                "state": "CA",
+                "country": "US"*/
 }

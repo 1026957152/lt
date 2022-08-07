@@ -1,5 +1,7 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.otcenum.EnumPublicationObjectType;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,10 +14,22 @@ import java.time.LocalDateTime;
 @Entity
 public class RedemptionEntry {
 
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
+    private String holder;
+    private int redeemed_amount;
+    private int redeemed_quantity;
+    private String campaign_name;
 
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     @NotNull
     private long voucher;
@@ -26,7 +40,7 @@ public class RedemptionEntry {
     private long validatorId;
     private long redemption;
     private long relatedObjectId;
-    private String relatedObjectType;
+    private EnumPublicationObjectType relatedObjectType;
     private long supplier;
     private long campaign;
 
@@ -83,11 +97,11 @@ public class RedemptionEntry {
         return relatedObjectId;
     }
 
-    public void setRelatedObjectType(String relatedObjectType) {
+    public void setRelatedObjectType(EnumPublicationObjectType relatedObjectType) {
         this.relatedObjectType = relatedObjectType;
     }
 
-    public String getRelatedObjectType() {
+    public EnumPublicationObjectType getRelatedObjectType() {
         return relatedObjectType;
     }
 
@@ -154,6 +168,40 @@ public class RedemptionEntry {
     public LocalDateTime getIssued_at() {
         return issued_at;
     }
+
+    public void setHolder(String holder) {
+        this.holder = holder;
+    }
+
+    public String getHolder() {
+        return holder;
+    }
+
+    public void setRedeemed_amount(int redeemed_amount) {
+        this.redeemed_amount = redeemed_amount;
+    }
+
+    public int getRedeemed_amount() {
+        return redeemed_amount;
+    }
+
+    public void setRedeemed_quantity(int redeemed_quantity) {
+        this.redeemed_quantity = redeemed_quantity;
+    }
+
+    public int getRedeemed_quantity() {
+        return redeemed_quantity;
+    }
+
+    public void setCampaign_name(String campaign_name) {
+        this.campaign_name = campaign_name;
+    }
+
+    public String getCampaign_name() {
+        return campaign_name;
+    }
+
+
 
     public static enum RedemptionStatus {
         SUCCESS,FAILURE;

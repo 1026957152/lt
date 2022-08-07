@@ -5,6 +5,7 @@ import com.lt.dom.controllerOct.FileUploadController;
 import com.lt.dom.oct.Document;
 import com.lt.dom.oct.Reservation;
 import com.lt.dom.oct.TempDocument;
+import com.lt.dom.oct.TourBooking;
 import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.repository.DocumentRepository;
 import com.lt.dom.repository.TempDocumentRepository;
@@ -25,8 +26,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 
 
 /**
@@ -106,7 +111,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public Document saveWithDocument(Reservation reservation, EnumDocumentType estimate, MultipartFile x) {
+    public Document saveWithDocument(TourBooking reservation, EnumDocumentType estimate, MultipartFile x) {
         String extension = StringUtils.getFilenameExtension(x.getOriginalFilename());
 
         Document document = new Document();
@@ -168,7 +173,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         document.setFileName(filename);
         document.setCreated_at(LocalDateTime.now());
         document.setUpdated_at(LocalDateTime.now());
-
+        document.setSize(x.getSize());
         document.setOriginalFilename(x.getOriginalFilename());
         document = tempDocumentRepository.save(document);
 
@@ -197,15 +202,53 @@ public class FileStorageServiceImpl implements FileStorageService {
             document.setFileName(filename);
             document.setCreated_at(LocalDateTime.now());
             document.setUpdated_at(LocalDateTime.now());
-
+            document.setSize(tempDocument.getSize());
             document.setOriginalFilename(tempDocument.getOriginalFilename());
             return document;
-        }).collect(Collectors.toList());
+        }).collect(toList());
 
 
         documents = documentRepository.saveAll(documents);
 
         return documents;
+    }
+
+    @Override
+    public Document saveFromTempDocument(long id, Pair<EnumDocumentType, TempDocument> x) {
+        EnumDocumentType documentType = x.getValue0();
+        TempDocument tempDocument = x.getValue1();
+
+        String extension = StringUtils.getFilenameExtension(tempDocument.getOriginalFilename());
+
+        Document document = new Document();
+        document.setExtension(extension);
+        document.setCode(tempDocument.getCode());
+        document.setType(documentType);
+        document.setRaletiveId(id);
+        String filename = document.getCode()+"."+extension;
+        document.setFileName(filename);
+        document.setCreated_at(LocalDateTime.now());
+        document.setUpdated_at(LocalDateTime.now());
+        document.setSize(tempDocument.getSize());
+        document.setOriginalFilename(tempDocument.getOriginalFilename());
+        return documentRepository.save(document);
+    }
+
+    @Override
+    public List<String> loadDocuments(EnumDocumentType scenario_logo, long id) {
+        List<Document> documents = documentRepository.findAllByTypeAndRaletiveId(scenario_logo,id);
+        return documents.stream().map(x->FileStorageServiceImpl.url(x.getFileName())).collect(toList());
+
+
+    }
+
+    @Override
+    public Map<EnumDocumentType, List<String>> loadDocuments(List<EnumDocumentType> scenario_logo, long id) {
+
+        List<Document> documents = documentRepository.findAllByTypeInAndRaletiveId(scenario_logo,id);
+        return documents.stream().collect(Collectors.groupingBy(x->x.getType(),
+                collectingAndThen(toList(),list ->list.stream().map(x->FileStorageServiceImpl.url(x.getFileName())).collect(toList())) ));//(x->).collect(Collectors.toList());
+
     }
 
 

@@ -1,11 +1,14 @@
 package com.lt.dom.OctResp;
 
+import com.lt.dom.controllerOct.BookingRestController;
 import com.lt.dom.controllerOct.FileUploadController;
 import com.lt.dom.oct.Document;
 import com.lt.dom.oct.Export;
+import com.lt.dom.otcReq.BookingDocumentIdsResp;
 import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.otcenum.EnumExportStatus;
 import com.lt.dom.otcenum.EnumExportVoucher;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.time.Duration;
@@ -15,9 +18,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
-public class DocumentResp {
+public class DocumentResp extends RepresentationModel<DocumentResp> {
 
 
     private String source_id;
@@ -133,6 +138,8 @@ public class DocumentResp {
                     ).build().toString();
 
             exportReq.setResultUrl(url);
+            exportReq.add(linkTo(methodOn(BookingRestController.class).createDocuments(x.getId(),new BookingDocumentIdsResp())).withRel("add_documents_url"));
+
             return exportReq;
         }).collect(Collectors.toList());
 

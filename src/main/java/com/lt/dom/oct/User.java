@@ -2,21 +2,33 @@ package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.otcenum.EnumCapabilities;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 
 @Entity
 
 public class User {
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @JsonProperty("id")
     private long id;
 
-    private String no;//	string	The ID of the user
+    private String code;//	string	The ID of the user
+    private String password;//	string	The ID of the user
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public long getId() {
         return id;
@@ -26,12 +38,12 @@ public class User {
         this.id = id;
     }
 
-    public String getNo() {
-        return no;
+    public String getCode() {
+        return code;
     }
 
-    public void setNo(String no) {
-        this.no = no;
+    public void setCode(String no) {
+        this.code = no;
     }
 
     @Transient
@@ -60,6 +72,14 @@ public class User {
     private String username;//	string	The user’s username*
     private String email;//	string	The user’s email address
     private String phone;//	string	The user’s phone number
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public String getPhone() {
         return phone;
@@ -144,4 +164,56 @@ public class User {
     private boolean receivesWeeklyEmails;//		Whether or not the loyalty account holder wants to receive email updates.
 
 
+
+
+
+    private boolean enabled;
+    private boolean tokenExpired;
+
+
+
+
+
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(
+                    name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "role_id", referencedColumnName = "id"))
+    private Set<Role> roles;
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean getEnabled() {
+        return enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
 }

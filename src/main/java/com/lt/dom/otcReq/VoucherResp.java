@@ -1,32 +1,73 @@
 package com.lt.dom.otcReq;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.OctResp.AssetResp;
 import com.lt.dom.OctResp.PublicationEntryResp;
-import com.lt.dom.oct.ComponentVounch;
-import com.lt.dom.oct.Discount;
-import com.lt.dom.oct.GiftVoucher;
+import com.lt.dom.oct.*;
+import com.lt.dom.otcenum.EnumAssetType;
 import com.lt.dom.otcenum.EnumDiscountVoucherCategory;
 import com.lt.dom.otcenum.EnumVoucherType;
+import org.javatuples.Triplet;
+import org.springframework.hateoas.EntityModel;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class VoucherResp {
 
     private String code;
     private String campaign;
+    private String object = "voucher";
+
+    public String getObject() {
+        return object;
+    }
+
+    public void setObject(String object) {
+        this.object = object;
+    }
 
     private PublicationPojo publication;
-    private AssetResp assets;
+    private EntityModel<AssetResp> assets;
 
-    public void setAssets(AssetResp assets) {
+
+    public static VoucherResp from(Voucher voucher) {
+        VoucherResp voucherResp = new VoucherResp();
+        voucherResp.setCode(voucher.getCode());
+        voucherResp.setCampaign(voucher.getCampaign()+"");
+        return voucherResp;
+    }
+
+    public static VoucherResp from(Triplet<Voucher,Campaign,List<Asset>> triplet) {
+        Voucher voucher = triplet.getValue0();
+        Campaign campaign = triplet.getValue1();
+        List<Asset> assets = triplet.getValue2();
+
+        VoucherResp voucherResp = new VoucherResp();
+        voucherResp.setCode(voucher.getCode());
+        voucherResp.setType(voucher.getType());
+        voucherResp.setCampaign(campaign.getName());
+
+
+
+        Optional<Asset> asset = assets.stream().filter(x->x.getType().equals(EnumAssetType.qr)).findAny();
+
+        if(asset.isPresent()){
+            voucherResp.setAssets(AssetResp.from(asset.get()));
+        }
+        return voucherResp;
+
+    }
+
+    public void setAssets(EntityModel<AssetResp> assets) {
         this.assets = assets;
     }
 
-    public AssetResp getAssets() {
+    public EntityModel<AssetResp> getAssets() {
         return assets;
     }
 

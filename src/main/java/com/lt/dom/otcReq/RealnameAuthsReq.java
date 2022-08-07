@@ -2,6 +2,8 @@ package com.lt.dom.otcReq;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 
@@ -24,22 +26,36 @@ public class RealnameAuthsReq {
     private Integer identifyType;
     @JsonProperty("xaccount_type")
     private String xaccountType;
-    private String realName;
-    private String idCard;
 
-    public String getRealName() {
-        return realName;
+
+    @NotEmpty
+    private String real_name;
+    @NotEmpty
+    private String id_card;
+
+    private String phone;
+
+    public String getPhone() {
+        return phone;
     }
 
-    public void setRealName(String realName) {
-        this.realName = realName;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
-    public String getIdCard() {
-        return idCard;
+    public String getReal_name() {
+        return real_name;
     }
 
-    public void setIdCard(String idCard) {
-        this.idCard = idCard;
+    public void setReal_name(String real_name) {
+        this.real_name = real_name;
+    }
+
+    public String getId_card() {
+        return id_card;
+    }
+
+    public void setId_card(String id_card) {
+        this.id_card = id_card;
     }
 }

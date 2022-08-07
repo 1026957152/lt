@@ -1,0 +1,20 @@
+将iDR设备连接到计算机，并确保驱动程序安装正常。
+
+
+1、检查JAVA_HOME、path设置，确保jna.jar在classpath的路径中。
+
+2、编译javac test.java。
+
+3、运行java test。
+
+
+系统环境变量设置示例：
+
+JAVA_HOME
+C:\Program Files\Java\jdk1.6.0_22
+
+classpath
+.;%JAVA_HOME%\lib\dt.jar;%JAVA_HOME%\lib\tools.jar;%JAVA_HOME%\lib\jna.jar
+
+path
+.;%JAVA_HOME%\bin;

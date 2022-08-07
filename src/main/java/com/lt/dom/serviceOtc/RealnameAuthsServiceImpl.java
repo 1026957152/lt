@@ -21,18 +21,4 @@ import java.util.stream.Collectors;
 public class RealnameAuthsServiceImpl {
 
 
-    @Autowired
-    private UserRepository userRepository;
-
-
-    public User postRealnameAuths(User user, RealnameAuthsReq realnameAuthsReq) {
-
-        user.setRealName(realnameAuthsReq.getRealName());
-        user.setIdCard(realnameAuthsReq.getIdCard());
-        user.setRealNameVerified(true);
-        user.setIdCardType(1);
-
-        user = userRepository.save(user);
-        return user;
-    }
 }

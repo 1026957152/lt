@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Asset {
@@ -24,9 +25,12 @@ public class Asset {
         this.id = id;
     }
 
+    @NotNull
     private EnumAssetType type;
+    @NotNull
     private String idId;
     private String url;
+    @NotNull
     private long source;
 
     public long getSource() {

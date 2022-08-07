@@ -66,6 +66,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     implementation 'cn.hutool:hutool-core:5.8.5'
+    implementation group: 'com.auth0', name: 'java-jwt', version: '4.0.0'
+    implementation group: 'com.sun.jna', name: 'jna', version: '3.0.9'
+    implementation 'com.itextpdf:itext-asian:5.2.0'
+    implementation 'com.itextpdf:itextpdf:5.5.13'
+    implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+    implementation 'com.github.ua-parser:uap-java:1.5.3'
 }
 
 

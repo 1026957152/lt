@@ -62,7 +62,7 @@ public class VoucherServiceImpl {
 
 
 
-    public Campaign createLoyaltyCompaign(CompaignPojo compaignPojo)  {
+    public Campaign createLoyaltyCompaign(CompaignPojo compaignPojo, Scenario scenario)  {
 
         if(!compaignPojo.getCampaignType().equals(EnumCompaignType.LOYALTY_PROGRAM)){
             throw  new RuntimeException("");
@@ -73,6 +73,7 @@ public class VoucherServiceImpl {
         campaign.setCode(idGenService.campaignNo());
         campaign.setName(compaignPojo.getName());
         campaign.setDescription(compaignPojo.getName_long());
+        campaign.setScenario(scenario.getId());
 
         campaign.setCampaignType(compaignPojo.getCampaignType());
         campaign.setVouchers_generation_status(EnumCampaignCreationStatus.IN_PROGRESS);

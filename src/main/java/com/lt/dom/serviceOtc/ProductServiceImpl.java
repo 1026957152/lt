@@ -55,6 +55,8 @@ public class ProductServiceImpl {
     @Autowired
     private ComponentRightRepository componentRightRepository;
 
+    @Autowired
+    private CampaignAssignToReservationRepository campaignAssignToReservationRepository;
 
 
     public Page<Product> listProduct(Supplier supplier, Pageable pageable) {
@@ -91,6 +93,22 @@ public class ProductServiceImpl {
             tour = tourRepository.save(tour);
             product.setRaletiveId(tour.getId());
             product = productRepository.save(product);
+
+
+            Product finalProduct1 = product;
+            Tour finalTour = tour;
+            List<CampaignAssignToTourProduct> list =  pojo.getCampaigns().stream().map(x->{
+                CampaignAssignToTourProduct campaignAssignToTourProduct = new CampaignAssignToTourProduct();
+                campaignAssignToTourProduct.setCampaign(x.getId());
+                campaignAssignToTourProduct.setProduct(finalProduct1.getId());
+                campaignAssignToTourProduct.setTourId(finalTour.getId());
+                return campaignAssignToTourProduct;
+            }).collect(Collectors.toList());
+
+            list = campaignAssignToReservationRepository.saveAll(list);
+
+
+
         }
         Product finalProduct = product;
         if(pojo.getAttributes() != null){
@@ -112,28 +130,34 @@ public class ProductServiceImpl {
 
                 PricingType pricingType = new PricingType();
                 pricingType.setProductId(finalProduct.getId());
+                pricingType.setType(x.getType());
                 switch (x.getType()){
                     case ByPerson :{
                         pricingType.setPrice(x.getByPerson().getPrice());
                         pricingType.setBy(x.getBy());
-                    };
+                    }
+                    break; //可选
                     case ByItem :{
                         pricingType.setLable(x.getByItem().getLable());
                         pricingType.setPrice(x.getByItem().getPrice());
-                    };
+                    }
+                    break; //可选
                     case Fixed :{
                         pricingType.setPrice(x.getFixed().getPrice());
-                    };
+                    }
+                    break; //可选
                     case ByHour :{
                         pricingType.setPrice(x.getByHour().getPrice());
                         pricingType.setMax(x.getByHour().getMax());
                         pricingType.setMin(x.getByHour().getMin());
                     };
+                    break; //可选
                     case ByDay:{
                         pricingType.setPrice(x.getByHour().getPrice());
                         pricingType.setMax(x.getByHour().getMax());
                         pricingType.setMin(x.getByHour().getMin());
                     };
+                    break; //可选
                     default:
 
                 }

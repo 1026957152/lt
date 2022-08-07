@@ -13,6 +13,10 @@ public enum EnumDocumentType {
     bill("bill"),
 
     campaign_logo("campaign_logo"),
+    supplier_business_licence("supplier_business_licence"),
+    scenario_image("scenario_image"),
+    scenario_image_small("scenario_image_small"),
+
 
     ;
 

@@ -3,15 +3,19 @@ package com.lt.dom.controllerOct;
 import com.lt.dom.OctResp.RedemptionResp;
 import com.lt.dom.domain.CouponTemplatePojo;
 import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.Voucher_has_no_permistion_redeemException;
 import com.lt.dom.error.voucher_disabledException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.RedemPojo;
 import com.lt.dom.repository.CampaignRepository;
 import com.lt.dom.repository.ComponentVounchRepository;
 import com.lt.dom.repository.VoucherRepository;
+import com.lt.dom.requestvo.PublishTowhoVo;
 import com.lt.dom.serviceOtc.RedeemServiceImpl;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -97,7 +101,7 @@ public class RedeemRestController {
 
     //TODO 这里有点问题
     @PostMapping(value = "/vouchers/{VOUNCHOR_ID}/redemption", produces = "application/json")
-    public ResponseEntity<RedemptionResp> redeemVonchor(Authentication authentication, @PathVariable long VOUNCHOR_ID, @RequestBody RedemPojo pojo) {
+    public EntityModel<RedemptionResp> redeemVonchor(Authentication authentication, @PathVariable long VOUNCHOR_ID, @RequestBody RedemPojo pojo) {
 
     //    CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
@@ -120,34 +124,25 @@ public class RedeemRestController {
                 throw new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
             }*/
-            try {
 
                 Optional<Campaign> optionalCampaign = campaignRepository.findById(voucher.get().getCampaign());
 
                 boolean v = redeemService.是否符合验证(optionalCampaign.get(),new Supplier());
                 if(v){
-                    Pair<RedemptionEntry,Redemption> pair= redeemService.bulkRedeemVounchor(voucher.get(),optionalCampaign.get(),pojo,new Supplier());
-                    return ResponseEntity.ok(RedemptionResp.from(pair));
+                    Triplet<RedemptionEntry,Redemption, PublishTowhoVo> pair= redeemService.bulkRedeemVounchor(voucher.get(),optionalCampaign.get(),new Supplier());
+                    return RedemptionResp.from(pair);
                 }else{
-                    System.out.println("抛出异常");
-                    throw new ResponseStatusException(
-                            HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
+
+                    throw new Voucher_has_no_permistion_redeemException(voucher.get().getId(),"Foo Not Found","该商户无法核销该券");
                 }
 
 
-
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        }else{
+           throw  new BookNotFoundException(VOUNCHOR_ID,"找不到消费券");
         }
-        System.out.println("抛出异常");
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
+
 
     }
-
 
 
 
@@ -159,11 +154,8 @@ public class RedeemRestController {
     public TouristAttraction updateBook(@PathVariable int APP_ID, Map metadata) {
         return null;
     }
-
-    @DeleteMapping(value = "/coupon_templates", produces = "application/json")
-    public TouristAttraction createCouponTemplate(@PathVariable int id) {
-        return null;
-    }
 */
+
+
 
 }

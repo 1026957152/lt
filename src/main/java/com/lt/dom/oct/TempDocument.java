@@ -25,6 +25,15 @@ public class TempDocument {
     private LocalDateTime updated_at;
     private String originalFilename;
     private String url;
+    private Long size;
+
+    public Long getSize() {
+        return size;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
+    }
 
     public long getId() {
         return id;

@@ -5,14 +5,27 @@ import com.lt.dom.otcenum.Enumfailures;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MultipartException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(AuthenticationException ex, WebRequest request){
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.UNAUTHORIZED,EnumRedemptionfailures.resource_not_found.name(),
+                       ex.getMessage(),ex.getLocalizedMessage());
+        return new ResponseEntity<>(response, response.getCode());
+    }
 
     @ExceptionHandler(BookNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleApiException(
@@ -27,7 +40,7 @@ public class ApiExceptionHandler {
 
         ApiErrorResponse response =
                 new ApiErrorResponse(HttpStatus.NOT_FOUND,EnumRedemptionfailures.resource_not_found.name(),
-                        request.getContextPath(),"No book found with ID " + ex.getId());
+                        ex.getObject(),ex.getDetail());
         return new ResponseEntity<>(response, response.getCode());
 
     }
@@ -140,6 +153,130 @@ public class ApiExceptionHandler {
 
     }
 
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            PaymentException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.BAD_REQUEST, Enumfailures.invalid_payload.name(),
+                        ex.getObject(),ex.getDetail());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
+    @ExceptionHandler(User_already_be_guideException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            User_already_be_guideException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.BAD_REQUEST, Enumfailures.user_already_be_guide.getText(),
+                        ex.getObject(),ex.getDetail());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
+
+
+
+    @ExceptionHandler(User_realname_auth_failureException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            User_realname_auth_failureException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.BAD_REQUEST, Enumfailures.user_realname_auth_failure.getText(),
+                        ex.getObject(),ex.getDetail());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
+    @ExceptionHandler(Voucher_has_no_permistion_redeemException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            Voucher_has_no_permistion_redeemException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.BAD_REQUEST, Enumfailures.voucher_has_no_permistion_redeem.getText(),
+                        ex.getObject(),ex.getDetail());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
+    @ExceptionHandler(wx_login_errorException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            wx_login_errorException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, Enumfailures.wx_login_error.getText(),
+                        ex.getObject(),ex.getDetail());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
+
+
+    @ExceptionHandler(voucher_not_publishException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            voucher_not_publishException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, Enumfailures.voucher_not_publish.getText(),
+                        ex.getObject(),ex.getDetail());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+    @ExceptionHandler(username_already_exists_errorException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            username_already_exists_errorException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.CONFLICT, ex.getMessage(),
+                        ex.getObject(),ex.getDetail());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
+/*    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            BadCredentialsException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.CONFLICT, ex.getMessage(),
+                        ex.getLocalizedMessage(),ex.getLocalizedMessage());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }*/
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            MultipartException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(),
+                        ex.getLocalizedMessage(),ex.getLocalizedMessage());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
+    @ExceptionHandler({MissingServletRequestParameterException.class})
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            MissingServletRequestParameterException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.BAD_REQUEST, ex.getParameterName(),
+                        ex.getParameterType(),ex.getLocalizedMessage());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            MethodArgumentTypeMismatchException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.BAD_REQUEST, ex.getName(),
+                        ex.getErrorCode(),ex.getLocalizedMessage());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
 /*
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleAll(Exception ex, WebRequest request) {

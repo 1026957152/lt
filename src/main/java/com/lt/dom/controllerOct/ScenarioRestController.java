@@ -1,27 +1,37 @@
 package com.lt.dom.controllerOct;
 
+import com.lt.dom.OctResp.CampaignResp;
 import com.lt.dom.OctResp.ExportResp;
+import com.lt.dom.OctResp.MessageFileResp;
 import com.lt.dom.OctResp.ScenarioResp;
+import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.ExistException;
+import com.lt.dom.error.Missing_documentException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ScenarioAddCampaignReq;
 import com.lt.dom.otcReq.ScenarioAssignmentReq;
 import com.lt.dom.otcReq.ScenarioReq;
+import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.repository.*;
-import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
-import com.lt.dom.serviceOtc.CampaignServiceImpl;
-import com.lt.dom.serviceOtc.ScenarioServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import com.lt.dom.serviceOtc.*;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import javax.validation.Valid;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/oct")
@@ -29,7 +39,7 @@ public class ScenarioRestController {
 
 
     @Autowired
-    private ProductRepository productRepository;
+    private TempDocumentRepository tempDocumentRepository;
 
     @Autowired
     private ScenarioRepository scenarioRepository;
@@ -45,22 +55,42 @@ public class ScenarioRestController {
 
     @Autowired
     private ScenarioServiceImpl scenarioService;
+    @Autowired
+    private FileStorageService fileStorageService;
 
 
     @GetMapping(value = "scenarios/{Scenario_ID}", produces = "application/json")
-    public Scenario getScenario(@PathVariable long Scenario_ID) {
+    public EntityModel<ScenarioResp> getScenario(@PathVariable long Scenario_ID) {
 
         Optional<Scenario> validatorOptional = scenarioRepository.findById(Scenario_ID);
-        if(validatorOptional.isPresent()){
-            try {
-                return campaignService.getScenario(validatorOptional.get());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        if(validatorOptional.isEmpty()){
+
+            throw new BookNotFoundException(Scenario_ID,"找不到 该场景 ");
         }
-        System.out.println("抛出异常");
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
+
+
+            Scenario scenario =  campaignService.getScenario(validatorOptional.get());
+
+
+            Map<EnumDocumentType,List<String>> document = fileStorageService.loadDocuments(
+                    Arrays.asList(EnumDocumentType.scenario_image,
+                            EnumDocumentType.scenario_image_small),scenario.getId());
+
+            ScenarioResp scenarioResp =  ScenarioResp.from(scenario,document);
+            EntityModel entityModel = EntityModel.of(scenarioResp);
+            entityModel.add(linkTo(methodOn(CampaignRestController.class).pageCampaign(1,null,null)).withRel("getCampaigns"));
+
+            Page<Campaign> campaignPageable = campaignRepository.findAll(PageRequest.of(0,1000));
+
+            List<CampaignResp> campaignResps =  CampaignResp.pageMapToList(campaignPageable);
+
+
+
+            scenarioResp.setCampaigns(CollectionModel.of(campaignResps));
+
+            return entityModel;
+
+
 
 
 
@@ -79,10 +109,38 @@ public class ScenarioRestController {
 
 
     @PostMapping(value = "/scenarios", produces = "application/json")
-    public Scenario createScenario(@RequestBody ScenarioReq scenarioReq) {
+    public ResponseEntity<ScenarioResp> createScenario(@RequestBody @Valid ScenarioReq scenarioReq) {
 
 
-        return campaignService.createScenario(scenarioReq);
+        scenarioReq.getImage();
+
+
+        Optional<TempDocument> tempDocument_image = tempDocumentRepository.findByCode(scenarioReq.getImage());
+        Optional<TempDocument> tempDocument_small = tempDocumentRepository.findByCode(scenarioReq.getImage_small());
+        if(tempDocument_image.isEmpty()  || tempDocument_small.isEmpty() ){
+            throw new Missing_documentException(1,Scenario.class.getSimpleName(),"需要附上申请文档， 合同，合影照片，保险单和发票");
+
+        }
+
+
+
+
+
+
+        Scenario scenario =  campaignService.createScenario(scenarioReq);
+        List<Document> documents = fileStorageService.saveFromTempDocumentList(scenario.getId(),
+                Arrays.asList(Pair.with(EnumDocumentType.scenario_image,tempDocument_image.get()),
+                Pair.with(EnumDocumentType.scenario_image_small,tempDocument_small.get())));
+
+
+        Map<EnumDocumentType,List<String>> document = fileStorageService.loadDocuments(
+                Arrays.asList(EnumDocumentType.scenario_image,
+                EnumDocumentType.scenario_image_small),scenario.getId());
+        return ResponseEntity.ok(ScenarioResp.from(scenario,document));
+
+
+
+
 
 /*        System.out.println("抛出异常");
         throw new ResponseStatusException(
@@ -104,18 +162,19 @@ public class ScenarioRestController {
 
         Optional<Scenario> optional = scenarioRepository.findById(SCENARIO_ID);
         Optional<Supplier> optionalSupplier = supplierRepository.findById(scenarioReq.getSupplier().longValue());
-        if(optional.isPresent() && optionalSupplier.isPresent()){
-            List<ScenarioAssignment> scenarioAssignments = scenarioAssignmentRepository.findByScenarioAndSupplier(optional.get().getId(),optionalSupplier.get().getId());
-            if(!scenarioAssignments.isEmpty()){
-                throw new ResponseStatusException(
-                        HttpStatus.ALREADY_REPORTED, "Foo Not Found", new Exception("DDDDDDDDDD"));
-            }
-            ScenarioAssignment scenarioAssignment =  campaignService.addScenarioAssignment(optional.get(),optionalSupplier.get(),scenarioReq.getNote());
-            return ResponseEntity.ok(scenarioAssignment);
+        if(optional.isPresent() && optionalSupplier.isPresent()) {
+            throw new BookNotFoundException(SCENARIO_ID,"找不到 该场景 ");
         }
-        System.out.println("抛出异常");
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
+
+        List<ScenarioAssignment> scenarioAssignments = scenarioAssignmentRepository.findByScenarioAndSupplier(optional.get().getId(),optionalSupplier.get().getId());
+        if(!scenarioAssignments.isEmpty()){
+            throw new ExistException("已经存在了");
+        }
+        ScenarioAssignment scenarioAssignment =  campaignService.addScenarioAssignment(optional.get(),optionalSupplier.get(),scenarioReq.getNote());
+        return ResponseEntity.ok(scenarioAssignment);
+
+
+
 
 /*        "related_object_id": "v_tQnP9G78q2s7GU1P74WXehorBeRm17K2",
                 "related_object_type": "voucher",
@@ -145,17 +204,16 @@ public class ScenarioRestController {
         System.out.println("抛出异常"+optional.get().getId());
         Optional<Campaign> optionalCampaign = campaignRepository.findById(scenarioReq.getCampaign());
         System.out.println("抛出异常"+optionalCampaign.get().getId());
-        if(optional.isPresent() && optionalCampaign.isPresent()){
-            if(optionalCampaign.get().getScenario() == optional.get().getId() ){
-                throw new ResponseStatusException(
-                        HttpStatus.ALREADY_REPORTED, "Foo Not Found", new Exception("DDDDDDDDDD"));
-            }
-            Campaign scenarioAssignment =  campaignService.addScenarioCampaign(optional.get(),optionalCampaign.get());
-            return ResponseEntity.ok(scenarioAssignment);
+        if(optional.isPresent() && optionalCampaign.isPresent()) {
+            throw new BookNotFoundException(SCENARIO_ID,"找不到 该场景 ");
+
         }
-        System.out.println("抛出异常");
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
+        if(optionalCampaign.get().getScenario() == optional.get().getId() ){
+            throw new ExistException("已经存在了");
+        }
+        Campaign scenarioAssignment =  campaignService.addScenarioCampaign(optional.get(),optionalCampaign.get());
+        return ResponseEntity.ok(scenarioAssignment);
+
 
 /*        "related_object_id": "v_tQnP9G78q2s7GU1P74WXehorBeRm17K2",
                 "related_object_type": "voucher",

@@ -45,6 +45,38 @@ wxpay:
   # package
   package_value: Sign=WXPay
   # 回调地址
-  tenpay_order_callback: https://ip:prot/xxx/xxxxxx
+  tenpay_order_callback: https://39.106.34.220:8080/oct/xxxxxx
   # 交易类型
   trade_type_app: APP
+
+
+  refundNotifyUrl: https://bfb3-221-237-148-6.ap.ngrok.io/wechat/pay/refund_notify
+
+
+wx:
+  app_id: wxada5ab1a8c131d85
+  secret: bdde4cd0c7eff399037992a53dba9826
+
+jwt:
+  secret: 123
+
+
+
+dll:
+  path:
+    printer: \TSCLIB
+    idcard: .\dll\sdtapi
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+
+# App Properties
+
+
+bezkoder:
+  app:
+    jwtExpirationMs: 86400000
+    jwtSecret: bezKoderSecretKey

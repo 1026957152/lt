@@ -1,8 +1,12 @@
 package com.lt.dom.otcReq;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.OctResp.PublicationEntryResp;
 import com.lt.dom.oct.DayRule;
+import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
@@ -10,14 +14,13 @@ import java.util.List;
 
 public class BookingPojo {
 
-
     @NotNull
     private Tour additional_info;
-
 
     private String important_note;//	The staff entered "pinned note" on the booking
     private String workflow_note;//	The staff entered note form the "workflow" tab on the booking
 
+    @Valid
     public Tour getAdditional_info() {
         return additional_info;
     }
@@ -43,6 +46,17 @@ public class BookingPojo {
     }
 
     public static class Tour {
+
+        @NotNull
+        private Long guide;//
+
+        public Long getGuide() {
+            return guide;
+        }
+
+        public void setGuide(Long guide) {
+            this.guide = guide;
+        }
 
         private String tour_name;//
 
@@ -127,4 +141,81 @@ public class BookingPojo {
     public void setDiscounts(List<Long> discounts) {
         this.discounts = discounts;
     }
+
+
+    @Valid
+    @Size(min=1, max=100)
+    List<TravelerReq> travelers;
+
+    public List<TravelerReq> getTravelers() {
+        return travelers;
+    }
+
+    public void setTravelers(List<TravelerReq> travelers) {
+        this.travelers = travelers;
+    }
+
+
+    public static class TravelerReq {
+
+        public EnumProductPricingTypeByPerson getBy() {
+            return by;
+        }
+
+        public void setBy(EnumProductPricingTypeByPerson by) {
+            this.by = by;
+        }
+
+        private EnumProductPricingTypeByPerson by;
+        @NotEmpty
+        private String name;///
+
+        private String family_name;///
+        private String given_name;///
+        @NotEmpty
+        private String id;
+        @NotEmpty
+        private String tel_home;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getFamily_name() {
+            return family_name;
+        }
+
+        public void setFamily_name(String family_name) {
+            this.family_name = family_name;
+        }
+
+        public String getGiven_name() {
+            return given_name;
+        }
+
+        public void setGiven_name(String given_name) {
+            this.given_name = given_name;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getTel_home() {
+            return tel_home;
+        }
+
+        public void setTel_home(String tel_home) {
+            this.tel_home = tel_home;
+        }
+    }
+
 }

@@ -6,6 +6,7 @@ import com.lt.dom.notification.EventHandler;
 import com.lt.dom.notification.OrderPaidVo;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.SettleAccountPojo;
+import com.lt.dom.otcenum.EnumFlowType;
 import com.lt.dom.otcenum.EnumTranType;
 import com.lt.dom.otcenum.EnumUserType;
 import com.lt.dom.repository.*;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -25,7 +27,7 @@ public class SettleAccountServiceImpl {
     @Autowired
     private SettleAccountRepository settleAccountRepository;
     @Autowired
-    private BalanceSettlementRepository balanceSettlementRepository;
+    private TransactionRepository transactionRepository;
 
     @Autowired
     private ChargeRepository chargeRepository;
@@ -36,7 +38,7 @@ public class SettleAccountServiceImpl {
 
 
     @Autowired
-    private BalanceTransactionRepository balanceTransactionRepository;
+    private TransactionEntryRepository transactionEntryRepository;
 
     @Autowired
     private BalanceRepository balanceRepository;
@@ -59,6 +61,11 @@ public class SettleAccountServiceImpl {
 
         SettleAccount settleAccount = new SettleAccount();
 
+
+        settleAccount.setAccountName(pojo.getAccountName());
+        settleAccount.setBankAccount(pojo.getBankAccountNumber());
+        settleAccount.setBankName(pojo.getBankName());
+        settleAccount.setCreated_at(LocalDateTime.now());
         settleAccount.setSupplierId(supplier.getId());
 
 
@@ -110,9 +117,10 @@ public class SettleAccountServiceImpl {
 
 
             Charge charge = optionalCharge.get();
-            BalanceSettlement balanceSettlement = new BalanceSettlement();
-            balanceSettlement.setAmount(charge.getAmount());
-            balanceSettlement = balanceSettlementRepository.save(balanceSettlement);
+            BalanceTransaction balanceTransaction = new BalanceTransaction();
+            balanceTransaction.setAmount(charge.getAmount());
+            balanceTransaction.setFlowType(EnumTranType.payment_refund);
+            balanceTransaction = transactionRepository.save(balanceTransaction);
 
 
             Balance balance = new Balance();
@@ -126,13 +134,13 @@ public class SettleAccountServiceImpl {
                 throw new Exception();
 
             }
-            BalanceTransaction balanceTransaction = new BalanceTransaction();
-            balanceTransaction.setSource(balanceSettlement.getId());
-            balanceTransaction.setType(EnumTranType.credited); //入账
-            balanceTransaction.setAmount(charge.getAmount());
-            balanceTransaction.setAvailable_balance(optionalBalance.get().getBalance());
-            balanceTransaction.setUser(product.getSupplierId());
-            balanceTransaction = balanceTransactionRepository.save(balanceTransaction);  //  首先结算到 产品发布者的结算账户里，
+            TransactionEntry transactionEntry = new TransactionEntry();
+            transactionEntry.setTransactionId(balanceTransaction.getId());
+            transactionEntry.setType(EnumTranType.credited); //入账
+            transactionEntry.setAmount(charge.getAmount());
+            transactionEntry.setAvailable_balance(optionalBalance.get().getAmount());
+            transactionEntry.setUser(product.getSupplierId());
+            transactionEntry = transactionEntryRepository.save(transactionEntry);  //  首先结算到 产品发布者的结算账户里，
 
 
 

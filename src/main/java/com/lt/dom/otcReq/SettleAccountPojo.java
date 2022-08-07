@@ -8,6 +8,9 @@ public class SettleAccountPojo {
     private String open_bank_code;//	脱敏的结算账号接收者信息，详情参见请求参数 recipient 部分。object
     private String account;//	脱敏的结算账号接收者信息，详情参见请求参数 recipient 部分。object
     private String name;//	脱敏的结算账号接收者信息，详情参见请求参数 recipient 部分。object
+    private String accountName;
+    private String bankAccountNumber;
+    private String bankName;
 
     public String getChannel() {
         return channel;
@@ -47,5 +50,29 @@ public class SettleAccountPojo {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getAccountName() {
+        return accountName;
+    }
+
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
+    }
+
+    public String getBankAccountNumber() {
+        return bankAccountNumber;
+    }
+
+    public void setBankAccountNumber(String bankAccountNumber) {
+        this.bankAccountNumber = bankAccountNumber;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
     }
 }

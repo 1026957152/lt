@@ -3,7 +3,6 @@ package com.lt.dom.serviceOtc;
 
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.SupplierPojo;
-import com.lt.dom.repository.BookingRuleRepository;
 import com.lt.dom.repository.EmployeeRepository;
 import com.lt.dom.repository.SupplierRepository;
 import com.lt.dom.repository.UserRepository;
@@ -12,13 +11,6 @@ import com.lt.dom.util.VoucherCodes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class RegisterServiceImpl {
@@ -44,7 +36,7 @@ public class RegisterServiceImpl {
         user.setFirst_name(pojo.getFirstName());
         user.setLast_name(pojo.getLastName());
         String no = VoucherCodes.generate(new CodeConfig(8,null,"use",null,null));
-        user.setNo(no);
+        user.setCode(no);
         user = userRepository.save(user);
 
 
@@ -64,7 +56,7 @@ public class RegisterServiceImpl {
         user.setFirst_name(userF);
         user.setLast_name(userL);
         String no = VoucherCodes.generate(new CodeConfig(8,null,"use",null,null));
-        user.setNo(no);
+        user.setCode(no);
         user = userRepository.save(user);
 
 
@@ -83,7 +75,7 @@ public class RegisterServiceImpl {
         user.setFirst_name(firstName);
         user.setLast_name(lastName);
         String no = VoucherCodes.generate(new CodeConfig(8,null,"use",null,null));
-        user.setNo(no);
+        user.setCode(no);
         user = userRepository.save(user);
 
 

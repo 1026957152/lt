@@ -37,6 +37,9 @@ public class WxPayConfig {
     @Value("${wxpay.trade_type_app}")
     public String TRADE_TYPE_APP;
 
+    @Value("${wxpay.refundNotifyUrl}")
+    private String refundNotifyUrl;
+
     public String getAppId() {
         return appId;
     }
@@ -115,5 +118,13 @@ public class WxPayConfig {
 
     public void setTRADE_TYPE_APP(String TRADE_TYPE_APP) {
         this.TRADE_TYPE_APP = TRADE_TYPE_APP;
+    }
+
+    public String getRefundNotifyUrl() {
+        return refundNotifyUrl;
+    }
+
+    public void setRefundNotifyUrl(String refundNotifyUrl) {
+        this.refundNotifyUrl = refundNotifyUrl;
     }
 }

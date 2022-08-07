@@ -3,6 +3,8 @@ package com.lt.dom.controllerOct;
 import com.lt.dom.OctResp.CampaignResp;
 import com.lt.dom.OctResp.ClainQuotaStatisticsResp;
 import com.lt.dom.OctResp.DocumentResp;
+import com.lt.dom.OctResp.RedemptionEntryResp;
+import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.BookingDocumentResp;
 import com.lt.dom.otcReq.ClainQuotaReq;
@@ -18,7 +20,11 @@ import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +39,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/oct")
@@ -63,15 +72,19 @@ public class CampaignRestController {
     @Operation(summary = "2、下单购买")
     @PostMapping(value = "/campaigns", produces = "application/json"/*produces = MediaType.MULTIPART_FORM_DATA_VALUE*/)
     public ResponseEntity<CampaignResp> createCompaign(@RequestBody @Valid CompaignPojo pojo/*,@RequestPart List<MultipartFile> files*/) {
-
-        Campaign booking = voucherService.createLoyaltyCompaign(pojo);
+        Optional<Scenario> scenario = scenarioRepository.findById(pojo.getScenario());
+        if(scenario.isEmpty()){
+            throw new BookNotFoundException(pojo.getScenario(),"找不到这个应用场景");
+        }
+        Campaign booking = voucherService.createLoyaltyCompaign(pojo,scenario.get());
         List<Document> fileNames_ = new ArrayList<Document>();
 /*        files.stream().forEach(x->{
             Document document = fileStorageService.saveWithDocument(booking.getId(), EnumDocumentType.estimate, x);
             fileNames_.add(DocumentResp.onefrom(document));
         });*/
         List<Quota> Quota = Arrays.asList();
-        Optional<Scenario> scenario = Optional.empty();
+
+
         CampaignResp campaignResp =  CampaignResp.from(Quartet.with(booking,scenario, Quota,fileNames_));
 
 
@@ -157,10 +170,12 @@ public class CampaignRestController {
     }
 
 
-    @GetMapping(value = "/campaigns", produces = "application/json")
-    public ResponseEntity<Page<CampaignResp>> pageCampaign( Pageable pageable) {
+    @GetMapping(value = "/campaigns_", produces = "application/json")
+    public ResponseEntity<Page<CampaignResp>> pageCampaign( Pageable pageable, PagedResourcesAssembler<EntityModel<RedemptionEntryResp>> assembler) {
 
         Page<Campaign> campaignPageable = campaignRepository.findAll(pageable);
+
+
 
 
         Page<CampaignResp> campaignResps =  CampaignResp.pageMap(campaignPageable);
@@ -168,6 +183,33 @@ public class CampaignRestController {
 
 
     }
+    @GetMapping(value = "/campaigns", produces = "application/json")
+    public ResponseEntity pageCampaign(@RequestParam(value = "scenario", required = true) long scenario, Pageable pageable, PagedResourcesAssembler<CampaignResp> assembler) {
+
+        Page<Campaign> campaignPageable = campaignRepository.findAll(pageable);
+
+
+
+
+        Page<CampaignResp> campaignResps =  CampaignResp.pageMap(campaignPageable);
+        return ResponseEntity.ok(assembler.toModel(campaignResps));
+
+
+    }
+
+
+    @GetMapping(value = "/campaigns/list", produces = "application/json")
+    public ResponseEntity<List<CampaignResp>> listCampaign(@RequestParam(value = "scenario", required = true) long scenario) {
+
+        Page<Campaign> campaignPageable = campaignRepository.findAll(PageRequest.of(0,1000));
+
+        List<CampaignResp> campaignResps =  CampaignResp.pageMapToList(campaignPageable);
+
+        return ResponseEntity.ok(campaignResps);
+
+
+    }
+
 
 
     @PostMapping(value = "/campaigns/{CAMPAIGN_ID}/quotas", produces = "application/json")
@@ -238,4 +280,25 @@ public class CampaignRestController {
 
 
 
+
+
+    @PostMapping(value = "/campaigns/{CAMPAIGN_ID}/clain", produces = "application/json")
+    public ResponseEntity<Quota> clain(@PathVariable long CAMPAIGN_ID, @RequestBody QuotaReq clainQuotaReq) {
+
+
+        System.out.println("----"+CAMPAIGN_ID);
+        Optional<Campaign> optional = campaignRepository.findById(CAMPAIGN_ID);
+
+
+        if(optional.isPresent()){
+            System.out.println("----"+optional.get());
+
+            Quota campaignResps =  clainQuotaService.createQuota(optional.get(),clainQuotaReq);
+            return ResponseEntity.ok(campaignResps);
+        }
+        throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
+
+
+    }
 }

@@ -1,11 +1,21 @@
 package com.lt.dom.OctResp;
 
 
+import com.lt.dom.oct.Asset;
+import com.lt.dom.oct.Campaign;
 import com.lt.dom.oct.PublicationEntry;
+import com.lt.dom.oct.Voucher;
+import com.lt.dom.otcReq.VoucherResp;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
+import org.javatuples.Pair;
+import org.javatuples.Quartet;
+import org.javatuples.Triplet;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 
 public class PublicationResp {
 
@@ -17,17 +27,36 @@ public class PublicationResp {
 
     private long customer_id;
 
-    private List<String> vouchers;
+    private List<VoucherResp> vouchers;
     private Map<String,String> metadata;
     private EnumPublicationObjectType type;
 
-    public static PublicationResp from(PublicationEntry publicationEntry) {
+
+    public static List<PublicationResp> from(List<PublicationEntry> publicationResps) {
+        return publicationResps.stream().map(x->{
+
+            return new PublicationResp();//PublicationResp.from(x);
+
+        }).collect(Collectors.toList());
+
+    }
+
+    public static PublicationResp from(Quartet<PublicationEntry, Voucher, Campaign,List<Asset>> p) {
+        PublicationEntry publicationEntry = p.getValue0();
+        Voucher  voucher= p.getValue1();
+        Campaign  campaign= p.getValue2();
+        List<Asset> assets= p.getValue3();
+
         PublicationResp publicationResp = new PublicationResp();
         publicationResp.setCustomer_id(publicationEntry.getToWho());
         publicationResp.setType(publicationEntry.getToWhoType());
         publicationResp.setCampaign_id(publicationEntry.getCampaign_id());
+
+        publicationResp.setVouchers(Arrays.asList(VoucherResp.from(Triplet.with(voucher,campaign,assets))));
         return publicationResp;
     }
+
+
 
     public String getSource_id() {
         return source_id;
@@ -53,11 +82,11 @@ public class PublicationResp {
         this.customer_id = customer_id;
     }
 
-    public List<String> getVouchers() {
+    public List<VoucherResp> getVouchers() {
         return vouchers;
     }
 
-    public void setVouchers(List<String> vouchers) {
+    public void setVouchers(List<VoucherResp> vouchers) {
         this.vouchers = vouchers;
     }
 

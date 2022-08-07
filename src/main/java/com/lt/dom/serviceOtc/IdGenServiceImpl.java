@@ -46,6 +46,16 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
+
+    CodeConfig employeeConfig = new CodeConfig(6,null,null,null,"emp_#######");
+    public String employeeNo(){
+
+        String no = VoucherCodes.generate(employeeConfig);
+
+        return no;
+
+
+    }
     CodeConfig tempDocumentConfig = new CodeConfig(40,null,null,null,"doc_########################################################");
     public String tempDocumentCode(){
 
@@ -84,6 +94,15 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
+    CodeConfig payConfig = new CodeConfig(20,null,null,null,"pay_###############################");
+    public String paymentNo(){
+
+        String no = VoucherCodes.generate(payConfig);
+
+        return no;
+
+
+    }
     CodeConfig importConfig = new CodeConfig(20,null,null,null,"imp_###############################");
     public String importNo(){
 
@@ -93,7 +112,40 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
+    CodeConfig userConfig = new CodeConfig(20,null,null,null,"use_###############");
+    public String userNo(){
 
+        String no = VoucherCodes.generate(userConfig);
+
+        return no;
+
+
+    }
+    CodeConfig refundfig = new CodeConfig(20,null,null,null,"ref_###########################");
+    public String refundCode(){
+
+        String no = VoucherCodes.generate(refundfig);
+
+        return no;
+
+
+    }
+
+    CodeConfig payoutConfig = new CodeConfig(20,null,null,null,"pot_###########################");
+    public String payoutCode(){
+
+        String no = VoucherCodes.generate(payoutConfig);
+        return no;
+    }
+    CodeConfig chargeConfig = new CodeConfig(20,null,null,null,"cha_###########################");
+    public String chargeCode(){
+
+        String no = VoucherCodes.generate(chargeConfig);
+
+        return no;
+
+
+    }
     CodeConfig bookingConfig = new CodeConfig(20,null,null,null,"res_###########################");
     public String bookingNo(){
 

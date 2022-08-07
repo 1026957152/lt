@@ -8,12 +8,13 @@ import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.javatuples.Quintet;
 import org.javatuples.Triplet;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class ReservationTourResp {
+public class ReservationTourResp extends RepresentationModel<ReservationTourResp> {
 
 
 
@@ -40,7 +41,7 @@ public class ReservationTourResp {
     private String note;
     private List<DocumentResp> documents;
 
-    public static ReservationTourResp toResp(Reservation booking, List<Traveler> travelers, List<Document> documents) {
+    public static ReservationTourResp toResp(TourBooking booking, List<Traveler> travelers, List<Document> documents) {
 
        // Product product = pair.getValue1();
        // Tour tour = pair.getValue2();
@@ -227,8 +228,8 @@ public class ReservationTourResp {
 
 
 
-    public static ReservationTourResp toResp(Triplet<Reservation,Product,Tour> pair) {
-        Reservation booking = pair.getValue0();
+    public static ReservationTourResp toResp(Triplet<TourBooking,Product,Tour> pair) {
+        TourBooking booking = pair.getValue0();
         Product product = pair.getValue1();
         Tour tour = pair.getValue2();
         ReservationTourResp reservationResp = new ReservationTourResp();
@@ -247,7 +248,7 @@ public class ReservationTourResp {
         return reservationResp;
     }
 
-    public static ReservationTourResp toResp(Quartet<Reservation,Product,Tour,List<Traveler>> pair) {
+    public static ReservationTourResp toResp(Quartet<TourBooking,Product,Tour,List<Traveler>> pair) {
 
         ReservationTourResp resp = toResp(Triplet.with(pair.getValue0(),pair.getValue1(),pair.getValue2()));
         List<Traveler> travelers = pair.getValue3();
@@ -258,7 +259,7 @@ public class ReservationTourResp {
         return resp;
     }
 
-    public static ReservationTourResp toResp(Quintet<Reservation,Product,Tour,List<Traveler>,List<Document>> pair) {
+    public static ReservationTourResp toResp(Quintet<TourBooking,Product,Tour,List<Traveler>,List<Document>> pair) {
 
         ReservationTourResp resp = toResp(Quartet.with(pair.getValue0(),pair.getValue1(),pair.getValue2(),pair.getValue3()));
         List<Document> travelers = pair.getValue4();

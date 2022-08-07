@@ -2,6 +2,7 @@ package com.lt.dom.serviceOtc;
 
 import com.lt.dom.OctResp.ChargeResp;
 import com.lt.dom.OctResp.ReservationResp;
+import com.lt.dom.OctResp.TourbookingResp;
 import com.lt.dom.RealNameAuthentication.PhoneAuth;
 import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
 import com.lt.dom.error.Booking_not_pendingException;
@@ -9,10 +10,7 @@ import com.lt.dom.error.Missing_customerException;
 import com.lt.dom.excel.ImportExcelBookingTraveler;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
-import com.lt.dom.otcenum.EnumExportStatus;
-import com.lt.dom.otcenum.EnumImportCVS;
-import com.lt.dom.otcenum.EnumOrderStatus;
-import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
@@ -32,6 +30,8 @@ public class BookingServiceImpl {
 
     @Autowired
     private ImportExcelRepository importExcelRepository;
+    @Autowired
+    private CampaignRepository campaignRepository;
 
     @Autowired
     private IdGenServiceImpl idGenService;
@@ -39,8 +39,11 @@ public class BookingServiceImpl {
     private BookingAsycServiceImpl bookingAsycService;
     @Autowired
     private TourRepository tourRepository;
+    @Autowired
+    private CampaignAssignToReservationRepository campaignAssignToReservationRepository;
 
-
+    @Autowired
+    private PricingTypeRepository pricingTypeRepository;
     @Autowired
     RealNameAuthenticationServiceImpl realNameAuthenticationService;
     @Autowired
@@ -53,6 +56,12 @@ public class BookingServiceImpl {
     @Autowired
     ReservationRepository reservationRepository;
 
+
+    @Autowired
+    TourBookingRepository tourBookingRepository;
+    @Autowired
+    ProductRepository productRepository;
+
     @Autowired
     RedeemServiceImpl redeemService;
 
@@ -60,9 +69,11 @@ public class BookingServiceImpl {
     @Autowired
     PublicationServiceImpl publicationService;
 
+    @Autowired
+    InchargeBookingRepository inchargeBookingRepository;
 
 
-    public Triplet<Reservation,Product,Tour> book(Product product,Campaign campaign, BookingPojo pojo) {
+    public Triplet<Reservation,Product,Tour> book(Product product, BookingPojo pojo) {
 
 
 
@@ -83,13 +94,35 @@ public class BookingServiceImpl {
         reservation.setProductType(product.getType());
         reservation.setProductId(product.getId());
         reservation.setRedeemer(product.getSupplierId());
-        reservation.setCampaign(campaign.getId());
 
-       // reservation.setAmount(reservation.getProducts().stream().mapToInt(x->x.getAmount()).sum());
+
+
+
+
+        List<PricingType> pricingTypes = getForProduct(product);
+
+        Map<EnumProductPricingTypeByPerson,Integer> enumProductPricingTypeByPersonIntegerMap = pricingTypes.stream().filter(x->x.getType().equals(EnumProductPricingType.ByPerson)).collect(Collectors.toMap(x->x.getBy(),x->x.getPrice()));
+
+        Integer total  = pojo.getTravelers().stream().mapToInt(x->{
+
+            Integer price = enumProductPricingTypeByPersonIntegerMap.get(x.getBy());
+
+            return price;
+        }).sum();
+
+        reservation.setAmount(total);
       //  reservation.setTotal_amount(reservation.getAmount()-reservation.getTotal_discount_amount());
         reservation.setStatus(EnumOrderStatus.Pending);
 
         reservation = reservationRepository.save(reservation);
+
+
+
+        GuideInchargeBooking guideInchargeBooking = new GuideInchargeBooking();
+        guideInchargeBooking.setBooking(reservation.getId());
+        guideInchargeBooking.setGuideId(pojo.getAdditional_info().getGuide());
+        inchargeBookingRepository.save(guideInchargeBooking);
+
         Reservation finalReservation = reservation;
         if(product.getComponents() != null){
             List<ComponentVounch> componentVounchList =  product.getComponents().stream().map(x->{
@@ -113,6 +146,13 @@ public class BookingServiceImpl {
 
     }
 
+
+    private List<PricingType> getForProduct(Product product){
+
+        List<PricingType> pricingTypes = pricingTypeRepository.findByProductId(product.getId());
+
+        return pricingTypes;
+    }
     public Traveler addTraveler(Reservation booking, TravelerReq travelerReq) {
 
 
@@ -175,7 +215,7 @@ public class BookingServiceImpl {
 
 
 
-    public List<Traveler> addBulkTraveler(Reservation booking, BulkTravelerReq transferPojo) {
+    public List<Traveler> addBulkTraveler(TourBooking booking, BulkTravelerReq transferPojo) {
 
 
         List<PhoneAuth> travelerReqs = transferPojo.getTravelers().stream().map(x->{
@@ -207,7 +247,7 @@ public class BookingServiceImpl {
 
 
 
-    public ImportExcel addBulkTravelerByImportCVS(Reservation booking, List<ImportExcelBookingTraveler> importExcelBookingTravelers) {
+    public ImportExcel addBulkTravelerByImportCVS(TourBooking booking, List<ImportExcelBookingTraveler> importExcelBookingTravelers) {
 
         ImportExcel export = new ImportExcel();
 
@@ -290,7 +330,7 @@ public class BookingServiceImpl {
 
 
 
-    public Reservation submit(Supplier supplier, Reservation reservation, BookingPayPojo transferPojo) {
+    public TourBooking submit(Supplier supplier, TourBooking reservation, BookingPayPojo transferPojo) {
 
 
         List<Traveler> travelers = travelerRepository.findAllByBooking(reservation.getId());
@@ -319,7 +359,7 @@ public class BookingServiceImpl {
         int va = redeemService.bulkRedeemVounchor(reservation.getId(),Reservation.class,sss);  //销和这些券
 
         reservation.setStatus(EnumOrderStatus.Submitted);
-        reservation = reservationRepository.save(reservation);
+        reservation = tourBookingRepository.save(reservation);
 
 
         return reservation;
@@ -327,4 +367,27 @@ public class BookingServiceImpl {
     }
 
 
+
+
+    public List<Campaign> listCampaigns(Reservation id) {
+
+
+        Optional<Product> optional = productRepository.findById(id.getProductId());
+
+        return campaignForProduct(optional.get());
+    }
+
+
+    private List<Campaign> campaignForProduct(Product product){
+        if(product.getType().equals(EnumProductType.Daytour)){
+            List<CampaignAssignToTourProduct> campaignAssignToTourProducts = campaignAssignToReservationRepository.findByTourId(product.getRaletiveId());
+
+            List<Campaign> campaigns =  campaignRepository.findAllById(campaignAssignToTourProducts.stream().map(x->x.getCampaign()).collect(Collectors.toList()));
+
+            return campaigns;
+        }else{
+            throw new RuntimeException();
+        }
+
+    }
 }

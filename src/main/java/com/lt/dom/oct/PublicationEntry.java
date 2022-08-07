@@ -1,11 +1,14 @@
 package com.lt.dom.oct;
 
 
+import com.lt.dom.OctResp.PublicationResp;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 public class PublicationEntry {
@@ -27,6 +30,8 @@ public class PublicationEntry {
 
     @NotNull
     private EnumPublicationObjectType toWhoType;
+
+
 
     public EnumPublicationObjectType getToWhoType() {
         return toWhoType;

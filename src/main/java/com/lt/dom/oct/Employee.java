@@ -3,15 +3,23 @@ package com.lt.dom.oct;
 
 import com.lt.dom.otcenum.EnumEmployeeAccessLevel;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 @Entity
 public class Employee {
 
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     private long userId;
     private long suplierId;
@@ -21,7 +29,7 @@ public class Employee {
     private String phone;
     private String email;
     private String note;
-
+    private String code;
 
 
     public String getFirstName() {
@@ -73,5 +81,13 @@ public class Employee {
 
     public void setSuplierId(long suplierId) {
         this.suplierId = suplierId;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

@@ -9,4 +9,5 @@ import java.util.List;
 public interface PricingTypeRepository extends JpaRepository<PricingType
 			, Long> {
 
+    List<PricingType> findByProductId(long id);
 }

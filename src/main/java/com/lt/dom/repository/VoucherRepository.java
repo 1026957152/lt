@@ -12,4 +12,6 @@ public interface VoucherRepository extends JpaRepository<Voucher
 			, Long> {
 
     Optional<Voucher> findFirstByCampaign(long id);
+
+    Optional<Voucher> findByCode(String code);
 }

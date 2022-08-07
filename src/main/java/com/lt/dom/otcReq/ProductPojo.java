@@ -10,7 +10,9 @@ import com.lt.dom.vo.ByHour;
 import com.lt.dom.vo.ByItem;
 import com.lt.dom.vo.ByPerson;
 import com.lt.dom.vo.Fixed;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -41,7 +43,7 @@ public class ProductPojo {
 
     private ProductGiftVoucherPojo pojo;
 
-
+    @Valid
     private List<Price> prices;
 
     public List<Price> getPrices() {
@@ -60,15 +62,22 @@ public class ProductPojo {
         this.name_long = name_long;
     }
 
-    public class Price {
 
+
+    public static class Price {
+
+        @NotNull
         private EnumProductPricingType type;
+        @NotNull
         private EnumProductPricingTypeByPerson by;
         private ByHour byHour;
         private ByItem byItem;
         private ByPerson byPerson;
         private Fixed fixed;
-
+        @Override
+        public String toString() {
+            return ReflectionToStringBuilder.toString(this);
+        }
         public EnumProductPricingType getType() {
             return type;
         }
@@ -148,4 +157,40 @@ public class ProductPojo {
     public void setAttributes(List<AttributeResp> attributes) {
         this.attributes = attributes;
     }
+
+
+
+
+    @Valid
+    List<CampaignReq> campaigns;
+
+    public List<CampaignReq> getCampaigns() {
+        return campaigns;
+    }
+
+    public void setCampaigns(List<CampaignReq> campaigns) {
+        this.campaigns = campaigns;
+    }
+
+    public static class CampaignReq {
+
+
+        @NotNull
+        private long id;
+
+        public long getId() {
+            return id;
+        }
+
+        public void setId(long id) {
+            this.id = id;
+        }
+    }
+
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
+
 }

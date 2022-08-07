@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 public class Redemption {
 
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
     private int quantity;
@@ -18,6 +18,7 @@ public class Redemption {
     private long validatorSupplier;
     private long voucher_Id;
     private LocalDateTime created_at;
+    private String code;
 
     public int getQuantity() {
         return quantity;
@@ -91,5 +92,13 @@ public class Redemption {
 
     public LocalDateTime getCreated_at() {
         return created_at;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

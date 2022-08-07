@@ -14,6 +14,11 @@ public enum EnumTranType {//交易类型
     credited("入账"),
     credited_refund("入账退款"),
     credited_refund_failed("入账退款失败"),
+
+
+
+
+    application_fee("application_fee"),
     ;
 
 

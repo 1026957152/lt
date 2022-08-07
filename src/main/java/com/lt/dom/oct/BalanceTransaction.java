@@ -1,10 +1,14 @@
 package com.lt.dom.oct;
 
 
+import com.lt.dom.otcenum.EnumBalanceTranStatus;
+import com.lt.dom.otcenum.EnumFlowType;
+import com.lt.dom.otcenum.EnumTranStatus;
 import com.lt.dom.otcenum.EnumTranType;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.time.LocalDateTime;
 
 @Entity
 public class BalanceTransaction {  //余额结算
@@ -12,17 +16,62 @@ public class BalanceTransaction {  //余额结算
     @Id
     private long id; // 用户余额转账对象 ID，由Ping++ 生成。
 
+    private EnumTranType flowType;
+    private long balance;
+    private int fee;
+    private int net;
+    private String sourceId;
+    private long source;
+
+    public EnumTranType getFlowType() {
+        return flowType;
+    }
+
+    public void setFlowType(EnumTranType flowType) {
+        this.flowType = flowType;
+    }
+/*    object
+            string
+    值为 "balance_transfer"。
+    app
+            string
+    对应 app 对象的 id，查看 如何获取App ID。*/
+
     private boolean livemode; //是否是 live 模式。
+    private EnumBalanceTranStatus status;//目前值为转账成功：succeeded。
+    private int amount;//接收方收到转账的金额，单位为分。
 
 
-    private int amount;//交易金额，单位为分。
-    private int available_balance;//该笔交易发生后，用户的可用余额。
-    private String description;//附加说明，最多 255 个 Unicode 字符。
-    private long source;//    关联对象的 ID，充值/充值退款为 recharge 对象，提现为 withdrawal 对象，赠送为 balance_bonus 对象，支付为 charge 对象，退款为 refund 对象，转账/分润结算为 balance_transfer 对象，入账/入账退款为 balance_settlement 对象。
+    private int user_fee;//向发起转账的用户额外收取的手续费，单位为分，且值需小于 amount。
+    private String user;//转出方的 user 对象的 id。
 
-    private EnumTranType type;//    交易类型。充值：recharge，充值退款：recharge_refund，充值退款失败：recharge_refund_failed，提现申请：withdrawal，提现失败：withdrawal_failed，提现撤销：withdrawal_revoked，支付/收款：payment，退款/收到退款：payment_refund，转账/收到转账：transfer，赠送：receipts_extra，入账：credited，入账退款：credited_refund，入账退款失败：credited_refund_failed。
+/*
+    private String user_balance_transaction;//转账关联的转出方 balance_transaction 对象的 id。
+    private String recipient_balance_transaction;//转账关联的接收方 balance_transaction 对象的 id。
+    private String description;//附加说明，最多 60 个 Unicode 字符。
+*/
 
-    private long user;//转出方的 user 对象的 id。
+    private int time_credited;//入账完成时间。
+    private int time_succeeded;//结算完成时间。
+
+
+    private boolean refunded;//余额结算金额是否有退款。
+
+    private int amount_refunded;//已退款的余额结算金额，单位分。
+
+    private long charge;//结算关联的 charge 对象的 id
+    private long order_no;//结算关联的 charge 对象内的 order_no。
+    private long transaction_no;//结算关联的 charge 对象内的 transaction_no
+    private String failure_msg;//结算失败信息
+    private LocalDateTime posted_at;
+
+    public LocalDateTime getPosted_at() {
+        return posted_at;
+    }
+
+    public void setPosted_at(LocalDateTime posted_at) {
+        this.posted_at = posted_at;
+    }
 
     public long getId() {
         return id;
@@ -32,59 +81,68 @@ public class BalanceTransaction {  //余额结算
         this.id = id;
     }
 
-    public boolean isLivemode() {
-        return livemode;
+    public long getTransaction_no() {
+        return transaction_no;
     }
 
-    public void setLivemode(boolean livemode) {
-        this.livemode = livemode;
-    }
-
-    public int getAmount() {
-        return amount;
+    public void setTransaction_no(long transaction_no) {
+        this.transaction_no = transaction_no;
     }
 
     public void setAmount(int amount) {
         this.amount = amount;
     }
 
-    public int getAvailable_balance() {
-        return available_balance;
+    public int getAmount() {
+        return amount;
     }
 
-    public void setAvailable_balance(int available_balance) {
-        this.available_balance = available_balance;
+    public void setBalance(long balance) {
+        this.balance = balance;
     }
 
-    public String getDescription() {
-        return description;
+    public long getBalance() {
+        return balance;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setStatus(EnumBalanceTranStatus status) {
+
+        this.status = status;
     }
 
-    public long getSource() {
-        return source;
+    public EnumBalanceTranStatus getStatus() {
+        return status;
+    }
+
+    public void setFee(int fee) {
+        this.fee = fee;
+    }
+
+    public int getFee() {
+        return fee;
+    }
+
+    public void setNet(int net) {
+        this.net = net;
+    }
+
+    public int getNet() {
+        return net;
+    }
+
+    public void setSourceId(String sourceId) {
+        this.sourceId = sourceId;
+    }
+
+    public String getSourceId() {
+        return sourceId;
     }
 
     public void setSource(long source) {
         this.source = source;
     }
 
-    public EnumTranType getType() {
-        return type;
-    }
-
-    public void setType(EnumTranType type) {
-        this.type = type;
-    }
-
-    public long getUser() {
-        return user;
-    }
-
-    public void setUser(long user) {
-        this.user = user;
+    public long getSource() {
+        return source;
     }
 }

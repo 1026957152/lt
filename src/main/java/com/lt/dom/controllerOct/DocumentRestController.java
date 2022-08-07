@@ -46,15 +46,7 @@ public class DocumentRestController {
     @Autowired
     private DocumentRepository documentRepository;
 
-    @Autowired
-    private CampaignRepository campaignRepository;
 
-    @Autowired
-    private VoucherServiceImpl voucherService;
-    @Autowired
-    private ClainQuotaServiceImpl clainQuotaService;
-    @Autowired
-    private ScenarioRepository scenarioRepository;
 
     @Autowired
     private TempDocumentRepository tempDocumentRepository;
@@ -65,7 +57,7 @@ public class DocumentRestController {
 
 
     @PostMapping(value = "/documents")
-    public ResponseEntity<List<MessageFileResp>> createDocuments(@RequestParam("files") List<MultipartFile> files) {
+    public ResponseEntity<List<MessageFileResp>> createDocuments(@RequestParam(value = "files",required = true) List<MultipartFile> files) {
         //@RequestParam("files") List<MultipartFile> files
 
 

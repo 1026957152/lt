@@ -180,8 +180,8 @@ public class ExcelRedemption {
         excelVoucher.setTour_name(x.getCode());
         excelVoucher.setTourId(x.getCode());
         excelVoucher.setName(x.getCode());
-        excelVoucher.setId(x.getRelatedObjectType());
-        excelVoucher.setPhone(x.getRelatedObjectType());
+        excelVoucher.setId(x.getRelatedObjectType().name());
+        excelVoucher.setPhone(x.getRelatedObjectType().name());
         return excelVoucher;
     }
 

@@ -24,11 +24,11 @@ public class SummarySupplierResp {
         redemptionResp.setTotal_rollback_failed(supplier.getTotal_rollback_failed());
         redemptionResp.setEntries(redemptionEntries.stream().map(x->{
             RedemptionEntryResp redemptionEntryResp = new RedemptionEntryResp();
-            redemptionEntryResp.setRedemption(x.getRedemption());
+/*            redemptionEntryResp.setRedemption(x.getRedemption());
             redemptionEntryResp.setVoucher(x.getVoucher());
-            redemptionEntryResp.setGift_amount(x.getGift_amount());
+            redemptionEntryResp.setGift_amount(x.getGift_amount());*/
             redemptionEntryResp.setRelatedObjectType(x.getRelatedObjectType());
-            redemptionEntryResp.setRelatedObjectId(x.getRelatedObjectId());
+           // redemptionEntryResp.setRelatedObjectId(x.getRelatedObjectId());
             return redemptionEntryResp;
         }).collect(Collectors.toList()));
         return redemptionResp;

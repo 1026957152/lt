@@ -5,6 +5,8 @@ import com.lt.dom.otcenum.EnumProductPricingType;
 import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
@@ -12,11 +14,11 @@ public class PricingType {
 
 
 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
 
     private long productId;
-
 
     private EnumProductPricingType type;
     private EnumProductPricingTypeByPerson by;

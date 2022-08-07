@@ -6,6 +6,7 @@ import com.lt.dom.otcenum.EnumDiscountVoucherCategory;
 import com.lt.dom.otcenum.EnumVoucherType;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Entity
@@ -22,6 +23,8 @@ public class Campaign {
 
 
     private String name;
+
+    @NotNull
     private long scenario;
     private String category;
     private String code;

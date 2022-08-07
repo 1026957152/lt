@@ -89,17 +89,17 @@ public class VonchorServiceImpl {
 
         if(voucher.getPublished()){
 
-            List<PublicationEntry> publicationEntryList = publicationEntryRepository.findByVoucherId(voucher.getId());
+   /*         List<PublicationEntry> publicationEntryList = publicationEntryRepository.findByVoucherId(voucher.getId());
             List<PublicationEntryResp> publicationEntryResps = publicationEntryList.stream().map(x->{
                 PublicationEntryResp resp = new PublicationEntryResp();
                 resp.setType(x.getToWhoType());
                 resp.setCampaign(optionalCompaign.get().getCode());
                 return resp;
             }).collect(Collectors.toList());
-
+*/
             VoucherResp.PublicationPojo pojo = new VoucherResp.PublicationPojo();
-            pojo.setCount(publicationEntryList.size());
-            pojo.setEntries(publicationEntryResps);
+/*            pojo.setCount(publicationEntryList.size());
+            pojo.setEntries(publicationEntryResps);*/
             voucherResp.setPublication(pojo);
         }
 

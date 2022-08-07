@@ -21,10 +21,12 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/oct")
@@ -69,25 +71,22 @@ public class ProductRestController {
 
     @Operation(summary = "2、创建Product对象")
     @PostMapping(value = "/suppler/{SUPPLIER_ID}/products", produces = "application/json")
-    public ResponseEntity<ProductResp> createProduct(@PathVariable long SUPPLIER_ID,@RequestBody ProductPojo pojo) {
+    public ResponseEntity<ProductResp> createProduct(@PathVariable long SUPPLIER_ID,@RequestBody @Valid ProductPojo pojo) {
+
+        System.out.println("---------------"+ pojo.toString());
         Optional<Supplier> validatorOptional = supplierRepository.findById(SUPPLIER_ID);
         if(validatorOptional.isPresent()){
-            try {
                 Pair<Product,Supplier> product=  productService.createProduct(validatorOptional.get(),pojo);
-
                 URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                         .path("/{id}")
                         .buildAndExpand(product.getValue0().getId())
                         .toUri();
                 return ResponseEntity.created(uri)
                         .body(ProductResp.from(product));
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        }else{
+            throw new BookNotFoundException(SUPPLIER_ID,Supplier.class.getSimpleName());
         }
 
-        throw new BookNotFoundException(SUPPLIER_ID,Supplier.class.getSimpleName());
 
     }
     @Operation(summary = "3、更改Product对象")
@@ -234,6 +233,9 @@ public class ProductRestController {
         Comment bookingQuestion  = productService.addComment(optionalProduct.get(),commentPojo);
         return bookingQuestion;
     }
+
+
+
 
 
 

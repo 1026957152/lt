@@ -187,6 +187,7 @@ public class RedemptionServiceImpl {
     }
 
 
+/*
     public Pair<RedemptionEntry,Redemption> redeemVounchor(Voucher voucher, Campaign campaign, RedemPojo pojo) {
 
 
@@ -260,13 +261,11 @@ public class RedemptionServiceImpl {
         return Pair.with(entry,redemption);
     }
 
+*/
 
 
 
 
-    public int redeemVounchor(List<Voucher> vouchers) {
-        return 0;
-    }
 
     public List<Redemption> rollback(Redemption redemption) {
         return null;

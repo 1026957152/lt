@@ -2,6 +2,9 @@ package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.domain.SettleAccount;
+import com.lt.dom.otcenum.EnumBussinessType;
+import com.lt.dom.otcenum.EnumSupplierType;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.*;
 
@@ -13,6 +16,19 @@ public class Supplier {
     @JsonProperty("id")
     private long id;
     private String desc;
+
+    private EnumBussinessType business_type;
+    private EnumSupplierType type;
+    private String location;
+    private String locationName;
+
+    public EnumBussinessType getBusiness_type() {
+        return business_type;
+    }
+
+    public void setBusiness_type(EnumBussinessType business_type) {
+        this.business_type = business_type;
+    }
 
     public long getId() {
         return id;
@@ -73,6 +89,30 @@ public class Supplier {
 
     public String getDesc() {
         return desc;
+    }
+
+    public void setType(EnumSupplierType type) {
+        this.type = type;
+    }
+
+    public EnumSupplierType getType() {
+        return type;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getLocationName() {
+        return locationName;
     }
 
     public static class ContactDTO {
@@ -168,5 +208,93 @@ public class Supplier {
 
     public void setTotal_rollback_succeeded(long total_rollback_succeeded) {
         this.total_rollback_succeeded = total_rollback_succeeded;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
+
+
+
+
+
+    private float latitude;
+    private float longitude;
+    private String street; // 街道
+    private String postal_code; // 邮编
+    private String locality; // 县/区
+    private String region; // 市
+    private String state; //省
+    private String country; // 国家
+/*                    "street": "121 7th Street",
+                            "postal_code": "94103",
+                            "locality": "San Francisco",
+                            "region": "California",
+                            "state": "CA",
+                            "country": "US"*/
+
+    public float getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(float latitude) {
+        this.latitude = latitude;
+    }
+
+    public float getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(float longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getStreet() {
+        return street;
+    }
+
+    public void setStreet(String street) {
+        this.street = street;
+    }
+
+    public String getPostal_code() {
+        return postal_code;
+    }
+
+    public void setPostal_code(String postal_code) {
+        this.postal_code = postal_code;
+    }
+
+    public String getLocality() {
+        return locality;
+    }
+
+    public void setLocality(String locality) {
+        this.locality = locality;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 }

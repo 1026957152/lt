@@ -47,11 +47,36 @@ public enum Enumfailures {
 
     booking_not_pending("voucher is not active yet (before start date)"),
     missing_documents("documents was not specified"),
+    user_already_be_guide("已经是导游身份了"),
+    user_realname_auth_failure("实名认证失败"),
+    voucher_has_no_permistion_redeem("商户没有核销改券的权力"),
+    voucher_not_publish("还没有认领"),
+
+
+
+
+    wx_login_error("签名校验失败"),
+
+    payment_login_error("支付失败"),
+
+
+    username_already_exists_error("用户名已经存在"),
 
     ;
 
 
+    private String text;
+
     Enumfailures(String barcode) {
 
+        this.text = barcode;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 }

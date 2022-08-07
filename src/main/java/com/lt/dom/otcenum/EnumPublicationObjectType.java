@@ -4,6 +4,7 @@ public enum EnumPublicationObjectType {
 
     customer("为个人用户"),
     business("为企业用户"),
+    traveler("旅行社游客"),
 
 
     ;

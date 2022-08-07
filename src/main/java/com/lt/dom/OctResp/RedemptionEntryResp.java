@@ -1,11 +1,9 @@
 package com.lt.dom.OctResp;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import java.time.LocalDate;
+import com.lt.dom.otcenum.EnumPublicationObjectType;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 public class RedemptionEntryResp {
@@ -13,77 +11,88 @@ public class RedemptionEntryResp {
 
 
 
-    private long voucher;
-    private int gift_amount; //
-    private long customer_id;
 
-    private LocalDate date;
-    private long validatorId;
-    private long redemption;
-    private long relatedObjectId;
-    private String relatedObjectType;
+    private EnumPublicationObjectType relatedObjectType;
 
-    public long getCustomer_id() {
-        return customer_id;
+
+
+
+
+
+
+
+
+    private String holder;
+    private int redeemed_amount;
+    private String campaign_name;
+    private String voucher_code;
+    private LocalDateTime redeem_at;
+    private int redeemed_quantity;
+
+    public String getHolder() {
+        return holder;
     }
 
-    public void setCustomer_id(long customer_id) {
-        this.customer_id = customer_id;
+    public void setHolder(String holder) {
+        this.holder = holder;
     }
+
+    public int getRedeemed_amount() {
+        return redeemed_amount;
+    }
+
+    public void setRedeemed_amount(int redeemed_amount) {
+        this.redeemed_amount = redeemed_amount;
+    }
+
+    public String getCampaign_name() {
+        return campaign_name;
+    }
+
+    public void setCampaign_name(String campaign_name) {
+        this.campaign_name = campaign_name;
+    }
+
+    public String getVoucher_code() {
+        return voucher_code;
+    }
+
+    public void setVoucher_code(String voucher_code) {
+        this.voucher_code = voucher_code;
+    }
+
 
     private RedemptionStatus result;
 
-    public void setValidatorId(long validatorId) {
-        this.validatorId = validatorId;
-    }
 
-    public long getValidatorId() {
-        return validatorId;
-    }
-
-    public void setRedemption(long redemption) {
-        this.redemption = redemption;
-    }
-
-    public long getRedemption() {
-        return redemption;
-    }
-
-    public void setRelatedObjectId(long relatedObjectId) {
-        this.relatedObjectId = relatedObjectId;
-    }
-
-    public long getRelatedObjectId() {
-        return relatedObjectId;
-    }
-
-    public void setRelatedObjectType(String relatedObjectType) {
+    public void setRelatedObjectType(EnumPublicationObjectType relatedObjectType) {
         this.relatedObjectType = relatedObjectType;
     }
 
-    public String getRelatedObjectType() {
+    public EnumPublicationObjectType getRelatedObjectType() {
         return relatedObjectType;
+    }
+
+    public void setRedeem_at(LocalDateTime redeem_at) {
+        this.redeem_at = redeem_at;
+    }
+
+    public LocalDateTime getRedeem_at() {
+        return redeem_at;
+    }
+
+    public void setRedeemed_quantity(int redeemed_quantity) {
+        this.redeemed_quantity = redeemed_quantity;
+    }
+
+    public int getRedeemed_quantity() {
+        return redeemed_quantity;
     }
 
     public static enum RedemptionStatus {
         SUCCESS,FAILURE;
     }
 
-    public long getVoucher() {
-        return voucher;
-    }
-
-    public void setVoucher(long voucher) {
-        this.voucher = voucher;
-    }
-
-    public int getGift_amount() {
-        return gift_amount;
-    }
-
-    public void setGift_amount(int gift_amount) {
-        this.gift_amount = gift_amount;
-    }
 
     public RedemptionStatus getResult() {
         return result;

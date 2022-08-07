@@ -14,6 +14,7 @@ public class PublicationPojo {
 
     private long supplier;
     private long user;
+    private long traveler;
 
     public long getSupplier() {
         return supplier;
@@ -119,5 +120,13 @@ public class PublicationPojo {
 
     public void setType(EnumPublicationObjectType type) {
         this.type = type;
+    }
+
+    public long getTraveler() {
+        return traveler;
+    }
+
+    public void setTraveler(long traveler) {
+        this.traveler = traveler;
     }
 }

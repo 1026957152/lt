@@ -1,5 +1,8 @@
 package com.lt.dom.OctResp;
 
+import com.lt.dom.controllerOct.AssetRestController;
+import com.lt.dom.controllerOct.CampaignRestController;
+import com.lt.dom.controllerOct.PublicationRestController;
 import com.lt.dom.oct.Campaign;
 import com.lt.dom.oct.Document;
 import com.lt.dom.oct.Quota;
@@ -9,14 +12,19 @@ import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 import org.springframework.data.domain.Page;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-public class CampaignResp {
+
+public class CampaignResp extends RepresentationModel<SupplierResp> {
 
 
 
@@ -319,6 +327,11 @@ public class CampaignResp {
             }
         }
 
+
+        campaignResp.add(linkTo(methodOn(CampaignRestController.class).clain(campaign.getId(),null)).withRel("clainWithPay"));
+        campaignResp.add(linkTo(methodOn(PublicationRestController.class).createPublication(campaign.getId(),null,null)).withRel("clain"));
+
+
         campaignResp.setClainQuotas(quotas);
         campaignResp.setCategory(campaign.getCategory());
         return campaignResp;
@@ -326,6 +339,11 @@ public class CampaignResp {
 
     public static Page<CampaignResp> pageMap(Page<Campaign> campaignPageable) {
         return campaignPageable.map(x->getCampaign(Triplet.with(x,Optional.empty(), Arrays.asList())));
+    }
+
+
+    public static List<CampaignResp> pageMapToList(Page<Campaign> campaignPageable) {
+        return  campaignPageable.map(x->getCampaign(Triplet.with(x,Optional.empty(), Arrays.asList()))).getContent();
     }
 
     public void setDocuments(List<DocumentResp> documents) {

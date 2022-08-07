@@ -98,7 +98,9 @@ public class CompaignPojo {
     @NotNull
     private LocalDate expiration_date;
     private code_config code_config;
-    private String scenario;
+
+    @NotNull
+    private long scenario;
 
     @NotEmpty
     private String category;
@@ -111,13 +113,14 @@ public class CompaignPojo {
         this.category = category;
     }
 
-    public void setScenario(String scenario) {
+    public long getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(long scenario) {
         this.scenario = scenario;
     }
 
-    public String getScenario() {
-        return scenario;
-    }
     public CompaignPojo.code_config getCode_config() {
         return code_config;
     }

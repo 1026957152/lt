@@ -7,6 +7,7 @@ public class BookNotFoundException extends RuntimeException {
 
     private long id;
     private String object;
+    private String detail;
     public BookNotFoundException(long id,String object) {
         this.id = id;
         this.object = object;
@@ -15,6 +16,15 @@ public class BookNotFoundException extends RuntimeException {
     public BookNotFoundException(String document_id, String simpleName) {
 
         this.object = document_id;
+        this.detail = simpleName;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
     }
 
     public long getId() {
@@ -23,5 +33,13 @@ public class BookNotFoundException extends RuntimeException {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getObject() {
+        return object;
+    }
+
+    public void setObject(String object) {
+        this.object = object;
     }
 }

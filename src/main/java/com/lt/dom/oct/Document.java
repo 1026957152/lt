@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,18 +17,43 @@ public class Document {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
-
+    @NotNull
     private EnumDocumentType type;
 
+    @NotEmpty
     private String code;
 
-
+    @NotNull
     private long raletiveId;
+    @NotNull
     private LocalDateTime created_at;
+    @NotEmpty
     private String fileName;
     private LocalDateTime updated_at;
+    @NotEmpty
     private String originalFilename;
+    @NotEmpty
     private String extension;
+
+    @NotNull
+    private long size;
+    private String mimeType; //MIME type
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
 
     public long getId() {
         return id;

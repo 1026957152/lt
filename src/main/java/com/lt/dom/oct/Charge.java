@@ -1,10 +1,12 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.otcenum.EnumChargeStatus;
 import com.lt.dom.otcenum.EnumPayChannel;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -15,6 +17,8 @@ public class Charge {
 
     @Id
     private long id;
+    private String orderId;
+    private String code;
 
     public long getId() {
         return id;
@@ -24,7 +28,7 @@ public class Charge {
         this.id = id;
     }
 
-    private Integer created;
+    private LocalDateTime created;
     private Boolean livemode;
     private Boolean paid;
     private Boolean refunded;
@@ -40,11 +44,11 @@ public class Charge {
     private String subject;
     private String body;
 
-    public Integer getCreated() {
+    public LocalDateTime getCreated() {
         return created;
     }
 
-    public void setCreated(Integer created) {
+    public void setCreated(LocalDateTime created) {
         this.created = created;
     }
 
@@ -160,11 +164,11 @@ public class Charge {
         this.extra = extra;
     }
 
-    public String getTimePaid() {
+    public LocalDateTime getTimePaid() {
         return timePaid;
     }
 
-    public void setTimePaid(String timePaid) {
+    public void setTimePaid(LocalDateTime timePaid) {
         this.timePaid = timePaid;
     }
 
@@ -176,11 +180,11 @@ public class Charge {
         this.timeExpire = timeExpire;
     }
 
-    public String getTimeSettle() {
+    public LocalDateTime getTimeSettle() {
         return timeSettle;
     }
 
-    public void setTimeSettle(String timeSettle) {
+    public void setTimeSettle(LocalDateTime timeSettle) {
         this.timeSettle = timeSettle;
     }
 
@@ -250,9 +254,9 @@ public class Charge {
 
     @Transient
     private ExtraDTO extra;
-    private String timePaid;
+    private LocalDateTime timePaid;
     private Integer timeExpire;
-    private String timeSettle;
+    private LocalDateTime timeSettle;
     private String transactionNo;
     @Transient
     private RefundsDTO refunds;
@@ -273,6 +277,23 @@ public class Charge {
 
     public void setAmount(int amount) {
         this.amount = amount;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setCode(String code) {
+
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
     }
 
     public static class ExtraDTO {
@@ -300,9 +321,26 @@ public class Charge {
             private String mode;
         }
     }
+    private EnumChargeStatus status;
 
+    public EnumChargeStatus getStatus() {
+        return status;
+    }
 
- /*     "id": "ch_L8qn10mLmr1GS8e5OODmHaL4",
+    public void setStatus(EnumChargeStatus status) {
+        this.status = status;
+    }
+
+    private long customer;
+
+    public long getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(long customer) {
+        this.customer = customer;
+    }
+/*     "id": "ch_L8qn10mLmr1GS8e5OODmHaL4",
               "object": "charge",
               "created": 1410834527,
               "livemode": true,

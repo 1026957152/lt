@@ -1,19 +1,24 @@
 package com.lt.dom.controllerOct;
 
+import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.Voucher;
 import com.lt.dom.otcReq.VoucherResp;
 import com.lt.dom.repository.VoucherRepository;
 import com.lt.dom.serviceOtc.ValidatorScanServiceImpl;
 import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
+
+import org.hibernate.EntityMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.swing.text.html.parser.Entity;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -35,7 +40,7 @@ public class VoucherRestController {
 
     @Operation(summary = "1、获得")
     @GetMapping(value = "/vouchers/{VOUCHER_ID}", produces = "application/json")
-    public ResponseEntity<VoucherResp> getVoucher(@PathVariable long VOUCHER_ID) {
+    public ResponseEntity<EntityModel<VoucherResp>> getVoucher(@PathVariable long VOUCHER_ID) {
    // public ResponseEntity<VoucherResp> getVoucher(@PathVariable String CODE) {
 /*        System.out.println("getVouchergetVouchergetVouchergetVoucher"+CODE);
         System.out.println("getVouchergetVouchergetVouchergetVoucher"+CODE);
@@ -61,15 +66,13 @@ public class VoucherRestController {
         Optional<Voucher> optionalVoucher = voucherRepository.findById(VOUCHER_ID);
         //Optional<Voucher> optionalVoucher = voucherRepository.findOne(example);
 
-        if (optionalVoucher.isPresent()) {
-            VoucherResp Voucher = vonchorService.getVoucher(optionalVoucher.get());
-            return ResponseEntity.ok(Voucher);
-        } else {
-           // System.out.println("ResponseStatusException"+CODE);
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
-        }
+        if (optionalVoucher.isEmpty()) {
+            throw new BookNotFoundException(VOUCHER_ID,"找不到优惠券");
 
+
+        }
+            VoucherResp Voucher = vonchorService.getVoucher(optionalVoucher.get());
+            return ResponseEntity.ok(EntityModel.of(Voucher));
     }
 
 

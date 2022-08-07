@@ -1,11 +1,16 @@
 package com.lt.dom.vo;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+
 public class ByHour {
     private int min;
     private int max;
     private String unit; // per or total
     private int price;
-
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
     public int getMin() {
         return min;
     }
