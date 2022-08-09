@@ -21,6 +21,7 @@ public class User {
 
     private String code;//	string	The ID of the user
     private String password;//	string	The ID of the user
+    boolean isAccountNonExpired;
 
     public String getPassword() {
         return password;
@@ -170,10 +171,13 @@ public class User {
     private boolean enabled;
     private boolean tokenExpired;
 
+    public boolean isAccountNonExpired() {
+        return isAccountNonExpired;
+    }
 
-
-
-
+    public void setAccountNonExpired(boolean accountNonExpired) {
+        isAccountNonExpired = accountNonExpired;
+    }
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

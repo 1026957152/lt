@@ -1,11 +1,14 @@
 package com.lt.dom.otcReq;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.Openid;
+import com.lt.dom.oct.User;
+import org.javatuples.Pair;
 import org.springframework.hateoas.RepresentationModel;
 
 import static java.util.Objects.nonNull;
 
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class OpenidResp extends RepresentationModel<OpenidResp> {
 
 
@@ -17,19 +20,10 @@ public class OpenidResp extends RepresentationModel<OpenidResp> {
     private String token;
     private boolean real_name;
     private boolean link;
+    private String full_name;
+    private String id_card;
 
-    public static OpenidResp from(Openid openid1) {
-        OpenidResp openidResp = new OpenidResp();
-        //openidResp.setOpenid(openid1.getOpenid());
-        openidResp.setCode(openid1.getCode());
-        openidResp.setName(openid1.getOpenid_name());
-        openidResp.setGender(openid1.getOpenid_gender());
-        openidResp.setImage(openid1.getOpenid_image());
-        openidResp.setLink(openid1.getLink());
-        openidResp.setReal_name(nonNull(openid1.getUserId()));
 
-        return openidResp;
-    }
 
     public void setOpenid(String openid) {
         this.openid = openid;
@@ -93,5 +87,21 @@ public class OpenidResp extends RepresentationModel<OpenidResp> {
 
     public boolean getLink() {
         return link;
+    }
+
+    public void setFull_name(String full_name) {
+        this.full_name = full_name;
+    }
+
+    public String getFull_name() {
+        return full_name;
+    }
+
+    public void setId_card(String id_card) {
+        this.id_card = id_card;
+    }
+
+    public String getId_card() {
+        return id_card;
     }
 }

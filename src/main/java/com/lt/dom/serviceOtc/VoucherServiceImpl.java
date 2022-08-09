@@ -1,7 +1,6 @@
 package com.lt.dom.serviceOtc;
 
 
-import com.lt.dom.OctResp.CampaignResp;
 import com.lt.dom.OctResp.ClainQuotaStatisticsResp;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.CompaignPojo;
@@ -35,28 +34,9 @@ public class VoucherServiceImpl {
     @Autowired
     private ScenarioRepository scenarioRepository;
 
-    public static List<LocalDate> getDatesBetweenUsingJava9(Departures departures) {
 
-        List<LocalDate> localDates =  departures.getPeriodFrom().datesUntil(departures.getPeriodTo())
-                .collect(Collectors.toList());
-
-
-        return localDates.stream().filter(x->{
-            if(departures.isMonday()){
-                return x.getDayOfWeek() == DayOfWeek.MONDAY;
-            }
-            if(departures.isThursday()){
-                return x.getDayOfWeek() == DayOfWeek.THURSDAY;
-            }
-            if(departures.isWednesday()){
-                return x.getDayOfWeek() == DayOfWeek.WEDNESDAY;
-            }
-            if(departures.isWednesday()){
-                return x.getDayOfWeek() == DayOfWeek.WEDNESDAY;
-            }
-            return false;
-        }).collect(Collectors.toList());
-    }
+    @Autowired
+    private AssetServiceImpl assetService;
 
 
 
@@ -70,6 +50,13 @@ public class VoucherServiceImpl {
 
 
         Campaign campaign = new Campaign();
+        campaign.setClaim_note(compaignPojo.getClaim_note());
+        campaign.setClaim_text(compaignPojo.getClaim_text());
+        campaign.setClain_limit(compaignPojo.getClain_limit());
+        campaign.setClaimable(compaignPojo.isClaimable());
+        campaign.setExpiry_days(compaignPojo.getExpiry_days());
+        campaign.setActive(compaignPojo.isActive());
+
         campaign.setCode(idGenService.campaignNo());
         campaign.setName(compaignPojo.getName());
         campaign.setDescription(compaignPojo.getName_long());
@@ -119,8 +106,14 @@ public class VoucherServiceImpl {
 
         campaign = campaignRepository.save(campaign);
 
+        assetService.newQr(campaign);
+
 
         voucherAsyncService.异步新建(config, campaign);
+
+
+
+
 
 
 

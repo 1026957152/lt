@@ -165,24 +165,25 @@ public class RealNameAuthenticationServiceImpl {
 
     }
 
-    public User postWxRealnameAuths(String openid_, RealnameAuthsReq realnameAuthsReq) {
+    public User postWxRealnameAuths(User user, RealnameAuthsReq realnameAuthsReq) {
 
 
-        Optional<Openid> optional = openidRepository.findByOpenid(openid_);
-        if(optional.isEmpty()) {
-            throw new BookNotFoundException("","找不到 openid 对象");
-        }
+
+        user.setRealName(realnameAuthsReq.getReal_name());
+        user.setPhone(realnameAuthsReq.getPhone());
+        user.setIdCard(realnameAuthsReq.getId_card());
+        user.setRealNameVerified(true);
+        user = userRepository.save(user);
 
 
-            Openid openid = optional.get();
 
-        Optional<User> optionalUser = userRepository.findByRealNameAndIdCard(realnameAuthsReq.getReal_name(),realnameAuthsReq.getId_card());
+        return user;
+
+    }
+
+    public Pair<User,Openid> postWxRealnameAuths(Openid openid, RealnameAuthsReq realnameAuthsReq) {
 
 
-        if(optionalUser.isPresent()){
-            throw new ExistException("用户已实名认证,需要绑定微信，请点击");
-
-        }
 
 
             UserPojo userPojo = new UserPojo();
@@ -194,10 +195,9 @@ public class RealNameAuthenticationServiceImpl {
             userPojo.setPassword("wxlinkUserReq.getUser_password()");
             userPojo.setRoles(Arrays.asList("ROLE_ADMIN"));
 
-
             User user = userService.createUser(userPojo);
             user.setRealName(realnameAuthsReq.getReal_name());
-
+            user.setPhone(realnameAuthsReq.getPhone());
             user.setIdCard(realnameAuthsReq.getId_card());
             user.setRealNameVerified(true);
             user = userRepository.save(user);
@@ -208,7 +208,7 @@ public class RealNameAuthenticationServiceImpl {
             openid.setUserId(user.getId());
             openidRepository.save(openid);
 
-            return user;
+            return Pair.with(user,openid);
 
     }
 }

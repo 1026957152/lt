@@ -1,6 +1,7 @@
 package com.lt.dom.otcReq;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -35,6 +36,17 @@ public class RealnameAuthsReq {
 
     private String phone;
 
+
+    private String crypto_phone;
+
+    public String getCrypto_phone() {
+        return crypto_phone;
+    }
+
+    public void setCrypto_phone(String crypto_phone) {
+        this.crypto_phone = crypto_phone;
+    }
+
     public String getPhone() {
         return phone;
     }
@@ -58,4 +70,74 @@ public class RealnameAuthsReq {
     public void setId_card(String id_card) {
         this.id_card = id_card;
     }
+
+    public String getVerifiedNumber() {
+        return verifiedNumber;
+    }
+
+    public void setVerifiedNumber(String verifiedNumber) {
+        this.verifiedNumber = verifiedNumber;
+    }
+
+    public List<String> getVerifiedFileUrl() {
+        return verifiedFileUrl;
+    }
+
+    public void setVerifiedFileUrl(List<String> verifiedFileUrl) {
+        this.verifiedFileUrl = verifiedFileUrl;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getChangeType() {
+        return changeType;
+    }
+
+    public void setChangeType(Integer changeType) {
+        this.changeType = changeType;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
+    }
+
+    public Integer getVerifiedType() {
+        return verifiedType;
+    }
+
+    public void setVerifiedType(Integer verifiedType) {
+        this.verifiedType = verifiedType;
+    }
+
+    public Integer getIdentifyType() {
+        return identifyType;
+    }
+
+    public void setIdentifyType(Integer identifyType) {
+        this.identifyType = identifyType;
+    }
+
+    public String getXaccountType() {
+        return xaccountType;
+    }
+
+    public void setXaccountType(String xaccountType) {
+        this.xaccountType = xaccountType;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
+
 }

@@ -46,7 +46,15 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
+    CodeConfig valueListConfig = new CodeConfig(6,null,null,null,"rsl_#######");
+    public String valueListCode(){
 
+        String no = VoucherCodes.generate(valueListConfig);
+
+        return no;
+
+
+    }
     CodeConfig employeeConfig = new CodeConfig(6,null,null,null,"emp_#######");
     public String employeeNo(){
 

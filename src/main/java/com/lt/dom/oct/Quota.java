@@ -1,6 +1,7 @@
 package com.lt.dom.oct;
 
 
+import com.lt.dom.otcenum.EnumClaimOrRedeem;
 import com.lt.dom.otcenum.EnumQuotaType;
 
 import javax.persistence.Entity;
@@ -24,8 +25,13 @@ public class Quota {
     private long quota;
     private boolean clain;  // 是否需要 clain
 
-    private long supplier; // 公司配额
+    private long value_list; //
+    private long supplier; //
+
+
     private long scenario;
+    private EnumClaimOrRedeem claim_redeem;
+    private String name;
 
     public long getId() {
         return id;
@@ -59,13 +65,7 @@ public class Quota {
         this.clain = clain;
     }
 
-    public long getSupplier() {
-        return supplier;
-    }
 
-    public void setSupplier(long supplier) {
-        this.supplier = supplier;
-    }
 
 
     public EnumQuotaType getType() {
@@ -82,5 +82,29 @@ public class Quota {
 
     public long getScenario() {
         return scenario;
+    }
+
+    public void setClaim_redeem(EnumClaimOrRedeem claim_redeem) {
+        this.claim_redeem = claim_redeem;
+    }
+
+    public EnumClaimOrRedeem getClaim_redeem() {
+        return claim_redeem;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setSupplier(long supplier) {
+        this.supplier = supplier;
+    }
+
+    public long getSupplier() {
+        return supplier;
     }
 }

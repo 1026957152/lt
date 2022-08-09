@@ -1,5 +1,6 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.controllerOct.AssetRestController;
 import com.lt.dom.controllerOct.CampaignRestController;
 import com.lt.dom.controllerOct.PublicationRestController;
@@ -9,9 +10,11 @@ import com.lt.dom.oct.Quota;
 import com.lt.dom.oct.Scenario;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
+import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -24,16 +27,39 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
-public class CampaignResp extends RepresentationModel<SupplierResp> {
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CampaignResp extends RepresentationModel<CampaignResp> {
 
 
 
     private EnumCompaignType campaignType;
 
-
+    private Boolean claimable;
     private String name;
     private String scenario;
+    private String claim_text;
+    private Integer claim_limit;
+    private String claim_note;
 
+    private String qr_url;
+    private EntityModel<AssetResp> asset;
+
+    public String getQr_url() {
+        return qr_url;
+    }
+
+    public void setQr_url(String qr_url) {
+        this.qr_url = qr_url;
+    }
+
+    public Boolean getClaimable() {
+        return claimable;
+    }
+
+    public void setClaimable(Boolean claimable) {
+        this.claimable = claimable;
+    }
 
     private LocalDate start_date;
     private LocalDate expiration_date;
@@ -144,17 +170,17 @@ public class CampaignResp extends RepresentationModel<SupplierResp> {
 
 
 
-    private  int length ;
+    private  Integer length ;
     private  String charset;
     private  String prefix;
     private  String postfix;
     private  String pattern;
 
-    public int getLength() {
+    public Integer getLength() {
         return length;
     }
 
-    public void setLength(int length) {
+    public void setLength(Integer length) {
         this.length = length;
     }
 
@@ -279,6 +305,60 @@ public class CampaignResp extends RepresentationModel<SupplierResp> {
     }
 
 
+    public static CampaignResp simple(Pair<Campaign,Optional<Scenario>> triplet) {
+
+        Campaign campaign = triplet.getValue0();
+        Optional<Scenario> scenario = triplet.getValue1();
+
+
+        CampaignResp campaignResp = new CampaignResp();
+        campaignResp.setCampaignType(campaign.getCampaignType());
+
+        campaignResp.setActive(campaign.isActive());
+        campaignResp.setStart_date(campaign.getStart_date());
+        campaignResp.setExpiration_date(campaign.getExpiration_date());
+        campaignResp.setDescription(campaign.getDescription());
+        campaignResp.setName(campaign.getName());
+        campaignResp.setVouchertype(campaign.getVouchertype());
+        campaignResp.setVouchers_count(campaign.getVouchers_count());
+        campaignResp.setCode(campaign.getCode());
+        campaignResp.setDescription(campaign.getDescription());
+        campaignResp.setClaimable(campaign.isActive());
+        campaignResp.setClaim_text(campaign.getClaim_text());
+        campaignResp.setClaim_limit(campaign.getClain_limit());
+        campaignResp.setClaim_note(campaign.getClaim_note());
+        campaignResp.setQr_url("未配置");
+        campaignResp.setExpiry_days(campaign.getExpiry_days());
+
+
+        if(campaign.getScenario() != 0){
+            if(scenario.isPresent()){
+                campaignResp.setScenario(scenario.get().getName());
+                campaignResp.setScenarioCode(scenario.get().getCode());
+            }
+        }
+
+       // campaignResp.setVouchers_generation_status(campaign.getVouchers_generation_status());
+        if(campaign.getVouchertype().equals(EnumVoucherType.DISCOUNT_VOUCHER)){
+            campaignResp.setDiscountCategory(campaign.getDiscountCategory());
+            if(campaign.getDiscountCategory().equals(EnumDiscountVoucherCategory.AMOUNT)){
+                campaignResp.setAmount_off(campaign.getAmount_off());
+            }
+            if(campaign.getDiscountCategory().equals(EnumDiscountVoucherCategory.PERCENT)){
+                campaignResp.setPercent_off(campaign.getPercent_off());
+            }
+            if(campaign.getDiscountCategory().equals(EnumDiscountVoucherCategory.UNIT)){
+                campaignResp.setUnit_off(campaign.getUnit_off());
+            }
+        }
+
+
+        campaignResp.add(linkTo(methodOn(CampaignRestController.class).clain(campaign.getId(),null)).withRel("clainWithPay"));
+        campaignResp.add(linkTo(methodOn(PublicationRestController.class).createPublication(campaign.getId(),null,null)).withRel("clain"));
+
+        campaignResp.setCategory(campaign.getCategory());
+        return campaignResp;
+    }
 
     public static CampaignResp getCampaign(Triplet<Campaign,Optional<Scenario>,List<Quota>> triplet) {
 
@@ -304,6 +384,8 @@ public class CampaignResp extends RepresentationModel<SupplierResp> {
         campaignResp.setVouchers_count(campaign.getVouchers_count());
         campaignResp.setCode(campaign.getCode());
         campaignResp.setDescription(campaign.getDescription());
+        campaignResp.setExpiry_days(campaign.getExpiry_days());
+
 
 
         if(campaign.getScenario() != 0){
@@ -345,6 +427,9 @@ public class CampaignResp extends RepresentationModel<SupplierResp> {
     public static List<CampaignResp> pageMapToList(Page<Campaign> campaignPageable) {
         return  campaignPageable.map(x->getCampaign(Triplet.with(x,Optional.empty(), Arrays.asList()))).getContent();
     }
+    public static List<CampaignResp> pageMapToListSimple(Page<Campaign> campaignPageable) {
+        return  campaignPageable.map(x->simple(Pair.with(x,Optional.empty()))).getContent();
+    }
 
     public void setDocuments(List<DocumentResp> documents) {
         this.documents = documents;
@@ -360,5 +445,47 @@ public class CampaignResp extends RepresentationModel<SupplierResp> {
 
     public String getImageLogo() {
         return imageLogo;
+    }
+
+    public void setClaim_text(String claim_text) {
+        this.claim_text = claim_text;
+    }
+
+    public String getClaim_text() {
+        return claim_text;
+    }
+
+    public void setClaim_limit(Integer claim_limit) {
+        this.claim_limit = claim_limit;
+    }
+
+    public Integer getClaim_limit() {
+        return claim_limit;
+    }
+
+    public void setClaim_note(String claim_note) {
+        this.claim_note = claim_note;
+    }
+
+    public String getClaim_note() {
+        return claim_note;
+    }
+
+    public void setAsset(EntityModel<AssetResp> asset) {
+        this.asset = asset;
+    }
+
+    public EntityModel<AssetResp> getAsset() {
+        return asset;
+    }
+
+    private int expiry_days;
+
+    public int getExpiry_days() {
+        return expiry_days;
+    }
+
+    public void setExpiry_days(int expiry_days) {
+        this.expiry_days = expiry_days;
     }
 }

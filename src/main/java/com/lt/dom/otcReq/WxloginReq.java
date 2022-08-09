@@ -12,6 +12,17 @@ public class WxloginReq {  // 这个就是机器了啊
     @NotEmpty
     private String code;
 
+    @NotEmpty
+    private String openid;
+
+    public String getOpenid() {
+        return openid;
+    }
+
+    public void setOpenid(String openid) {
+        this.openid = openid;
+    }
+
     @Valid
     private RawData rawData;
 

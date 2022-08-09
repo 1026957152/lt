@@ -1,35 +1,42 @@
 package com.lt.dom.OctResp;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.Asset;
 import com.lt.dom.oct.Campaign;
 import com.lt.dom.oct.PublicationEntry;
 import com.lt.dom.oct.Voucher;
 import com.lt.dom.otcReq.VoucherResp;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
+import com.lt.dom.requestvo.PublishTowhoVo;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
+import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PublicationResp {
 
 
 
     private String source_id;
 
-    private long campaign_id;
-
-    private long customer_id;
 
     private List<VoucherResp> vouchers;
     private Map<String,String> metadata;
     private EnumPublicationObjectType type;
+    private String campaign;
+    private String campaignCode;
+    private String customer;
+    private LocalDate published_at;
+    private VoucherResp voucher;
 
 
     public static List<PublicationResp> from(List<PublicationEntry> publicationResps) {
@@ -41,22 +48,82 @@ public class PublicationResp {
 
     }
 
+    public static PublicationResp from(Quintet<PublicationEntry, Voucher, Campaign,List<Asset>, PublishTowhoVo> p) {
+        PublicationEntry publicationEntry = p.getValue0();
+        Voucher  voucher= p.getValue1();
+        Campaign  campaign= p.getValue2();
+        List<Asset> assets= p.getValue3();
+        PublishTowhoVo publishTowhoVo = p.getValue4();
+
+        PublicationResp publicationResp = new PublicationResp();
+
+        if(publishTowhoVo.getToWhoTyp().equals(EnumPublicationObjectType.customer)){
+            publicationResp.setCustomer(publishTowhoVo.getUser().getRealName());
+        }
+        if(publishTowhoVo.getToWhoTyp().equals(EnumPublicationObjectType.business)){
+            publicationResp.setCustomer(publishTowhoVo.getSupplier().getName());
+        }
+        if(publishTowhoVo.getToWhoTyp().equals(EnumPublicationObjectType.traveler)){
+            publicationResp.setCustomer(publishTowhoVo.getTraveler().getName());
+        }
+        publicationResp.setType(publicationEntry.getToWhoType());
+        publicationResp.setCampaign(campaign.getName());
+        publicationResp.setCampaignCode(campaign.getCode());
+        publicationResp.setVouchers(Arrays.asList(VoucherResp.from(Triplet.with(voucher,campaign,assets))));
+        return publicationResp;
+    }
+
     public static PublicationResp from(Quartet<PublicationEntry, Voucher, Campaign,List<Asset>> p) {
         PublicationEntry publicationEntry = p.getValue0();
         Voucher  voucher= p.getValue1();
         Campaign  campaign= p.getValue2();
         List<Asset> assets= p.getValue3();
 
-        PublicationResp publicationResp = new PublicationResp();
-        publicationResp.setCustomer_id(publicationEntry.getToWho());
-        publicationResp.setType(publicationEntry.getToWhoType());
-        publicationResp.setCampaign_id(publicationEntry.getCampaign_id());
 
+        PublicationResp publicationResp = new PublicationResp();
+/*
+        if(publishTowhoVo.getToWhoTyp().equals(EnumPublicationObjectType.customer)){
+            publicationResp.setCustomer(publishTowhoVo.getUser().getRealName());
+        }
+        if(publishTowhoVo.getToWhoTyp().equals(EnumPublicationObjectType.business)){
+            publicationResp.setCustomer(publishTowhoVo.getSupplier().getName());
+        }
+        if(publishTowhoVo.getToWhoTyp().equals(EnumPublicationObjectType.traveler)){
+            publicationResp.setCustomer(publishTowhoVo.getTraveler().getName());
+        }*/
+        publicationResp.setType(publicationEntry.getToWhoType());
+        publicationResp.setCampaign(campaign.getName());
+        publicationResp.setCampaignCode(campaign.getCode());
         publicationResp.setVouchers(Arrays.asList(VoucherResp.from(Triplet.with(voucher,campaign,assets))));
         return publicationResp;
     }
+    public static PublicationResp sigleFrom(Quartet<PublicationEntry, Voucher, Campaign,List<Asset>> p) {
+        PublicationEntry publicationEntry = p.getValue0();
+        Voucher  voucher= p.getValue1();
+        Campaign  campaign= p.getValue2();
+        List<Asset> assets= p.getValue3();
 
 
+        PublicationResp publicationResp = new PublicationResp();
+/*
+        if(publishTowhoVo.getToWhoTyp().equals(EnumPublicationObjectType.customer)){
+            publicationResp.setCustomer(publishTowhoVo.getUser().getRealName());
+        }
+        if(publishTowhoVo.getToWhoTyp().equals(EnumPublicationObjectType.business)){
+            publicationResp.setCustomer(publishTowhoVo.getSupplier().getName());
+        }
+        if(publishTowhoVo.getToWhoTyp().equals(EnumPublicationObjectType.traveler)){
+            publicationResp.setCustomer(publishTowhoVo.getTraveler().getName());
+        }*/
+        publicationResp.setType(publicationEntry.getToWhoType());
+        publicationResp.setCampaign(campaign.getName());
+        publicationResp.setCampaignCode(campaign.getCode());
+        publicationResp.setVoucher(VoucherResp.from(Triplet.with(voucher,campaign,assets)));
+        publicationResp.setPublished_at(publicationEntry.getPublished_at());
+
+
+        return publicationResp;
+    }
 
     public String getSource_id() {
         return source_id;
@@ -66,21 +133,7 @@ public class PublicationResp {
         this.source_id = source_id;
     }
 
-    public long getCampaign_id() {
-        return campaign_id;
-    }
 
-    public void setCampaign_id(long campaign_id) {
-        this.campaign_id = campaign_id;
-    }
-
-    public long getCustomer_id() {
-        return customer_id;
-    }
-
-    public void setCustomer_id(long customer_id) {
-        this.customer_id = customer_id;
-    }
 
     public List<VoucherResp> getVouchers() {
         return vouchers;
@@ -104,6 +157,46 @@ public class PublicationResp {
 
     public EnumPublicationObjectType getType() {
         return type;
+    }
+
+    public void setCampaign(String campaign) {
+        this.campaign = campaign;
+    }
+
+    public String getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaignCode(String campaignCode) {
+        this.campaignCode = campaignCode;
+    }
+
+    public String getCampaignCode() {
+        return campaignCode;
+    }
+
+    public void setCustomer(String customer) {
+        this.customer = customer;
+    }
+
+    public String getCustomer() {
+        return customer;
+    }
+
+    public void setPublished_at(LocalDate published_at) {
+        this.published_at = published_at;
+    }
+
+    public LocalDate getPublished_at() {
+        return published_at;
+    }
+
+    public void setVoucher(VoucherResp voucher) {
+        this.voucher = voucher;
+    }
+
+    public VoucherResp getVoucher() {
+        return voucher;
     }
 /*       "customer_id":"cust_lDnTN0zZfoXJDdgZRV0DzDP6",
                "channel":"API",

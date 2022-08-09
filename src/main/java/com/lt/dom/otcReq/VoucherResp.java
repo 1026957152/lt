@@ -6,13 +6,16 @@ import com.lt.dom.OctResp.PublicationEntryResp;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumAssetType;
 import com.lt.dom.otcenum.EnumDiscountVoucherCategory;
+import com.lt.dom.otcenum.EnumVoucherStatus;
 import com.lt.dom.otcenum.EnumVoucherType;
 import org.javatuples.Triplet;
 import org.springframework.hateoas.EntityModel;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +25,8 @@ public class VoucherResp {
     private String code;
     private String campaign;
     private String object = "voucher";
+    private boolean issued;
+    private EnumVoucherStatus status;
 
     public String getObject() {
         return object;
@@ -32,8 +37,38 @@ public class VoucherResp {
     }
 
     private PublicationPojo publication;
+
     private EntityModel<AssetResp> assets;
 
+
+    private LocalDateTime expiry_datetime;
+    private Integer expiry_seconds_remaining;
+
+    private int expiry_days;
+
+    public int getExpiry_days() {
+        return expiry_days;
+    }
+
+    public void setExpiry_days(int expiry_days) {
+        this.expiry_days = expiry_days;
+    }
+
+    public LocalDateTime getExpiry_datetime() {
+        return expiry_datetime;
+    }
+
+    public void setExpiry_datetime(LocalDateTime expiry_datetime) {
+        this.expiry_datetime = expiry_datetime;
+    }
+
+    public Integer getExpiry_seconds_remaining() {
+        return expiry_seconds_remaining;
+    }
+
+    public void setExpiry_seconds_remaining(Integer expiry_seconds_remaining) {
+        this.expiry_seconds_remaining = expiry_seconds_remaining;
+    }
 
     public static VoucherResp from(Voucher voucher) {
         VoucherResp voucherResp = new VoucherResp();
@@ -51,8 +86,17 @@ public class VoucherResp {
         voucherResp.setCode(voucher.getCode());
         voucherResp.setType(voucher.getType());
         voucherResp.setCampaign(campaign.getName());
-
-
+        voucherResp.setActive(voucher.isActive());
+        if(voucher.isActive()){
+            voucherResp.setStart_date(voucher.getStart_date());
+            voucherResp.setExpiry_datetime(voucher.getExpiration_date());
+            voucherResp.setExpiry_seconds_remaining((int)Duration.between(voucher.getExpiration_date(),LocalDateTime.now()).toSeconds());
+        }
+        voucherResp.setQuantity(voucher.getQuantity());
+        voucherResp.setRedeemed_quantity(voucher.getRedeemed_quantity());
+        voucherResp.setRedeemed_amount(voucher.getRedeemed_amount());
+        voucherResp.setIssued(voucher.getPublished());
+        voucherResp.setStatus(voucher.getStatus());
 
         Optional<Asset> asset = assets.stream().filter(x->x.getType().equals(EnumAssetType.qr)).findAny();
 
@@ -69,6 +113,22 @@ public class VoucherResp {
 
     public EntityModel<AssetResp> getAssets() {
         return assets;
+    }
+
+    public void setIssued(boolean issued) {
+        this.issued = issued;
+    }
+
+    public boolean getIssued() {
+        return issued;
+    }
+
+    public void setStatus(EnumVoucherStatus status) {
+        this.status = status;
+    }
+
+    public EnumVoucherStatus getStatus() {
+        return status;
     }
 
 
@@ -168,14 +228,14 @@ public class VoucherResp {
 
 
 
-    private LocalDate start_date;
+    private LocalDateTime start_date;
     private LocalDate expiration_date;
 
-    public LocalDate getStart_date() {
+    public LocalDateTime getStart_date() {
         return start_date;
     }
 
-    public void setStart_date(LocalDate start_date) {
+    public void setStart_date(LocalDateTime start_date) {
         this.start_date = start_date;
     }
 

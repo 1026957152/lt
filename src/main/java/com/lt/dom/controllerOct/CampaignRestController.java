@@ -1,9 +1,6 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.OctResp.CampaignResp;
-import com.lt.dom.OctResp.ClainQuotaStatisticsResp;
-import com.lt.dom.OctResp.DocumentResp;
-import com.lt.dom.OctResp.RedemptionEntryResp;
+import com.lt.dom.OctResp.*;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.BookingDocumentResp;
@@ -12,6 +9,7 @@ import com.lt.dom.otcReq.CompaignPojo;
 import com.lt.dom.otcReq.QuotaReq;
 import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.repository.*;
+import com.lt.dom.serviceOtc.AssetServiceImpl;
 import com.lt.dom.serviceOtc.ClainQuotaServiceImpl;
 import com.lt.dom.serviceOtc.FileStorageService;
 import com.lt.dom.serviceOtc.VoucherServiceImpl;
@@ -67,6 +65,8 @@ public class CampaignRestController {
     @Autowired
     private DocumentRepository documentRepository;
 
+    @Autowired
+    private AssetServiceImpl assetService;
 
 
     @Operation(summary = "2、下单购买")
@@ -74,9 +74,12 @@ public class CampaignRestController {
     public ResponseEntity<CampaignResp> createCompaign(@RequestBody @Valid CompaignPojo pojo/*,@RequestPart List<MultipartFile> files*/) {
         Optional<Scenario> scenario = scenarioRepository.findById(pojo.getScenario());
         if(scenario.isEmpty()){
+
             throw new BookNotFoundException(pojo.getScenario(),"找不到这个应用场景");
         }
+        System.out.println("dddddddddd777773333333333333333333333555555555555577777777777777777777777");
         Campaign booking = voucherService.createLoyaltyCompaign(pojo,scenario.get());
+        System.out.println("dddddddddd77777554444444444444444444444444444447777777777");
         List<Document> fileNames_ = new ArrayList<Document>();
 /*        files.stream().forEach(x->{
             Document document = fileStorageService.saveWithDocument(booking.getId(), EnumDocumentType.estimate, x);
@@ -85,9 +88,13 @@ public class CampaignRestController {
         List<Quota> Quota = Arrays.asList();
 
 
+        System.out.println("dddddddddd77777777777777777777777777777777777");
         CampaignResp campaignResp =  CampaignResp.from(Quartet.with(booking,scenario, Quota,fileNames_));
+        System.out.println("dddddddddd7777777777775555555555555555555555555577777777777777777777777");
 
 
+        EntityModel<AssetResp> asset = assetService.getQr(booking);
+        campaignResp.setAsset(asset);
         return ResponseEntity.ok(campaignResp);
 
 /*        Optional<Product> optionalProduct = productRepository.findById(pojo.getProductId());
@@ -213,21 +220,21 @@ public class CampaignRestController {
 
 
     @PostMapping(value = "/campaigns/{CAMPAIGN_ID}/quotas", produces = "application/json")
-    public ResponseEntity<Quota> createQuota(@PathVariable long CAMPAIGN_ID, @RequestBody QuotaReq clainQuotaReq) {
+    public ResponseEntity<Quota> createQuota(@PathVariable long CAMPAIGN_ID, @RequestBody @Valid QuotaReq clainQuotaReq) {
 
 
         System.out.println("----"+CAMPAIGN_ID);
         Optional<Campaign> optional = campaignRepository.findById(CAMPAIGN_ID);
 
 
-        if(optional.isPresent()){
+        if(optional.isEmpty()) {
+            throw new BookNotFoundException(CAMPAIGN_ID,"找活动对象");
+        }
             System.out.println("----"+optional.get());
 
             Quota campaignResps =  clainQuotaService.createQuota(optional.get(),clainQuotaReq);
             return ResponseEntity.ok(campaignResps);
-        }
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
+
 
 
     }

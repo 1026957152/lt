@@ -1,9 +1,6 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.OctResp.BookingResp;
-import com.lt.dom.OctResp.PublicationResp;
-import com.lt.dom.OctResp.SupplierResp;
-import com.lt.dom.OctResp.UserResp;
+import com.lt.dom.OctResp.*;
 import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.User_already_be_guideException;
@@ -16,6 +13,7 @@ import com.lt.dom.otcenum.EnumProductType;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
 import io.swagger.v3.oas.annotations.Operation;
+import org.aspectj.apache.bcel.classfile.Module;
 import org.javatuples.Pair;
 import org.javatuples.Quintet;
 import org.javatuples.Triplet;
@@ -36,7 +34,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -71,42 +71,131 @@ public class UserRestController {
     private EmployeeRepository employeeRepository;
     @Autowired
     private IAuthenticationFacade authenticationFacade;
-
+    @Autowired
+    private OpenidRepository openidRepository;
     @Autowired
     private SupplierRepository supplierRepository;
 
     @Autowired
     private ReservationRepository reservationRepository;
+    @Autowired
+    private AssetServiceImpl assetService;
+
+
+    @GetMapping(value = "/users",produces = "application/json")
+    public PagedModel get(Pageable pageable,PagedResourcesAssembler<EntityModel<UserResp>> assembler) {
+
+
+
+/*        User user = new User();
+        user.setPhone(phone);
+        Example<User> example = Example.of(user);*/
+
+        Page<User> optionalUser = userRepository.findAll(pageable);
+
+        Map<Long,Openid> openidMap = openidRepository.findByUserIdIn(optionalUser.map(x->x.getId()).stream().collect(Collectors.toList()))
+                .stream().collect(Collectors.toMap(x->x.getUserId(),x->x));
+
+        Page<EntityModel<UserResp>> userRespPage =  optionalUser.map(x->{
+            UserResp userResp = null;
+            if(openidMap.containsKey(x.getId())){
+                userResp = UserResp.userWithOpenidLink(Pair.with(x,openidMap.get(x.getId())));
+            }else{
+                userResp = UserResp.from(x);
+
+            }
+            return EntityModel.of(userResp);
+        });
+        return assembler.toModel(userRespPage);
+
+    }
+
+
 
     @GetMapping(value = "/users/current",produces = "application/json")
     public ResponseEntity<EntityModel> getCurrent() {
 
-
         Authentication authentication =  authenticationFacade.getAuthentication();
+
+        String userphone = null;
+        if(authentication != null && authentication.isAuthenticated()){
+            UserDetails user_ = (UserDetails)authentication.getPrincipal();
+
+            Optional<User> optionalUser = userRepository.findByUsername(user_.getUsername());
+            if(optionalUser.isEmpty()){
+                throw new BookNotFoundException(user_.getUsername(),"找不到用户");
+            }
+            userphone = optionalUser.get().getPhone();
+        }else{
+            userphone = "13468801684";
+        }
+
+        Optional<User> optionalUser = userService.getActiveOneByPhone(userphone);
+
 
      //   UserDetails user_de = (UserDetails)authentication.getPrincipal();
 
-        Optional<User> optionalUser = userRepository.findByPhone("13468801684");
+
+
 
      //   Optional<User> optionalUser = userRepository.findByPhone(user_de.getUsername());
 
         if(optionalUser.isPresent()){
             User user = optionalUser.get();
 
-            Optional<Employee> optional = employeeRepository.findByUserId(user.getId());
-            UserResp userResp = UserResp.from(user);
+
+
+
+
+
+
+            Optional<Openid> optionalOpenid = openidRepository.findByUserIdAndLink(user.getId(),true);
+            UserResp userResp = null;
+            if(optionalOpenid.isPresent()){
+                userResp = UserResp.userWithOpenidLink(Pair.with(user,optionalOpenid.get()));
+            }else{
+                userResp = UserResp.from(user);
+            }
             EntityModel entityModel = EntityModel.of(userResp);
 
+
+            Optional<Asset> optionalAsset =assetService.getQrOptional(user.getCode());
+
+            if(optionalAsset.isPresent()){
+                userResp.setAsset(AssetResp.from(optionalAsset.get()));
+            }
+            Optional<Employee> optional = employeeRepository.findByUserId(user.getId());
             if(optional.isPresent()){
                 userResp.setHired(true);
-
                 Optional<Supplier> optionalSupplier = supplierRepository.findById(optional.get().getSuplierId());
-
                 SupplierResp supplierResp = SupplierResp.from(optionalSupplier.get());
                 EntityModel supplierRespEntityModel = EntityModel.of(supplierResp);
-
-
                 supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(optional.get().getSuplierId())).withRel("getSupplier"));
+                userResp.setSupplier(supplierRespEntityModel);
+                entityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(optional.get().getSuplierId())).withRel("getSupplier"));
+                entityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchorBycode(null,null)).withRel("redeem"));
+                entityModel.add(linkTo(methodOn(RedemptionRestController.class).pageRedemptionEntry(optional.get().getSuplierId(),null,null)).withRel("getRedemptionEntrys"));
+
+            }
+            entityModel.add(linkTo(methodOn(UserRestController.class).beGuide(user.getId())).withRel("beGuide"));
+            if(!user.isRealNameVerified()){
+                entityModel.add(linkTo(methodOn(UserRestController.class).postRealnameAuths(user.getId(),null)).withRel("realnameAuths"));
+            }
+            entityModel.add(linkTo(methodOn(PublicationRestController.class).pageUserPublicationResp(user.getId(),null,null,null)).withRel("getVoucherList"));
+            entityModel.add(linkTo(methodOn(UserRestController.class).pageReservation(user.getId(),null,null)).withRel("getBookingList"));
+
+
+
+
+
+            return ResponseEntity.ok(entityModel);
+        }else{
+            throw new BookNotFoundException(0,User.class.getSimpleName());
+
+        }
+
+    }
+
 
 /*
                 supplierRespEntityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchorBycode(null,null)).withRel("redeem"));
@@ -123,30 +212,6 @@ public class UserRestController {
                 userResp.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(optional.get().getSuplierId(),null)).withRel("add_employees_url"));
                 userResp.add(linkTo(methodOn(SupplierRestController.class).page_linkEmployee(optional.get().getSuplierId(),null)).withRel("page_add_employees_url"));
 */
-                userResp.setSupplier(supplierRespEntityModel);
-
-                entityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(optional.get().getSuplierId())).withRel("getSupplier"));
-                entityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchorBycode(null,null)).withRel("redeem"));
-                entityModel.add(linkTo(methodOn(RedemptionRestController.class).pageRedemptionEntry(optional.get().getSuplierId(),null,null)).withRel("getRedemptionEntrys"));
-
-            }
-            entityModel.add(linkTo(methodOn(UserRestController.class).beGuide(user.getId())).withRel("beGuide"));
-            entityModel.add(linkTo(methodOn(UserRestController.class).postRealnameAuths(user.getId(),null)).withRel("realnameAuths"));
-            entityModel.add(linkTo(methodOn(PublicationRestController.class).pageUserPublicationResp(user.getId(),null,null,null)).withRel("getVoucherList"));
-            entityModel.add(linkTo(methodOn(UserRestController.class).pageReservation(user.getId(),null,null)).withRel("getBookingList"));
-
-
-
-
-
-            return ResponseEntity.ok(entityModel);
-        }else{
-            throw new BookNotFoundException(0,User.class.getSimpleName());
-
-        }
-
-    }
-
 
 
     @GetMapping(value = "/users/{USER_ID}",produces = "application/json")

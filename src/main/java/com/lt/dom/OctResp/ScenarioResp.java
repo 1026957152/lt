@@ -1,6 +1,7 @@
 package com.lt.dom.OctResp;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.Campaign;
 import com.lt.dom.oct.Document;
 import com.lt.dom.oct.Scenario;
@@ -14,13 +15,13 @@ import javax.persistence.Id;
 import java.util.List;
 import java.util.Map;
 
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ScenarioResp {
 
-    private String image = "未设置";
+    private String image;
     private String name;
     private String code;
-    private CollectionModel<CampaignResp> campaigns;
+    private List<CampaignResp> campaigns;
     private String image_small;
 
     public static ScenarioResp from(Scenario scenario, Map<EnumDocumentType,List<String>> document) {
@@ -75,11 +76,11 @@ public class ScenarioResp {
         this.name = name;
     }
 
-    public  void setCampaigns(CollectionModel<CampaignResp> campaigns) {
+    public  void setCampaigns(List<CampaignResp> campaigns) {
         this.campaigns = campaigns;
     }
 
-    public CollectionModel<CampaignResp> getCampaigns() {
+    public List<CampaignResp> getCampaigns() {
         return campaigns;
     }
 

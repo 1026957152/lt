@@ -47,7 +47,7 @@ public class VoucherAsyncServiceImpl {
 
 
         Campaign finalCampaign = campaign;
-        List<Voucher> vouchers = IntStream.range(1,campaign.getVouchers_count()).boxed().map(x->{
+        List<Voucher> vouchers = IntStream.range(0,campaign.getVouchers_count()).boxed().map(x->{
             Voucher voucher = new Voucher();
             String no = VoucherCodes.generate(config);
             System.out.println("Execute method asynchronously. "
@@ -56,8 +56,10 @@ public class VoucherAsyncServiceImpl {
             voucher.setType(finalCampaign.getVouchertype());
 
             voucher.setCampaign(finalCampaign.getId());
+            voucher.setStatus(EnumVoucherStatus.Created);
+            voucher.setPublished(false);
 
-            voucher.setActive(true);
+            voucher.setActive(false);
             return voucher;
         }).collect(Collectors.toList());
 

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,8 +54,8 @@ public class EventListener {
             voucher.setComponentVounch(componentVounch);
             voucher.setActive(true);
 
-            voucher.setStart_date(LocalDate.now());
-            voucher.setExpiration_date(LocalDate.now());
+            voucher.setStart_date(LocalDateTime.now().now());
+            voucher.setExpiration_date(LocalDateTime.now());
 
 
             Triplet<Voucher, ComponentVounch, AccessValidator> triplet = Triplet.with(voucher, componentVounch, x.getAccessValidator());

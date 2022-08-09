@@ -2,10 +2,12 @@ package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.OctResp.PublicationEntryResp;
+import com.lt.dom.otcenum.EnumVoucherStatus;
 import com.lt.dom.otcenum.EnumVoucherType;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -23,6 +25,16 @@ public class Voucher {
     private boolean published;
     private String additionalInfo;
 
+    private LocalDateTime expiry_datetime;
+    private EnumVoucherStatus status;
+
+    public LocalDateTime getExpiry_datetime() {
+        return expiry_datetime;
+    }
+
+    public void setExpiry_datetime(LocalDateTime expiry_datetime) {
+        this.expiry_datetime = expiry_datetime;
+    }
 
     @Version
     private int version;
@@ -104,22 +116,22 @@ public class Voucher {
 
 
 
-    private LocalDate start_date;
-    private LocalDate expiration_date;
+    private LocalDateTime start_date;
+    private LocalDateTime expiration_date;
 
-    public LocalDate getStart_date() {
+    public LocalDateTime getStart_date() {
         return start_date;
     }
 
-    public void setStart_date(LocalDate start_date) {
+    public void setStart_date(LocalDateTime start_date) {
         this.start_date = start_date;
     }
 
-    public LocalDate getExpiration_date() {
+    public LocalDateTime getExpiration_date() {
         return expiration_date;
     }
 
-    public void setExpiration_date(LocalDate expiration_date) {
+    public void setExpiration_date(LocalDateTime expiration_date) {
         this.expiration_date = expiration_date;
     }
 
@@ -225,4 +237,11 @@ public class Voucher {
     }
 
 
+    public void setStatus(EnumVoucherStatus status) {
+        this.status = status;
+    }
+
+    public EnumVoucherStatus getStatus() {
+        return status;
+    }
 }

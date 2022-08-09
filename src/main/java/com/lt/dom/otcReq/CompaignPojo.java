@@ -4,7 +4,6 @@ import com.lt.dom.otcenum.EnumCompaignType;
 import com.lt.dom.otcenum.EnumDiscountVoucherCategory;
 import com.lt.dom.otcenum.EnumVoucherType;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -199,6 +198,48 @@ public class CompaignPojo {
     @NotEmpty
     @Size(max = 500)
     private String description;
+
+    @Size(max = 200)
+    private String claim_note;
+    @NotEmpty
+    @Size(max = 15)
+    private String claim_text;
+
+    private boolean claimable;
+
+
+
+    private int expiry_days;
+
+    public int getExpiry_days() {
+        return expiry_days;
+    }
+
+    public void setExpiry_days(int expiry_days) {
+        this.expiry_days = expiry_days;
+    }
+
+
+
+
+    public boolean isClaimable() {
+        return claimable;
+    }
+
+    public void setClaimable(boolean claimable) {
+        this.claimable = claimable;
+    }
+
+    private Integer clain_limit;
+
+    public Integer getClain_limit() {
+        return clain_limit;
+    }
+
+    public void setClain_limit(Integer clain_limit) {
+        this.clain_limit = clain_limit;
+    }
+
     private boolean active;
 
     public EnumCompaignType getCampaignType() {
@@ -268,6 +309,19 @@ public class CompaignPojo {
     }
 
 
+    public String getClaim_note() {
+        return claim_note;
+    }
 
+    public void setClaim_note(String claim_note) {
+        this.claim_note = claim_note;
+    }
 
+    public String getClaim_text() {
+        return claim_text;
+    }
+
+    public void setClaim_text(String claim_text) {
+        this.claim_text = claim_text;
+    }
 }

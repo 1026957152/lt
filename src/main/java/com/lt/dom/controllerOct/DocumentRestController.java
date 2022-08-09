@@ -19,6 +19,8 @@ import org.javatuples.Quartet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +59,7 @@ public class DocumentRestController {
 
 
     @PostMapping(value = "/documents")
-    public ResponseEntity<List<MessageFileResp>> createDocuments(@RequestParam(value = "files",required = true) List<MultipartFile> files) {
+    public CollectionModel<EntityModel<MessageFileResp>> createDocuments(@RequestParam(value = "files",required = true) List<MultipartFile> files) {
         //@RequestParam("files") List<MultipartFile> files
 
 
@@ -80,7 +82,9 @@ public class DocumentRestController {
                     x.setUrl(FileStorageServiceImpl.url(x.getFileName()));
                     return x;
                 }).collect(Collectors.toList());
-                return ResponseEntity.ok(MessageFileResp.from(documents));//new MessageFile("Upload file successfully: "+fileNames_));
+
+
+                return CollectionModel.of(MessageFileResp.from(documents));//new MessageFile("Upload file successfully: "+fileNames_));
             }catch (Exception e){
 
                 e.printStackTrace();

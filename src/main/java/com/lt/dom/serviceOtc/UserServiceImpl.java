@@ -31,7 +31,8 @@ public class UserServiceImpl {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
+    @Autowired
+    private AssetServiceImpl assetService;
     public User createUser(@Valid UserPojo pojo) {
 
         Optional<User> optional = userRepository.findByPhone(pojo.getPhone());
@@ -52,7 +53,12 @@ public class UserServiceImpl {
 
         createRoleIfNotFound(user,pojo.getRoles());
         //createRoleIfNotFound(user,"ROLE_ADMIN");
+        user.setEnabled(true);
         user = userRepository.save(user);
+
+
+        assetService.newQr(user);
+
         return user;
     }
 
@@ -79,5 +85,18 @@ public class UserServiceImpl {
             throw new BookNotFoundException(0,"找不到权限"+name);
         }
         return user;
+    }
+
+    public Optional<User> getActiveOne(String real_name, String id_card, String phone) {
+        Optional<User> optionalUser = userRepository.findByRealNameAndIdCardAndPhoneAndEnabled(real_name,id_card,phone,true);
+
+
+        return optionalUser;
+
+    }
+
+    public Optional<User> getActiveOneByPhone(String s) {
+        Optional<User> optionalUser = userRepository.findByPhoneAndEnabled(s,true);
+        return optionalUser;
     }
 }

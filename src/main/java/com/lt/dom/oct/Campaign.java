@@ -28,6 +28,30 @@ public class Campaign {
     private long scenario;
     private String category;
     private String code;
+    private boolean claimable;
+    private String claim_note;
+    private String claim_text;
+    private int clain_limit;
+    private boolean over;
+
+    @Column(name = "limit_")
+    private int limit;
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    public boolean isOver() {
+        return over;
+    }
+
+    public void setOver(boolean over) {
+        this.over = over;
+    }
 
     public String getCategory() {
         return category;
@@ -48,7 +72,15 @@ public class Campaign {
     private LocalDate start_date;
     private LocalDate expiration_date;
 
+    private int expiry_days;
 
+    public int getExpiry_days() {
+        return expiry_days;
+    }
+
+    public void setExpiry_days(int expiry_days) {
+        this.expiry_days = expiry_days;
+    }
 
     private int vouchers_count;
     private EnumCampaignCreationStatus vouchers_generation_status; //IN_PROGRESS, DONE, ERROR
@@ -306,5 +338,37 @@ public class Campaign {
 
     public void setTotal_rollback_succeeded(long total_rollback_succeeded) {
         this.total_rollback_succeeded = total_rollback_succeeded;
+    }
+
+    public void setClaimable(boolean claimable) {
+        this.claimable = claimable;
+    }
+
+    public boolean getClaimable() {
+        return claimable;
+    }
+
+    public void setClaim_note(String claim_note) {
+        this.claim_note = claim_note;
+    }
+
+    public String getClaim_note() {
+        return claim_note;
+    }
+
+    public void setClaim_text(String claim_text) {
+        this.claim_text = claim_text;
+    }
+
+    public String getClaim_text() {
+        return claim_text;
+    }
+
+    public void setClain_limit(int clain_limit) {
+        this.clain_limit = clain_limit;
+    }
+
+    public int getClain_limit() {
+        return clain_limit;
     }
 }

@@ -48,10 +48,12 @@ public class SecurityConfig {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 */
 
+
     @Autowired
     MyUserDetailsService userDetailsService;
   @Autowired
     AuthenticationTokenProvider authenticationTokenProvider;
+
 /*
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
@@ -161,7 +163,7 @@ public class SecurityConfig {
           //      "/openid/merchants_settled/page",
                 "/oct/openid/merchants_settled",
              //   "/oct/*/*",
-              //  "/oct/**",
+               "/oct/**",
                 "/oct/campaigns/list",
                 "/oct/campaigns",
 

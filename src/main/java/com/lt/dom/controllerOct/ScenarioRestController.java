@@ -77,16 +77,18 @@ public class ScenarioRestController {
                             EnumDocumentType.scenario_image_small),scenario.getId());
 
             ScenarioResp scenarioResp =  ScenarioResp.from(scenario,document);
+
+
             EntityModel entityModel = EntityModel.of(scenarioResp);
             entityModel.add(linkTo(methodOn(CampaignRestController.class).pageCampaign(1,null,null)).withRel("getCampaigns"));
 
             Page<Campaign> campaignPageable = campaignRepository.findAll(PageRequest.of(0,1000));
 
-            List<CampaignResp> campaignResps =  CampaignResp.pageMapToList(campaignPageable);
+            List<CampaignResp> campaignResps =  CampaignResp.pageMapToListSimple(campaignPageable);
 
 
 
-            scenarioResp.setCampaigns(CollectionModel.of(campaignResps));
+            scenarioResp.setCampaigns(campaignResps);
 
             return entityModel;
 

@@ -2,6 +2,7 @@ package com.lt.dom.controllerOct;
 
 import com.lt.dom.OctResp.EnumResp;
 import com.lt.dom.OctResp.MessageFileResp;
+import com.lt.dom.OctResp.UserResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.Missing_documentException;
 import com.lt.dom.oct.*;
@@ -56,13 +57,13 @@ public class OpenidRestController {
     private OpenidRepository openidRepository;
 
     @GetMapping(value = "openid/{OPEN_ID}", produces = "application/json")
-    public ResponseEntity<OpenidResp> getOpenid(@PathVariable String OPEN_ID) {
+    public ResponseEntity<UserResp> getOpenid(@PathVariable String OPEN_ID) {
 
         Optional<Openid> optional = openidRepository.findByOpenid(OPEN_ID);
 
         if(optional.isPresent()){
 
-            OpenidResp openidResp = new OpenidResp();
+            UserResp openidResp = new UserResp();
             openidResp.from(optional.get());
             openidResp.add(linkTo(methodOn(OpenidRestController.class).linkUser(optional.get().getOpenid(),null)).withRel("link_user_url"));
             openidResp.add(linkTo(methodOn(OpenidRestController.class).merchants_settled(optional.get().getOpenid(),null)).withRel("merchants_settled_url"));

@@ -1,47 +1,83 @@
 package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.domain.SettleAccount;
-import com.lt.dom.oct.Asset;
+import com.lt.dom.oct.Openid;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.EnumBussinessType;
 import com.lt.dom.otcenum.EnumSupplierType;
+import org.javatuples.Pair;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.stream.Collectors;
 
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResp extends RepresentationModel<UserResp> {
 
     private  boolean hired;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+
     private String first_name;//	string	The user’s first name
+    @JsonInclude(JsonInclude.Include.NON_NULL)
 
     private String last_name;//	string	The user’s last name
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String username;//	string	The user’s username*
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String email;//	string	The user’s email address
 
-    private String phone;//	string	The user’s phone number
-    private String code;
+    private String mobile;//	string	The user’s phone number
+    private String user_code;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private EnumSupplierType supplier_type;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String supplier_name;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String supplier_desc;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private EnumBussinessType supplier_bussiness_type;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String supplier_code;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private EntityModel supplier;
-    private String realName;
+    private String real_name;
+
+    private boolean bind;
+
+    private String id_card;
+
+    private String token;
+    private String nick_name;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private EntityModel<AssetResp> asset;
+    private Integer gender;
+    private String avatar;
+    private boolean real_name_verified;
+
+/*    nick_name 昵称：
+    gender 性别：
+    avatar 头像:
+    link 是否绑定：
+
+    mobile: 用户手机号
+    user_code: 用户编号
+    roles: 用户权限
+
+    real_name_verified:  是否实名
+    real_name: 身份证姓名
+    id_card: 身份证号码号码*/
+
 
     public static UserResp from(User user, Supplier supplier) {
         UserResp userResp = new UserResp();
-        userResp.setPhone(user.getPhone());
+        userResp.setMobile(user.getPhone());
         userResp.setFirst_name(user.getFirst_name());
         userResp.setLast_name(user.getLast_name());
-        userResp.setCode(user.getCode());
+        userResp.setUser_code(user.getCode());
         userResp.setSupplier_name(supplier.getCode());
         userResp.setSupplier_desc(supplier.getDesc());
         userResp.setSupplier_bussiness_type(supplier.getBusiness_type());
@@ -93,33 +129,123 @@ public class UserResp extends RepresentationModel<UserResp> {
         this.email = email;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getMobile() {
+        return mobile;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
     }
 
     public static UserResp from(User user) {
         UserResp userResp = new UserResp();
-        userResp.setPhone(user.getPhone());
-        userResp.setFirst_name(user.getFirst_name());
-        userResp.setRealName(user.getRealName());
-        userResp.setLast_name(user.getLast_name());
-        userResp.setCode(user.getCode());
+
+
+
+
+        //userResp.setFirst_name(user.getFirst_name());
+        //userResp.setLast_name(user.getLast_name());
+        userResp.setReal_name_verified(user.isRealNameVerified());
+        if(user.isRealNameVerified()){
+            userResp.setReal_name(user.getRealName());
+            userResp.setId_card(user.getIdCard());
+        }
+
+
+        userResp.setMobile(user.getPhone());
+        userResp.setUser_code(user.getCode());
         userResp.setRoles(user.getRoles().stream().map(x->{
             return RoleResp.from(x);
         }).collect(Collectors.toList()));
         return userResp;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+
+/*    public static OpenidResp Realnamefrom(Pair<User, Openid> pair) {
+        Openid openid = pair.getValue1();
+        User user = pair.getValue0();
+        OpenidResp openidResp = new OpenidResp();
+        //openidResp.setOpenid(openid1.getOpenid());
+        //openidResp.setCode(openid.getCode());
+        openidResp.setName(openid.getOpenid_name());
+        //openidResp.setGender(openid.getOpenid_gender());
+        //openidResp.setImage(openid.getOpenid_image());
+        openidResp.setLink(openid.getLink());
+        openidResp.setReal_name(user.isRealNameVerified());//nonNull(openid.getUserId())
+        openidResp.setFull_name(user.getRealName());
+        openidResp.setId_card(user.getIdCard());
+
+        return openidResp;
+
+    }*/
+    public static UserResp from(Openid openid) {
+
+
+
+        UserResp openidResp = new UserResp();
+        //openidResp.setOpenid(openid1.getOpenid());
+        //openidResp.setCode(openid.getCode());
+        openidResp.setNick_name(openid.getOpenid_name());
+        openidResp.setGender(openid.getOpenid_gender());
+        openidResp.setAvatar(openid.getOpenid_image());
+        openidResp.setBind(openid.getLink());
+
+
+        /*
+
+        openidResp.setFirst_name(user.getFirst_name());
+        openidResp.setLast_name(user.getLast_name());
+        openidResp.setRealNameVerified(user.isRealNameVerified());
+
+        if(user.isRealNameVerified()){
+            openidResp.setFull_name(user.getRealName());
+            openidResp.setId_card(user.getIdCard());
+        }
+
+        openidResp.setPhone(user.getPhone());
+        openidResp.setCode(user.getCode());
+        openidResp.setRoles(user.getRoles().stream().map(x->{
+            return RoleResp.from(x);
+        }).collect(Collectors.toList()));*/
+        return openidResp;
+
+    }
+    public static UserResp userWithOpenidLink(Pair<User, Openid> pair) {
+        Openid openid = pair.getValue1();
+        User user = pair.getValue0();
+        UserResp openidResp = new UserResp();
+
+        openidResp.setNick_name(openid.getOpenid_name());
+        openidResp.setGender(openid.getOpenid_gender());
+        openidResp.setAvatar(openid.getOpenid_image());
+        openidResp.setBind(openid.getLink());
+
+
+
+
+      //  openidResp.setFirst_name(user.getFirst_name());
+      //  openidResp.setLast_name(user.getLast_name());
+        openidResp.setReal_name_verified(user.isRealNameVerified());
+
+        if(user.isRealNameVerified()){
+            openidResp.setReal_name(user.getRealName());
+            openidResp.setId_card(user.getIdCard());
+        }
+
+        openidResp.setMobile(user.getPhone());
+        openidResp.setUser_code(user.getCode());
+        openidResp.setRoles(user.getRoles().stream().map(x->{
+            return RoleResp.from(x);
+        }).collect(Collectors.toList()));
+        return openidResp;
+
+    }
+    public void setUser_code(String user_code) {
+        this.user_code = user_code;
     }
 
-    public String getCode() {
-        return code;
+    public String getUser_code() {
+        return user_code;
     }
 
 
@@ -182,11 +308,83 @@ public class UserResp extends RepresentationModel<UserResp> {
         return supplier;
     }
 
-    public void setRealName(String realName) {
-        this.realName = realName;
+    public void setReal_name(String real_name) {
+        this.real_name = real_name;
     }
 
-    public String getRealName() {
-        return realName;
+    public String getReal_name() {
+        return real_name;
+    }
+
+
+
+    public void setBind(boolean bind) {
+        this.bind = bind;
+    }
+
+    public boolean getBind() {
+        return bind;
+    }
+
+
+
+    public void setId_card(String id_card) {
+        this.id_card = id_card;
+    }
+
+    public String getId_card() {
+        return id_card;
+    }
+
+
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setNick_name(String nickName) {
+        this.nick_name = nickName;
+    }
+
+    public String getNick_name() {
+        return nick_name;
+    }
+
+    public void setAsset(EntityModel<AssetResp> asset) {
+
+        this.asset = asset;
+    }
+
+    public EntityModel<AssetResp> getAsset() {
+        return asset;
+    }
+
+    public void setGender(Integer gender) {
+        this.gender = gender;
+    }
+
+    public Integer getGender() {
+        return gender;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setReal_name_verified(boolean real_name_verified) {
+
+        this.real_name_verified = real_name_verified;
+    }
+
+    public boolean getReal_name_verified() {
+        return real_name_verified;
     }
 }

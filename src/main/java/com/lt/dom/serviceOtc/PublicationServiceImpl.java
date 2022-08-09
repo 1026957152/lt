@@ -2,6 +2,7 @@ package com.lt.dom.serviceOtc;
 
 
 import com.lt.dom.OctResp.PublicationResp;
+import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.No_voucher_suitable_for_publicationException;
 import com.lt.dom.notification.EventHandler;
 import com.lt.dom.notification.VouncherPublishedVo;
@@ -10,8 +11,12 @@ import com.lt.dom.otcReq.PublicationPojo;
 import com.lt.dom.otcReq.PublicationSearchPojo;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
 import com.lt.dom.otcenum.EnumSessionFor;
+import com.lt.dom.otcenum.EnumVoucherStatus;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
+import com.lt.dom.requestvo.PublishTowhoVo;
 import org.javatuples.Pair;
+import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -51,13 +56,15 @@ public class PublicationServiceImpl {
 
 
 
-    public Triplet<PublicationEntry,Voucher,Campaign> CreatePublication(Campaign campaign, PublicationPojo publicationPojo, Session session) {
+    public Quartet<PublicationEntry,Voucher,Campaign,PublishTowhoVo> CreatePublication(Campaign campaign, PublicationPojo publicationPojo, Session session, PublishTowhoVo publishTowhoVo) {
 
-        Optional<Voucher> optionalVoucher = voucherRepository.findFirstByCampaign(campaign.getId());
+        Optional<Voucher> optionalVoucher = voucherRepository.findFirstByCampaignAndActive(campaign.getId(),false);
 
 
+        if(optionalVoucher.isEmpty()) {
 
-        if(optionalVoucher.isPresent()){
+            throw new No_voucher_suitable_for_publicationException(campaign.getId(),Voucher.class.getSimpleName(),"没有足够的 可发布的优惠券");
+        }
             Voucher voucher = optionalVoucher.get();
 
             Publication publication = new Publication();
@@ -65,18 +72,25 @@ public class PublicationServiceImpl {
 
             PublicationEntry publicationEntry = new PublicationEntry();
             publicationEntry.setPublicationId(publication.getId());
-            publicationEntry.setToWhoType(publicationPojo.getType());
 
-            Optional<Supplier> supplierOptional = null;
+
+
+
+
+        publicationEntry.setToWhoType(publishTowhoVo.getToWhoTyp());
+
+
+
+
+
             if(publicationEntry.getToWhoType().equals(EnumPublicationObjectType.business)){
-                supplierOptional = supplierRepository.findById(publicationPojo.getSupplier());
-                publicationEntry.setToWho(supplierOptional.get().getId());
+                publicationEntry.setToWho(publishTowhoVo.getSupplier().getId());
             }
             if(publicationEntry.getToWhoType().equals(EnumPublicationObjectType.customer)){
-                publicationEntry.setToWho(publicationPojo.getUser());
+                publicationEntry.setToWho(publishTowhoVo.getUser().getId());
             }
             if(publicationEntry.getToWhoType().equals(EnumPublicationObjectType.traveler)){
-                publicationEntry.setToWho(publicationPojo.getTraveler());
+                publicationEntry.setToWho(publishTowhoVo.getTraveler().getId());
             }
 
             publicationEntry.setPublished_at(LocalDate.now());
@@ -91,6 +105,13 @@ public class PublicationServiceImpl {
 
             voucher.setPublished(true);
             voucher.setAdditionalInfo("");
+            voucher.setExpiry_datetime(LocalDateTime.now().plusDays(campaign.getExpiry_days()));
+            voucher.setExpiration_date(LocalDateTime.now().plusDays(campaign.getExpiry_days()));
+
+            voucher.setStart_date(LocalDateTime.now());
+            voucher.setStatus(EnumVoucherStatus.Issued);
+            voucher.setQuantity(1);
+            voucher.setActive(true);
             voucher = voucherRepository.save(voucher);
 
 
@@ -103,15 +124,14 @@ public class PublicationServiceImpl {
             orderPaidVo.setPublicationToType(publicationEntry.getToWhoType());
 
             if(publicationEntry.getToWhoType().equals(EnumPublicationObjectType.business)){
-                orderPaidVo.setSupplier(supplierOptional.get());
+                orderPaidVo.setSupplier(publishTowhoVo.getSupplier());
             }
             eventHandler.voucher_published(orderPaidVo);
 
-            return Triplet.with(publicationEntry,voucher,campaign);
+            return Quartet.with(publicationEntry,voucher,campaign,publishTowhoVo);
 
            // return PublicationResp.from(publicationEntry);
-        }
-        throw new RuntimeException();
+
 
     }
 

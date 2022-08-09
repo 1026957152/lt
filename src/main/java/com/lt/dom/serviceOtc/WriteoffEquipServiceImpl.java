@@ -14,6 +14,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -149,7 +150,7 @@ public class WriteoffEquipServiceImpl {
     private boolean writeOff_Check(Voucher voucher) {
 
 
-        if(voucher.getExpiration_date().isAfter(LocalDate.now()) && voucher.getStart_date().isBefore(LocalDate.now())){
+        if(voucher.getExpiration_date().isAfter(LocalDateTime.now()) && voucher.getStart_date().isBefore(LocalDateTime.now())){
             throw new RuntimeException();
         }
         if(voucher.getQuantity() <= voucher.getRedeemed_quantity()){

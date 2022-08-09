@@ -13,6 +13,7 @@ public class EmpowerResp extends RepresentationModel<EmpowerResp> {
 
 
     private String phone;
+    private String cryptoPhone;
 
     public void setPhone(String phone) {
         this.phone = phone;
@@ -23,4 +24,11 @@ public class EmpowerResp extends RepresentationModel<EmpowerResp> {
     }
 
 
+    public void setCryptoPhone(String cryptoPhone) {
+        this.cryptoPhone = cryptoPhone;
+    }
+
+    public String getCryptoPhone() {
+        return cryptoPhone;
+    }
 }

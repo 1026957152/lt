@@ -20,6 +20,13 @@ public class JwtUtils {
 	private String jwtSecret;
 	@Value("${bezkoder.app.jwtExpirationMs}")
 	private int jwtExpirationMs;
+
+/*	public static JwtUtils(String jwtSecret, int jwtExpirationMs) {
+		this.jwtSecret = jwtSecret;
+		this.jwtExpirationMs = jwtExpirationMs;
+
+	}*/
+
 	public String generateJwtToken(int i, Authentication authentication) {
 		User userPrincipal = (User) authentication.getPrincipal();
 		Gson gson = new Gson();
@@ -27,6 +34,18 @@ public class JwtUtils {
 
 		return Jwts.builder()
 				.setSubject(gson.toJson(new LogVo(i,userPrincipal.getUsername())))
+				.setIssuedAt(new Date())
+				.setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+				.signWith(SignatureAlgorithm.HS512, jwtSecret)
+				.compact();
+	}
+
+	public String generateJwtToken(String name) {
+
+
+
+		return Jwts.builder()
+				.setSubject(name)
 				.setIssuedAt(new Date())
 				.setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
 				.signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -64,5 +83,16 @@ public class JwtUtils {
 			logger.error("JWT claims string is empty: {}", e.getMessage());
 		}
 		return false;
+	}
+
+	public static void main(String[] args) {
+		int jwtExpirationMs = 86400000;
+		String jwtSecret = "bezKoderSecretKey";
+		JwtUtils jwtUtils = null;//new JwtUtils(jwtSecret,jwtExpirationMs);
+
+		String jwt = jwtUtils.generateJwtToken("13468801684");
+		String phone = jwtUtils.getUserNameFromJwtToken(jwt);
+
+		System.out.println(phone);
 	}
 }

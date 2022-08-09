@@ -26,6 +26,7 @@ import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -246,7 +247,7 @@ public class BookingRestController {
 
 
     @PostMapping(value = "/bookings/{RESERVATOIN_ID}/documents/ids", produces = "application/json")
-    public ResponseEntity<List<MessageFileResp>> createDocuments(@PathVariable long RESERVATOIN_ID,@ModelAttribute BookingDocumentIdsResp bookingDocumentResp ) {
+    public ResponseEntity<List<EntityModel<MessageFileResp>>> createDocuments(@PathVariable long RESERVATOIN_ID, @ModelAttribute BookingDocumentIdsResp bookingDocumentResp ) {
         //@RequestParam("files") List<MultipartFile> files
         Optional<Reservation> optionalReservation = reservationRepository.findById(RESERVATOIN_ID);
 

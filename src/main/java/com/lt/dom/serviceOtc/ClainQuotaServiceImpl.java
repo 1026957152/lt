@@ -1,11 +1,13 @@
 package com.lt.dom.serviceOtc;
 
 
+import com.lt.dom.error.Quantity_exceededException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ClainQuotaReq;
 import com.lt.dom.otcReq.QuotaReq;
 import com.lt.dom.otcenum.EnumClainQuotaType;
 import com.lt.dom.otcenum.EnumQuotaType;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.ClainQuotaRepository;
 import com.lt.dom.repository.QuotaRepository;
 import com.lt.dom.repository.ScenarioRepository;
@@ -89,12 +91,18 @@ public class ClainQuotaServiceImpl {
 
         long count = campaign.getVouchers_count() - quotas.stream().mapToLong(x->x.getQuota()).sum();
 
-        if(count >= clainQuotaReq.getQuota()){
 
+        if(count < clainQuotaReq.getQuota()) {
 
+            throw new Quantity_exceededException(campaign.getId()," 分配配额超过活动 计划数量");
+
+        }
 
             Quota quota = new Quota();
             quota.setQuota(clainQuotaReq.getQuota());
+        quota.setClaim_redeem(clainQuotaReq.getClaim_redeem());
+        quota.setName(clainQuotaReq.getName());
+
             quota.setCompaign(campaign.getId());
             quota.setType(clainQuotaReq.getType());
             if(quota.getType().equals(EnumQuotaType.NominatedSupplier)){
@@ -115,9 +123,8 @@ public class ClainQuotaServiceImpl {
 
 
             return quota;
-        }
 
-        throw new RuntimeException();
+
 
     }
 

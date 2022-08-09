@@ -18,6 +18,26 @@ import org.springframework.web.multipart.MultipartException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+
+
+    @ExceptionHandler(Quantity_exceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(Quantity_exceededException ex, WebRequest request){
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.UNAUTHORIZED,EnumRedemptionfailures.quantity_exceeded.name(),
+                        ex.getMessage(),ex.getLocalizedMessage());
+        return new ResponseEntity<>(response, response.getCode());
+    }
+    @ExceptionHandler(TokenRefreshException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(TokenRefreshException ex, WebRequest request){
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.UNAUTHORIZED,EnumRedemptionfailures.resource_not_found.name(),
+                        ex.getMessage(),ex.getError());
+        return new ResponseEntity<>(response, response.getCode());
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiErrorResponse> handleAuthenticationException(AuthenticationException ex, WebRequest request){
 
@@ -233,6 +253,17 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(response, response.getCode());
 
     }
+    @ExceptionHandler(Campaign_inactiveException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            Campaign_inactiveException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.CONFLICT, ex.getMessage(),
+                        ex.getObject(),ex.getDetail());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
 
 /*    @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiErrorResponse> handleApiException(

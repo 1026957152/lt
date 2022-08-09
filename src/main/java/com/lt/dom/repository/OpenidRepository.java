@@ -15,4 +15,8 @@ public interface OpenidRepository extends JpaRepository<Openid
 
     List<Openid> findByUserId(long id);
 
+    Optional<Openid> findByUserIdAndLink(long id, boolean b);
+
+    List<Openid> findByUserIdIn(List<Long> collect);
+
 }

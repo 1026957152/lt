@@ -3,16 +3,21 @@ package com.lt.dom.controllerOct;
 import com.lt.dom.OctResp.PublicationResp;
 import com.lt.dom.OctResp.RedemptionEntryResp;
 import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.Campaign_inactiveException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.PublicationPojo;
 import com.lt.dom.otcReq.PublicationSearchPojo;
 import com.lt.dom.otcenum.EnumAssetType;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
+import com.lt.dom.requestvo.PublishTowhoVo;
+import com.lt.dom.serviceOtc.AssetServiceImpl;
 import com.lt.dom.serviceOtc.DeviceService;
 import com.lt.dom.serviceOtc.IAuthenticationFacade;
 import com.lt.dom.serviceOtc.PublicationServiceImpl;
 import org.javatuples.Quartet;
+import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +27,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,6 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,6 +69,8 @@ public class PublicationRestController {
 
     @Autowired
     private AssetRepository assetRepository;
+    @Autowired
+    private AssetServiceImpl assetService;
 
     @Autowired
     private VoucherRepository voucherRepository;
@@ -69,25 +78,42 @@ public class PublicationRestController {
     @Autowired
     private DeviceService deviceService;
 
+    @Autowired
+    private TravelerRepository travelerRepository;
+    @Autowired
+    private SupplierRepository supplierRepository;
+
+
 /*
     @Autowired
     private Parser uaParser;
 */
 
     @GetMapping(value = "/users/{USER_ID}/publications", produces = "application/json")
-    public PagedModel pageUserPublicationResp(@PathVariable long USER_ID, @RequestBody PublicationSearchPojo pojo, Pageable pageable, PagedResourcesAssembler<EntityModel<PublicationResp>> assembler) {
+    public PagedModel pageUserPublicationResp(@PathVariable long USER_ID, @ModelAttribute PublicationSearchPojo pojo, Pageable pageable, PagedResourcesAssembler<EntityModel<PublicationResp>> assembler) {
 
-        Optional<User> validatorOptional = userRepository.findById(USER_ID);
-        if(validatorOptional.isEmpty()) {
+        Authentication authentication =  authenticationFacade.getAuthentication();
 
-            throw new BookNotFoundException(USER_ID,"找不到user");
 
+        User user = null;
+        if(authentication == null){
+            Optional<User> validatorOptional = userRepository.findByPhone("13468801684");
+            if(validatorOptional.isEmpty()) {
+
+                throw new BookNotFoundException(USER_ID,"找不到user");
+
+            }
+        }else{
+            user =  authenticationFacade.getUser(authentication);
         }
-            Page<PublicationEntry> publicationResps = publicationService.pagePublication(validatorOptional.get(),pojo,pageable);
+
+
+
+            Page<PublicationEntry> publicationResps = publicationService.pagePublication(user,pojo,pageable);
 
             List<Campaign> campaigns = campaignRepository.findAllById(publicationResps.stream().map(x->x.getCampaign_id()).collect(Collectors.toList()));
             List<Voucher> vouchers = voucherRepository.findAllById(publicationResps.stream().map(x->x.getVoucherId()).collect(Collectors.toList()));
-            List<Asset> assets = assetRepository.findAllBySourceIn(publicationResps.stream().map(x->x.getVoucherId()).collect(Collectors.toList()));
+            List<Asset> assets = assetRepository.findAllByTypeAndIdIdIn(EnumAssetType.qr,vouchers.stream().map(x->x.getCode()).collect(Collectors.toList()));
             Map<Long,Campaign> longCampaignMap = campaigns.stream().collect(Collectors.toMap(x->x.getId(), x->x));
             Map<Long,Voucher> longVoucherMap = vouchers.stream().collect(Collectors.toMap(x->x.getId(),x->x));
            Map<Long,List<Asset>> longListMap =
@@ -98,7 +124,7 @@ public class PublicationRestController {
                 Campaign campaign = longCampaignMap.get(x.getCampaign_id());
                 Voucher voucher = longVoucherMap.get(x.getVoucherId());
                 List<Asset> assetList = longListMap.get(x.getVoucherId());
-                return EntityModel.of(PublicationResp.from(Quartet.with(x,voucher,campaign,assetList)));
+                return EntityModel.of(PublicationResp.sigleFrom(Quartet.with(x,voucher,campaign,assetList)));
             }));
 
 
@@ -125,19 +151,26 @@ public class PublicationRestController {
 
 
 
+    //自己领券
 
+
+
+    //给别人发券
     @PostMapping(value = "/campaigns/{CAMPAIGN_ID}/publications", produces = "application/json")
     public EntityModel<PublicationResp> createPublication(@PathVariable long CAMPAIGN_ID, @RequestBody @Valid PublicationPojo publicationPojo, final HttpServletRequest request) {
         Authentication authentication =  authenticationFacade.getAuthentication();
 
-        UserDetails user_ = (UserDetails)authentication.getPrincipal();
+        User user =  authenticationFacade.getUser(authentication);
 
-        Optional<User> user__ = userRepository.findByUsername(user_.getUsername());
-        if(user__.isEmpty()){
-            throw new BookNotFoundException("","找不到用户");
-        }
+
+
+
+        publicationPojo.setUser(user.getId());
+        publicationPojo.setType(EnumPublicationObjectType.customer);
+
+
         try {
-            deviceService.verifyDevice(user__.get(), request);
+            deviceService.verifyDevice(user, request);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -165,39 +198,69 @@ public class PublicationRestController {
         session.setVersion(c.userAgent.major+"."+c.userAgent.minor+"."+c.userAgent.patch);
 */
 
-        System.out.println("_______________________________"+user_);
+        System.out.println("_______________________________"+user);
 
-        //publicationPojo.
+
         Optional<Campaign> validatorOptional = campaignRepository.findById(CAMPAIGN_ID);
-        if(validatorOptional.isPresent()){
+        if(validatorOptional.isEmpty()) {
+            System.out.println("找不到消费活动");
+            throw new BookNotFoundException(CAMPAIGN_ID,Campaign.class.getSimpleName());
+
+        }
+        Campaign campaign = validatorOptional.get();
+        if(!validatorOptional.get().isActive()) {
+            throw new Campaign_inactiveException(campaign.getId(),Campaign.class.getSimpleName(),"活动未开放");
+        }
+
+
+        PublishTowhoVo publishTowhoVo = new PublishTowhoVo();
 
             if(isNull(publicationPojo.getType())){
                 publicationPojo.setType(EnumPublicationObjectType.customer);
-                Optional<User> user = userRepository.findByPhone(user_.getUsername());
-                if(user.isEmpty()){
-                    System.out.println("抛出异常");
-                    throw new BookNotFoundException(user_.getUsername(),User.class.getSimpleName());
-                }
-                publicationPojo.setUser(user.get().getId());
-
+                publicationPojo.setUser(user.getId());
+                publishTowhoVo.setToWhoTyp(EnumPublicationObjectType.customer);
+                publishTowhoVo.setUser(user);
             }else{
                 if(publicationPojo.getType().equals(EnumPublicationObjectType.customer)){
-                    Optional<User> user = userRepository.findById(publicationPojo.getUser());
-                    if(user.isEmpty()){
+                    Optional<User> objectUser = userRepository.findById(publicationPojo.getUser());
+                    if(objectUser.isEmpty()){
                         System.out.println("抛出异常");
                         throw new BookNotFoundException(publicationPojo.getUser(),User.class.getSimpleName());
                     }
+                    publishTowhoVo.setToWhoTyp(EnumPublicationObjectType.customer);
+                    publishTowhoVo.setUser(objectUser.get());
+                }
+                if(publicationPojo.getType().equals(EnumPublicationObjectType.business)){
+                    Optional<Supplier> optionalSupplier = supplierRepository.findById(publicationPojo.getSupplier());
+                    if(optionalSupplier.isEmpty()){
+                        System.out.println("抛出异常");
+                        throw new BookNotFoundException(publicationPojo.getSupplier(),Supplier.class.getSimpleName());
+                    }
+                    publishTowhoVo.setToWhoTyp(EnumPublicationObjectType.business);
+                    publishTowhoVo.setSupplier(optionalSupplier.get());
+                }
+                if(publicationPojo.getType().equals(EnumPublicationObjectType.traveler)){
+                    Optional<Traveler> optionalTraveler = travelerRepository.findById(publicationPojo.getTraveler());
+                    if(optionalTraveler.isEmpty()){
+                        System.out.println("抛出异常");
+                        throw new BookNotFoundException(publicationPojo.getTraveler(),Traveler.class.getSimpleName());
+                    }
+                    publishTowhoVo.setToWhoTyp(EnumPublicationObjectType.traveler);
+                    publishTowhoVo.setTraveler(optionalTraveler.get());
                 }
             }
 
-            Triplet<PublicationEntry, Voucher,Campaign> voucherPair = publicationService.CreatePublication(validatorOptional.get(),publicationPojo,session);
-            List<Asset> assets = assetRepository.findAllBySource(voucherPair.getValue1().getId());
 
-            return EntityModel.of(PublicationResp.from(Quartet.with(voucherPair.getValue0(),voucherPair.getValue1(),voucherPair.getValue2(),assets)));
-        }else{
-            System.out.println("抛出异常");
-            throw new BookNotFoundException(CAMPAIGN_ID,Campaign.class.getSimpleName());
-        }
+
+
+            Quartet<PublicationEntry, Voucher,Campaign,PublishTowhoVo> voucherPair = publicationService.CreatePublication(validatorOptional.get(),publicationPojo,session,publishTowhoVo);
+
+
+
+            List<Asset> assets = assetService.getQr(voucherPair.getValue1().getCode());
+
+            return EntityModel.of(PublicationResp.from(Quintet.with(voucherPair.getValue0(),voucherPair.getValue1(),voucherPair.getValue2(),assets,voucherPair.getValue3())));
+
     }
 
 }

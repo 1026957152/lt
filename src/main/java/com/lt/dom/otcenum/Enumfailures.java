@@ -51,6 +51,7 @@ public enum Enumfailures {
     user_realname_auth_failure("实名认证失败"),
     voucher_has_no_permistion_redeem("商户没有核销改券的权力"),
     voucher_not_publish("还没有认领"),
+    campaign_inactive("campaign_inactive"),
 
 
 

@@ -21,6 +21,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
@@ -37,10 +38,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/oct")
 public class LoginController {
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private UserRepository userRepository;
 
+/*    @Autowired
+    private AuthenticationTokenProvider authenticationTokenProvider;*/
     @Autowired
     private AuthenticationTokenProvider authenticationTokenProvider;
     @Autowired
@@ -65,11 +70,10 @@ public class LoginController {
      */
     @PostMapping(value = "/login" , produces = "application/json")
     public EntityModel<AuthsResp> qqLogin(HttpServletRequest request, @RequestBody AuthsReq display) throws IOException, AuthenticationException {
-        String redirectUri = URLEncoder.encode(request.getAttribute("baseUrl")+"/getOpenId/qq","utf-8");
 
        // passwordEncoder.encode(display.getPassword())
        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(display.getPhone(),display.getPassword() ));
+                new UsernamePasswordAuthenticationToken(display.getPhone(),display.getPassword()));
 
 
 /*        Authentication authentication = authenticationTokenProvider.authenticate(

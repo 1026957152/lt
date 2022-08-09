@@ -5,6 +5,7 @@ import com.lt.dom.controllerOct.DocumentRestController;
 import com.lt.dom.oct.Document;
 import com.lt.dom.oct.TempDocument;
 import org.javatuples.Pair;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
  * @Date 2020/4/28 0028 19:21
  * @Version since 1.0
  **/
-public class MessageFileResp extends RepresentationModel<MessageFileResp> {
+public class MessageFileResp  {
 
     private String message;
     private String code;
@@ -38,24 +39,27 @@ public class MessageFileResp extends RepresentationModel<MessageFileResp> {
 
     }
 
-    public static List<MessageFileResp> from(List<TempDocument> documents) {
+    public static List<EntityModel<MessageFileResp>> from(List<TempDocument> documents) {
 
-        return documents.stream().map(x->{
+        List<EntityModel<MessageFileResp>> entityModels =  documents.stream().map(x->{
             MessageFileResp tempDocument = new MessageFileResp();
             tempDocument.setCode(x.getCode());
             tempDocument.setFileName(x.getFileName());
             tempDocument.setOriginalFilename(x.getOriginalFilename());
             tempDocument.setCreated_at(x.getCreated_at());
             tempDocument.setUrl(x.getUrl());
-            tempDocument.add(linkTo(methodOn(DocumentRestController.class).createDocuments(null)).withSelfRel());
-            tempDocument.add(linkTo(methodOn(DocumentRestController.class).deleteTempDocuments(x.getCode())).withRel("delete_url"));
+            EntityModel<MessageFileResp> entityModel = EntityModel.of(tempDocument);
+            entityModel.add(linkTo(methodOn(DocumentRestController.class).createDocuments(null)).withSelfRel());
+            entityModel.add(linkTo(methodOn(DocumentRestController.class).deleteTempDocuments(x.getCode())).withRel("delete_url"));
 
 
-            return tempDocument;
+            return entityModel;
         }).collect(Collectors.toList());
 
+        return entityModels;
+
     }
-    public static List<MessageFileResp> fromDocuments(List<Pair<String,Document>> documents) {
+    public static List<EntityModel<MessageFileResp>> fromDocuments(List<Pair<String,Document>> documents) {
 
         return documents.stream().map(x->{
 
@@ -67,9 +71,10 @@ public class MessageFileResp extends RepresentationModel<MessageFileResp> {
             messageFileResp.setOriginalFilename(tempDocument.getOriginalFilename());
             messageFileResp.setCreated_at(tempDocument.getCreated_at());
             messageFileResp.setUrl(url);
-            messageFileResp.add(linkTo(methodOn(DocumentRestController.class).createDocuments(null)).withSelfRel());
-            messageFileResp.add(linkTo(methodOn(DocumentRestController.class).deleteDocuments(tempDocument.getCode())).withRel("delete_url"));
-            return messageFileResp;
+            EntityModel<MessageFileResp>  entityModel = EntityModel.of(messageFileResp);
+            entityModel.add(linkTo(methodOn(DocumentRestController.class).createDocuments(null)).withSelfRel());
+            entityModel.add(linkTo(methodOn(DocumentRestController.class).deleteDocuments(tempDocument.getCode())).withRel("delete_url"));
+            return entityModel;
         }).collect(Collectors.toList());
 
     }

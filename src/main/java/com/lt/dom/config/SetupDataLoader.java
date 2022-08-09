@@ -2,13 +2,19 @@ package com.lt.dom.config;
 
 //https://www.baeldung.com/role-and-privilege-for-spring-security-registration
 
-import com.lt.dom.oct.Openid;
-import com.lt.dom.oct.Privilege;
-import com.lt.dom.oct.Role;
-import com.lt.dom.oct.User;
+import com.alibaba.fastjson.JSONObject;
+import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
+import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.CompaignPojo;
+import com.lt.dom.otcReq.RealnameAuthsReq;
 import com.lt.dom.otcReq.ScenarioReq;
+import com.lt.dom.otcReq.UserPojo;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.CampaignServiceImpl;
+import com.lt.dom.serviceOtc.UserServiceImpl;
+import com.lt.dom.serviceOtc.VoucherAsyncServiceImpl;
+import com.lt.dom.serviceOtc.VoucherServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -16,10 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class SetupDataLoader implements
@@ -44,6 +47,15 @@ public class SetupDataLoader implements
     private CampaignServiceImpl campaignService;
     @Autowired
     private OpenidRepository openidRepository;
+
+    @Autowired
+    private UserServiceImpl userService;
+    @Autowired
+    private VoucherServiceImpl voucherService;
+
+    @Autowired
+    private RealNameAuthenticationServiceImpl realNameAuthenticationService;
+
 
     @Override
     @Transactional
@@ -103,6 +115,32 @@ public class SetupDataLoader implements
        // Openid openid = new Openid();
        // openid.setOpenid("odzgk0ZpWx4NpQC4B1Tu1hnTgYwE");
        // openidRepository.save(openid);
+
+
+
+
+        UserPojo userPojo = new UserPojo();
+        userPojo.setFirst_name("wxlinkUserReq.getFirst_name()");
+        userPojo.setLast_name("wxlinkUserReq.getLast_name()");
+        userPojo.setUsername("wxlinkUserReq.getUser_name()");
+        userPojo.setPhone("13468801684");
+        userPojo.setPassword("wxlinkUserReq.getUser_password()");
+        userPojo.setRoles(Arrays.asList("ROLE_ADMIN"));
+        user = userService.createUser(userPojo);
+
+
+        CompaignPojo compaignPojo = JSONObject.parseObject("{\"name\":\"天天\",\"category\":\"畅游消费券\",\"name_long\":\"描述\",\"claim_text\":\"一分领券\",\"claim_note\":\"一分领券\",\"clain_limit\":1,\"description\":\"我和我的祖国\",\"scenario\":1,\"campaignType\":\"LOYALTY_PROGRAM\",\"vouchers_count\":2,\"start_date\":\"2021-09-11\",\"active\":true,\"claimable\": true,\"expiry_days\":2,\"expiration_date\":\"2021-09-11\",\"code_config\":{\"charset\": \"0123456789\",\"prefix\":\"\",\"postfix\":\"\",\"pattern\":\"TT-NI-############\",\"category\":\"AMOUNT\"}, \"voucher\":{\"type\":\"DISCOUNT_VOUCHER\",\"category\":\"AMOUNT\",\"amount_off\":\"60\"}}" +
+                "",CompaignPojo.class);
+
+        Optional<Scenario> scenario = scenarioRepository.findById(compaignPojo.getScenario());
+
+        System.out.println("dddddddddd777773333333333333333333333555555555555577777777777777777777777");
+        Campaign booking = voucherService.createLoyaltyCompaign(compaignPojo,scenario.get());
+        RealnameAuthsReq realnameAuthsReq = new RealnameAuthsReq();
+        realnameAuthsReq.setReal_name("赵源");
+        realnameAuthsReq.setId_card("612724198409210339");
+        realnameAuthsReq.setPhone(user.getPhone());
+        realNameAuthenticationService.postWxRealnameAuths(user,realnameAuthsReq);
     }
 
     @Transactional

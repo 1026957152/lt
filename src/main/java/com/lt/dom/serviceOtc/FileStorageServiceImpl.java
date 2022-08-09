@@ -242,6 +242,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     }
 
+
     @Override
     public Map<EnumDocumentType, List<String>> loadDocuments(List<EnumDocumentType> scenario_logo, long id) {
 

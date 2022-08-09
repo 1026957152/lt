@@ -46,7 +46,14 @@ public class MyUserDetailsService implements UserDetailsService {
             System.out.println("2222"+u.getPhone());
 
         }
-        Optional<User> optionalUser = userRepository.findByUsername(email);
+        //Optional<User> optionalUser = userRepository.findByUsername(email);
+        Optional<User> optionalUser = userRepository.findByPhone(email);
+
+
+        if(optionalUser.isEmpty()){
+             optionalUser = userRepository.findByUsername(email);
+        }
+
         if (optionalUser.isEmpty()) {
             System.out.println("空的吗"+email);
             return new org.springframework.security.core.userdetails.User(
@@ -54,6 +61,8 @@ public class MyUserDetailsService implements UserDetailsService {
               getAuthorities(Arrays.asList(
                 roleRepository.findByName("ROLE_USER"))));
         }
+
+
         User user = optionalUser.get();
         user.setEnabled(true);
         try {
@@ -65,7 +74,7 @@ public class MyUserDetailsService implements UserDetailsService {
             System.out.println("ddddddddddddd"+user.toString());
 
         }
-
+        System.out.println("找到了而设备ia啊啊啊啊啊"+user.getPhone()+ "------"+user.getPassword());
         return new org.springframework.security.core.userdetails.User(
           user.getUsername(), user.getPassword(), user.isEnabled(), true, true,
           true, getAuthorities(user.getRoles()));
