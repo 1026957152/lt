@@ -148,4 +148,20 @@ public class SupplierPojo {
     }
 
 
+    private Merchant merchant;
+
+    public static class Merchant {
+        String business_license;
+
+    }
+
+
+    private TravelAgency TravelAgency;
+
+    public static class TravelAgency {
+        String business_license;
+        String license;
+        String liability_insurance;
+
+    }
 }

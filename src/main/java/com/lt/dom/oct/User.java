@@ -14,6 +14,9 @@ import java.util.Set;
 @Entity
 
 public class User {
+
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @JsonProperty("id")

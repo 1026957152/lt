@@ -13,6 +13,8 @@ import java.util.List;
 
 @Entity
 public class Product {
+    @Version
+    private Integer version;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

@@ -11,7 +11,8 @@ import java.time.LocalDate;
 
 @Entity
 public class Campaign {
-
+    @Version
+    private Integer version;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 

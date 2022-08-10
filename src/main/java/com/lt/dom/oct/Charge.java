@@ -6,6 +6,7 @@ import com.lt.dom.otcenum.EnumPayChannel;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,7 +14,8 @@ import java.util.List;
 @Entity
 public class Charge {
 
-
+    @Version
+    private Integer version;
 
     @Id
     private long id;

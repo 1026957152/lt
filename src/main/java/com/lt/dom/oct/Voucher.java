@@ -12,6 +12,8 @@ import java.util.List;
 
 @Entity
 public class Voucher {
+
+
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqGen")
     @SequenceGenerator(name = "seqGen", sequenceName = "products_id_seq", allocationSize = 1)
   //  @GeneratedValue(strategy = GenerationType.AUTO)

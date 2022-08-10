@@ -6,7 +6,8 @@ import java.util.Objects;
 
 @Entity
 public class DeviceMetadata {
-
+    @Version
+    private Integer version;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

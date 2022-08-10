@@ -268,4 +268,43 @@ public class MerchantsSettledReq {
     public void setTerm(Boolean term) {
         this.term = term;
     }
+
+    String business_license_image;
+    String license_image;
+    String liability_insurance_image;
+
+   //TODO @NotEmpty
+    String phone; //官方联系电话
+
+    public String getBusiness_license_image() {
+        return business_license_image;
+    }
+
+    public void setBusiness_license_image(String business_license_image) {
+        this.business_license_image = business_license_image;
+    }
+
+    public String getLicense_image() {
+        return license_image;
+    }
+
+    public void setLicense_image(String license_image) {
+        this.license_image = license_image;
+    }
+
+    public String getLiability_insurance_image() {
+        return liability_insurance_image;
+    }
+
+    public void setLiability_insurance_image(String liability_insurance_image) {
+        this.liability_insurance_image = liability_insurance_image;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 }

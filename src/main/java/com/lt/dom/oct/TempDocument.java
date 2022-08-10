@@ -3,14 +3,13 @@ package com.lt.dom.oct;
 
 import com.lt.dom.otcenum.EnumDocumentType;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 public class TempDocument {
+    @Version
+    private Integer version;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

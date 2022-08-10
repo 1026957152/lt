@@ -9,7 +9,8 @@ import java.util.List;
 @Entity
 public class Guide {
 
-
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;

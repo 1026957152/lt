@@ -7,6 +7,9 @@ import java.util.List;
 @Entity
 //@Table(name = "TouristAttraction")
 public class TouristAttraction {
+
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
     private long id;

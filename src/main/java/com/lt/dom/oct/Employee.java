@@ -7,7 +7,8 @@ import javax.persistence.*;
 
 @Entity
 public class Employee {
-
+    @Version
+    private Integer version;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

@@ -6,10 +6,12 @@ import com.lt.dom.otcenum.EnumLoyaltyCardStatusInfo;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Version;
 
 @Entity
 public class LoyaltyCard {
-
+    @Version
+    private Integer version;
     @Id
     private long id;
     private EnumLoyaltyCardAccountType type;   //accountType

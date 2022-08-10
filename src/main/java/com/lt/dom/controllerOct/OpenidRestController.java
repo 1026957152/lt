@@ -160,9 +160,31 @@ public class OpenidRestController {
         Optional<Openid> optional = openidRepository.findByOpenid(OPEN_ID);
 
         List<Pair<EnumDocumentType,String>> docTypeWithDocCodepairList = new ArrayList<>();
-        if(nonNull(wxlinkUserReq.getBussiness_license()))
-            docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.contract,x)).collect(Collectors.toList()));
 
+        if(wxlinkUserReq.getSupplier_type().equals(EnumSupplierType.TravelAgent)){
+            if(nonNull(wxlinkUserReq.getBusiness_license_image())){
+                docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.business_license,x)).collect(Collectors.toList()));
+            }else{
+                throw new IllegalArgumentException();
+            }
+            if(nonNull(wxlinkUserReq.getLicense_image())){
+                docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.license,x)).collect(Collectors.toList()));
+            }else{
+                throw new IllegalArgumentException();
+            }
+            if(nonNull(wxlinkUserReq.getLiability_insurance_image())){
+                docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.liability_insurance,x)).collect(Collectors.toList()));
+            }else{
+                throw new IllegalArgumentException();
+            }
+        }else{
+            if(nonNull(wxlinkUserReq.getBussiness_license())){
+                docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.contract,x)).collect(Collectors.toList()));
+            }else{
+                throw new IllegalArgumentException();
+            }
+
+        }
 
 
 

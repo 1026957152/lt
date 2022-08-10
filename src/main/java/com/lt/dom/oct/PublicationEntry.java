@@ -12,7 +12,8 @@ import java.util.stream.Collectors;
 
 @Entity
 public class PublicationEntry {
-
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;

@@ -8,6 +8,9 @@ import java.util.List;
 
 @Entity
 public class ComponentRight {   // 这个是 下单的时候， 从 product 中生成 的
+    @Version
+    private Integer version;
+
 
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id

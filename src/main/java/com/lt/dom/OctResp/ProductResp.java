@@ -110,6 +110,22 @@ public class ProductResp {
         return resp;
     }
 
+    public static ProductResp from(Product product) {
+
+
+        ProductResp resp = new ProductResp();
+        resp.setSupplier(product.getSupplierId()+"");
+        resp.setPaymentOptionList(Arrays.asList(EnumPaymentOption.giftCard.name(),
+                EnumPaymentOption.loyalty.name()));
+        resp.setType(product.getType());
+        resp.setCode(product.getCode());
+      //  resp.setSupplier(supplier.getName());
+      //  resp.setSupplierCode(supplier.getCode());
+        resp.setName(product.getName());
+        resp.setNameLong(product.getName_long());
+        return resp;
+    }
+
     public void setCode(String code) {
         this.code = code;
     }

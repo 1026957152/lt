@@ -8,10 +8,7 @@ import com.lt.dom.error.Booking_not_pendingException;
 import com.lt.dom.error.Missing_customerException;
 import com.lt.dom.excel.ImportExcelBookingTraveler;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.BookingPayPojo;
-import com.lt.dom.otcReq.BookingPojo;
-import com.lt.dom.otcReq.BulkTravelerReq;
-import com.lt.dom.otcReq.TravelerReq;
+import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import org.javatuples.Pair;
@@ -74,7 +71,7 @@ public class TourCampaignServiceImpl {
     InchargeBookingRepository inchargeBookingRepository;
 
 
-    public Triplet<TourBooking,Product,Tour> book(Product product,Campaign campaign, BookingPojo pojo) {
+    public Triplet<TourBooking,Product,Tour> book(Product product,Campaign campaign, TourBookingPojo pojo) {
 
 
 

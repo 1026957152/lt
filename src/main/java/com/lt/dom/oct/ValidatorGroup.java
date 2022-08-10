@@ -8,6 +8,9 @@ import java.util.List;
 
 @Entity
 public class ValidatorGroup {
+
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
     @JsonProperty("id")

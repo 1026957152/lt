@@ -4,15 +4,13 @@ import com.lt.dom.otcenum.EnumApplicationType;
 import com.lt.dom.otcenum.EnumAssetType;
 import com.lt.dom.otcenum.EnumRequestStatus;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 
 @Entity
 public class ApplyCertification {
-
+    @Version
+    private Integer version;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

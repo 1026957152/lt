@@ -1,21 +1,14 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.OctResp.EmployeeResp;
+import com.lt.dom.OctResp.ValueListResp;
 import com.lt.dom.error.BookNotFoundException;
-import com.lt.dom.oct.Product;
-import com.lt.dom.oct.User;
 import com.lt.dom.oct.ValueList;
 import com.lt.dom.oct.ValueListItem;
-import com.lt.dom.otcReq.UserPojo;
 import com.lt.dom.otcReq.ValueListItemReq;
 import com.lt.dom.otcReq.ValueListReq;
-import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.ValueListItemRepository;
 import com.lt.dom.repository.ValueListRepository;
-import com.lt.dom.repository.VoucherRepository;
-import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.ValueListServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,14 +16,11 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/oct")
@@ -48,12 +38,15 @@ public class ValueListRestController {
     private ValueListRepository valueListRepository;
 
     @GetMapping(value = "/value_lists",produces = "application/json")
-    public PagedModel<ValueList> listValueList(Pageable pageable, PagedResourcesAssembler<EntityModel<ValueList>> assembler) {
+    public PagedModel listValueList(Pageable pageable, PagedResourcesAssembler<EntityModel<ValueListResp>> assembler) {
 
         Page<ValueList> user = valueListRepository.findAll(pageable);
 
+
+        List<ValueListItem> itemList = valueListItemRepository.findAllByValueListIn(user.stream().map(x->x.getId()).collect(Collectors.toList()));
+        Map<Long,List<ValueListItem>> stringListMap = itemList.stream().collect(Collectors.groupingBy(x->x.getValueList()));
         return assembler.toModel(user.map(x->{
-            return ValueListResp.from(user);
+            return ValueListResp.from(x,stringListMap.getOrDefault(x.getId(), Collections.EMPTY_LIST));
         }));
 
 

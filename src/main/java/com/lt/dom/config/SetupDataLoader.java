@@ -10,6 +10,9 @@ import com.lt.dom.otcReq.CompaignPojo;
 import com.lt.dom.otcReq.RealnameAuthsReq;
 import com.lt.dom.otcReq.ScenarioReq;
 import com.lt.dom.otcReq.UserPojo;
+import com.lt.dom.otcenum.EnumRuleAttributes;
+import com.lt.dom.otcenum.EnumRuleConditionType;
+import com.lt.dom.otcenum.EnumRuleOperator;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.CampaignServiceImpl;
 import com.lt.dom.serviceOtc.UserServiceImpl;
@@ -56,7 +59,8 @@ public class SetupDataLoader implements
     @Autowired
     private RealNameAuthenticationServiceImpl realNameAuthenticationService;
 
-
+    @Autowired
+    private RuleRepository ruleRepository;
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -141,6 +145,18 @@ public class SetupDataLoader implements
         realnameAuthsReq.setId_card("612724198409210339");
         realnameAuthsReq.setPhone(user.getPhone());
         realNameAuthenticationService.postWxRealnameAuths(user,realnameAuthsReq);
+
+
+
+
+
+        Rules rule = new Rules();
+        rule.setAttribute(EnumRuleAttributes.boolean_attribute);
+        rule.setOperator(EnumRuleOperator.Equal_to);
+        rule.setConditionType(EnumRuleConditionType.country_attribute);
+        rule.setNumeric_value(1l);
+        rule = ruleRepository.save(rule);
+
     }
 
     @Transactional

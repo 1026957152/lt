@@ -3,14 +3,12 @@ package com.lt.dom.oct;
 
 import com.lt.dom.otcenum.EnumSessionFor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class Session {
-
+    @Version
+    private Integer version;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -56,7 +54,7 @@ public class Session {
     //        string
    // The platform for the browser session (e.g., Macintosh).
 
-    private String version;//
+
    //         string
     //The version for the browser session (e.g., 61.0.3163.100).
 
@@ -85,11 +83,5 @@ public class Session {
         this.platform = platform;
     }
 
-    public String getVersion() {
-        return version;
-    }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
 }

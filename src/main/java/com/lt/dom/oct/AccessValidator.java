@@ -8,7 +8,8 @@ import java.util.List;
 
 @Entity
 public class AccessValidator {
-
+    @Version
+    private Integer version;
 
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id

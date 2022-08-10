@@ -5,6 +5,7 @@ import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.EnumProductComponentSource;
+import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.SupplierRepository;
 import com.lt.dom.serviceOtc.ProductServiceImpl;
 import com.lt.dom.serviceOtc.ValidatorScanServiceImpl;
@@ -14,6 +15,7 @@ import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping("/oct")
 public class ProductRestController {
@@ -40,10 +45,32 @@ public class ProductRestController {
     private ProductServiceImpl productService;
 
     @Autowired
-    private VonchorServiceImpl vonchorService;
+    private ProductRepository productRepository;
 
     @Autowired
     private SupplierRepository supplierRepository;
+
+
+
+    @Operation(summary = "1、查询Product对象列表")
+    @GetMapping(value = "/products/{PRODUCT_ID}", produces = "application/json")
+    public EntityModel<ProductResp> getProduct(@PathVariable long PRODUCT_ID) {
+
+        Optional<Product> validatorOptional = productRepository.findById(PRODUCT_ID);
+        if(validatorOptional.isPresent()){
+            throw new BookNotFoundException(PRODUCT_ID,"找不到产品");
+        }
+        EntityModel entityModel = EntityModel.of(ProductResp.from(validatorOptional.get()));
+
+        entityModel.add(linkTo(methodOn(ProductRestController.class).getProduct(validatorOptional.get().getId())).withRel("getProduct"));
+        entityModel.add(linkTo(methodOn(ProductRestController.class).addCampaigns(validatorOptional.get().getId(),null)).withRel("addCampaign"));
+        entityModel.add(linkTo(methodOn(ProductRestController.class).addCampaigns(validatorOptional.get().getId(),null)).withRel("addCampaign"));
+
+        return entityModel;
+
+
+    }
+
 
 
     @Operation(summary = "1、查询Product对象列表")
@@ -52,11 +79,9 @@ public class ProductRestController {
 
         Optional<Supplier> validatorOptional = supplierRepository.findById(SUPPLIER_ID);
         if(validatorOptional.isPresent()){
-            try {
+
                 return productService.listProduct(validatorOptional.get(),pageable).map(x->ProductResp.from(Pair.with(x,validatorOptional.get())));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
         }
         System.out.println("抛出异常");
         throw new ResponseStatusException(
@@ -75,7 +100,9 @@ public class ProductRestController {
 
         System.out.println("---------------"+ pojo.toString());
         Optional<Supplier> validatorOptional = supplierRepository.findById(SUPPLIER_ID);
-        if(validatorOptional.isPresent()){
+        if(validatorOptional.isEmpty()) {
+            throw new BookNotFoundException(SUPPLIER_ID,Supplier.class.getSimpleName());
+        }
                 Pair<Product,Supplier> product=  productService.createProduct(validatorOptional.get(),pojo);
                 URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                         .path("/{id}")
@@ -83,9 +110,6 @@ public class ProductRestController {
                         .toUri();
                 return ResponseEntity.created(uri)
                         .body(ProductResp.from(product));
-        }else{
-            throw new BookNotFoundException(SUPPLIER_ID,Supplier.class.getSimpleName());
-        }
 
 
     }
@@ -238,6 +262,16 @@ public class ProductRestController {
 
 
 
+    @Operation(summary = "10、为产品添加评论")
+    @PostMapping(value = "products/{PRODUCT_ID}/campaigns", produces = "application/json")
+    public Comment addCampaigns(@PathVariable long PRODUCT_ID, CommentPojo commentPojo)  {
+        Optional<Product> optionalProduct = productRepository.findById(PRODUCT_ID);
+        if(optionalProduct.isEmpty()){
+            throw new BookNotFoundException(PRODUCT_ID,"找不到产品");
+        }
+        Comment bookingQuestion  = productService.addComment(optionalProduct.get(),commentPojo);
+        return bookingQuestion;
+    }
 
 
 

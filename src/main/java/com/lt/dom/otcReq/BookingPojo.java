@@ -47,6 +47,8 @@ public class BookingPojo {
 
     public static class Tour {
 
+        private String guide_id;//	ID number for the lead customer
+
         @NotNull
         private Long guide;//
 
@@ -58,7 +60,32 @@ public class BookingPojo {
             this.guide = guide;
         }
 
-        private String tour_name;//
+        private String title;//
+        private String code;//
+        private String customer_count;//
+        private String starts_at;//
+        private String ends_at;//
+        private String line_info;//
+
+        public String getGuide_id() {
+            return guide_id;
+        }
+
+        public void setGuide_id(String guide_id) {
+            this.guide_id = guide_id;
+        }
+
+        public String getLine_info() {
+            return line_info;
+        }
+
+        public void setLine_info(String line_info) {
+            this.line_info = line_info;
+        }
+/*
+                      "": "2014-09-01",
+                              "ends_at": "2014-09-30",*/
+       // tour guide 旅行团：tour group 旅行社： travel agency
 
         private String lead_customer_id;//	ID number for the lead customer
 
@@ -105,12 +132,44 @@ public class BookingPojo {
             this.lead_customer_tel_mobile = lead_customer_tel_mobile;
         }
 
-        public String getTour_name() {
-            return tour_name;
+        public String getTitle() {
+            return title;
         }
 
-        public void setTour_name(String tour_name) {
-            this.tour_name = tour_name;
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public String getCustomer_count() {
+            return customer_count;
+        }
+
+        public void setCustomer_count(String customer_count) {
+            this.customer_count = customer_count;
+        }
+
+        public String getStarts_at() {
+            return starts_at;
+        }
+
+        public void setStarts_at(String starts_at) {
+            this.starts_at = starts_at;
+        }
+
+        public String getEnds_at() {
+            return ends_at;
+        }
+
+        public void setEnds_at(String ends_at) {
+            this.ends_at = ends_at;
         }
     }
 

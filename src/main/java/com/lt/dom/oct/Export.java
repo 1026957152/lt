@@ -3,16 +3,14 @@ package com.lt.dom.oct;
 import com.lt.dom.otcenum.EnumExportStatus;
 import com.lt.dom.otcenum.EnumExportVoucher;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 public class Export {
-
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;

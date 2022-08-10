@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 public class Review {
+
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;

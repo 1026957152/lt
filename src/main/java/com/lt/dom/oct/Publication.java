@@ -10,7 +10,8 @@ import java.util.List;
 @Entity
 public class Publication {
 
-
+    @Version
+    private Integer version;
 
     private String source_id;
     private long campaign_id;

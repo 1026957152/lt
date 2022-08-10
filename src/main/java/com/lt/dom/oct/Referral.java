@@ -8,7 +8,8 @@ import java.util.List;
 
 @Entity
 public class Referral {
-
+    @Version
+    private Integer version;
 
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id

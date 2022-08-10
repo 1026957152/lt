@@ -10,8 +10,9 @@ import java.util.List;
 
 @Entity
 public class Discount {
-
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Version
+    private Integer version;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     @Id
     private long id  ;

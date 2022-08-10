@@ -1,6 +1,9 @@
 package com.lt.dom.oct;
 
+import javax.persistence.Version;
+
 public enum AttractionCategoryCodes {
+
 
     market("market",29),
     restaurant("restaurant",41),

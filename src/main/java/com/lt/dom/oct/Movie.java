@@ -3,12 +3,14 @@ package com.lt.dom.oct;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 import java.util.List;
 
 
 @Entity
 public class Movie {
-
+    @Version
+    private Integer version;
     @Id
     private long id;//	The unique identifier for the given movie.
     private String name;//	The name or title.

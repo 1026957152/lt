@@ -2,14 +2,14 @@ package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
 public class MemberCertification {
+    @Version
+    private Integer version;
+
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @JsonProperty("id")

@@ -7,7 +7,8 @@ import java.util.List;
 
 @Entity
 public class ProductTheatre {
-
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
     @JsonProperty("id")

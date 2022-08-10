@@ -5,8 +5,10 @@ import com.lt.dom.error.Quantity_exceededException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ClainQuotaReq;
 import com.lt.dom.otcReq.QuotaReq;
+import com.lt.dom.otcReq.ValueListReq;
 import com.lt.dom.otcenum.EnumClainQuotaType;
 import com.lt.dom.otcenum.EnumQuotaType;
+import com.lt.dom.otcenum.EnumValueListItemType;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.ClainQuotaRepository;
 import com.lt.dom.repository.QuotaRepository;
@@ -70,6 +72,24 @@ public class ClainQuotaServiceImpl {
             if(quota.getType().equals(EnumClainQuotaType.customer__segment)){
 
             }
+
+
+            if(quota.getType().equals(EnumClainQuotaType.customer__list)){
+
+
+
+/*                ValueListReq valueListReq = new ValueListReq();
+                valueListReq.setAlias("");
+                valueListReq.setItem_type(EnumValueListItemType.customer_id);
+                valueListReq.setName("");
+                ValueList valueList = valueListService.createValueList(valueListReq);*/
+
+
+                quota.setType(EnumClainQuotaType.customer__list);
+
+            }
+
+
             quota = clainQuotaRepository.save(quota);
 
 

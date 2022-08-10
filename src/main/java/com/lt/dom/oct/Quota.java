@@ -4,14 +4,12 @@ package com.lt.dom.oct;
 import com.lt.dom.otcenum.EnumClaimOrRedeem;
 import com.lt.dom.otcenum.EnumQuotaType;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class Quota {
-
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     @Id

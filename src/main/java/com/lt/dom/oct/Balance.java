@@ -10,10 +10,10 @@ import javax.persistence.Version;
 
 @Entity
 public class Balance {
-    @Id
-    private long id;
     @Version
     private Integer version;
+    @Id
+    private long id;
 
     private boolean available;
 

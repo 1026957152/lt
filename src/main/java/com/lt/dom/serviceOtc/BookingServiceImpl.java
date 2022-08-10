@@ -76,9 +76,6 @@ public class BookingServiceImpl {
     public Triplet<Reservation,Product,Tour> book(Product product, BookingPojo pojo) {
 
 
-
-
-
         List<Voucher> vouchers = pojo.getDiscounts().stream().map(x->new Voucher()).collect(Collectors.toList());
        // Voucher voucher = voucherService.领券(product);
 

@@ -3,16 +3,10 @@ package com.lt.dom.controllerOct;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.BookingDocumentResp;
-import com.lt.dom.otcReq.ClainQuotaReq;
-import com.lt.dom.otcReq.CompaignPojo;
-import com.lt.dom.otcReq.QuotaReq;
+import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.repository.*;
-import com.lt.dom.serviceOtc.AssetServiceImpl;
-import com.lt.dom.serviceOtc.ClainQuotaServiceImpl;
-import com.lt.dom.serviceOtc.FileStorageService;
-import com.lt.dom.serviceOtc.VoucherServiceImpl;
+import com.lt.dom.serviceOtc.*;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Quartet;
 import org.javatuples.Triplet;
@@ -67,6 +61,8 @@ public class CampaignRestController {
 
     @Autowired
     private AssetServiceImpl assetService;
+    @Autowired
+    private ValueListServiceImpl valueListService;
 
 
     @Operation(summary = "2、下单购买")
@@ -306,6 +302,29 @@ public class CampaignRestController {
         throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
 
+
+    }
+
+
+
+
+
+    @PostMapping(value = "/campaigns/{CAMPAIGN_ID}/clain_redeem_rule", produces = "application/json")
+    public ResponseEntity<List<ValueListItem>> clainAndRedeemRule(@PathVariable long CAMPAIGN_ID,@RequestBody ClainRedeemAssignmentReq clainQuotaReq) {
+
+
+        System.out.println("----"+CAMPAIGN_ID);
+        Optional<Campaign> optional = campaignRepository.findById(CAMPAIGN_ID);
+
+
+        if(optional.isEmpty()) {
+            throw new BookNotFoundException("Foo Not Found", "找不到rule");
+        }
+            System.out.println("----"+optional.get());
+
+        List<ValueListItem> campaignResps =  valueListService.addClainRedeem(optional.get(),clainQuotaReq);
+
+            return ResponseEntity.ok(campaignResps);
 
     }
 }

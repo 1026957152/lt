@@ -18,6 +18,12 @@ public enum EnumDocumentType {
     scenario_image_small("scenario_image_small"),
 
 
+
+    business_license("business_license"),
+    license("license"),
+    liability_insurance("liability_insurance"),
+
+
     ;
 
 

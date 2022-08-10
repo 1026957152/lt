@@ -5,10 +5,12 @@ import com.lt.dom.otcenum.EnumTranType;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Version;
 
 @Entity
 public class TransactionEntry {  //余额结算
-
+    @Version
+    private Integer version;
     @Id
     private long id; // 用户余额转账对象 ID，由Ping++ 生成。
 

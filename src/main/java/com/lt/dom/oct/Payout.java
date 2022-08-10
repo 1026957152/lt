@@ -5,15 +5,13 @@ import com.lt.dom.otcenum.EnumPayoutFailureCodes;
 import com.lt.dom.otcenum.EnumPayoutMethod;
 import com.lt.dom.otcenum.EnumPayoutStatus;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 
 @Entity
 public class Payout {
-
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;

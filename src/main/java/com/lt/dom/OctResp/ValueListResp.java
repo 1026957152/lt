@@ -2,13 +2,18 @@ package com.lt.dom.OctResp;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.oct.ValueList;
+import com.lt.dom.oct.ValueListItem;
 import com.lt.dom.otcenum.EnumValueListItemType;
+import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 public class ValueListResp {
@@ -21,14 +26,25 @@ public class ValueListResp {
 
     private String metadata;
     private String code;
+    private int number;
 
-    public long getId() {
-        return id;
+    public static EntityModel<ValueListResp> from(ValueList user, List<ValueListItem> valueListItems) {
+
+        ValueListResp valueListResp = new ValueListResp();
+        valueListResp.setAlias(user.getAlias());
+        valueListResp.setCode(user.getCode());
+        valueListResp.setMetadata(user.getMetadata());
+        valueListResp.setName(user.getName());
+        valueListResp.setItem_type(user.getItem_type());
+        valueListResp.setCreated(user.getCreated());
+        valueListResp.setCreated_by(user.getCreated_by());
+        valueListResp.setNumber(valueListItems.size());
+        EntityModel<ValueListResp> entityModel = EntityModel.of(valueListResp);
+
+        return entityModel;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
+
 
     public String getAlias() {
         return alias;
@@ -84,5 +100,13 @@ public class ValueListResp {
 
     public String getCode() {
         return code;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
+    }
+
+    public int getNumber() {
+        return number;
     }
 }

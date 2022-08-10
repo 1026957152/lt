@@ -11,7 +11,8 @@ import java.util.List;
 
 @Entity
 public class Reservation {
-
+    @Version
+    private Integer version;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

@@ -10,6 +10,8 @@ import javax.persistence.*;
 
 @Entity
 public class Supplier {
+    @Version
+    private Integer version;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

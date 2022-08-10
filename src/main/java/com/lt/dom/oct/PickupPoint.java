@@ -2,11 +2,13 @@ package com.lt.dom.oct;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Version;
 import java.time.LocalDateTime;
 
 @Entity
 public class PickupPoint {
-
+    @Version
+    private Integer version;
 
     @Id
     private long id;

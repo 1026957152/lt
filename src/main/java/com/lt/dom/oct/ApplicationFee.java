@@ -8,7 +8,8 @@ import javax.persistence.*;
 
 @Entity
 public class ApplicationFee {
-
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @JsonProperty("id")

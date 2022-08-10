@@ -5,17 +5,15 @@ import com.lt.dom.otcenum.EnumExportVoucher;
 import com.lt.dom.otcenum.EnumImportCVS;
 import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 
 @Entity
 //@TypeDef(name = "json", typeClass = JsonStringType.class)
 public class ImportExcel {
-
+    @Version
+    private Integer version;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

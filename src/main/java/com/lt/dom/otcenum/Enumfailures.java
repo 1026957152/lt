@@ -63,6 +63,31 @@ public enum Enumfailures {
 
     username_already_exists_error("用户名已经存在"),
 
+
+
+
+
+
+    SUCCESS("	S	Success"),
+  //  The registration is successful, no further action is needed."),
+
+    INVALID_CLIENT("	F	The client is invalid."),
+  //  Check whether clientId is correct."),
+
+    MEDIA_TYPE_NOT_ACCEPTABLE("	F	The server does not implement the media type that is acceptable to the client."),
+   // Check whether the media type is correct."),
+
+    METHOD_NOT_SUPPORTED("	F	The server does not implement the requested HTTP method."),
+   // Check whether the HTTP method is correct."),
+
+    REPEAT_REQ_INCONSISTENT("	F	Repeated requests are inconsistent."),
+   // Change registrationRequestId and call the interface again.
+
+    REGISTRATION_UNDER_REVIEW("	F	A previously submitted registration is currently under review. No new registration or modification is allowed."),
+   // The submitted registration is currently under review. Please wait for the final result.
+
+    REPEAT_REGISTRATION("	F	Repeated registration for merchant"),
+   // Prompt the user not to register repeatedly.
     ;
 
 

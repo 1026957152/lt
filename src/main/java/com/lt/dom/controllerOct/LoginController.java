@@ -12,6 +12,7 @@ import com.lt.dom.oct.Employee;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcReq.AuthsReq;
+import com.lt.dom.otcenum.EnumSupplierType;
 import com.lt.dom.repository.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,10 +118,16 @@ public class LoginController {
                     supplierRespEntityModel.add(linkTo(methodOn(RedemptionRestController.class).pageRedemptionEntry(supplier.getId(),null,null)).withRel("getRedemptionEntries"));
                   //  supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.getId(),null)).withRel("addEmployees"));
                     supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).page_mainEmployee(supplier.getId())).withRel("getPageEmployee"));
-
-
                     userRespEntityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchorBycode(null,null)).withRel("redeem"));
                     userRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(supplier.getId())).withRel("getSupplier"));
+                    userRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).getRedemptionEntry(supplier.getId())).withRel("getRedemptionEntrySummary"));
+
+
+                    if(supplier.getType().equals(EnumSupplierType.TravelAgent)){
+                        supplierRespEntityModel.add(linkTo(methodOn(TourCampaignRestController.class).createBooking(null)).withRel("createTourCampaign"));
+                        supplierRespEntityModel.add(linkTo(methodOn(ProductRestController.class).createProduct(supplier.getId(),null)).withRel("createProduct"));
+
+                    }
 
 
                 }

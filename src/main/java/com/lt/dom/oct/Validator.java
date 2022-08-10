@@ -7,6 +7,9 @@ import javax.persistence.*;
 
 @Entity
 public class Validator {  // 这个就是机器了啊
+
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
     @JsonProperty("id")

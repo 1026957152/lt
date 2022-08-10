@@ -152,7 +152,7 @@ public class TourCampaignRestController {
 
     @Operation(summary = "2、下单购买")
     @PostMapping(value = "/tour_bookings", produces = "application/json")
-    public ResponseEntity createBooking(@RequestBody @Valid BookingPojo pojo) {
+    public ResponseEntity createBooking(@RequestBody @Valid TourBookingPojo pojo) {
 
 
         Optional<Product> optionalProduct = productRepository.findById(pojo.getProductId());

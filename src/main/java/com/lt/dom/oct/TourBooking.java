@@ -12,7 +12,8 @@ import java.util.List;
 @Entity
 public class TourBooking {
 
-
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @JsonProperty("id")

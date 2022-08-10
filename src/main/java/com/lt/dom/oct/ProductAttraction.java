@@ -9,7 +9,8 @@ import java.util.List;
 
 @Entity
 public class ProductAttraction {
-
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
     @JsonProperty("id")

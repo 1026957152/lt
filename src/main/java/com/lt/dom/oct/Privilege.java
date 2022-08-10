@@ -5,7 +5,8 @@ import java.util.Collection;
 
 @Entity
 public class Privilege {
- 
+    @Version
+    private Integer version;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

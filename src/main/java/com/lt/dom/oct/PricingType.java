@@ -4,14 +4,12 @@ package com.lt.dom.oct;
 import com.lt.dom.otcenum.EnumProductPricingType;
 import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class PricingType {
-
+    @Version
+    private Integer version;
 
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
