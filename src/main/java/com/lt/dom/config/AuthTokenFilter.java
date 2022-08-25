@@ -1,6 +1,7 @@
 package com.lt.dom.config;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 
 import javax.servlet.FilterChain;
@@ -13,7 +14,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.lt.dom.JwtUtils;
 import com.lt.dom.error.ApiErrorResponse;
+import com.lt.dom.error.BadJwtException;
+import com.lt.dom.error.Error401Exception;
+import com.lt.dom.otcenum.EnumIdentityType;
 import com.lt.dom.otcenum.EnumRedemptionfailures;
+import com.lt.dom.otcenum.Enumfailures;
+import com.lt.dom.util.PathMatcherUtil;
+import com.lt.dom.vo.IdentityVo;
 import com.lt.dom.vo.LogVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +28,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -71,6 +80,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		try {
+
+			String path = request.getServletPath();
+
+			System.out.println("==请求url==="+path);
 			String jwt = parseJwt(request);
 
 			System.out.println("-----------------------------"+ jwt);
@@ -83,30 +96,50 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 					LogVo logVo = gson.fromJson(username, LogVo.class);
 					if (logVo.getType() == 1) {
 						username = logVo.getName();
-						UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+						IdentityVo identityVo = new IdentityVo(EnumIdentityType.phone,username);
+						UserDetails userDetails = userDetailsService.loadUserByUsername(gson.toJson(identityVo));
 						UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
 								userDetails, null, userDetails.getAuthorities());
 						authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+
+						System.out.println("存入啊啊啊" + userDetails.getUsername());
 						SecurityContextHolder.getContext().setAuthentication(authentication);
 
 					} else {
-						String token = logVo.getName();
-						Authentication authentication = authenticationTokenProvider.authenticate(
-								new AuthenticationToken(token, Collections.emptyList()));
 
+						if(false && PathMatcherUtil.matches(Arrays.asList(
+								"/oct/realname-auths/individual"
+						), path)){
+							SecurityContextHolder.getContext().setAuthentication(new AnonymousAuthenticationToken("key", "anon", AuthorityUtils.createAuthorityList("ANON")));
+
+						}else{
+
+							String token = logVo.getName();
+							IdentityVo identityVo = new IdentityVo(EnumIdentityType.weixin,token);
+
+							Authentication authentication = authenticationTokenProvider.authenticate(
+									new AuthenticationToken(gson.toJson(identityVo), Collections.emptyList()));
 
 /*
 					UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 					UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
 							userDetails, null, userDetails.getAuthorities());*/
-						//authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-						SecurityContextHolder.getContext().setAuthentication(authentication);
+							//authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+							SecurityContextHolder.getContext().setAuthentication(authentication);
+
+
+
+							;
+
+						}
+
+
 					}
 
 				}else{
 
-
-					throw new BadCredentialsException("Invalid JWT token: Unable to read JSON value");
+					throw new Error401Exception(Enumfailures.Missing_credentials,"Invalid JWT token");
 				}
 
 			}
@@ -135,13 +168,25 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 		filterChain.doFilter(request, response);
 	}
 
-/*	@Override
+	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException
 	{
 		// Populate excludeUrlPatterns on which one to exclude here
+		String path = request.getServletPath();
 
-		return false;
-	}*/
+
+		return PathMatcherUtil.matches(Arrays.asList(
+				"/oct/index",
+				"/oct/wxLogin",
+				"/oct/campaigns/page",
+				"/oct/scenarios/**",
+				"/oct/campaigns/list",
+				"/oct/getPhone"
+			//	"/oct/realname-auths/individual"
+		), path);
+
+
+	}
 
 	private String parseJwt(HttpServletRequest request) {
 		String headerAuth = request.getHeader("Authorization");

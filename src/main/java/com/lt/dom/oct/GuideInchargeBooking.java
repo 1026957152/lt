@@ -1,6 +1,7 @@
 package com.lt.dom.oct;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 
 @Entity
@@ -13,10 +14,14 @@ public class GuideInchargeBooking {
 
 
 
-    private long guideId;
+    @NotNull
+    private Long guideId;
 
+    @NotNull
+    private Long booking;
 
-    private long booking;
+    @NotNull
+    private Long agency;
 
     public long getId() {
         return id;
@@ -26,19 +31,27 @@ public class GuideInchargeBooking {
         this.id = id;
     }
 
-    public long getGuideId() {
+    public Long getGuideId() {
         return guideId;
     }
 
-    public void setGuideId(long guide_id) {
+    public void setGuideId(Long guide_id) {
         this.guideId = guide_id;
     }
 
-    public long getBooking() {
+    public Long getBooking() {
         return booking;
     }
 
-    public void setBooking(long booking) {
+    public void setBooking(Long booking) {
         this.booking = booking;
+    }
+
+    public void setAgency(Long agency) {
+        this.agency = agency;
+    }
+
+    public Long getAgency() {
+        return agency;
     }
 }

@@ -1,24 +1,21 @@
 package com.lt.dom.OctResp;
 
 import com.lt.dom.oct.*;
-import com.lt.dom.otcenum.EnumOrderStatus;
+import com.lt.dom.otcenum.EnumTourBookingStatus;
 import com.lt.dom.otcenum.EnumPaymentOption;
 import com.lt.dom.otcenum.EnumProductType;
-import org.javatuples.Pair;
+import com.lt.dom.otcenum.EnumTourBookingStatus_;
+import com.lt.dom.requestvo.ProductSubVo;
 import org.javatuples.Quartet;
 import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 public class ReservationTourResp extends RepresentationModel<ReservationTourResp> {
 
-
-
-    List<RoomStay> roomStays; // 表示库存 多久的库存。
 
 
 
@@ -28,18 +25,13 @@ public class ReservationTourResp extends RepresentationModel<ReservationTourResp
     List<TravelerResp> travelers;
 
 
-    List<ComponentRight> componentRights;
 
-
-    List<RatePlan> ratePlans;
-
-
-    List<RoyaltyRule> royaltyRules;
     private String code;
     private EnumProductType productType;
     private String productCode;
     private String note;
     private List<DocumentResp> documents;
+    private String status_text;
 
     public static ReservationTourResp toResp(TourBooking booking, List<Traveler> travelers, List<Document> documents) {
 
@@ -65,44 +57,17 @@ public class ReservationTourResp extends RepresentationModel<ReservationTourResp
 
     }
 
-    public List<RoyaltyRule> getRoyaltyRules() {
-        return royaltyRules;
-    }
-
-    public void setRoyaltyRules(List<RoyaltyRule> royaltyRules) {
-        this.royaltyRules = royaltyRules;
-    }
-
-    public List<RatePlan> getRatePlans() {
-        return ratePlans;
-    }
-
-    public void setRatePlans(List<RatePlan> ratePlans) {
-        this.ratePlans = ratePlans;
-    }
-
-    private List<Voucher> vouchers; //折扣券
-
-    public List<Voucher> getVouchers() {
-        return vouchers;
-    }
-
-    public void setVouchers(List<Voucher> vouchers) {
-        this.vouchers = vouchers;
-    }
-
-    List<BookAnswer> answers;
 
 
 
 
-    private EnumOrderStatus status;
+    private EnumTourBookingStatus_ status;
 
-    public EnumOrderStatus getStatus() {
+    public EnumTourBookingStatus_ getStatus() {
         return status;
     }
 
-    public void setStatus(EnumOrderStatus status) {
+    public void setStatus(EnumTourBookingStatus_ status) {
         this.status = status;
     }
     /*    status	The order's current status:
@@ -140,16 +105,6 @@ public class ReservationTourResp extends RepresentationModel<ReservationTourResp
     }
 
 
-
-    List<Component> components;
-
-    public List<Component> getComponents() {
-        return components;
-    }
-
-    public void setComponents(List<Component> components) {
-        this.components = components;
-    }
 
 
 
@@ -228,10 +183,10 @@ public class ReservationTourResp extends RepresentationModel<ReservationTourResp
 
 
 
-    public static ReservationTourResp toResp(Triplet<TourBooking,Product,Tour> pair) {
+    public static ReservationTourResp toResp(Triplet<TourBooking,Product, ProductSubVo> pair) {
         TourBooking booking = pair.getValue0();
         Product product = pair.getValue1();
-        Tour tour = pair.getValue2();
+        Tour tour = pair.getValue2().getTour();
         ReservationTourResp reservationResp = new ReservationTourResp();
 
         reservationResp.setAmount(booking.getAmount());
@@ -244,11 +199,12 @@ public class ReservationTourResp extends RepresentationModel<ReservationTourResp
         reservationResp.setProductType(booking.getProductType());
         reservationResp.setProductCode(product.getCode());
         reservationResp.setNote(tour.getTour_name());
+        reservationResp.setStatus_text(booking.getStatus().toString());
         //reservationResp.setNote(tour.getTour_name_long());
         return reservationResp;
     }
 
-    public static ReservationTourResp toResp(Quartet<TourBooking,Product,Tour,List<Traveler>> pair) {
+    public static ReservationTourResp toResp(Quartet<TourBooking,Product,ProductSubVo,List<Traveler>> pair) {
 
         ReservationTourResp resp = toResp(Triplet.with(pair.getValue0(),pair.getValue1(),pair.getValue2()));
         List<Traveler> travelers = pair.getValue3();
@@ -259,17 +215,7 @@ public class ReservationTourResp extends RepresentationModel<ReservationTourResp
         return resp;
     }
 
-    public static ReservationTourResp toResp(Quintet<TourBooking,Product,Tour,List<Traveler>,List<Document>> pair) {
 
-        ReservationTourResp resp = toResp(Quartet.with(pair.getValue0(),pair.getValue1(),pair.getValue2(),pair.getValue3()));
-        List<Document> travelers = pair.getValue4();
-        DocumentResp.Listfrom(travelers);
-        resp.setDocuments(DocumentResp.Listfrom(travelers));
-
-
-
-        return resp;
-    }
 
 
     public void setNote(String note) {
@@ -294,5 +240,30 @@ public class ReservationTourResp extends RepresentationModel<ReservationTourResp
 
     public List<DocumentResp> getDocuments() {
         return documents;
+    }
+
+
+
+
+
+    private String title = "测试团名";//团名称： title;
+    private String group_code= "测试团号";//团号： code;
+    private int customer_count= 12;//游客数量： customer_count;
+    private String starts_at= "测试开始日期";//线路开始：starts_at;
+    private String ends_at= "测试结束始日期";//线路结束：ends_at;
+    private String line_info= "测试线路信息";//线路信息：  line_info;
+    private String guide_name= "测试导游姓名";//导游名字：guide_name
+    private String guide_phone= "测试导游电话";//导游电话：guide_phone
+    private String guide_id= "测试导游身份证";//导游身份证：guide_id
+    private int campaign_count= 5;//优惠券类别数量：campaign_count
+    private int redeemed_campaign_count= 1;//已核销券类别：redeemed_campaign_count
+
+
+    public void setStatus_text(String status_text) {
+        this.status_text = status_text;
+    }
+
+    public String getStatus_text() {
+        return status_text;
     }
 }

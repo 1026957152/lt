@@ -1,14 +1,20 @@
 package com.lt.dom.controllerOct;
 
+import com.lt.dom.JwtUtils;
 import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.oct.Asset;
+import com.lt.dom.oct.Campaign;
 import com.lt.dom.oct.Voucher;
 import com.lt.dom.otcReq.VoucherResp;
+import com.lt.dom.repository.CampaignRepository;
 import com.lt.dom.repository.VoucherRepository;
+import com.lt.dom.serviceOtc.AssetServiceImpl;
 import com.lt.dom.serviceOtc.ValidatorScanServiceImpl;
 import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 
 import org.hibernate.EntityMode;
+import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -20,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.swing.text.html.parser.Entity;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -33,10 +40,16 @@ public class VoucherRestController {
     private ValidatorScanServiceImpl validatorScanService;
 
 
+    @Autowired
+    private CampaignRepository campaignRepository;
 
     @Autowired
     private VonchorServiceImpl vonchorService;
+    @Autowired
+    private AssetServiceImpl assetService;
 
+    @Autowired
+    JwtUtils jwtUtils;
 
     @Operation(summary = "1、获得")
     @GetMapping(value = "/vouchers/{VOUCHER_ID}", produces = "application/json")
@@ -71,7 +84,11 @@ public class VoucherRestController {
 
 
         }
-            VoucherResp Voucher = vonchorService.getVoucher(optionalVoucher.get());
+
+        Optional<Campaign> campaignOptional = campaignRepository.findById(optionalVoucher.get().getCampaign());
+
+        List<Asset> assets = assetService.getQr(optionalVoucher.get().getCode());
+            VoucherResp Voucher = VoucherResp.from(Triplet.with(optionalVoucher.get(),campaignOptional.get(),assets),Optional.of(jwtUtils));
             return ResponseEntity.ok(EntityModel.of(Voucher));
     }
 

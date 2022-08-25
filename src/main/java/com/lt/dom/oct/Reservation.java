@@ -1,11 +1,12 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.otcenum.EnumOrderStatus;
+import com.lt.dom.otcenum.EnumTourBookingStatus;
 import com.lt.dom.otcenum.EnumPaymentOption;
 import com.lt.dom.otcenum.EnumProductType;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 
@@ -86,13 +87,14 @@ public class Reservation {
 
 
 
-    private EnumOrderStatus status;
+    @NotNull
+    private EnumTourBookingStatus status;
 
-    public EnumOrderStatus getStatus() {
+    public EnumTourBookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(EnumOrderStatus status) {
+    public void setStatus(EnumTourBookingStatus status) {
         this.status = status;
     }
     /*    status	The order's current status:

@@ -8,6 +8,7 @@ import com.lt.dom.otcReq.ClainRedeemAssignmentReq;
 import com.lt.dom.otcReq.ValueListItemReq;
 import com.lt.dom.otcReq.ValueListReq;
 import com.lt.dom.otcenum.EnumValueListItemType;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.RuleAssignmentRepository;
 import com.lt.dom.repository.SupplierRepository;
 import com.lt.dom.repository.ValueListItemRepository;
@@ -104,7 +105,7 @@ public class ValueListServiceImpl {
         Optional<ValueListItem> optionalValueListItem = valueListItemRepository.findByValueListAndValue(valueList.getId(),clainQuotaReq.getValue());
 
         if(optionalValueListItem.isPresent()){
-            throw new ExistException("已经存在该对象了");
+            throw new ExistException(Enumfailures.general_exists_error,"已经存在该对象了");
         }
         ValueListItemReq valueListItemReq = new ValueListItemReq();
         valueListItemReq.setValue(clainQuotaReq.getValue());

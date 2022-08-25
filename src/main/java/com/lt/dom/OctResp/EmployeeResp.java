@@ -8,12 +8,11 @@ import com.lt.dom.oct.Employee;
 import com.lt.dom.oct.Role;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.User;
-import com.lt.dom.otcenum.EnumEmployeeAccessLevel;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.springframework.hateoas.EntityModel;
 
-import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,76 +37,82 @@ public class EmployeeResp {
 
 
     private String note;
-    private String name;
+
     private String code;
     private List<RoleResp> roles;
+    private String real_name;
+    private String status_text;
+    private LocalDateTime created_at;
 
-    public static EntityModel<EmployeeResp> sigleElementfrom(Triplet<Supplier,Employee, User> triplet) {
+    public String getStatus_text() {
+        return status_text;
+    }
+
+    public void setStatus_text(String status_text) {
+        this.status_text = status_text;
+    }
+
+    public static EmployeeResp sigleElementfrom(Triplet<Supplier,Employee, User> triplet) {
         EmployeeResp employeeResp = new EmployeeResp();
 
         Employee employee = triplet.getValue1();
 
         employeeResp.setSuplier(triplet.getValue0().getName());
         employeeResp.setPhone(triplet.getValue2().getPhone());
-        employeeResp.setName(triplet.getValue2().getRealName());
+        employeeResp.setCreated_at(employee.getCreated_at());
+        employeeResp.setStatus_text(employee.getStatus().toString());
         employeeResp.setCode(triplet.getValue1().getCode());
         List<Role> roles = triplet.getValue2().getRoles().stream().collect(Collectors.toList());
-        employeeResp.setRoles(RoleResp.from(roles));
+        employeeResp.setRoles(RoleResp.fromWithoutModel(roles));
 
 
-        EntityModel entityModel = EntityModel.of(employeeResp);
-        entityModel.add(linkTo(methodOn(BookingRestController.class).createBooking(null)).withRel("booking"));
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(employee.getId())).withRel("getEmployee"));
+      //  entityModel.add(linkTo(methodOn(BookingRestController.class).createBooking(null)).withRel("booking"));
+      //  entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(employee.getId())).withRel("getEmployee"));
 
 
-        return entityModel;
+        return employeeResp;
     }
 
     public static EntityModel<EmployeeResp> pageElementfrom(Triplet<Supplier,Employee, User> triplet) {
         EmployeeResp employeeResp = new EmployeeResp();
 
         Employee employee = triplet.getValue1();
+        User user = triplet.getValue2();
 
         employeeResp.setSuplier(triplet.getValue0().getName());
-        employeeResp.setPhone(triplet.getValue2().getPhone());
-        employeeResp.setName(triplet.getValue2().getRealName());
-        employeeResp.setCode(triplet.getValue1().getCode());
+        employeeResp.setPhone(user.getPhone());
+        employeeResp.setCreated_at(employee.getCreated_at());
+        employeeResp.setStatus_text(employee.getStatus().toString());
+        employeeResp.setReal_name(user.getRealName());
+        employeeResp.setCode(user.getCode());
         List<Role> roles = triplet.getValue2().getRoles().stream().collect(Collectors.toList());
-        employeeResp.setRoles(RoleResp.from(roles));
+        employeeResp.setRoles(RoleResp.fromWithoutModel(roles));
 
 
         EntityModel entityModel = EntityModel.of(employeeResp);
-        entityModel.add(linkTo(methodOn(BookingRestController.class).createBooking(null)).withRel("booking"));
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(employee.getId())).withRel("getEmployee"));
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).delete(employee.getId())).withRel("deleteEmployee"));
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).update(employee.getId(),null)).withRel("updateEmployee"));
+
 
         return entityModel;
     }
-    public static EntityModel<EmployeeResp> pageElementfrom(Pair<Employee, User> pair) {
+    public static EmployeeResp pageElementfrom(Pair<Employee, User> pair) {
         EmployeeResp employeeResp = new EmployeeResp();
 
         User user = pair.getValue1();
         Employee employee = pair.getValue0();
 
-        EntityModel entityModel = EntityModel.of(employeeResp);
+        employeeResp.setCreated_at(employee.getCreated_at());
+        employeeResp.setStatus_text(employee.getStatus().toString());
      //   employeeResp.setSuplier(employee.getValue0().getName());
         employeeResp.setPhone(user.getPhone());
-        employeeResp.setName(user.getRealName());
+        employeeResp.setReal_name(user.getRealName());
         employeeResp.setCode(employee.getCode());
         System.out.println("=================================="+ user.getRoles().size());
         List<Role> roles = user.getRoles().stream().collect(Collectors.toList());
         System.out.println("=================================="+ roles.size());
-        employeeResp.setRoles(RoleResp.from(roles));
-
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(employee.getId())).withSelfRel());
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployeeparameters(employee.getId())).withRel("getParameters"));
-       // entityModel.add(linkTo(methodOn(BookingRestController.class).createBooking(null)).withRel("booking"));
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).delete(employee.getId())).withRel("deleteEmployee"));
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).update(employee.getId(),null)).withRel("updateEmployee"));
+        employeeResp.setRoles(RoleResp.fromWithoutModel(roles));
 
 
-        return entityModel;
+        return employeeResp;
     }
 
     public String getFirstName() {
@@ -153,13 +158,7 @@ public class EmployeeResp {
         this.suplier = suplier;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
-    public String getName() {
-        return name;
-    }
 
     public void setCode(String code) {
         this.code = code;
@@ -175,5 +174,21 @@ public class EmployeeResp {
 
     public List<RoleResp> getRoles() {
         return roles;
+    }
+
+    public void setReal_name(String real_name) {
+        this.real_name = real_name;
+    }
+
+    public String getReal_name() {
+        return real_name;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
     }
 }

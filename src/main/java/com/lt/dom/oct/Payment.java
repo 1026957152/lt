@@ -1,5 +1,9 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.otcenum.EnumPaymentFlow;
+import com.lt.dom.otcenum.EnumPaymentOption;
+import com.lt.dom.otcenum.EnumPaymentStatus;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 @Entity
@@ -30,6 +34,9 @@ public class Payment {
     private LocalDateTime created_at;//	timestamp	Timestamp when created
     private LocalDateTime updated_at;//	timestamp	Timestamp when updated
     private long recipient;
+    private EnumPaymentOption payment_method;
+    private EnumPaymentStatus status;
+    private EnumPaymentFlow payment_flow;
 
     public String getCode() {
         return code;
@@ -197,5 +204,30 @@ public class Payment {
 
     public long getRecipient() {
         return recipient;
+    }
+
+    public void setPayment_method(EnumPaymentOption payment_method) {
+
+        this.payment_method = payment_method;
+    }
+
+    public EnumPaymentOption getPayment_method() {
+        return payment_method;
+    }
+
+    public void setStatus(EnumPaymentStatus status) {
+        this.status = status;
+    }
+
+    public EnumPaymentStatus getStatus() {
+        return status;
+    }
+
+    public void setPayment_flow(EnumPaymentFlow payment_flow) {
+        this.payment_flow = payment_flow;
+    }
+
+    public EnumPaymentFlow getPayment_flow() {
+        return payment_flow;
     }
 }

@@ -2,6 +2,7 @@ package com.lt.dom.OctResp;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.lt.dom.JwtUtils;
 import com.lt.dom.oct.Asset;
 import com.lt.dom.oct.Campaign;
 import com.lt.dom.oct.PublicationEntry;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -37,6 +39,8 @@ public class PublicationResp {
     private String customer;
     private LocalDate published_at;
     private VoucherResp voucher;
+    private boolean paied;
+    private long charge;
 
 
     public static List<PublicationResp> from(List<PublicationEntry> publicationResps) {
@@ -69,7 +73,7 @@ public class PublicationResp {
         publicationResp.setType(publicationEntry.getToWhoType());
         publicationResp.setCampaign(campaign.getName());
         publicationResp.setCampaignCode(campaign.getCode());
-        publicationResp.setVouchers(Arrays.asList(VoucherResp.from(Triplet.with(voucher,campaign,assets))));
+        publicationResp.setVouchers(Arrays.asList(VoucherResp.from(Triplet.with(voucher,campaign,assets), Optional.empty())));
         return publicationResp;
     }
 
@@ -94,11 +98,12 @@ public class PublicationResp {
         publicationResp.setType(publicationEntry.getToWhoType());
         publicationResp.setCampaign(campaign.getName());
         publicationResp.setCampaignCode(campaign.getCode());
-        publicationResp.setVouchers(Arrays.asList(VoucherResp.from(Triplet.with(voucher,campaign,assets))));
+        publicationResp.setVouchers(Arrays.asList(VoucherResp.from(Triplet.with(voucher,campaign,assets),Optional.empty())));
         return publicationResp;
     }
-    public static PublicationResp sigleFrom(Quartet<PublicationEntry, Voucher, Campaign,List<Asset>> p) {
-        PublicationEntry publicationEntry = p.getValue0();
+    public static PublicationResp sigleFrom(Quartet< List<PublicationEntry>, Voucher, Campaign,List<Asset>> p) {
+        List<PublicationEntry> publicationEntryList = p.getValue0();
+        PublicationEntry publicationEntry = publicationEntryList.get(0);
         Voucher  voucher= p.getValue1();
         Campaign  campaign= p.getValue2();
         List<Asset> assets= p.getValue3();
@@ -118,8 +123,11 @@ public class PublicationResp {
         publicationResp.setType(publicationEntry.getToWhoType());
         publicationResp.setCampaign(campaign.getName());
         publicationResp.setCampaignCode(campaign.getCode());
-        publicationResp.setVoucher(VoucherResp.from(Triplet.with(voucher,campaign,assets)));
+        publicationResp.setPaied(publicationEntry.getPaied());
+        publicationResp.setCharge(publicationEntry.getCharge());
+        publicationResp.setVoucher(VoucherResp.from(Triplet.with(voucher,campaign,assets),Optional.empty()));
         publicationResp.setPublished_at(publicationEntry.getPublished_at());
+
 
 
         return publicationResp;
@@ -197,6 +205,22 @@ public class PublicationResp {
 
     public VoucherResp getVoucher() {
         return voucher;
+    }
+
+    public void setPaied(boolean paied) {
+        this.paied = paied;
+    }
+
+    public boolean getPaied() {
+        return paied;
+    }
+
+    public void setCharge(long charge) {
+        this.charge = charge;
+    }
+
+    public long getCharge() {
+        return charge;
     }
 /*       "customer_id":"cust_lDnTN0zZfoXJDdgZRV0DzDP6",
                "channel":"API",

@@ -36,6 +36,7 @@ public class Document {
     @NotNull
     private long size;
     private String mimeType; //MIME type
+    private boolean image;
 
     public long getSize() {
         return size;
@@ -123,5 +124,13 @@ public class Document {
 
     public String getExtension() {
         return extension;
+    }
+
+    public void setImage(boolean image) {
+        this.image = image;
+    }
+
+    public boolean getImage() {
+        return image;
     }
 }

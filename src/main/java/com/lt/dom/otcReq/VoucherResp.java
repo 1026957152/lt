@@ -1,6 +1,7 @@
 package com.lt.dom.otcReq;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.lt.dom.JwtUtils;
 import com.lt.dom.OctResp.AssetResp;
 import com.lt.dom.OctResp.PublicationEntryResp;
 import com.lt.dom.oct.*;
@@ -8,14 +9,27 @@ import com.lt.dom.otcenum.EnumAssetType;
 import com.lt.dom.otcenum.EnumDiscountVoucherCategory;
 import com.lt.dom.otcenum.EnumVoucherStatus;
 import com.lt.dom.otcenum.EnumVoucherType;
+import com.lt.dom.util.AESUtil;
+import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.util.ObjectUtils;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +41,14 @@ public class VoucherResp {
     private String object = "voucher";
     private boolean issued;
     private EnumVoucherStatus status;
+    private String status_text;
+    private String expiry_datetime_text;
+    private String amount;
+    private String type_text;
+    private String crypto_code;
+    private String crypto_id;
+    private String crypto_code_shorter;
+    private String campaign_description;
 
     public String getObject() {
         return object;
@@ -77,26 +99,191 @@ public class VoucherResp {
         return voucherResp;
     }
 
-    public static VoucherResp from(Triplet<Voucher,Campaign,List<Asset>> triplet) {
-        Voucher voucher = triplet.getValue0();
-        Campaign campaign = triplet.getValue1();
-        List<Asset> assets = triplet.getValue2();
+
+
+    public static VoucherResp from(Quartet<PublicationEntry,Voucher,Campaign,List<Asset>> triplet, Optional<JwtUtils> jwtUtils) {
+        PublicationEntry publicationEntry = triplet.getValue0();
+        Voucher voucher = triplet.getValue1();
+        Campaign campaign = triplet.getValue2();
+        List<Asset> assets = triplet.getValue3();
 
         VoucherResp voucherResp = new VoucherResp();
         voucherResp.setCode(voucher.getCode());
+
+        if(jwtUtils.isPresent()){
+            voucherResp.setCrypto_code(jwtUtils.get().generateJwtToken(voucher.getCode()));
+            voucherResp.setCrypto_id(jwtUtils.get().generateJwtToken(Long.toString(voucher.getId())));
+            try {
+
+                final byte[] xmlBytes = voucher.getCode().getBytes(StandardCharsets.UTF_8);
+                final String xmlBase64 = Base64.getEncoder().encodeToString(xmlBytes);
+
+                voucherResp.setCrypto_code_shorter(AESUtil.en(voucher.getCode()));
+            } catch (InvalidKeySpecException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (IllegalBlockSizeException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (BadPaddingException e) {
+                e.printStackTrace();
+            } catch (InvalidAlgorithmParameterException e) {
+                e.printStackTrace();
+            } catch (NoSuchPaddingException e) {
+                e.printStackTrace();
+            }
+
+
+        }
         voucherResp.setType(voucher.getType());
+        voucherResp.setType_text(voucher.getType().toString());
+        voucherResp.setAmount(Integer.valueOf(campaign.getAmount_off()).toString());
+
+        voucherResp.setType(voucher.getType());
+
+
         voucherResp.setCampaign(campaign.getName());
+/*        voucherResp.setCampaign_description(campaign.getDescription());
+        voucherResp.setCampaign_code(campaign.getCode());
+        voucherResp.setPaied(publicationEntry.getPaied());
+        voucherResp.setCharge(publicationEntry.getCharge());*/
+
+
         voucherResp.setActive(voucher.isActive());
         if(voucher.isActive()){
             voucherResp.setStart_date(voucher.getStart_date());
             voucherResp.setExpiry_datetime(voucher.getExpiration_date());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formatDateTime = voucher.getExpiration_date().format(formatter);
+            voucherResp.setExpiry_datetime_text(formatDateTime);
             voucherResp.setExpiry_seconds_remaining((int)Duration.between(voucher.getExpiration_date(),LocalDateTime.now()).toSeconds());
         }
         voucherResp.setQuantity(voucher.getQuantity());
         voucherResp.setRedeemed_quantity(voucher.getRedeemed_quantity());
         voucherResp.setRedeemed_amount(voucher.getRedeemed_amount());
         voucherResp.setIssued(voucher.getPublished());
+
+
+
+
+
+
         voucherResp.setStatus(voucher.getStatus());
+
+        voucherResp.setStatus_text(voucher.getStatus().toString());
+
+        Optional<Asset> asset = assets.stream().filter(x->x.getType().equals(EnumAssetType.qr)).findAny();
+
+        if(asset.isPresent()){
+            voucherResp.setAssets(AssetResp.from(asset.get()));
+        }
+        return voucherResp;
+
+    }
+
+    public static VoucherResp from(Triplet<Voucher,Campaign,List<Asset>> triplet,Optional<JwtUtils> jwtUtils) {
+        Voucher voucher = triplet.getValue0();
+        Campaign campaign = triplet.getValue1();
+        List<Asset> assets = triplet.getValue2();
+
+        VoucherResp voucherResp = new VoucherResp();
+        voucherResp.setCode(voucher.getCode());
+
+        if(jwtUtils.isPresent()){
+            voucherResp.setCrypto_code(jwtUtils.get().generateJwtToken(voucher.getCode()));
+            voucherResp.setCrypto_id(jwtUtils.get().generateJwtToken(Long.toString(voucher.getId())));
+            try {
+             //   String co = Base64.getUrlDecoder().decode(voucher.getCode());
+
+
+          //      final byte[] xmlBytesDecoded = Base64.getDecoder().decode(xmlBase64);
+              //  final String xmlDecoded = new String(xmlBytesDecoded, StandardCharsets.UTF_8);
+              //  System.out.println(xmlDecoded);
+                final byte[] xmlBytes = voucher.getCode().getBytes(StandardCharsets.UTF_8);
+                final String xmlBase64 = Base64.getEncoder().encodeToString(xmlBytes);
+
+                voucherResp.setCrypto_code_shorter(AESUtil.en(voucher.getCode()));
+            } catch (InvalidKeySpecException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (IllegalBlockSizeException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (BadPaddingException e) {
+                e.printStackTrace();
+            } catch (InvalidAlgorithmParameterException e) {
+                e.printStackTrace();
+            } catch (NoSuchPaddingException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+        voucherResp.setType(voucher.getType());
+        voucherResp.setType_text(voucher.getType().toString());
+        voucherResp.setAmount(Integer.valueOf(campaign.getAmount_off()).toString());
+
+
+
+
+
+
+
+/*
+        if(voucher.getType().equals(EnumVoucherType.DISCOUNT_VOUCHER)){
+
+
+            if(voucher.getType().equals(EnumDiscountVoucherCategory.AMOUNT)){
+                discountPojo.setAmount_off(discount.get().getAmount_off());
+
+            }
+            if(discount.get().getType().equals(EnumDiscountVoucherCategory.PERCENT)){
+                discountPojo.setPercent_off(discount.get().getPercent_off());
+
+            }
+            if(discount.get().getType().equals(EnumDiscountVoucherCategory.UNIT)){
+                discountPojo.setUnit_off(discount.get().getUnit_off());
+
+            }
+            voucherResp.setDiscount(discountPojo);
+        }
+
+*/
+
+
+
+        voucherResp.setType(voucher.getType());
+
+
+        voucherResp.setCampaign(campaign.getName());
+        voucherResp.setCampaign_description(campaign.getDescription());
+
+        voucherResp.setActive(voucher.isActive());
+        if(voucher.isActive()){
+            voucherResp.setStart_date(voucher.getStart_date());
+            voucherResp.setExpiry_datetime(voucher.getExpiration_date());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formatDateTime = voucher.getExpiration_date().format(formatter);
+            voucherResp.setExpiry_datetime_text(formatDateTime);
+            voucherResp.setExpiry_seconds_remaining((int)Duration.between(voucher.getExpiration_date(),LocalDateTime.now()).toSeconds());
+        }
+        voucherResp.setQuantity(voucher.getQuantity());
+        voucherResp.setRedeemed_quantity(voucher.getRedeemed_quantity());
+        voucherResp.setRedeemed_amount(voucher.getRedeemed_amount());
+        voucherResp.setIssued(voucher.getPublished());
+
+
+
+
+
+
+        voucherResp.setStatus(ObjectUtils.isEmpty(voucher.getStatus())?EnumVoucherStatus.Available:voucher.getStatus());
+
+        voucherResp.setStatus_text(voucherResp.getStatus().toString());
 
         Optional<Asset> asset = assets.stream().filter(x->x.getType().equals(EnumAssetType.qr)).findAny();
 
@@ -129,6 +316,70 @@ public class VoucherResp {
 
     public EnumVoucherStatus getStatus() {
         return status;
+    }
+
+    public void setStatus_text(String status_text) {
+        this.status_text = status_text;
+    }
+
+    public String getStatus_text() {
+        return status_text;
+    }
+
+    public void setExpiry_datetime_text(String expiry_datetime_text) {
+        this.expiry_datetime_text = expiry_datetime_text;
+    }
+
+    public String getExpiry_datetime_text() {
+        return expiry_datetime_text;
+    }
+
+    public void setAmount(String amount) {
+        this.amount = amount;
+    }
+
+    public String getAmount() {
+        return amount;
+    }
+
+    public void setType_text(String type_text) {
+        this.type_text = type_text;
+    }
+
+    public String getType_text() {
+        return type_text;
+    }
+
+    public void setCrypto_code(String crypto_code) {
+        this.crypto_code = crypto_code;
+    }
+
+    public String getCrypto_code() {
+        return crypto_code;
+    }
+
+    public void setCrypto_id(String crypto_id) {
+        this.crypto_id = crypto_id;
+    }
+
+    public String getCrypto_id() {
+        return crypto_id;
+    }
+
+    public void setCrypto_code_shorter(String crypto_code_shorter) {
+        this.crypto_code_shorter = crypto_code_shorter;
+    }
+
+    public String getCrypto_code_shorter() {
+        return crypto_code_shorter;
+    }
+
+    public void setCampaign_description(String campaign_description) {
+        this.campaign_description = campaign_description;
+    }
+
+    public String getCampaign_description() {
+        return campaign_description;
     }
 
 

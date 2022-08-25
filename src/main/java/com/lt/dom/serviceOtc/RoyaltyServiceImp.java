@@ -10,13 +10,12 @@ public class RoyaltyServiceImp {
     public Referral getReferral(Referral referral, User user){
 
 
-        List<RoyaltyRuleData> newRo = referral.getRoyaltyRuleDataList();
+     //   List<RoyaltyRuleData> newRo = referral.getRoyaltyRuleDataList();
         RoyaltyRuleData royaltyRuleData = new RoyaltyRuleData();
 
-        newRo.add(royaltyRuleData);
+      //  newRo.add(royaltyRuleData);
 
         Referral referral_ = new Referral();
-        referral_.setRoyaltyRuleDataList(newRo);
 
 
         return referral_;

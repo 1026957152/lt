@@ -55,6 +55,26 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
+
+    CodeConfig openidConfig = new CodeConfig(20,null,null,null,"ope_##########################################");
+    public String openidNo(){
+
+        String no = VoucherCodes.generate(openidConfig);
+
+        return no;
+
+
+    }
+
+    CodeConfig requestConfig = new CodeConfig(6,null,null,null,"req_#######");
+    public String requestNo(){
+
+        String no = VoucherCodes.generate(requestConfig);
+
+        return no;
+
+
+    }
     CodeConfig employeeConfig = new CodeConfig(6,null,null,null,"emp_#######");
     public String employeeNo(){
 
@@ -102,7 +122,16 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
-    CodeConfig payConfig = new CodeConfig(20,null,null,null,"pay_###############################");
+
+    CodeConfig tranConfig = new CodeConfig(20,null,null,null,"pay_###################");
+    public String tranNo(){
+
+        String no = VoucherCodes.generate(tranConfig);
+
+        return no;
+
+    }
+    CodeConfig payConfig = new CodeConfig(20,null,null,null,"pay_###################");
     public String paymentNo(){
 
         String no = VoucherCodes.generate(payConfig);
@@ -138,7 +167,19 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
+    CodeConfig guideConfig = new CodeConfig(8,null,null,null,"gui_###########################");
+    public String guideCode(){
 
+        String no = VoucherCodes.generate(guideConfig);
+        return no;
+    }
+
+    CodeConfig campaignToTourBookingConfig = new CodeConfig(20,null,null,null,"ctt_##################");
+    public String campaignToTourBookingCode(){
+
+        String no = VoucherCodes.generate(campaignToTourBookingConfig);
+        return no;
+    }
     CodeConfig payoutConfig = new CodeConfig(20,null,null,null,"pot_###########################");
     public String payoutCode(){
 
@@ -149,6 +190,16 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
     public String chargeCode(){
 
         String no = VoucherCodes.generate(chargeConfig);
+
+        return no;
+
+
+    }
+
+    CodeConfig tourBookingConfig = new CodeConfig(20,null,null,null,"tob_################");
+    public String tourBookingNo(){
+
+        String no = VoucherCodes.generate(tourBookingConfig);
 
         return no;
 

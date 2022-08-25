@@ -101,4 +101,26 @@ public class RedemptionEntryResp {
     public void setResult(RedemptionStatus result) {
         this.result = result;
     }
+
+
+
+
+  //  public String holder ;//持有人姓名
+    public String holder_id = "测试持有身份证号" ;//持有身份证号
+    public String holder_phone= "测试持有人手机号";// 持有人手机号
+
+    public String redeemer_name ="核销机构";// 核销机构
+    public String redeemer_code ="核销机构编码";//核销机构编号
+
+    public String redeemer_employee_code="核销职工编号" ;//核销人职工编号
+    public String redeemer_employee_name ="核销人姓名" ;//核销人姓名
+    public String redeemer_employee_id="核销人身份证号"; // 核销人身份证号
+
+    public String code="核销编号";// 核销编号
+   // public String campaign_name; //券活动名称
+   // public String voucher_code;// 券编号
+    public String published_at="领券时间";//  领券时间
+    public String redeemed_at="核销时间"; // 核销时间
+ //   public String  redeemed_quantity;// 核销数量
+ //   public String  redeemed_amount;// 核销金额
 }

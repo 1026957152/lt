@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -187,7 +186,7 @@ public class WriteoffEquipServiceImpl {
         }
 
 
-        Optional<Voucher> voucher = voucherRepository.findById(optionalPublicationEntry.get().getVoucherId());
+        Optional<Voucher> voucher = voucherRepository.findById(optionalPublicationEntry.get().getVoucher());
 
         if(voucher.isEmpty()){
             throw new RuntimeException();
@@ -250,7 +249,7 @@ public class WriteoffEquipServiceImpl {
         }
 
 
-        Optional<Voucher> voucher = voucherRepository.findById(optionalPublicationEntry.get().getVoucherId());
+        Optional<Voucher> voucher = voucherRepository.findById(optionalPublicationEntry.get().getVoucher());
 
         if(voucher.isEmpty()){
             throw new RuntimeException();

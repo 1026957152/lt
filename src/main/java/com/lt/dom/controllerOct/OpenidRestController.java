@@ -1,21 +1,24 @@
 package com.lt.dom.controllerOct;
 
+import com.lt.dom.JwtUtils;
 import com.lt.dom.OctResp.EnumResp;
 import com.lt.dom.OctResp.MessageFileResp;
 import com.lt.dom.OctResp.UserResp;
+import com.lt.dom.OctResp.UserWithTokenResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.Missing_documentException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
-import com.lt.dom.otcenum.EnumBussinessType;
-import com.lt.dom.otcenum.EnumDocumentType;
-import com.lt.dom.otcenum.EnumSupplierType;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.OpenidRepository;
 import com.lt.dom.repository.TempDocumentRepository;
 import com.lt.dom.repository.UserRepository;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.vo.SupplierPojoVo;
 import org.javatuples.Pair;
+import org.springdoc.webmvc.core.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +51,13 @@ public class OpenidRestController {
     private UserRepository userRepository;
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private ApplyForApprovalServiceImpl applyForApprovalService;
+
+
+    @Autowired
+    JwtUtils jwtUtils;
 
     @Autowired
     private TempDocumentRepository tempDocumentRepository;
@@ -132,29 +142,34 @@ public class OpenidRestController {
 
 
     @GetMapping(value = "/openid/merchants_settled/page", produces = "application/json")
-    public Map<String,Object> getPage() {
+    public EntityModel<Map<String,Object>> merchants_settled_parameters() {
 
 
-        return Map.of("supplier_type", Arrays.stream(EnumSupplierType.values()).map(x->{
+        EntityModel entityModel = EntityModel.of(Map.of("term","这里是注册下一站告诉你的协议",
+
+                "supplier_type_list", Arrays.stream(EnumSupplierType.values()).map(x->{
             EnumResp enumResp = new EnumResp();
             enumResp.setId(x.name());
-            enumResp.setName(x.name());
-            enumResp.setText(x.name());
+          //  enumResp.setName(x.name());
+            enumResp.setText(x.toString());
             return enumResp;
         }).collect(Collectors.toList()),
-                "bussiness_type", Arrays.stream(EnumBussinessType.values()).map(x->{
+                "bussiness_type_list", Arrays.stream(EnumBussinessType.values()).map(x->{
             EnumResp enumResp = new EnumResp();
             enumResp.setId(x.name());
-            enumResp.setName(x.name());
-            enumResp.setText(x.name());
+         //   enumResp.setName(x.name());
+            enumResp.setText(x.toString());
             return enumResp;
-        }).collect(Collectors.toList()),
-                "_link",linkTo(methodOn(DocumentRestController.class).createDocuments(null)).withRel("upload_bussiness_license_url"));
+        }).collect(Collectors.toList())));
+        entityModel.add(linkTo(methodOn(OpenidRestController.class).merchants_settled(null,null)).withRel("merchants_settled"));
 
+
+        entityModel.add(linkTo(methodOn(DocumentRestController.class).uploadDocument(null)).withRel("uploadDocument"));
+        return entityModel;
     }
  //   @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/openid/merchants_settled", produces = "application/json")
-    public ResponseEntity<Supplier> merchants_settled(@RequestParam(required = false) String OPEN_ID, @RequestBody @Valid MerchantsSettledReq wxlinkUserReq) {
+    public EntityModel merchants_settled(@RequestParam(required = false) String OPEN_ID, @RequestBody @Valid MerchantsSettledReq wxlinkUserReq) {
 
 
         Optional<Openid> optional = openidRepository.findByOpenid(OPEN_ID);
@@ -162,34 +177,44 @@ public class OpenidRestController {
         List<Pair<EnumDocumentType,String>> docTypeWithDocCodepairList = new ArrayList<>();
 
         if(wxlinkUserReq.getSupplier_type().equals(EnumSupplierType.TravelAgent)){
-            if(nonNull(wxlinkUserReq.getBusiness_license_image())){
-                docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.business_license,x)).collect(Collectors.toList()));
+            if(nonNull(wxlinkUserReq.getBussiness_license())){
+                docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.business_license,wxlinkUserReq.getBussiness_license()));
             }else{
-                throw new IllegalArgumentException();
+                throw new Missing_documentException(1, Supplier.class.getSimpleName(),"需要上传 营业执照");
             }
             if(nonNull(wxlinkUserReq.getLicense_image())){
-                docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.license,x)).collect(Collectors.toList()));
+                docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.license,wxlinkUserReq.getLicense_image()));
+
+               // docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.license,x)).collect(Collectors.toList()));
             }else{
-                throw new IllegalArgumentException();
+                throw new Missing_documentException(1, Supplier.class.getSimpleName(),"需要上传 责任保险");
+
             }
             if(nonNull(wxlinkUserReq.getLiability_insurance_image())){
-                docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.liability_insurance,x)).collect(Collectors.toList()));
+                docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.liability_insurance,wxlinkUserReq.getLiability_insurance_image()));
+
+               // docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.liability_insurance,x)).collect(Collectors.toList()));
             }else{
-                throw new IllegalArgumentException();
+                throw new Missing_documentException(1, Supplier.class.getSimpleName(),"需要上传 责任保险");
             }
         }else{
             if(nonNull(wxlinkUserReq.getBussiness_license())){
-                docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.contract,x)).collect(Collectors.toList()));
+                docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.business_license,wxlinkUserReq.getBussiness_license()));
+
+            //    docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.contract,x)).collect(Collectors.toList()));
             }else{
-                throw new IllegalArgumentException();
+                throw new Missing_documentException(1, Supplier.class.getSimpleName(),"需要上传营业执照");
+
             }
 
         }
 
 
 
-        if(!optional.isPresent()){
+        if(optional.isPresent()) {
+            throw new BookNotFoundException(OPEN_ID,"未找到授权登录");
 
+        }
             List<TempDocument> tempDocuments = tempDocumentRepository.findAllByCodeIn(docTypeWithDocCodepairList.stream().map(x->x.getValue1()).distinct().collect(Collectors.toList()));
 
 
@@ -211,17 +236,8 @@ public class OpenidRestController {
 
 
                 if(docTypeWithTempDocPairList.isEmpty()){
-                    throw new Missing_documentException(1, Supplier.class.getSimpleName(),"需要附上申请文档， 合同，合影照片，保险单和发票");
+                    throw new Missing_documentException(1, Supplier.class.getSimpleName(),"需要附上申请相关文档");
                 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -247,28 +263,32 @@ public class OpenidRestController {
                 supplierPojo.setBusiness_type(wxlinkUserReq.getBusiness_type());
             }
 
-            Supplier supplier = supplierServiceImp.createSupplier(supplierPojo);
+
+            SupplierPojoVo supplierPojoVo = SupplierPojoVo.fromPojo(supplierPojo);
+
+
+            Supplier supplier = supplierServiceImp.createSupplier(supplierPojoVo,EnumSupplierStatus.PendingApproval);
 
 
            // List<Document> documents = fileStorageService.saveFromTempDocumentList(supplier.getId(),docTypeWithTempDocPairList);
 
 
 
-
-
-
-
             UserPojo userPojo = new UserPojo();
             userPojo.setFirst_name(wxlinkUserReq.getFirst_name());
             userPojo.setLast_name(wxlinkUserReq.getLast_name());
-            userPojo.setUsername(wxlinkUserReq.getUser_name());
+            userPojo.setNick_name(wxlinkUserReq.getUser_name());
+            userPojo.setRealName(wxlinkUserReq.getUser_name());
             userPojo.setPhone(wxlinkUserReq.getUser_phone());
             userPojo.setPassword(wxlinkUserReq.getUser_password());
-            userPojo.setRoles(Arrays.asList("ROLE_ADMIN"));
-            User user = userService.createUser(userPojo);
+            userPojo.setRoles(Arrays.asList(EnumRole.ROLE_ADMIN.name()));
+            User user = userService.createUser(userPojo,Arrays.asList(Pair.with(EnumIdentityType.phone,userPojo.getPhone())));
             supplierServiceImp.成为员工(supplier,user);
 
-          //  openidService.linkUser(optional.get(),user);
+
+        applyForApprovalService.create(EnumRequestType.Merchants_settled,wxlinkUserReq,user);
+
+        //  openidService.linkUser(optional.get(),user);
 
 
             SettleAccountPojo settleAccountPojo = new SettleAccountPojo();
@@ -278,23 +298,19 @@ public class OpenidRestController {
 
             settleAccountService.add(supplier,settleAccountPojo);
 
-            return ResponseEntity.ok(supplier);
+
+        String jwt = jwtUtils.generateJwtToken(1,user.getPhone());
+
+        UserWithTokenResp authsResp = new UserWithTokenResp();
 
 
-        }else{
-            throw new BookNotFoundException(OPEN_ID,"未找到授权登录");
-
-        }
-
-
+        System.out.println("这里了   的地方士大夫撒旦 "+ user);
+        authsResp.setStatus(-1); //applying
+        authsResp.setInfo(userService.getBigUser(user));
+        authsResp.setToken(jwt);
+        System.out.println("这里了   的顶顶顶顶顶顶顶夫撒旦 "+ user);
+        return EntityModel.of(authsResp);
     }
-
-
-
-
-
-
-
 
 
     @PostMapping(value = "/openid/{OPEN_ID}/user", produces = "application/json")
@@ -311,13 +327,10 @@ public class OpenidRestController {
             userPojo.setUsername(wxlinkUserReq.getUser_name());
             userPojo.setPhone(wxlinkUserReq.getUser_phone());
 
-            User user = userService.createUser(userPojo);
-
+            User user = userService.createUser(userPojo,Arrays.asList());
 
             openidService.linkUser(optional.get(),user);
-
             return ResponseEntity.ok(user);
-
 
         }else{
             throw new BookNotFoundException(OPEN_ID,"未找到授权登录");
@@ -327,5 +340,4 @@ public class OpenidRestController {
 
     }
 
-    //http://localhost:8080/oct/suppliers
 }

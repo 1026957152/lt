@@ -3,10 +3,14 @@ package com.lt.dom.oct;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.domain.SettleAccount;
 import com.lt.dom.otcenum.EnumBussinessType;
+import com.lt.dom.otcenum.EnumSupplierStatus;
 import com.lt.dom.otcenum.EnumSupplierType;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Supplier {
@@ -17,12 +21,17 @@ public class Supplier {
     @Id
     @JsonProperty("id")
     private long id;
-    private String desc;
 
+
+    @Length(max = 2000)
+    private String desc;
+    @NotNull
     private EnumBussinessType business_type;
+    @NotNull
     private EnumSupplierType type;
     private String location;
     private String locationName;
+    private boolean review;
 
     public EnumBussinessType getBusiness_type() {
         return business_type;
@@ -54,6 +63,7 @@ public class Supplier {
         this.settleAccount = settleAccount;
     }
 
+    @NotNull
     private String code;
 
     public String getCode() {
@@ -64,8 +74,10 @@ public class Supplier {
         this.code = code;
     }
 
-    @JsonProperty("name")
+    @NotEmpty
     private String name;
+
+
     @JsonProperty("endpoint")
     private String endpoint;
 
@@ -115,6 +127,14 @@ public class Supplier {
 
     public String getLocationName() {
         return locationName;
+    }
+
+    public void setReview(boolean review) {
+        this.review = review;
+    }
+
+    public boolean getReview() {
+        return review;
     }
 
     public static class ContactDTO {
@@ -228,6 +248,20 @@ public class Supplier {
     private String locality; // 县/区
     private String region; // 市
     private String state; //省
+
+    @NotNull
+    private EnumSupplierStatus status; //省
+
+
+
+    public EnumSupplierStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EnumSupplierStatus status) {
+        this.status = status;
+    }
+
     private String country; // 国家
 /*                    "street": "121 7th Street",
                             "postal_code": "94103",

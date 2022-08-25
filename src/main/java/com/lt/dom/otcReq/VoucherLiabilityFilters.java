@@ -1,9 +1,6 @@
 package com.lt.dom.otcReq;
 
 
-import com.lt.dom.otcenum.EnumOrderStatus;
-import com.lt.dom.otcenum.EnumPayChannel;
-
 import java.time.LocalDate;
 
 public class VoucherLiabilityFilters {  // 这个就是机器了啊

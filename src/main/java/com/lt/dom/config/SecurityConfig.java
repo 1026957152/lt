@@ -166,7 +166,9 @@ public class SecurityConfig {
                "/oct/**",
                 "/oct/campaigns/list",
                 "/oct/campaigns",
+                "/files/**",
 
+                "/oct/files/**",
                 "/oct/index",
                 "/oct/scenarios/**",
                 "/oct/wxLogin",

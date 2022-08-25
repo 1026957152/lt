@@ -3,55 +3,29 @@ package com.lt.dom.otcReq;
 import com.lt.dom.otcenum.EnumValidatorType;
 
 public class RedemBycodePojo {
-    private long quipment;
-    private long user;
-    private EnumValidatorType type; //指定人工，机器, 所有人工
+
     private String code;
+    private float latitude;
+    private float longitude;
 
-    public long getQuipment() {
-        return quipment;
+    public float getLatitude() {
+        return latitude;
     }
 
-    public void setQuipment(long quipment) {
-        this.quipment = quipment;
+    public void setLatitude(float latitude) {
+        this.latitude = latitude;
     }
 
-    public long getUser() {
-        return user;
+    public float getLongitude() {
+        return longitude;
     }
 
-    public void setUser(long user) {
-        this.user = user;
-    }
-
-    public EnumValidatorType getType() {
-        return type;
-    }
-
-    public void setType(EnumValidatorType type) {
-        this.type = type;
+    public void setLongitude(float longitude) {
+        this.longitude = longitude;
     }
 
 
-    private String  redeemptionTyppe; //核销票据  // 旅行消费券，      畅游消费券， 剧院消费券， 清爽观影券
 
-    private Traveler  traveler;
-
-    public String getRedeemptionTyppe() {
-        return redeemptionTyppe;
-    }
-
-    public void setRedeemptionTyppe(String redeemptionTyppe) {
-        this.redeemptionTyppe = redeemptionTyppe;
-    }
-
-    public Traveler getTraveler() {
-        return traveler;
-    }
-
-    public void setTraveler(Traveler traveler) {
-        this.traveler = traveler;
-    }
 
     public String getCode() {
         return code;
@@ -60,41 +34,40 @@ public class RedemBycodePojo {
     public void setCode(String code) {
         this.code = code;
     }
-//旅行团，五个人，旅游团，
-
-    public class Traveler {
-
-        private String name;///
-
-        private String idNo;
 
 
-        private String phone;
+public static class Code {
 
-        public String getName() {
-            return name;
-        }
+    private String code;///
+    private float latitude;///
+    private float longitude;
 
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getIdNo() {
-            return idNo;
-        }
-
-        public void setIdNo(String idNo) {
-            this.idNo = idNo;
-        }
-
-        public String getPhone() {
-            return phone;
-        }
-
-        public void setPhone(String phone) {
-            this.phone = phone;
-        }
+    public String getCode() {
+        return code;
     }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public float getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(float latitude) {
+        this.latitude = latitude;
+    }
+
+    public float getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(float longitude) {
+        this.longitude = longitude;
+    }
+}
+
+
 
 
 

@@ -104,16 +104,20 @@ public class AsyncServiceImpl {
 
 
 
-            List<RedemptionEntry> vouchers = redemptionEntryRepository.findAll();
+            List<RedemptionEntry> redemptionEntryList = redemptionEntryRepository.findAll();
 
-            Map<Long,Supplier> longSupplierMap = supplierRepository.findAllById(vouchers.stream().map(x->{
+            Map<Long,Supplier> longSupplierMap = supplierRepository.findAllById(redemptionEntryList.stream().map(x->{
                 return x.getSupplier();
             }).collect(Collectors.toList())).stream().collect(Collectors.toMap(x->x.getId(),x->x));
 
 
 
-            List<Traveler> travelers = travelerRepository.findAllById(vouchers.stream().map(x->{
+            List<Traveler> travelers = travelerRepository.findAllById(redemptionEntryList.stream().map(x->{
+
+                System.out.println("这里打印一下 错误的几个数据"+x.getRelatedObjectType() +"------------" +x.getRelatedObjectId());
                 return x.getRelatedObjectId();
+
+
             }).collect(Collectors.toList()));
 
 
@@ -122,8 +126,8 @@ public class AsyncServiceImpl {
 
 
 
-            List<ExcelRedemption> collect = vouchers.stream().map(x->{
-                Traveler traveler = travelerMap.get(x.getRelatedObjectId());
+            List<ExcelRedemption> collect = redemptionEntryList.stream().map(x->{
+                Traveler traveler = travelerMap.getOrDefault(x.getRelatedObjectId(),new Traveler());
                 Supplier supplier = longSupplierMap.get(x.getSupplier());
                 return ExcelRedemption.from(x,traveler,supplier);
             }).collect(Collectors.toList());

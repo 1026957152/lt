@@ -28,7 +28,7 @@ public class MerchantsSettledReq {
     @Valid
     private Location location;
 
-    @NotNull
+
     private EnumBussinessType business_type;
     private String first_name;
     private String last_name;
@@ -171,8 +171,9 @@ public class MerchantsSettledReq {
     private String account_name;
     @NotEmpty
     private String bank_name;
-    @Size(min = 1,max = 10)
-    private List<String> bussiness_license;
+  //  @Size(min = 1,max = 10)
+     @NotEmpty
+    private String bussiness_license;
     @NotNull
     private Boolean term;  // 这个就是机器了啊
 
@@ -253,11 +254,11 @@ public class MerchantsSettledReq {
         this.bank_name = bank_name;
     }
 
-    public List<String> getBussiness_license() {
+    public String getBussiness_license() {
         return bussiness_license;
     }
 
-    public void setBussiness_license(List<String> bussiness_license) {
+    public void setBussiness_license(String bussiness_license) {
         this.bussiness_license = bussiness_license;
     }
 
@@ -307,4 +308,7 @@ public class MerchantsSettledReq {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
+
+
 }

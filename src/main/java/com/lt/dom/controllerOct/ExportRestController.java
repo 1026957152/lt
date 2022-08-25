@@ -1,11 +1,13 @@
 package com.lt.dom.controllerOct;
 
 import com.lt.dom.OctResp.ExportResp;
+import com.lt.dom.OctResp.ValueListResp;
 import com.lt.dom.oct.Export;
 import com.lt.dom.oct.Product;
 import com.lt.dom.oct.Reservation;
 import com.lt.dom.otcReq.BookingPojo;
 import com.lt.dom.otcReq.ExportReq;
+import com.lt.dom.otcenum.EnumExportVoucher;
 import com.lt.dom.repository.ExportRepository;
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.VoucherRepository;
@@ -16,6 +18,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -44,11 +49,11 @@ public class ExportRestController {
     private AvailabilityServiceImpl availabilityService;
 
     @GetMapping(value = "/exports", produces = "application/json")
-    public ResponseEntity<Page<ExportResp>> pageExports(Pageable pageable) {
+    public ResponseEntity<PagedModel> pageExports(Pageable pageable, PagedResourcesAssembler<ExportResp> assembler) {
 
         Page<Export> validatorOptional = exportRepository.findAll(pageable);
 
-        return ResponseEntity.ok(validatorOptional.map(x->ExportResp.from(x)));
+        return ResponseEntity.ok(assembler.toModel(validatorOptional.map(x->ExportResp.from(x))));
 
 
 
@@ -78,10 +83,10 @@ public class ExportRestController {
 
 
     @Operation(summary = "2、下单购买")
-    @PostMapping(value = "/exports", produces = "application/json")
-    public ResponseEntity<ExportResp> createExport(@RequestBody ExportReq pojo) {
+    @PostMapping(value = "/exports/{Type}", produces = "application/json")
+    public ResponseEntity<ExportResp> createExport(@PathVariable(value = "Type", required = false)  EnumExportVoucher type, @RequestBody ExportReq pojo) {
 
-        Export export = exportService.createExport(pojo);
+        Export export = exportService.createExport(type,pojo);
 
         return ResponseEntity.ok(ExportResp.from(export));
 

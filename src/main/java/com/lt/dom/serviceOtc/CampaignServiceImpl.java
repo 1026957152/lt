@@ -1,19 +1,14 @@
 package com.lt.dom.serviceOtc;
 
 
+import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ScenarioReq;
 import com.lt.dom.otcenum.EnumCampaignCreationStatus;
-import com.lt.dom.repository.BookingRuleRepository;
-import com.lt.dom.repository.CampaignRepository;
-import com.lt.dom.repository.ScenarioAssignmentRepository;
-import com.lt.dom.repository.ScenarioRepository;
+import com.lt.dom.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,6 +26,12 @@ public class CampaignServiceImpl {
 
     @Autowired
     private IdGenServiceImpl idGenService;
+    @Autowired
+    private VoucherRepository voucherRepository;
+
+
+    @Autowired
+    private CampaignAssignToTourProductRepository campaignAssignToTourProductRepository;
 
     public Scenario getScenario(Scenario scenario) {
         return scenario;
@@ -68,4 +69,25 @@ public class CampaignServiceImpl {
     }
 
 
+    public Voucher retain(Campaign campaign) {
+
+        Optional<Voucher> voucherOptional = voucherRepository.findFirstByCampaignAndActive(campaign.getId(),false);
+        if(voucherOptional.isEmpty()){
+           throw new BookNotFoundException(campaign.getId(),"找不到可发布的券");
+        }
+        return voucherOptional.get();
+    }
+
+    public List<Campaign> getQualification(Product product) {
+        List<CampaignAssignToTourProduct> campaignAssignToTourBookingList = campaignAssignToTourProductRepository.findByProduct(product.getId());
+
+        List<Campaign> campaigns = campaignRepository.findAllById(campaignAssignToTourBookingList.stream().map(x->x.getCampaign()).collect(Collectors.toList()));
+        return campaigns.stream().filter(x->x.getVouchers_generation_status().equals(EnumCampaignCreationStatus.DONE))
+                .filter(x->x.isActive()).collect(Collectors.toList());
+
+    }
+
+    public void updateSummary(Campaign campaign) {
+        campaignRepository.save(campaign);
+    }
 }

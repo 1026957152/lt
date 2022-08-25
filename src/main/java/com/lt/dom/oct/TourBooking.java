@@ -1,11 +1,15 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.otcenum.EnumOrderStatus;
+import com.lt.dom.otcenum.EnumTourBookingStatus;
 import com.lt.dom.otcenum.EnumPaymentOption;
 import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.otcenum.EnumTourBookingStatus_;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -20,8 +24,51 @@ public class TourBooking {
     private long id;
     private EnumProductType productType;
     private String code;
-    private long campaign;
+   // private long campaign;
+
+    @NotNull
+    private Long owner;
+
+    public Long getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Long owner) {
+        this.owner = owner;
+    }
+
     private String additional_info;
+    private boolean reviewing;
+
+    private LocalDateTime created_at;
+
+    @NotNull
+    private String additional_info_guide_name;
+    @NotNull
+    private String additional_info_guide_id;
+    @NotNull
+    private String additional_info_guide_phone;
+    @NotNull
+    private String additional_info_tour_line_info;
+    @NotNull
+    private String additional_info_tour_title;
+    @NotNull
+    private String additional_info_tour_code;
+    private LocalDateTime additional_info_tour_starts_at;
+    private LocalDateTime additional_info_tour_ends_at;
+    private String note;
+
+    public boolean isReviewing() {
+        return reviewing;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
+    }
 
     public long getId() {
         return id;
@@ -86,13 +133,13 @@ public class TourBooking {
 
 
 
-    private EnumOrderStatus status;
+    private EnumTourBookingStatus_ status;
 
-    public EnumOrderStatus getStatus() {
+    public EnumTourBookingStatus_ getStatus() {
         return status;
     }
 
-    public void setStatus(EnumOrderStatus status) {
+    public void setStatus(EnumTourBookingStatus_ status) {
         this.status = status;
     }
     /*    status	The order's current status:
@@ -206,11 +253,14 @@ public class TourBooking {
         return code;
     }
 
-    public long getCampaign() {
+ /*   public long getCampaign() {
         return campaign;
     }
 
 
+    public void setCampaign(long campaign) {
+        this.campaign = campaign;
+    }*/
     private long redeemer;
 
     public long getRedeemer() {
@@ -221,9 +271,6 @@ public class TourBooking {
         this.redeemer = redeemer;
     }
 
-    public void setCampaign(long campaign) {
-        this.campaign = campaign;
-    }
 
     public void setAdditional_info(String additional_info) {
         this.additional_info = additional_info;
@@ -231,5 +278,85 @@ public class TourBooking {
 
     public String getAdditional_info() {
         return additional_info;
+    }
+
+    public void setReviewing(boolean reviewing) {
+        this.reviewing = reviewing;
+    }
+
+    public boolean getReviewing() {
+        return reviewing;
+    }
+
+    public void setAdditional_info_guide_name(String additional_info_guide_name) {
+        this.additional_info_guide_name = additional_info_guide_name;
+    }
+
+    public String getAdditional_info_guide_name() {
+        return additional_info_guide_name;
+    }
+
+    public void setAdditional_info_guide_id(String additional_info_guide_id) {
+        this.additional_info_guide_id = additional_info_guide_id;
+    }
+
+    public String getAdditional_info_guide_id() {
+        return additional_info_guide_id;
+    }
+
+    public void setAdditional_info_guide_phone(String additional_info_guide_phone) {
+        this.additional_info_guide_phone = additional_info_guide_phone;
+    }
+
+    public String getAdditional_info_guide_phone() {
+        return additional_info_guide_phone;
+    }
+
+    public void setAdditional_info_tour_line_info(String additional_info_tour_line_info) {
+        this.additional_info_tour_line_info = additional_info_tour_line_info;
+    }
+
+    public String getAdditional_info_tour_line_info() {
+        return additional_info_tour_line_info;
+    }
+
+    public void setAdditional_info_tour_title(String additional_info_tour_title) {
+        this.additional_info_tour_title = additional_info_tour_title;
+    }
+
+    public String getAdditional_info_tour_title() {
+        return additional_info_tour_title;
+    }
+
+    public void setAdditional_info_tour_code(String additional_info_tour_code) {
+        this.additional_info_tour_code = additional_info_tour_code;
+    }
+
+    public String getAdditional_info_tour_code() {
+        return additional_info_tour_code;
+    }
+
+    public void setAdditional_info_tour_starts_at(LocalDateTime additional_info_tour_starts_at) {
+        this.additional_info_tour_starts_at = additional_info_tour_starts_at;
+    }
+
+    public LocalDateTime getAdditional_info_tour_starts_at() {
+        return additional_info_tour_starts_at;
+    }
+
+    public void setAdditional_info_tour_ends_at(LocalDateTime additional_info_tour_ends_at) {
+        this.additional_info_tour_ends_at = additional_info_tour_ends_at;
+    }
+
+    public LocalDateTime getAdditional_info_tour_ends_at() {
+        return additional_info_tour_ends_at;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 }

@@ -9,9 +9,11 @@ import com.lt.dom.oct.Openid;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcReq.RealnameAuthsReq;
 import com.lt.dom.otcReq.UserPojo;
+import com.lt.dom.otcenum.EnumIdentityType;
 import com.lt.dom.repository.MemberCertificationRepository;
 import com.lt.dom.repository.OpenidRepository;
 import com.lt.dom.repository.UserRepository;
+import com.lt.dom.serviceOtc.OpenidServiceImpl;
 import com.lt.dom.serviceOtc.UserServiceImpl;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,8 @@ public class RealNameAuthenticationServiceImpl {
     @Autowired
     private OpenidRepository openidRepository;
 
+    @Autowired
+    private OpenidServiceImpl openidService;
 
     @Autowired
     private MemberCertificationRepository memberCertificationRepository;
@@ -43,6 +47,7 @@ public class RealNameAuthenticationServiceImpl {
 
     UserService service
             = GitHubServiceGenerator.createService(UserService.class);
+
 
 
     public boolean checkRealname(PhoneAuth phoneAuth) {
@@ -125,7 +130,14 @@ public class RealNameAuthenticationServiceImpl {
         List<PhoneAuth> notReal = new ArrayList<>();
         travelerReqs.forEach(x->{
 
-            if(checkRealname(x)){
+            boolean c = false;
+            try{
+                c = checkRealname(x);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            if(c){
                 real.add(x);
             }else{
                 notReal.add(x);
@@ -149,12 +161,9 @@ public class RealNameAuthenticationServiceImpl {
         auth.setIdCardNo(realnameAuthsReq.getId_card());
        // auth.setPhoneNo(realnameAuthsReq.get());
 
-        if(checkRealname(auth)){
-            user.setRealName(realnameAuthsReq.getReal_name());
-            user.setIdCard(realnameAuthsReq.getId_card());
-            user.setRealNameVerified(true);
-            user.setIdCardType(1);
-            user = userRepository.save(user);
+        if(!realnameAuthsReq.isLive_mode() || checkRealname(auth)){
+
+            user = setRealname(user,realnameAuthsReq.getReal_name(),realnameAuthsReq.getId_card());
             return user;
         }else{
 
@@ -165,17 +174,19 @@ public class RealNameAuthenticationServiceImpl {
 
     }
 
+    private User setRealname(User user,String real_name, String id_card){
+        user.setRealName(real_name);
+        user.setIdCard(id_card);
+        user.setRealNameVerified(true);
+        user.setIdCardType(1);
+        user = userRepository.save(user);
+        return user;
+    }
+
     public User postWxRealnameAuths(User user, RealnameAuthsReq realnameAuthsReq) {
 
 
-
-        user.setRealName(realnameAuthsReq.getReal_name());
-        user.setPhone(realnameAuthsReq.getPhone());
-        user.setIdCard(realnameAuthsReq.getId_card());
-        user.setRealNameVerified(true);
-        user = userRepository.save(user);
-
-
+        user = setRealname(user,realnameAuthsReq.getReal_name(),realnameAuthsReq.getId_card());
 
         return user;
 
@@ -184,31 +195,42 @@ public class RealNameAuthenticationServiceImpl {
     public Pair<User,Openid> postWxRealnameAuths(Openid openid, RealnameAuthsReq realnameAuthsReq) {
 
 
+        Optional<User> optionalUser = userRepository.findByPhone(realnameAuthsReq.getPhone());
 
+        if(optionalUser.isPresent()){ // 如果手机号存在 且
+            User user = optionalUser.get();
+            if(!optionalUser.get().isRealNameVerified()){
+                user = setRealname(user,realnameAuthsReq.getReal_name(),realnameAuthsReq.getId_card());
+            }
+            openid.setLink(true);
+            openid.setUserId(user.getId());
+            openidRepository.save(openid);
+            return Pair.with(user,openid);
 
+        }else{
             UserPojo userPojo = new UserPojo();
             //userPojo.setFirst_name(wxlinkUserReq.getFirst_name());
             //userPojo.setLast_name(wxlinkUserReq.getLast_name());
             userPojo.setUsername(openid.getOpenid());
 
-            //userPojo.setPhone(realnameAuthsReq.getUser_phone());
+            userPojo.setPhone(realnameAuthsReq.getPhone());
             userPojo.setPassword("wxlinkUserReq.getUser_password()");
             userPojo.setRoles(Arrays.asList("ROLE_ADMIN"));
 
-            User user = userService.createUser(userPojo);
-            user.setRealName(realnameAuthsReq.getReal_name());
-            user.setPhone(realnameAuthsReq.getPhone());
-            user.setIdCard(realnameAuthsReq.getId_card());
-            user.setRealNameVerified(true);
-            user = userRepository.save(user);
+            User user = userService.createUser(userPojo,Arrays.asList(Pair.with(EnumIdentityType.identity_card,"")));
+
+            user = setRealname(user,realnameAuthsReq.getReal_name(),realnameAuthsReq.getId_card());
 
 
+            openidService.linkUser(openid,user);
 
-            openid.setLink(true);
-            openid.setUserId(user.getId());
-            openidRepository.save(openid);
 
             return Pair.with(user,openid);
+        }
+
+
+
+
 
     }
 }

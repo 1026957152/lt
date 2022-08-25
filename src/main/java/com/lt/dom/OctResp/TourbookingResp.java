@@ -1,7 +1,7 @@
 package com.lt.dom.OctResp;
 
 import com.lt.dom.oct.*;
-import com.lt.dom.otcenum.EnumOrderStatus;
+import com.lt.dom.otcenum.EnumTourBookingStatus;
 import com.lt.dom.otcenum.EnumPaymentOption;
 import com.lt.dom.otcenum.EnumProductType;
 
@@ -32,6 +32,8 @@ public class TourbookingResp {
     private String code;
     private EnumProductType productType;
     private String productCode;
+    private String status_text
+            ;
 
     public List<RoyaltyRule> getRoyaltyRules() {
         return royaltyRules;
@@ -74,13 +76,13 @@ public class TourbookingResp {
 
 
 
-    private EnumOrderStatus status;
+    private EnumTourBookingStatus status;
 
-    public EnumOrderStatus getStatus() {
+    public EnumTourBookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(EnumOrderStatus status) {
+    public void setStatus(EnumTourBookingStatus status) {
         this.status = status;
     }
     /*    status	The order's current status:
@@ -201,4 +203,11 @@ public class TourbookingResp {
     public String getProductCode() {
         return productCode;
     }
+
+
+
+
+
+
+
 }

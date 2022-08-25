@@ -2,12 +2,14 @@ package com.lt.dom;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 //@lombok.NoArgsConstructor
 //@lombok.Data
 @SpringBootApplication
 @EnableAsync
+@EnableJpaAuditing
 public class DomApplication {
 
     @com.fasterxml.jackson.annotation.JsonProperty("errorn")

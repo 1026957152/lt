@@ -17,6 +17,7 @@ public class SummarySupplierRedemptionResp {
     private int redeemed_quantity;
 
     private List<RedemptionEntryResp> entries;
+    private int today_redeemed;
 
     public static SummarySupplierRedemptionResp from(Supplier supplier, List<RedemptionEntry> redemptionEntries) {
         SummarySupplierRedemptionResp redemptionResp = new SummarySupplierRedemptionResp();
@@ -59,26 +60,6 @@ public class SummarySupplierRedemptionResp {
 
     public void setRedeemed_quantity(int redeemed_quantity) {
         this.redeemed_quantity = redeemed_quantity;
-    }
-
-
-    private String relatedObjectType;
-    private long relatedObjectId;
-
-    public String getRelatedObjectType() {
-        return relatedObjectType;
-    }
-
-    public void setRelatedObjectType(String related_object_type) {
-        this.relatedObjectType = related_object_type;
-    }
-
-    public long getRelatedObjectId() {
-        return relatedObjectId;
-    }
-
-    public void setRelatedObjectId(long related_object_id) {
-        this.relatedObjectId = related_object_id;
     }
 
 
@@ -136,5 +117,13 @@ public class SummarySupplierRedemptionResp {
 
     public void setTotal_rollback_succeeded(long total_rollback_succeeded) {
         this.total_rollback_succeeded = total_rollback_succeeded;
+    }
+
+    public void setToday_redeemed(int today_redeemed) {
+        this.today_redeemed = today_redeemed;
+    }
+
+    public int getToday_redeemed() {
+        return today_redeemed;
     }
 }

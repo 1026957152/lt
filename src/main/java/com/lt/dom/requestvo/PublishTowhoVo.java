@@ -4,10 +4,14 @@ import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.Traveler;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 public class PublishTowhoVo {
 
-
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
     private EnumPublicationObjectType toWhoTyp;
     private Traveler traveler;
     private Supplier supplier;

@@ -1,8 +1,12 @@
 package com.lt.dom.otcenum;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public enum EnumDocumentType {
     estimate("estimate"),
@@ -27,7 +31,24 @@ public enum EnumDocumentType {
     ;
 
 
-    EnumDocumentType(String barcode) {
+    private static ResourceBundle resourceBundle = ResourceBundle.getBundle("messages",
+            Locale.getDefault());
 
+    public String name;
+
+    @Autowired
+    private MessageSource messageSource;
+
+    EnumDocumentType(String name) {
+
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+
+        String displayStatusString = resourceBundle.getString("page.systemadministration.enum.document.type."
+                + this.name());
+        return displayStatusString;
     }
 }

@@ -1,14 +1,12 @@
 package com.lt.dom.oct;
 
 
-import com.lt.dom.OctResp.PublicationResp;
+import com.lt.dom.otcenum.EnumAssociatedType;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 public class PublicationEntry {
@@ -21,13 +19,37 @@ public class PublicationEntry {
     private String source_id;
 
     @NotNull
-    private long campaign_id;
+    private long campaign;
 
 
 
     @NotNull
-    private long publicationId;
+    private long publication;
 
+    @NotNull
+    private long associatedId;
+
+    @NotNull
+    private EnumAssociatedType associatedType;
+    private boolean free;
+    private long charge;
+    private boolean paied;
+
+    public long getAssociatedId() {
+        return associatedId;
+    }
+
+    public void setAssociatedId(long associated_id) {
+        this.associatedId = associated_id;
+    }
+
+    public EnumAssociatedType getAssociatedType() {
+        return associatedType;
+    }
+
+    public void setAssociatedType(EnumAssociatedType associated_type) {
+        this.associatedType = associated_type;
+    }
 
     @NotNull
     private EnumPublicationObjectType toWhoType;
@@ -43,7 +65,7 @@ public class PublicationEntry {
     }
 
     @NotNull
-    private long voucherId;
+    private long voucher;
 
 
     @NotNull
@@ -67,28 +89,28 @@ public class PublicationEntry {
         this.source_id = source_id;
     }
 
-    public long getCampaign_id() {
-        return campaign_id;
+    public long getCampaign() {
+        return campaign;
     }
 
-    public void setCampaign_id(long campaign_id) {
-        this.campaign_id = campaign_id;
+    public void setCampaign(long campaign_id) {
+        this.campaign = campaign_id;
     }
 
-    public long getPublicationId() {
-        return publicationId;
+    public long getPublication() {
+        return publication;
     }
 
-    public void setPublicationId(long publicationId) {
-        this.publicationId = publicationId;
+    public void setPublication(long publicationId) {
+        this.publication = publicationId;
     }
 
-    public long getVoucherId() {
-        return voucherId;
+    public long getVoucher() {
+        return voucher;
     }
 
-    public void setVoucherId(long voucher_id) {
-        this.voucherId = voucher_id;
+    public void setVoucher(long voucher_id) {
+        this.voucher = voucher_id;
     }
 
     public long getToWho() {
@@ -105,5 +127,29 @@ public class PublicationEntry {
 
     public void setPublished_at(LocalDate published_at) {
         this.published_at = published_at;
+    }
+
+    public void setFree(boolean free) {
+        this.free = free;
+    }
+
+    public boolean getFree() {
+        return free;
+    }
+
+    public void setCharge(long charge) {
+        this.charge = charge;
+    }
+
+    public long getCharge() {
+        return charge;
+    }
+
+    public void setPaied(boolean paied) {
+        this.paied = paied;
+    }
+
+    public boolean getPaied() {
+        return paied;
     }
 }

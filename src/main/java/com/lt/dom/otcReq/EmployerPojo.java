@@ -6,10 +6,11 @@ import java.util.List;
 
 public class EmployerPojo {
 
-    @NotEmpty
+   // @NotEmpty
     private String first_name;
-    @NotEmpty
+ //   @NotEmpty
     private String last_name;
+    @NotEmpty
     private String name;
     @NotEmpty
     private String phone;

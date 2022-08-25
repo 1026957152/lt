@@ -2,13 +2,16 @@ package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcenum.EnumOrderStatus;
+import com.lt.dom.otcenum.EnumBookingOjbectType;
+import com.lt.dom.otcenum.EnumTourBookingStatus;
 import com.lt.dom.otcenum.EnumPaymentOption;
 import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.requestvo.BookingTypeTowhoVo;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.javatuples.Quintet;
 import org.javatuples.Triplet;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
@@ -40,6 +43,8 @@ public class BookingResp extends RepresentationModel<BookingResp> {
     private String productCode;
     private String note;
     private List<DocumentResp> documents;
+    private EntityModel<AssetResp> asset;
+    private int traveler_number;
 
     public static BookingResp toResp(Reservation booking, List<Traveler> travelers, List<Document> documents) {
 
@@ -65,7 +70,7 @@ public class BookingResp extends RepresentationModel<BookingResp> {
 
     }
 
-    public static BookingResp toResp(Pair<Reservation, Product> with) {
+    public static BookingResp totoResp(Pair<Reservation, Product> with) {
 
         Reservation booking = with.getValue0();
         Product product = with.getValue1();
@@ -118,13 +123,13 @@ public class BookingResp extends RepresentationModel<BookingResp> {
 
 
 
-    private EnumOrderStatus status;
+    private EnumTourBookingStatus status;
 
-    public EnumOrderStatus getStatus() {
+    public EnumTourBookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(EnumOrderStatus status) {
+    public void setStatus(EnumTourBookingStatus status) {
         this.status = status;
     }
     /*    status	The order's current status:
@@ -250,41 +255,78 @@ public class BookingResp extends RepresentationModel<BookingResp> {
 
 
 
-    public static BookingResp toResp(Triplet<Reservation,Product,Tour> pair) {
-        Reservation booking = pair.getValue0();
-        Product product = pair.getValue1();
-        Tour tour = pair.getValue2();
-        BookingResp reservationResp = new BookingResp();
+    public static BookingResp toResp(Pair<Reservation, BookingTypeTowhoVo> pair) {
 
-        reservationResp.setAmount(booking.getAmount());
-        reservationResp.setCode(booking.getCode());
-        reservationResp.setStatus(booking.getStatus());
+        BookingTypeTowhoVo bookingTypeTowhoVo = pair.getValue1();
 
-        reservationResp.setTotal_amount(booking.getTotal_amount());
-        reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
+        if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Product)) {
+            Reservation booking = pair.getValue0();
+            Product product = pair.getValue1().getProduct();
+            Tour tour = pair.getValue1().getTour();
+            BookingResp reservationResp = new BookingResp();
 
-        reservationResp.setProductType(booking.getProductType());
-        reservationResp.setProductCode(product.getCode());
-        reservationResp.setNote(tour.getTour_name());
-        //reservationResp.setNote(tour.getTour_name_long());
-        return reservationResp;
+            reservationResp.setAmount(booking.getAmount());
+            reservationResp.setCode(booking.getCode());
+            reservationResp.setStatus(booking.getStatus());
+
+            reservationResp.setTotal_amount(booking.getTotal_amount());
+            reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
+
+            reservationResp.setProductType(booking.getProductType());
+            reservationResp.setProductCode(product.getCode());
+            //   reservationResp.setNote(tour.getTour_name());
+            //reservationResp.setNote(tour.getTour_name_long());
+            return reservationResp;
+        }
+        if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Voucher)) {
+            Reservation booking = pair.getValue0();
+            Campaign campaign = bookingTypeTowhoVo.getCampaign();
+
+            BookingResp reservationResp = new BookingResp();
+
+            reservationResp.setAmount(booking.getAmount());
+            reservationResp.setCode(booking.getCode());
+            reservationResp.setStatus(booking.getStatus());
+
+            reservationResp.setTotal_amount(booking.getTotal_amount());
+            reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
+
+            reservationResp.setProductType(booking.getProductType());
+/*            reservationResp.setProductCode(product.getCode());
+            reservationResp.setNote(tour.getTour_name());*/
+            //reservationResp.setNote(tour.getTour_name_long());
+            return reservationResp;
+        }
+
+        return null;
     }
 
-    public static BookingResp toResp(Quartet<Reservation,Product,Tour,List<Traveler>> pair) {
+    public static BookingResp toResp(Triplet<Reservation,BookingTypeTowhoVo,List<Traveler>> pair) {
 
-        BookingResp resp = toResp(Triplet.with(pair.getValue0(),pair.getValue1(),pair.getValue2()));
-        List<Traveler> travelers = pair.getValue3();
+        BookingResp resp = toResp(Pair.with(pair.getValue0(),pair.getValue1()));
+        List<Traveler> travelers = pair.getValue2();
         ;
-
+        resp.setTraveler_number(travelers.size());
         resp.setTravelers(TravelerResp.Listfrom(travelers));
 
         return resp;
     }
 
-    public static BookingResp toResp(Quintet<Reservation,Product,Tour,List<Traveler>,List<Document>> pair) {
+    public static BookingResp toResp(Quartet<Reservation,BookingTypeTowhoVo,List<Traveler>,List<Document>> pair,Asset asset) {
+
+        BookingResp resp = toResp(Triplet.with(pair.getValue0(),pair.getValue1(),pair.getValue2()));
+        List<Document> travelers = pair.getValue3();
+
+        resp.setDocuments(DocumentResp.Listfrom(travelers));
+        resp.setAsset(AssetResp.from(asset));
+
+
+        return resp;
+    }
+    public static BookingResp toResp(Quartet<Reservation,BookingTypeTowhoVo,List<Traveler>,List<Document>> pair) {
 
         BookingResp resp = toResp(Quartet.with(pair.getValue0(),pair.getValue1(),pair.getValue2(),pair.getValue3()));
-        List<Document> travelers = pair.getValue4();
+        List<Document> travelers = pair.getValue3();
         DocumentResp.Listfrom(travelers);
         resp.setDocuments(DocumentResp.Listfrom(travelers));
 
@@ -316,5 +358,21 @@ public class BookingResp extends RepresentationModel<BookingResp> {
 
     public List<DocumentResp> getDocuments() {
         return documents;
+    }
+
+    public void setAsset(EntityModel<AssetResp> asset) {
+        this.asset = asset;
+    }
+
+    public EntityModel<AssetResp> getAsset() {
+        return asset;
+    }
+
+    public void setTraveler_number(int traveler_number) {
+        this.traveler_number = traveler_number;
+    }
+
+    public int getTraveler_number() {
+        return traveler_number;
     }
 }

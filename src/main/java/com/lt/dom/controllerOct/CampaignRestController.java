@@ -4,7 +4,7 @@ import com.lt.dom.OctResp.*;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
-import com.lt.dom.otcenum.EnumDocumentType;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,10 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -65,13 +62,56 @@ public class CampaignRestController {
     private ValueListServiceImpl valueListService;
 
 
+
+
+    @GetMapping(value = "/campaigns/page", produces = "application/json")
+    public EntityModel<Map<String,Object>> Page_createCampaign() {
+
+        List<Scenario> scenarioList = scenarioRepository.findAll();
+
+        EntityModel entityModel = EntityModel.of(Map.of("voucher_type_list", Arrays.asList(EnumVoucherType.DISCOUNT_VOUCHER).stream().map(x->{
+
+                    EnumResp enumResp = new EnumResp();
+                    if(x.equals(EnumVoucherType.DISCOUNT_VOUCHER)){
+                        enumResp.setSubitems(Arrays.asList(EnumDiscountVoucherCategory.AMOUNT).stream().map(x_dis->{
+                            EnumResp enumResp_dis = new EnumResp();
+                            enumResp_dis.setId(x_dis.name());
+                            enumResp_dis.setText(x_dis.toString());
+                            return enumResp_dis;
+                        }).collect(Collectors.toList()));
+                    }
+                    enumResp.setId(x.name());
+                    enumResp.setText(x.toString());
+                    return enumResp;
+                }).collect(Collectors.toList()),
+                "scenario_list", scenarioList.stream().map(x->{
+                    EnumLongIdResp enumResp = new EnumLongIdResp();
+                    enumResp.setId(x.getId());
+                    enumResp.setText(x.getName());
+                    return enumResp;
+                }).collect(Collectors.toList()),
+                "category_list", Arrays.asList(EnumDiscountVoucherCategory.AMOUNT).stream().map(x->{
+                    EnumResp enumResp = new EnumResp();
+                    enumResp.setId(x.name());
+                    enumResp.setText(x.toString());
+                    return enumResp;
+                }).collect(Collectors.toList())));
+
+        entityModel.add(linkTo(methodOn(DocumentRestController.class).createDocuments(null)).withRel("upload_bussiness_license_url"));
+        return entityModel;
+    }
+
+
+
+
+
     @Operation(summary = "2、下单购买")
     @PostMapping(value = "/campaigns", produces = "application/json"/*produces = MediaType.MULTIPART_FORM_DATA_VALUE*/)
-    public ResponseEntity<CampaignResp> createCompaign(@RequestBody @Valid CompaignPojo pojo/*,@RequestPart List<MultipartFile> files*/) {
+    public ResponseEntity<CampaignResp> createCampaign(@RequestBody @Valid CompaignPojo pojo/*,@RequestPart List<MultipartFile> files*/) {
         Optional<Scenario> scenario = scenarioRepository.findById(pojo.getScenario());
         if(scenario.isEmpty()){
 
-            throw new BookNotFoundException(pojo.getScenario(),"找不到这个应用场景");
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到这个应用场景");
         }
         System.out.println("dddddddddd777773333333333333333333333555555555555577777777777777777777777");
         Campaign booking = voucherService.createLoyaltyCompaign(pojo,scenario.get());
@@ -173,28 +213,70 @@ public class CampaignRestController {
     }
 
 
+
+
+    @GetMapping(value = "/campaigns/Page_getCampaignList", produces = "application/json")
+    public EntityModel<Map<String,Object>> Page_getCampaignList() {
+
+
+        List<Scenario> scenarioList = scenarioRepository.findAll();
+
+        EntityModel entityModel = EntityModel.of(Map.of("status_list", Arrays.stream(EnumCampaignStatus.values()).map(x->{
+
+                    EnumResp enumResp = new EnumResp();
+                    enumResp.setId(x.name());
+                    enumResp.setText(x.toString());
+                    return enumResp;
+                }).collect(Collectors.toList())));
+
+        entityModel.add(linkTo(methodOn(CampaignRestController.class).getCampaignList(null,null)).withRel("getCampaignList"));
+        return entityModel;
+    }
+
     @GetMapping(value = "/campaigns_", produces = "application/json")
-    public ResponseEntity<Page<CampaignResp>> pageCampaign( Pageable pageable, PagedResourcesAssembler<EntityModel<RedemptionEntryResp>> assembler) {
+    public ResponseEntity<Page<EntityModel<CampaignResp>>> getCampaignList(Pageable pageable, PagedResourcesAssembler<EntityModel<CampaignResp>> assembler) {
 
         Page<Campaign> campaignPageable = campaignRepository.findAll(pageable);
 
 
 
 
-        Page<CampaignResp> campaignResps =  CampaignResp.pageMap(campaignPageable);
+        Page<EntityModel<CampaignResp>> campaignResps =  campaignPageable.map(x->{
+            EntityModel entityModel = EntityModel.of(CampaignResp.getCampaign(Triplet.with(x,Optional.empty(), Arrays.asList())));
+
+            entityModel.add(linkTo(methodOn(CampaignRestController.class).deleteCampaign(x.getId())).withRel("deleteCampaign"));
+            entityModel.add(linkTo(methodOn(CampaignRestController.class).clain(x.getId(),null)).withRel("clainWithPay"));
+            entityModel.add(linkTo(methodOn(PublicationRestController.class).createPublication(x.getId(),null,null)).withRel("clain"));
+
+            return entityModel;
+
+        });
         return ResponseEntity.ok(campaignResps);
 
 
     }
+
+
+
+
     @GetMapping(value = "/campaigns", produces = "application/json")
-    public ResponseEntity pageCampaign(@RequestParam(value = "scenario", required = true) long scenario, Pageable pageable, PagedResourcesAssembler<CampaignResp> assembler) {
+    public ResponseEntity getCampaignList(@RequestParam(value = "scenario", required = false) Long scenario, Pageable pageable, PagedResourcesAssembler<EntityModel<CampaignResp>> assembler) {
 
         Page<Campaign> campaignPageable = campaignRepository.findAll(pageable);
 
 
 
+        Page<EntityModel<CampaignResp>> campaignResps =  campaignPageable.map(x->{
+          EntityModel entityModel = EntityModel.of(CampaignResp.getCampaign(Triplet.with(x,Optional.empty(), Arrays.asList())));
 
-        Page<CampaignResp> campaignResps =  CampaignResp.pageMap(campaignPageable);
+           entityModel.add(linkTo(methodOn(CampaignRestController.class).deleteCampaign(x.getId())).withRel("deleteCampaign"));
+            entityModel.add(linkTo(methodOn(CampaignRestController.class).clain(x.getId(),null)).withRel("clainWithPay"));
+            entityModel.add(linkTo(methodOn(PublicationRestController.class).createPublication(x.getId(),null,null)).withRel("clain"));
+
+            return entityModel;
+
+        });
+
         return ResponseEntity.ok(assembler.toModel(campaignResps));
 
 
@@ -206,12 +288,31 @@ public class CampaignRestController {
 
         Page<Campaign> campaignPageable = campaignRepository.findAll(PageRequest.of(0,1000));
 
-        List<CampaignResp> campaignResps =  CampaignResp.pageMapToList(campaignPageable);
+        List<CampaignResp> campaignResps =  CampaignResp.pageMapToListSimple(campaignPageable).getContent();
 
         return ResponseEntity.ok(campaignResps);
 
 
     }
+
+
+    @DeleteMapping(value = "/campaigns/{CAMPAIGN_ID}")
+    public ResponseEntity<Void> deleteCampaign(@PathVariable long CAMPAIGN_ID) {
+        System.out.println("----"+CAMPAIGN_ID);
+        Optional<Campaign> optional = campaignRepository.findById(CAMPAIGN_ID);
+
+
+        if(optional.isEmpty()) {
+            throw new BookNotFoundException(CAMPAIGN_ID,"找活动对象");
+        }
+
+        campaignRepository.delete(optional.get());
+        return ResponseEntity.ok().build();
+    }
+
+
+
+
 
 
 
@@ -255,8 +356,8 @@ public class CampaignRestController {
         throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
 
-
     }
+
 
 
 
@@ -267,17 +368,13 @@ public class CampaignRestController {
         System.out.println("----"+CAMPAIGN_ID);
         Optional<Campaign> optional = campaignRepository.findById(CAMPAIGN_ID);
 
-
         if(optional.isPresent()){
             System.out.println("----"+optional.get());
-
             ClainQuotaStatisticsResp campaignResps =  voucherService.getQuotaStatistics(optional.get());
-
             return ResponseEntity.ok(campaignResps);
         }
         throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
-
 
     }
 
@@ -287,7 +384,6 @@ public class CampaignRestController {
 
     @PostMapping(value = "/campaigns/{CAMPAIGN_ID}/clain", produces = "application/json")
     public ResponseEntity<Quota> clain(@PathVariable long CAMPAIGN_ID, @RequestBody QuotaReq clainQuotaReq) {
-
 
         System.out.println("----"+CAMPAIGN_ID);
         Optional<Campaign> optional = campaignRepository.findById(CAMPAIGN_ID);

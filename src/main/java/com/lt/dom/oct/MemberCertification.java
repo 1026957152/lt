@@ -30,8 +30,8 @@ public class MemberCertification {
     private String idCardNumber; //idCardNumber String 身份证号码
     private String issuedBy;//身份证签发机关
     private String validDate;//身份证有效期限 validDate String 有效日期
-    private String 人脸比对分数;
-    private String 人脸图片;
+   // private String 人脸比对分数;
+  //  private String 人脸图片;
     private LocalDate update_at;
 
     public long getId() {
@@ -113,7 +113,7 @@ public class MemberCertification {
     public void setValidDate(String validDate) {
         this.validDate = validDate;
     }
-
+/*
     public String get人脸比对分数() {
         return 人脸比对分数;
     }
@@ -128,7 +128,7 @@ public class MemberCertification {
 
     public void set人脸图片(String 人脸图片) {
         this.人脸图片 = 人脸图片;
-    }
+    }*/
 
     public void setUpdate_at(LocalDate update_at) {
         this.update_at = update_at;

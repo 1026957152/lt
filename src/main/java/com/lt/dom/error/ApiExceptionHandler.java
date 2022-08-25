@@ -2,24 +2,60 @@ package com.lt.dom.error;
 
 import com.lt.dom.otcenum.EnumRedemptionfailures;
 import com.lt.dom.otcenum.Enumfailures;
-import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MultipartException;
 
+import java.util.Locale;
+
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+    @Autowired
+    MessageSource messageSource;
 
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(NullPointerException ex, WebRequest request){
+
+        ex.printStackTrace();
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.BAD_REQUEST,"ex.getError().name()",
+                        ex.getMessage(),ex.getLocalizedMessage());
+        return new ResponseEntity<>(response, response.getCode());
+    }
+
+
+
+    @ExceptionHandler(Error403Exception.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(Error403Exception ex, WebRequest request){
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.FORBIDDEN,ex.getError().name(),
+                        ex.getMessage(),ex.getLocalizedMessage());
+        return new ResponseEntity<>(response, response.getCode());
+    }
+
+    @ExceptionHandler(Error401Exception.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(Error401Exception ex, WebRequest request){
+
+        String s =  messageSource.getMessage(ex.getError().getMessage_code(), null, Locale.getDefault());
+
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.UNAUTHORIZED,ex.getError().name(),
+                        ex.getMessage(),s);
+        return new ResponseEntity<>(response, response.getCode());
+    }
 
     @ExceptionHandler(Quantity_exceededException.class)
     public ResponseEntity<ApiErrorResponse> handleAuthenticationException(Quantity_exceededException ex, WebRequest request){
@@ -47,20 +83,30 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(response, response.getCode());
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            UserNotFoundException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.NOT_FOUND,Enumfailures.user_not_found.name(),
+                        ex.getMessage(),ex.getLocalizedMessage());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
+
+
+
+
+
     @ExceptionHandler(BookNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleApiException(
         BookNotFoundException ex, WebRequest request) {
 
-/*
-        ApiErrorResponse response =
-            new ApiErrorResponse(HttpStatus.NOT_FOUND,"error-0001",
-                    EnumRedemptionfailures.resource_not_found.name(),"No book found with ID " + ex.getId());
-        return new ResponseEntity<>(response, response.getCode());
-*/
 
         ApiErrorResponse response =
-                new ApiErrorResponse(HttpStatus.NOT_FOUND,EnumRedemptionfailures.resource_not_found.name(),
-                        ex.getObject(),ex.getDetail());
+                new ApiErrorResponse(HttpStatus.NOT_FOUND,ex.getError().name(),
+                        ex.getMessage(),ex.getDetail());
         return new ResponseEntity<>(response, response.getCode());
 
     }
@@ -90,8 +136,8 @@ public class ApiExceptionHandler {
 */
 
         ApiErrorResponse response =
-                new ApiErrorResponse(HttpStatus.CONFLICT,"已经存在",
-                        request.getContextPath(),ex.getError());
+                new ApiErrorResponse(HttpStatus.CONFLICT,ex.getError().name(),
+                        ex.getMessage(),ex.getMessage());
         return new ResponseEntity<>(response, response.getCode());
 
     }
@@ -114,6 +160,16 @@ public class ApiExceptionHandler {
         ApiErrorResponse response =
                 new ApiErrorResponse(HttpStatus.BAD_REQUEST,ex.getMessage(),
                         ex.getMessage(),ex.getAllErrors().toString());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+    @ExceptionHandler(HttpServerErrorException.InternalServerError.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            HttpServerErrorException.InternalServerError ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.BAD_REQUEST, Enumfailures.voucher_disabled.name(),
+                        ex.getMessage(),"internal error");
         return new ResponseEntity<>(response, response.getCode());
 
     }
@@ -168,7 +224,7 @@ public class ApiExceptionHandler {
 
         ApiErrorResponse response =
                 new ApiErrorResponse(HttpStatus.BAD_REQUEST, Enumfailures.missing_documents.name(),
-                        ex.getObject(),ex.getDetail());
+                        ex.getDetail(),ex.getDetail());
         return new ResponseEntity<>(response, response.getCode());
 
     }
@@ -263,6 +319,20 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(response, response.getCode());
 
     }
+
+/*
+    @ExceptionHandler(BadJwtException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            BadJwtException ex, WebRequest request) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.CONFLICT, Enumfailures.BadJwtException.name() ,
+                        ex.getMessage(),ex.getMessage());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+*/
+
 
 
 /*    @ExceptionHandler(BadCredentialsException.class)

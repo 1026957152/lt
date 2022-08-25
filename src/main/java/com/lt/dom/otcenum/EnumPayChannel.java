@@ -1,5 +1,11 @@
 package com.lt.dom.otcenum;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 public enum EnumPayChannel {
     alipay("支付宝 App 支付"),
     alipay_wap("支付宝手机网站支付"),
@@ -49,7 +55,25 @@ public enum EnumPayChannel {
     balance("余额"),
     ;
 
-    EnumPayChannel(String 余额) {
+    private static ResourceBundle resourceBundle = ResourceBundle.getBundle("messages",
+            Locale.getDefault());
 
+    public String name;
+
+    @Autowired
+    private MessageSource messageSource;
+
+    EnumPayChannel(String name) {
+        this.name = name;
     }
+
+    @Override
+    public String toString() {
+
+        String displayStatusString = resourceBundle.getString("page.systemadministration.payment.channel."
+                + this.name());
+        return displayStatusString;
+    }
+
+
 }

@@ -26,6 +26,7 @@ public class CodeConfig {
         if (charset == null) {
             charset = Charset.ALPHANUMERIC;
         }
+
         System.out.println("pattern pattern pattern. "
                 + pattern);
         if (pattern == null) {

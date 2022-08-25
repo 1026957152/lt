@@ -6,8 +6,6 @@ import com.lt.dom.oct.RedemptionEntry;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.Traveler;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 public class ExcelRedemption {
@@ -193,8 +191,8 @@ public class ExcelRedemption {
         excelVoucher.setLead_customer_name("supplier.getName()");
         excelVoucher.setLead_customer_tel_mobile("supplier.getName()");
         excelVoucher.setVoucher_code(x.getVoucher()+"");
-        excelVoucher.setIssued_at(x.getCreated_at());
-        excelVoucher.setRedeem_at(x.getCreated_at());
+        excelVoucher.setIssued_at(x.getCreatedAt());
+        excelVoucher.setRedeem_at(x.getCreatedAt());
         excelVoucher.setName(traveler.getName());
         excelVoucher.setId(traveler.getIdNo());
         excelVoucher.setPhone(traveler.getTel_home());

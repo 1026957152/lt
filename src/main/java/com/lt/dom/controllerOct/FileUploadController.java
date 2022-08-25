@@ -3,6 +3,8 @@ package com.lt.dom.controllerOct;
 import com.lt.dom.oct.MessageFile;
 import com.lt.dom.oct.UploadFile;
 import com.lt.dom.serviceOtc.FileStorageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/oct")
 
 public class FileUploadController {
+    Logger logger = LoggerFactory.getLogger(FileUploadController.class);
 
     @Autowired
     FileStorageService fileStorageService;
@@ -57,12 +60,17 @@ public class FileUploadController {
         return ResponseEntity.ok(files);
     }
 
-    @GetMapping("/files/{filename:.+}")
+    @GetMapping("/files_/{filename:.+}")
     public ResponseEntity<Resource> getFile(@PathVariable("filename")String filename){
+        logger.debug("从 getFile 下载了一张图");
+        System.out.println("从 getFile 下载了一张图");
         Resource file = fileStorageService.load(filename);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment;filename=\""+file.getFilename()+"\"")
                 .body(file);
     }
+
+
+
 }

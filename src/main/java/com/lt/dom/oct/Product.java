@@ -1,14 +1,11 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.otcenum.EnumAvailabilityType;
-import com.lt.dom.otcenum.EnumProductPricingType;
-import com.lt.dom.otcenum.EnumProductType;
-import com.lt.dom.otcenum.Enum___Redemption;
+import com.lt.dom.otcenum.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -31,7 +28,12 @@ public class Product {
     private String name;
     @Size(min = 1,max = 100,message = "名称长度必须为1到100")
     private String name_long;
-    private Long raletiveId;
+    private Long typeToWho;
+    private EnumProductStatus status;
+    private LocalDateTime created_at;
+    private LocalDateTime updated_at;
+    private boolean acitve;
+    private boolean shippable;
 
 
     //只有但一票 才有 核销 之说。
@@ -111,8 +113,6 @@ public class Product {
 
 
     @Transient
-    private List<campaign营销> campaign营销s;
-    @Transient
     private RoyaltyTemplate royaltyTemplate;  //每卖一次产品，就会产生若干个  Royalty
 
     @Transient
@@ -181,11 +181,51 @@ public class Product {
         return name_long;
     }
 
-    public Long getRaletiveId() {
-        return raletiveId;
+    public Long getTypeToWho() {
+        return typeToWho;
     }
 
-    public void setRaletiveId(Long raletiveId) {
-        this.raletiveId = raletiveId;
+    public void setTypeToWho(Long raletiveId) {
+        this.typeToWho = raletiveId;
+    }
+
+    public void setStatus(EnumProductStatus status) {
+        this.status = status;
+    }
+
+    public EnumProductStatus getStatus() {
+        return status;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setUpdated_at(LocalDateTime updated_at) {
+        this.updated_at = updated_at;
+    }
+
+    public LocalDateTime getUpdated_at() {
+        return updated_at;
+    }
+
+    public void setAcitve(boolean acitve) {
+        this.acitve = acitve;
+    }
+
+    public boolean getAcitve() {
+        return acitve;
+    }
+
+    public void setShippable(boolean shippable) {
+        this.shippable = shippable;
+    }
+
+    public boolean getShippable() {
+        return shippable;
     }
 }

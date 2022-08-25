@@ -1,12 +1,9 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.otcenum.EnumOrderStatus;
-import com.lt.dom.otcenum.EnumPaymentOption;
-import com.lt.dom.otcenum.EnumProductType;
 
 import javax.persistence.*;
-import java.util.List;
+import javax.validation.constraints.NotNull;
 
 
 @Entity
@@ -18,10 +15,14 @@ public class CampaignAssignToTourProduct {
     @JsonProperty("id")
     private long id;
 
-
+    @NotNull
     private long campaign;
+    @NotNull
     private long product;
     private long tourId;
+    @NotNull
+    private String campaign_code;
+    private long tour_booking;
 
     public long getCampaign() {
         return campaign;
@@ -74,5 +75,21 @@ public class CampaignAssignToTourProduct {
 
     public long getTourId() {
         return tourId;
+    }
+
+    public void setCampaign_code(String campaign_code) {
+        this.campaign_code = campaign_code;
+    }
+
+    public String getCampaign_code() {
+        return campaign_code;
+    }
+
+    public void setTour_booking(long tour_booking) {
+        this.tour_booking = tour_booking;
+    }
+
+    public long getTour_booking() {
+        return tour_booking;
     }
 }

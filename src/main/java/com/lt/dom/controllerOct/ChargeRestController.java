@@ -1,28 +1,30 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.OctResp.ReservationTourResp;
+import com.lt.dom.OctResp.ChargeResp;
 import com.lt.dom.error.BookNotFoundException;
-import com.lt.dom.error.No_voucher_suitable_for_publicationException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.BookingPojo;
 import com.lt.dom.repository.ChargeRepository;
 import com.lt.dom.repository.ProductRepository;
-import com.lt.dom.repository.VoucherRepository;
-import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
+import com.lt.dom.repository.RefundRepository;
 import com.lt.dom.serviceOtc.PaymentServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
-import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
-import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/oct")
@@ -38,7 +40,7 @@ public class ChargeRestController {
     @Autowired
     private ChargeRepository chargeRepository;
     @Autowired
-    private AvailabilityServiceImpl availabilityService;
+    private RefundRepository refundRepository;
 
 
 
@@ -52,13 +54,44 @@ public class ChargeRestController {
         if(optionalProduct.isPresent()){
 
 
-            Charge campaigns = paymentService.refundCharge(optionalProduct.get());
+            Charge campaigns = paymentService.refundCompleted(optionalProduct.get());
 
             return ResponseEntity.ok(campaigns);
         }else{
             System.out.println("找不到产品");
             throw new BookNotFoundException(pojo.getProductId(),"找不到产品");
         }
+
+
+    }
+
+
+
+
+
+    @GetMapping(value = "/charges", produces = "application/json")
+    public ResponseEntity<PagedModel> getChargeList(Pageable pageable , PagedResourcesAssembler<EntityModel<ChargeResp>> assembler) {
+
+
+
+        Page<Charge> optionalProduct = chargeRepository.findAll(pageable);
+
+
+
+        List<Refund> refundList = refundRepository.findAllByChargeIn(optionalProduct.stream().map(e->e.getId()).collect(Collectors.toList()));
+
+        Map<Long,List<Refund>>  longListMap = refundList.stream().collect(Collectors.groupingBy(e->e.getCharge()));
+
+        Page<EntityModel<ChargeResp>> page =  optionalProduct.map(x->{
+
+            EntityModel<ChargeResp> resp =EntityModel.of(ChargeResp.from(x,longListMap));
+
+
+                return resp;
+
+        });
+
+        return ResponseEntity.ok(assembler.toModel(page));
 
 
     }

@@ -8,12 +8,12 @@ import javax.validation.constraints.NotEmpty;
 
 
 public class EmpowerGetPhoneReq extends RepresentationModel<EmpowerGetPhoneReq> {
-    @NotEmpty
-    private String encryptedData;
-    @NotEmpty
-    private String iv;
+  //  @NotEmpty
+  //  private String encryptedData;
+  //  @NotEmpty
+   // private String iv;
 
-    public String getEncryptedData() {
+/*    public String getEncryptedData() {
         return encryptedData;
     }
 
@@ -27,10 +27,21 @@ public class EmpowerGetPhoneReq extends RepresentationModel<EmpowerGetPhoneReq> 
 
     public void setIv(String iv) {
         this.iv = iv;
-    }
+    }*/
 
     @NotEmpty
     private String code;
+
+
+    private int type; //1 用户端 ， 2商户端
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
 
     public String getCode() {
         return code;

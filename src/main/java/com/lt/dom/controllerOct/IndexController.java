@@ -24,7 +24,9 @@ import javax.naming.AuthenticationException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -66,37 +68,20 @@ public class IndexController {
         List<Scenario> scenarios = scenarioRepository.findAll();
 
 
-
+        List<Campaign> campaignList = campaignRepository.findAll();
 
 
         HomeResp homeResp = new HomeResp();
         EntityModel<HomeResp> entityModel = EntityModel.of(homeResp);
 
-
-
-
-
-           /*     Page<Campaign> campaignPageable = campaignRepository.findAll(PageRequest.of(0,1000));
-
-        List<CampaignResp> campaignResps =  CampaignResp.pageMapToList(campaignPageable);
-*/
-/*        CollectionModel collectionModel = CollectionModel.of(campaignResps);
-        homeResp.setCampaigns(collectionModel);
-
-
-                collectionModel.add(linkTo(methodOn(CampaignRestController.class).listCampaign(1)).withRel("fuckyou"));
-
-        */
-
-
-
-
+        Map<Long,List<Campaign>> longListMap =  campaignList.stream().collect(Collectors.groupingBy(e->e.getScenario()));
 
 
 
         CollectionModel categoryCollectionModel = CollectionModel.of(scenarios.stream().map(x->{
 
-            EntityModel<Scenario> scenarioEntityModel = EntityModel.of(x);
+
+            EntityModel<ScenarioResp> scenarioEntityModel = EntityModel.of(ScenarioResp.from(x,longListMap.getOrDefault(x.getId(), Arrays.asList()).size()));
 
             scenarioEntityModel.add(linkTo(methodOn(ScenarioRestController.class).getScenario(x.getId())).withRel("getScenario"));
             return scenarioEntityModel;

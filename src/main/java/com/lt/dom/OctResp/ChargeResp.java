@@ -1,19 +1,28 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.lt.dom.oct.Charge;
+import com.lt.dom.oct.Refund;
+import com.lt.dom.otcenum.EnumChargeStatus;
 import com.lt.dom.otcenum.EnumPayChannel;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Transient;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChargeResp {
 
 
+    private String orderId;
+    private String code;
 
-    private Integer created;
+
+    private LocalDateTime created;
     private Boolean livemode;
     private Boolean paid;
     private Boolean refunded;
@@ -28,12 +37,45 @@ public class ChargeResp {
     private String currency;
     private String subject;
     private String body;
+    private String status_text;
+    private String channel_text;
 
-    public Integer getCreated() {
+    public static ChargeResp from(Charge x) {
+        ChargeResp chargeResp = new ChargeResp();
+        chargeResp.setAmount(x.getAmount());
+        chargeResp.setCode(x.getCode());
+        chargeResp.setCreated(x.getCreated());
+        chargeResp.setPaid(x.getPaid());
+        chargeResp.setRefunded(x.getRefunded());
+        chargeResp.setOrderNo(x.getBooking());
+        chargeResp.setStatus(x.getStatus());
+        chargeResp.setStatus_text(x.getStatus().toString());
+        chargeResp.setChannel_text(x.getChannel().toString());
+        chargeResp.setChannel(x.getChannel());
+        chargeResp.setLivemode(x.getLivemode());
+
+        chargeResp.setCustomer(x.getCustomer());
+        chargeResp.setBody(x.getBody());
+        chargeResp.setTransactionNo(x.getTransactionNo());
+        chargeResp.setTransactionNo(x.getTransactionNo());
+        return chargeResp;
+    }
+
+    public static ChargeResp from(Charge x, Map<Long, List<Refund>> longListMap) {
+        ChargeResp chargeResp = ChargeResp.from(x);
+
+        chargeResp.setRefunds(longListMap.getOrDefault(x.getId(), Arrays.asList()).stream().map(e->{
+            return RefundResp.from(e);
+
+        }).collect(Collectors.toList()));
+        return chargeResp;
+    }
+
+    public LocalDateTime getCreated() {
         return created;
     }
 
-    public void setCreated(Integer created) {
+    public void setCreated(LocalDateTime created) {
         this.created = created;
     }
 
@@ -149,11 +191,11 @@ public class ChargeResp {
         this.extra = extra;
     }
 
-    public String getTimePaid() {
+    public LocalDateTime getTimePaid() {
         return timePaid;
     }
 
-    public void setTimePaid(String timePaid) {
+    public void setTimePaid(LocalDateTime timePaid) {
         this.timePaid = timePaid;
     }
 
@@ -165,11 +207,11 @@ public class ChargeResp {
         this.timeExpire = timeExpire;
     }
 
-    public String getTimeSettle() {
+    public LocalDateTime getTimeSettle() {
         return timeSettle;
     }
 
-    public void setTimeSettle(String timeSettle) {
+    public void setTimeSettle(LocalDateTime timeSettle) {
         this.timeSettle = timeSettle;
     }
 
@@ -181,11 +223,11 @@ public class ChargeResp {
         this.transactionNo = transactionNo;
     }
 
-    public RefundsDTO getRefunds() {
+    public List<RefundResp> getRefunds() {
         return refunds;
     }
 
-    public void setRefunds(RefundsDTO refunds) {
+    public void setRefunds(List<RefundResp> refunds) {
         this.refunds = refunds;
     }
 
@@ -239,12 +281,12 @@ public class ChargeResp {
 
     @Transient
     private ExtraDTO extra;
-    private String timePaid;
+    private LocalDateTime timePaid;
     private Integer timeExpire;
-    private String timeSettle;
+    private LocalDateTime timeSettle;
     private String transactionNo;
-    @Transient
-    private RefundsDTO refunds;
+
+    private List<RefundResp> refunds;
     private Integer amountRefunded;
     private String failureCode;
     private String failureMsg;
@@ -262,6 +304,39 @@ public class ChargeResp {
 
     public void setAmount(int amount) {
         this.amount = amount;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setCode(String code) {
+
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setStatus_text(String status_text) {
+        this.status_text = status_text;
+    }
+
+    public String getStatus_text() {
+        return status_text;
+    }
+
+    public void setChannel_text(String channel_text) {
+        this.channel_text = channel_text;
+    }
+
+    public String getChannel_text() {
+        return channel_text;
     }
 
     public static class ExtraDTO {
@@ -289,45 +364,24 @@ public class ChargeResp {
             private String mode;
         }
     }
+    private EnumChargeStatus status;
 
+    public EnumChargeStatus getStatus() {
+        return status;
+    }
 
- /*     "id": "ch_L8qn10mLmr1GS8e5OODmHaL4",
-              "object": "charge",
-              "created": 1410834527,
-              "livemode": true,
-              "paid": false,
-              "refunded": false,
-              "reversed": false,
-              "app": "app_1Gqj58ynP0mHeX1q",
-              "channel": "upacp",
-              "order_no": "123456789",
-              "client_ip": "127.0.0.1",
-              "amount": 100,
-              "amount_settle": 100,
-              "currency": "cny",
-              "subject": "Your Subject",
-              "body": "Your Body",
-              "extra":{},
-            "time_paid": null,
-            "time_expire": 1410838127,
-            "time_settle": null,
-            "transaction_no": null,
-            "refunds": {
-        "object": "list",
-                "url": "/v1/charges/ch_L8qn10mLmr1GS8e5OODmHaL4/refunds",
-                "has_more": false,
-                "data": [ ]
-    },
-            "amount_refunded": 0,
-            "failure_code": null,
-            "failure_msg": null,
-            "metadata": {},
-            "credential": {
-        "object": "credential",
-                "upacp": {
-            "tn": "201409161028470000000",
-                    "mode": "01"
-        }
-    },
-            "description": null*/
+    public void setStatus(EnumChargeStatus status) {
+        this.status = status;
+    }
+
+    private long customer;
+
+    public long getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(long customer) {
+        this.customer = customer;
+    }
+
 }

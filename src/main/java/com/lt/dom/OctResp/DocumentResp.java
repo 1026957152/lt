@@ -1,30 +1,29 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.controllerOct.BookingRestController;
 import com.lt.dom.controllerOct.FileUploadController;
 import com.lt.dom.oct.Document;
-import com.lt.dom.oct.Export;
 import com.lt.dom.otcReq.BookingDocumentIdsResp;
 import com.lt.dom.otcenum.EnumDocumentType;
-import com.lt.dom.otcenum.EnumExportStatus;
-import com.lt.dom.otcenum.EnumExportVoucher;
-import org.springframework.hateoas.RepresentationModel;
+import com.lt.dom.serviceOtc.FileStorageServiceImpl;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
-public class DocumentResp extends RepresentationModel<DocumentResp> {
+public class DocumentResp  {
 
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String source_id;
 
     private LocalDateTime created_at;
@@ -35,9 +34,11 @@ public class DocumentResp extends RepresentationModel<DocumentResp> {
     private String code;
     private String original_filename;
     private EnumDocumentType category;
+    private boolean image;
+
     public static DocumentResp onefrom(Document x) {
         DocumentResp exportReq = new DocumentResp();
-
+        exportReq.setImage(x.getImage());
         exportReq.setCode(x.getCode());
         exportReq.setCategory(x.getType());
         exportReq.setCreated_at(x.getCreated_at());
@@ -53,10 +54,90 @@ public class DocumentResp extends RepresentationModel<DocumentResp> {
         return exportReq;
 
     }
-    public static List<DocumentResp> Listfrom(List<Document> travelers) {
+
+
+    public static List<DocumentGroup> groupfrom(List<Document> travelers) {
+
+/*        Map<DocumentResp> documentResps = travelers.stream().collect(Collectors.groupingBy(x->x.getType(),collectingAndThen(toList(),list->{
+            return list.stream().map(x->{
+
+
+            }).collect(toList());
+
+        }) ));*/
+
+        return  travelers.stream().collect(groupingBy(x->x.getType())).entrySet().stream().map(x->{
+            DocumentGroup enumResp = new DocumentGroup();
+            enumResp.setId(x.getKey().name());
+            enumResp.setText(x.getKey().toString());
+            enumResp.setDocumentResps(x.getValue().stream().map(xx->{
+                DocumentResp exportReq = new DocumentResp();
+                exportReq.setImage(xx.getImage());
+                exportReq.setCode(xx.getCode());
+                exportReq.setCategory(xx.getType());
+                exportReq.setCreated_at(xx.getCreated_at());
+                exportReq.setUpdated_at(xx.getUpdated_at());
+                exportReq.setOriginal_filename(xx.getOriginalFilename());
+   /*             String url = MvcUriComponentsBuilder
+                        .fromMethodName(FileUploadController.class,
+                                "getFile",
+                                xx.getFileName()
+                        ).build().toString();*/
+
+                exportReq.setResultUrl(FileStorageServiceImpl.url(xx));
+                return exportReq;
+            }).collect(toList()));
+
+            return enumResp;
+
+        }).collect(toList());
+
+
+    }
+
+    public void setImage(boolean image) {
+        this.image = image;
+    }
+
+    public boolean getImage() {
+        return image;
+    }
+
+
+    public static class DocumentGroup {
+
+        private String id;
+        private String text;
+        private List<DocumentResp> documentResps;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+
+        public List<DocumentResp> getDocumentResps() {
+            return documentResps;
+        }
+
+        public void setDocumentResps(List<DocumentResp> documentResps) {
+            this.documentResps = documentResps;
+        }
+    }
+        public static List<DocumentResp> Listfrom(List<Document> travelers) {
         List<DocumentResp> documentResps = travelers.stream().map(x->{
             DocumentResp exportReq = new DocumentResp();
-
+            exportReq.setImage(x.getImage());
             exportReq.setCode(x.getCode());
             exportReq.setCategory(x.getType());
             exportReq.setCreated_at(x.getCreated_at());
@@ -70,7 +151,7 @@ public class DocumentResp extends RepresentationModel<DocumentResp> {
 
             exportReq.setResultUrl(url);
             return exportReq;
-        }).collect(Collectors.toList());
+        }).collect(toList());
         return documentResps;
     }
 
@@ -121,9 +202,9 @@ public class DocumentResp extends RepresentationModel<DocumentResp> {
     }
 
 
-    public static Map<EnumDocumentType,List<DocumentResp>> from(List<Document> export) {
+    public static Map<EnumDocumentType,List<EntityModel<DocumentResp>>> from(List<Document> export) {
 
-        List<DocumentResp> documentResps = export.stream().map(x->{
+        List<EntityModel<DocumentResp>> documentResps = export.stream().map(x->{
             DocumentResp exportReq = new DocumentResp();
 
             exportReq.setCode(x.getCode());
@@ -131,20 +212,17 @@ public class DocumentResp extends RepresentationModel<DocumentResp> {
             exportReq.setCreated_at(x.getCreated_at());
             exportReq.setUpdated_at(x.getUpdated_at());
             exportReq.setOriginal_filename(x.getOriginalFilename());
-            String url = MvcUriComponentsBuilder
-                    .fromMethodName(FileUploadController.class,
-                            "getFile",
-                            x.getFileName()
-                    ).build().toString();
-
-            exportReq.setResultUrl(url);
-            exportReq.add(linkTo(methodOn(BookingRestController.class).createDocuments(x.getId(),new BookingDocumentIdsResp())).withRel("add_documents_url"));
-
-            return exportReq;
-        }).collect(Collectors.toList());
+            exportReq.setImage(x.getImage());
+            exportReq.setResultUrl(FileStorageServiceImpl.url(x));
 
 
-        Map<EnumDocumentType,List<DocumentResp>> mm = documentResps.stream().collect(groupingBy(x->x.getCategory()));
+            EntityModel<DocumentResp> entityModel = EntityModel.of(exportReq);
+            entityModel.add(linkTo(methodOn(BookingRestController.class).createDocuments(x.getId(),new BookingDocumentIdsResp())).withRel("add_documents_url"));
+            return entityModel;
+        }).collect(toList());
+
+
+        Map<EnumDocumentType,List<EntityModel<DocumentResp>>> mm = documentResps.stream().collect(groupingBy(x->x.getContent().getCategory()));
 
         return mm;
     }

@@ -37,12 +37,12 @@ public class ExportServiceImpl {
     private ExportRepository exportRepository;
 
 
-    public Export createExport(ExportReq pojo) {
+    public Export createExport(EnumExportVoucher type,ExportReq pojo) {
         Export export = new Export();
 
         export.setCreated_at(LocalDateTime.now());
         export.setStatus(EnumExportStatus.SCHEDULED);
-        export.setExported_object(pojo.getExported_object());
+        export.setExported_object(type);
         export.setCode(idGenService.exportNo());
 
 

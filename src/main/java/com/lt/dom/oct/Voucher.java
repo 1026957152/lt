@@ -2,10 +2,13 @@ package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.OctResp.PublicationEntryResp;
+import com.lt.dom.otcenum.EnumDuration;
+import com.lt.dom.otcenum.EnumPublicationObjectType;
 import com.lt.dom.otcenum.EnumVoucherStatus;
 import com.lt.dom.otcenum.EnumVoucherType;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +32,21 @@ public class Voucher {
 
     private LocalDateTime expiry_datetime;
     private EnumVoucherStatus status;
+    private long publishTo;
+
+
+
+    private EnumDuration duration;
+
+    public EnumDuration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(EnumDuration duration) {
+        this.duration = duration;
+    }
+
+    private EnumPublicationObjectType publishToType;
 
     public LocalDateTime getExpiry_datetime() {
         return expiry_datetime;
@@ -245,5 +263,21 @@ public class Voucher {
 
     public EnumVoucherStatus getStatus() {
         return status;
+    }
+
+    public void setPublishTo(long publishTo) {
+        this.publishTo = publishTo;
+    }
+
+    public long getPublishTo() {
+        return publishTo;
+    }
+
+    public void setPublishToType(EnumPublicationObjectType publishToType) {
+        this.publishToType = publishToType;
+    }
+
+    public EnumPublicationObjectType getPublishToType() {
+        return publishToType;
     }
 }

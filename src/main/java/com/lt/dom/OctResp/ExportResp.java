@@ -1,9 +1,12 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.lt.dom.controllerOct.FileUploadController;
 import com.lt.dom.oct.Export;
 import com.lt.dom.otcenum.EnumExportStatus;
 import com.lt.dom.otcenum.EnumExportVoucher;
+import com.lt.dom.serviceOtc.FileStorageServiceImpl;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import javax.persistence.Entity;
@@ -19,12 +22,38 @@ import java.time.Period;
 public class ExportResp {
 
 
+
+
+
     private String source_id;
     private EnumExportVoucher exported_object;
+    private String exported_object_text;
+
+    public String getExported_object_text() {
+        return exported_object_text;
+    }
+
+    public void setExported_object_text(String exported_object_text) {
+        this.exported_object_text = exported_object_text;
+    }
+
+    public String getStatus_text() {
+        return status_text;
+    }
+
+    public void setStatus_text(String status_text) {
+        this.status_text = status_text;
+    }
+
+    /** 响应时间 */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime created_at;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updated_at;
     private EnumExportStatus status;
-
+    private String status_text;
     private String resultUrl;
     private String code;
     private LocalDateTime done_at;
@@ -93,19 +122,19 @@ public class ExportResp {
     public static ExportResp from(Export export) {
         ExportResp exportReq = new ExportResp();
         exportReq.setExported_object(export.getExported_object());
+        exportReq.setExported_object_text(export.getExported_object().toString());
+
         exportReq.setCode(export.getCode());
         exportReq.setStatus(export.getStatus());
+        exportReq.setStatus_text(export.getStatus().toString());
+
         exportReq.setCreated_at(export.getCreated_at());
 
         exportReq.setTotal_succeeded(export.getTotal_succeeded());
         if(export.getStatus().equals(EnumExportStatus.DONE)){
-            String url = MvcUriComponentsBuilder
-                    .fromMethodName(FileUploadController.class,
-                            "getFile",
-                            export.getCode()+".xlsx"
-                    ).build().toString();
 
-            exportReq.setResultUrl(url);
+
+            exportReq.setResultUrl(FileStorageServiceImpl.url(export.getCode()+".xlsx"));
             exportReq.setDone_at(export.getDone_at());
             exportReq.setDuration(Duration.between(export.getCreated_at(),export.getDone_at()).getSeconds());
         }

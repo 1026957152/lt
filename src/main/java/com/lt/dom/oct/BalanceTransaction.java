@@ -6,15 +6,15 @@ import com.lt.dom.otcenum.EnumFlowType;
 import com.lt.dom.otcenum.EnumTranStatus;
 import com.lt.dom.otcenum.EnumTranType;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Version;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 public class BalanceTransaction {  //余额结算
     @Version
     private Integer version;
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id; // 用户余额转账对象 ID，由Ping++ 生成。
 
@@ -24,6 +24,11 @@ public class BalanceTransaction {  //余额结算
     private int net;
     private String sourceId;
     private long source;
+    private String code;
+    private String flowType_text;
+    private String status_text;
+
+
 
     public EnumTranType getFlowType() {
         return flowType;
@@ -146,5 +151,29 @@ public class BalanceTransaction {  //余额结算
 
     public long getSource() {
         return source;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setFlowType_text(String flowType_text) {
+        this.flowType_text = flowType_text;
+    }
+
+    public String getFlowType_text() {
+        return flowType_text;
+    }
+
+    public void setStatus_text(String status_text) {
+        this.status_text = status_text;
+    }
+
+    public String getStatus_text() {
+        return status_text;
     }
 }

@@ -2,11 +2,27 @@ package com.lt.dom.oct;
 
 
 import com.lt.dom.otcenum.EnumEmployeeAccessLevel;
+import com.lt.dom.otcenum.EnumEmployeeStatus;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 public class Employee {
+
+
+    private LocalDateTime created_at;
+
+    private EnumEmployeeStatus status;
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
+    }
+
     @Version
     private Integer version;
 
@@ -90,5 +106,13 @@ public class Employee {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public EnumEmployeeStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EnumEmployeeStatus status) {
+        this.status = status;
     }
 }

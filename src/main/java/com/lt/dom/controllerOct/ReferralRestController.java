@@ -10,10 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
+import javax.validation.Valid;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
+import java.sql.Ref;
 import java.util.UUID;
 
 @RestController
@@ -26,18 +28,21 @@ public class ReferralRestController {
 
 
     @PostMapping(value = "/{USER_ID}/referrals/", produces = "application/json")
-    public ReferralResp createReferral(ReferralPojo pojo) {
-        return new ReferralResp();
+    public ReferralResp createReferral(@RequestBody @Valid ReferralPojo pojo) {
+        Referral referral = referralService.create(pojo);
+
+        return ReferralResp.from(referral);
+
     }
 
 
     @GetMapping(value = "/referrals/", produces = "application/json")
-    public ReferralResp get(@RequestParam String  scene) {  // scene 最大 32各字符
+    public ReferralResp get(@RequestParam String  code) {  // scene 最大 32各字符
 
 
-        referralService.getUserAndProductByScene(scene);
+        Referral referral = referralService.getUserAndProductByScene(code);
 
-        return new ReferralResp();
+        return ReferralResp.from(referral);
     }
 
 

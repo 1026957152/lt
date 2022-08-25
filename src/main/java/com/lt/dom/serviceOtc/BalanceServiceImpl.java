@@ -27,6 +27,7 @@ public class BalanceServiceImpl {
     }
 
     public List<BalanceTransaction> listTransations(Balance balance) {
+
         return transactionRepository.findByBalance(balance.getId());
 
     }

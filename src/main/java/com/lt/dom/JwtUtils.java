@@ -19,7 +19,7 @@ public class JwtUtils {
 	@Value("${bezkoder.app.jwtSecret}")
 	private String jwtSecret;
 	@Value("${bezkoder.app.jwtExpirationMs}")
-	private int jwtExpirationMs;
+	private long jwtExpirationMs;
 
 /*	public static JwtUtils(String jwtSecret, int jwtExpirationMs) {
 		this.jwtSecret = jwtSecret;

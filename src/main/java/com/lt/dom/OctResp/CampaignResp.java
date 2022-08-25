@@ -1,13 +1,11 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.lt.dom.controllerOct.AssetRestController;
+import com.lt.dom.controllerOct.BookingRestController;
 import com.lt.dom.controllerOct.CampaignRestController;
 import com.lt.dom.controllerOct.PublicationRestController;
-import com.lt.dom.oct.Campaign;
-import com.lt.dom.oct.Document;
-import com.lt.dom.oct.Quota;
-import com.lt.dom.oct.Scenario;
+import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import org.javatuples.Pair;
@@ -15,10 +13,10 @@ import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +27,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CampaignResp extends RepresentationModel<CampaignResp> {
+public class CampaignResp  {
 
 
 
@@ -44,6 +42,20 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
 
     private String qr_url;
     private EntityModel<AssetResp> asset;
+    private boolean pay;
+    private int pay_amount;
+    private String expiration_date_text;
+    private String start_date_text;
+    private String start_expiration_date_text;
+    private String voucher_type_text;
+    private String name_long;
+    private String active_text;
+    private String discount_category_text;
+    private int totol_count;
+    private long published_count;
+    private String status_text;
+    private long unpublished_count;
+
 
     public String getQr_url() {
         return qr_url;
@@ -60,9 +72,22 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
     public void setClaimable(Boolean claimable) {
         this.claimable = claimable;
     }
+  //  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+   // @JsonSerialize(using = LocalDateTimeSerializer.class)
+    //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(locale = "zh", timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
 
-    private LocalDate start_date;
-    private LocalDate expiration_date;
+   // @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime start_date;
+    //@JsonDeserialize(using = LocalDateTimeDeserializer.class)
+   // @JsonSerialize(using = LocalDateTimeSerializer.class)
+   // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(locale = "zh", timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+
+ // @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime expiration_date;
+
+
 
     private String category;
     private List<Quota> quotas;
@@ -93,7 +118,7 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
         this.category = category;
     }
 
-    private int vouchers_count;
+    private int voucher_count;
     private EnumCampaignCreationStatus vouchers_generation_status; //IN_PROGRESS, DONE, ERROR
     private String description;
     private boolean active;
@@ -117,30 +142,30 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
         this.name = name;
     }
 
-    public LocalDate getStart_date() {
+    public LocalDateTime getStart_date() {
         return start_date;
     }
 
-    public void setStart_date(LocalDate start_date) {
+    public void setStart_date(LocalDateTime start_date) {
         this.start_date = start_date;
     }
 
-    public LocalDate getExpiration_date() {
+    public LocalDateTime getExpiration_date() {
         return expiration_date;
     }
 
-    public void setExpiration_date(LocalDate expiration_date) {
+    public void setExpiration_date(LocalDateTime expiration_date) {
         this.expiration_date = expiration_date;
     }
 
 
 
-    public int getVouchers_count() {
-        return vouchers_count;
+    public int getVoucher_count() {
+        return voucher_count;
     }
 
-    public void setVouchers_count(int vouchers_count) {
-        this.vouchers_count = vouchers_count;
+    public void setVoucher_count(int vouchers_count) {
+        this.voucher_count = vouchers_count;
     }
 
 
@@ -235,7 +260,7 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
         return vouchertype;
     }
 
-    public void setVouchertype(EnumVoucherType vouchertype) {
+    public void setVoucher_type(EnumVoucherType vouchertype) {
         this.vouchertype = vouchertype;
     }
 
@@ -267,7 +292,7 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
         return discountCategory;
     }
 
-    public void setDiscountCategory(EnumDiscountVoucherCategory discountCategory) {
+    public void setDiscount_category(EnumDiscountVoucherCategory discountCategory) {
         this.discountCategory = discountCategory;
     }
 
@@ -304,7 +329,48 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
         return code;
     }
 
+    public static EnumLongIdResp enumSimple(Pair<Campaign,Optional<Scenario>> triplet) {
 
+        Campaign campaign = triplet.getValue0();
+        CampaignResp campaignResp = new CampaignResp();
+
+
+
+        campaignResp.setCampaignType(campaign.getCampaignType());
+
+        campaignResp.setActive(campaign.isActive());
+        campaignResp.setStart_date(campaign.getStart_date());
+        campaignResp.setExpiration_date(campaign.getExpiration_date());
+        campaignResp.setDescription(campaign.getDescription());
+        campaignResp.setName(campaign.getName());
+        campaignResp.setVoucher_type(campaign.getVouchertype());
+        campaignResp.setVoucher_count(campaign.getVoucher_count());
+        campaignResp.setCode(campaign.getCode());
+        campaignResp.setDescription(campaign.getDescription());
+        campaignResp.setClaimable(campaign.isActive());
+        campaignResp.setClaim_limit(campaign.getClain_limit());
+        campaignResp.setClaim_note(campaign.getClaim_note());
+        campaignResp.setExpiry_days(campaign.getExpiry_days());
+
+
+        if(campaign.getVouchertype().equals(EnumVoucherType.DISCOUNT_VOUCHER)){
+            campaignResp.setDiscount_category(campaign.getDiscountCategory());
+            if(campaign.getDiscountCategory().equals(EnumDiscountVoucherCategory.AMOUNT)){
+                campaignResp.setAmount_off(campaign.getAmount_off());
+            }
+            if(campaign.getDiscountCategory().equals(EnumDiscountVoucherCategory.PERCENT)){
+                campaignResp.setPercent_off(campaign.getPercent_off());
+            }
+            if(campaign.getDiscountCategory().equals(EnumDiscountVoucherCategory.UNIT)){
+                campaignResp.setUnit_off(campaign.getUnit_off());
+            }
+        }
+        EnumLongIdResp enumLongIdResp = new EnumLongIdResp();
+        enumLongIdResp.setId(campaign.getId());
+        enumLongIdResp.setText(campaign.getName()+"_"+campaign.getCode());
+        enumLongIdResp.setInfo(campaignResp);
+        return enumLongIdResp;
+    }
     public static CampaignResp simple(Pair<Campaign,Optional<Scenario>> triplet) {
 
         Campaign campaign = triplet.getValue0();
@@ -317,10 +383,21 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
         campaignResp.setActive(campaign.isActive());
         campaignResp.setStart_date(campaign.getStart_date());
         campaignResp.setExpiration_date(campaign.getExpiration_date());
+        ;
+        String start = campaign.getStart_date().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH"));
+        String end = campaign.getExpiration_date().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH"));
+
+        campaignResp.setStart_date_text(start);
+        campaignResp.setExpiration_date_text(end);
+
+        campaignResp.setStart_expiration_date_text(start+"时 ~"+end+"时");
+
+
         campaignResp.setDescription(campaign.getDescription());
         campaignResp.setName(campaign.getName());
-        campaignResp.setVouchertype(campaign.getVouchertype());
-        campaignResp.setVouchers_count(campaign.getVouchers_count());
+        campaignResp.setVoucher_type(campaign.getVouchertype());
+        campaignResp.setVoucher_type_text(campaign.getVouchertype().toString());
+        campaignResp.setVoucher_count(campaign.getVoucher_count());
         campaignResp.setCode(campaign.getCode());
         campaignResp.setDescription(campaign.getDescription());
         campaignResp.setClaimable(campaign.isActive());
@@ -329,7 +406,12 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
         campaignResp.setClaim_note(campaign.getClaim_note());
         campaignResp.setQr_url("未配置");
         campaignResp.setExpiry_days(campaign.getExpiry_days());
-
+        campaignResp.setPay(campaign.getPay());
+        campaignResp.setPay_amount(campaign.getPayAmount());
+        campaignResp.setTotol_count(campaign.getVoucher_count());
+        campaignResp.setPublished_count(campaign.getTotal_published());
+        campaignResp.setUnpublished_count(campaign.getVoucher_count()-campaign.getTotal_published());
+        campaignResp.setStatus_text(campaign.getStatus().toString());
 
         if(campaign.getScenario() != 0){
             if(scenario.isPresent()){
@@ -340,7 +422,7 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
 
        // campaignResp.setVouchers_generation_status(campaign.getVouchers_generation_status());
         if(campaign.getVouchertype().equals(EnumVoucherType.DISCOUNT_VOUCHER)){
-            campaignResp.setDiscountCategory(campaign.getDiscountCategory());
+            campaignResp.setDiscount_category(campaign.getDiscountCategory());
             if(campaign.getDiscountCategory().equals(EnumDiscountVoucherCategory.AMOUNT)){
                 campaignResp.setAmount_off(campaign.getAmount_off());
             }
@@ -352,9 +434,6 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
             }
         }
 
-
-        campaignResp.add(linkTo(methodOn(CampaignRestController.class).clain(campaign.getId(),null)).withRel("clainWithPay"));
-        campaignResp.add(linkTo(methodOn(PublicationRestController.class).createPublication(campaign.getId(),null,null)).withRel("clain"));
 
         campaignResp.setCategory(campaign.getCategory());
         return campaignResp;
@@ -371,22 +450,35 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
         campaignResp.setCampaignType(campaign.getCampaignType());
 
         campaignResp.setActive(campaign.isActive());
+        campaignResp.setActive_text(campaign.isActive()?"活跃":"不活跃");
         campaignResp.setStart_date(campaign.getStart_date());
         campaignResp.setExpiration_date(campaign.getExpiration_date());
         campaignResp.setDescription(campaign.getDescription());
         campaignResp.setCharset(campaign.getCharset());
         campaignResp.setName(campaign.getName());
+        campaignResp.setName_long(campaign.getName_long());
         campaignResp.setLength(campaign.getLength());
         campaignResp.setPostfix(campaign.getPostfix());
         campaignResp.setPrefix(campaign.getPrefix());
         campaignResp.setPattern(campaign.getPattern());
-        campaignResp.setVouchertype(campaign.getVouchertype());
-        campaignResp.setVouchers_count(campaign.getVouchers_count());
+        campaignResp.setVoucher_type(campaign.getVouchertype());
+        campaignResp.setVoucher_type_text(campaign.getVouchertype().toString());
+        campaignResp.setVoucher_count(campaign.getVoucher_count());
         campaignResp.setCode(campaign.getCode());
         campaignResp.setDescription(campaign.getDescription());
         campaignResp.setExpiry_days(campaign.getExpiry_days());
+        campaignResp.setPay(campaign.getPay());
+        campaignResp.setPay_amount(campaign.getPayAmount());
 
+        if(EnumDiscountVoucherCategory.AMOUNT.equals(campaign.getDiscountCategory())){
+            campaignResp.setVoucher_info(campaign.getDiscountCategory().toString() +"" +campaign.getAmount_off());
+            campaignResp.setDiscount_category_text(campaign.getDiscountCategory().toString());
+            campaignResp.setDiscount_category(campaign.getDiscountCategory());
 
+        }else{
+            campaignResp.setVoucher_info("????");
+
+        }
 
         if(campaign.getScenario() != 0){
             if(scenario.isPresent()){
@@ -397,7 +489,7 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
 
         campaignResp.setVouchers_generation_status(campaign.getVouchers_generation_status());
         if(campaign.getVouchertype().equals(EnumVoucherType.DISCOUNT_VOUCHER)){
-            campaignResp.setDiscountCategory(campaign.getDiscountCategory());
+            campaignResp.setDiscount_category(campaign.getDiscountCategory());
             if(campaign.getDiscountCategory().equals(EnumDiscountVoucherCategory.AMOUNT)){
                 campaignResp.setAmount_off(campaign.getAmount_off());
             }
@@ -410,8 +502,6 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
         }
 
 
-        campaignResp.add(linkTo(methodOn(CampaignRestController.class).clain(campaign.getId(),null)).withRel("clainWithPay"));
-        campaignResp.add(linkTo(methodOn(PublicationRestController.class).createPublication(campaign.getId(),null,null)).withRel("clain"));
 
 
         campaignResp.setClainQuotas(quotas);
@@ -419,18 +509,23 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
         return campaignResp;
     }
 
-    public static Page<CampaignResp> pageMap(Page<Campaign> campaignPageable) {
-        return campaignPageable.map(x->getCampaign(Triplet.with(x,Optional.empty(), Arrays.asList())));
-    }
 
 
-    public static List<CampaignResp> pageMapToList(Page<Campaign> campaignPageable) {
-        return  campaignPageable.map(x->getCampaign(Triplet.with(x,Optional.empty(), Arrays.asList()))).getContent();
-    }
-    public static List<CampaignResp> pageMapToListSimple(Page<Campaign> campaignPageable) {
-        return  campaignPageable.map(x->simple(Pair.with(x,Optional.empty()))).getContent();
+
+    public static Page<CampaignResp> pageMapToList(Page<Campaign> campaignPageable) {
+        return  campaignPageable.map(x->getCampaign(Triplet.with(x,Optional.empty(), Arrays.asList())));
     }
 
+    public static Page<CampaignResp> searchMapToList(Page<Campaign> campaignPageable) {
+        return  campaignPageable.map(x->getCampaign(Triplet.with(x,Optional.empty(), Arrays.asList())));
+    }
+    public static Page<CampaignResp> pageMapToListSimple(Page<Campaign> campaignPageable) {
+        return  campaignPageable.map(x->simple(Pair.with(x,Optional.empty())));
+    }
+
+    public static Page<EnumLongIdResp> pageMapToListEnumSimple(Page<Campaign> campaignPageable) {
+        return  campaignPageable.map(x->enumSimple(Pair.with(x,Optional.empty())));
+    }
     public void setDocuments(List<DocumentResp> documents) {
         this.documents = documents;
     }
@@ -487,5 +582,120 @@ public class CampaignResp extends RepresentationModel<CampaignResp> {
 
     public void setExpiry_days(int expiry_days) {
         this.expiry_days = expiry_days;
+    }
+
+
+    private String voucher_info = "测试展示券的 详细信息，券金额和券类别";
+
+    public String getVoucher_info() {
+        return voucher_info;
+    }
+
+    public void setVoucher_info(String voucher_info) {
+        this.voucher_info = voucher_info;
+    }
+
+    public void setPay(boolean pay) {
+        this.pay = pay;
+    }
+
+    public boolean getPay() {
+        return pay;
+    }
+
+    public void setPay_amount(int pay_amount) {
+        this.pay_amount = pay_amount;
+    }
+
+    public int getPay_amount() {
+        return pay_amount;
+    }
+
+    public void setExpiration_date_text(String expiration_date_text) {
+        this.expiration_date_text = expiration_date_text;
+    }
+
+    public String getExpiration_date_text() {
+        return expiration_date_text;
+    }
+
+    public void setStart_date_text(String start_date_text) {
+        this.start_date_text = start_date_text;
+    }
+
+    public String getStart_date_text() {
+        return start_date_text;
+    }
+
+    public void setStart_expiration_date_text(String start_expiration_date_text) {
+        this.start_expiration_date_text = start_expiration_date_text;
+    }
+
+    public String getStart_expiration_date_text() {
+        return start_expiration_date_text;
+    }
+
+    public void setVoucher_type_text(String voucher_type_text) {
+        this.voucher_type_text = voucher_type_text;
+    }
+
+    public String getVoucher_type_text() {
+        return voucher_type_text;
+    }
+
+    public void setName_long(String name_long) {
+        this.name_long = name_long;
+    }
+
+    public String getName_long() {
+        return name_long;
+    }
+
+    public void setActive_text(String active_text) {
+        this.active_text = active_text;
+    }
+
+    public String getActive_text() {
+        return active_text;
+    }
+
+    public void setDiscount_category_text(String discount_category_text) {
+        this.discount_category_text = discount_category_text;
+    }
+
+    public String getDiscount_category_text() {
+        return discount_category_text;
+    }
+
+    public void setTotol_count(int totol_count) {
+        this.totol_count = totol_count;
+    }
+
+    public int getTotol_count() {
+        return totol_count;
+    }
+
+    public void setPublished_count(long published_count) {
+        this.published_count = published_count;
+    }
+
+    public long getPublished_count() {
+        return published_count;
+    }
+
+    public void setStatus_text(String status_text) {
+        this.status_text = status_text;
+    }
+
+    public String getStatus_text() {
+        return status_text;
+    }
+
+    public void setUnpublished_count(long unpublished_count) {
+        this.unpublished_count = unpublished_count;
+    }
+
+    public long getUnpublished_count() {
+        return unpublished_count;
     }
 }

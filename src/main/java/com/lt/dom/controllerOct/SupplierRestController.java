@@ -9,9 +9,9 @@ import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.vo.SupplierPojoVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Triplet;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.web.PageableDefault;
@@ -23,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
@@ -68,7 +67,7 @@ public class SupplierRestController {
     private UserRepository userRepository;
 
     @Autowired
-    private ApplyCertificationRepository applyCertificationRepository;
+    private RequestRepository requestRepository;
 
     @Autowired
     private ApplyForApprovalServiceImpl applyForApprovalService;
@@ -87,6 +86,8 @@ public class SupplierRestController {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private RoleServiceImpl roleService;
 
 /*
     @Autowired
@@ -95,32 +96,27 @@ public class SupplierRestController {
 
     @Operation(summary = "1、获得")
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}", produces = "application/json")
-    public ResponseEntity<SupplierResp> getSupplier(@PathVariable  long SUPPLIER_ID) {
+    public EntityModel<SupplierResp> getSupplier(@PathVariable  long SUPPLIER_ID) {
         Optional<Supplier> supplier = supplierRepository.findById(SUPPLIER_ID);
-        if(supplier.isPresent()){
-
+        if(supplier.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
             List<Asset> assets = assetRepository.findAllBySource(supplier.get().getId());
 
             SupplierResp supplierResp = SupplierResp.from(supplier.get(),assets);
-            supplierResp.add(linkTo(methodOn(SupplierRestController.class).createRequest(supplier.get().getId(),EnumApplicationType.Merchants_settled,null)).withRel("upload_file_url"));
-            supplierResp.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchorBycode(null,null)).withRel("redeem_url"));
+            supplierResp.add(linkTo(methodOn(RequestFuckRestController.class).approveRequest(supplier.get().getId(),null)).withRel("upload_file_url"));
+            supplierResp.add(linkTo(methodOn(RedemptionRestController.class).validateVoucherByCode(null)).withRel("redeem_url"));
             supplierResp.add(linkTo(methodOn(ProductRestController.class).createProduct(supplier.get().getId(),null)).withRel("create_product_url"));
             supplierResp.add(linkTo(methodOn(BookingRestController.class).createBooking(null)).withRel("booking_url"));
 
-            return ResponseEntity.ok(SupplierResp.from(supplier.get(),assets));
-
-        }else{
-            System.out.println("抛出异常");
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
-        }
+            return EntityModel.of(SupplierResp.from(supplier.get(),assets));
 
 
     }
 
     @Operation(summary = "1、获得")
     @GetMapping(value = "/suppliers", produces = "application/json")
-    public ResponseEntity<Page<SupplierResp>> pageSupplier(@PageableDefault(size = 20) final Pageable pageable) {
+    public PagedModel pageSupplier(@PageableDefault(size = 20) final Pageable pageable,PagedResourcesAssembler<EntityModel<SupplierResp>> assembler) {
 
         System.out.println("=============="+ pageable.getPageSize());
         System.out.println("=============="+ pageable.getPageNumber());
@@ -130,6 +126,7 @@ public class SupplierRestController {
         Supplier probe = new Supplier();
        // probe.setId(SUPPLIER_ID);
 
+/*
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()//same as matchingAll()
                 .withIgnorePaths("id")
                 .withIgnorePaths("total_redeemed")
@@ -141,25 +138,27 @@ public class SupplierRestController {
 
                 ;
         Example<Supplier> example = Example.of(probe,exampleMatcher);
+*/
 
-        Page<Supplier> supplier = supplierRepository.findAll(example,paging);
+     //   Page<Supplier> supplier = supplierRepository.findAll(example,paging);
+        Page<Supplier> supplier = supplierRepository.findAll(paging);
 
-        Page<SupplierResp> page1 = supplier.map(x->{
+        Page<EntityModel<SupplierResp>> page1 = supplier.map(x->{
             List<Asset> assets = assetRepository.findAllBySource(x.getId());
-            return SupplierResp.from(x,assets);
+            return EntityModel.of(SupplierResp.from(x,assets));
 
         });
 
 
 
-        return ResponseEntity.ok(page1);
+        return assembler.toModel(page1);
 
 
     }
 
 
 
-
+/*
     @Operation(summary = "1.2、新建")
     @PostMapping(value = "/suppliers/register", produces = "application/json")
     public ResponseEntity<Supplier> reigisterSupplier(@Valid @RequestPart("user") String pojos,@RequestPart("file") MultipartFile multipartFile) {
@@ -193,7 +192,7 @@ public class SupplierRestController {
 
 
 
-    }
+    }*/
 
 
     @Operation(summary = "2、新建")
@@ -214,7 +213,9 @@ public class SupplierRestController {
 
 
             if (optionalSupplier.isEmpty()) {
-                Supplier supplier = supplierService.createSupplier(pojo);
+
+                SupplierPojoVo supplierPojoVo = SupplierPojoVo.fromPojo(pojo);
+                Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
 
 
@@ -232,7 +233,7 @@ public class SupplierRestController {
             }else{
 
                 System.out.println("商户名称 已经存在");
-                throw new ExistException(pojo.getSupplierName()+" 商户名称 已经存在");
+                throw new ExistException(Enumfailures.general_exists_error,pojo.getSupplierName()+" 商户名称 已经存在");
 
             }
 
@@ -317,15 +318,16 @@ public class SupplierRestController {
             EntityModel entityModel =  EntityModel.of( Map.of("roles", roles.stream().map(x->{
                         EnumResp enumResp = new EnumResp();
                         enumResp.setId(x.getName());
-                        enumResp.setName(x.getName());
-                        enumResp.setText(x.getName());
+                      //  enumResp.setName(x.getName());
+                        enumResp.setText(EnumRole.valueOf(x.getName()).toString());
                         return enumResp;
                     }).collect(Collectors.toList())/*,
                     "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"))*/));
 
-        entityModel.add(linkTo(methodOn(SupplierRestController.class).page_addEmployee(supplier.get().getId())).withRel("Page_addEmployees"));
 
-        entityModel.add(linkTo(methodOn(SupplierRestController.class).pageEmployess(supplier.get().getId(),null)).withRel("listEmployees"));
+            entityModel.add(linkTo(methodOn(SupplierRestController.class).page_addEmployee(supplier.get().getId())).withRel("Page_addEmployees"));
+
+            entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.get().getId(),null)).withRel("listEmployees"));
 
             return entityModel;
     }
@@ -343,22 +345,27 @@ public class SupplierRestController {
 
         System.out.println(user.getAuthorities());*/
 
-        Optional<Supplier> supplier = supplierRepository.findById(SUPPLIER_ID);
-        if(supplier.isEmpty()) {
+        Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
+        if(optionalSupplier.isEmpty()) {
             throw new BookNotFoundException(SUPPLIER_ID,"找不到供应商");
-
         }
+
+        Supplier supplier = optionalSupplier.get();
+
+
+
+        List<String> enumRoles = roleService.get(supplier).stream().map(e->e.name()).collect(Collectors.toList());
         List<Role> roles = roleRepository.findAll();
-        EntityModel entityModel =  EntityModel.of( Map.of("roles", roles.stream().map(x->{
+        EntityModel entityModel =  EntityModel.of( Map.of("roles", roles.stream().filter(e->enumRoles.contains(e.getName())).map(x->{
             EnumResp enumResp = new EnumResp();
             enumResp.setId(x.getName());
-            enumResp.setName(x.getName());
-            enumResp.setText(x.getName());
+         //   enumResp.setName(x.getName());
+            enumResp.setText(EnumRole.valueOf(x.getName()).toString());
             return enumResp;
         }).collect(Collectors.toList())/*,
                     "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"))*/));
 
-        entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"));
+        entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.getId(),null)).withRel("addEmployees"));
 
         return entityModel;
     }
@@ -375,13 +382,35 @@ public class SupplierRestController {
         System.out.println(user.getAuthorities());
 
 
-        Optional<Supplier> supplier = supplierRepository.findById(SUPPLIER_ID);
-        if(supplier.isPresent()){
-            Triplet<Supplier,Employee,User> employee = supplierService.createEmployee(supplier.get(),employerPojo);
-            return ResponseEntity.ok(EmployeeResp.sigleElementfrom(employee));
-        }else{
+        Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
+        if(optionalSupplier.isEmpty()) {
             throw new BookNotFoundException(SUPPLIER_ID,"找不到供应商");
+
         }
+        Supplier supplier = optionalSupplier.get();
+
+
+        List<String> enumRoles = roleService.get(supplier).stream().map(x->x.name()).collect(Collectors.toList());
+
+        List<String> hasEnumRoles  = employerPojo.getRoles().stream().filter(x-> enumRoles.contains(x)).collect(Collectors.toList());
+
+        if(hasEnumRoles.isEmpty()){
+            throw new BookNotFoundException("无相关权限"+employerPojo.getRoles(),"");
+        }
+
+
+            Triplet<Supplier,Employee,User> triplet = supplierService.createEmployee(supplier,employerPojo,hasEnumRoles);
+
+            EntityModel entityModel = EntityModel.of( EmployeeResp.sigleElementfrom(triplet));
+
+Employee employee = triplet.getValue1();
+
+            entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(employee.getId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployeeparameters(employee.getId())).withRel("getParameters"));
+            entityModel.add(linkTo(methodOn(EmployeeRestController.class).delete(employee.getId())).withRel("deleteEmployee"));
+            entityModel.add(linkTo(methodOn(EmployeeRestController.class).updateEmployee(employee.getId(),null)).withRel("updateEmployee"));
+
+            return ResponseEntity.ok(entityModel);
 
 
 
@@ -393,7 +422,7 @@ public class SupplierRestController {
 
     @Operation(summary = "3、list所有员工")
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/employees", produces = "application/json")
-    public PagedModel pageEmployess(@PathVariable long SUPPLIER_ID,PagedResourcesAssembler<EntityModel<EmployeeResp>> assembler) {
+    public PagedModel getEmployeeList(@PathVariable long SUPPLIER_ID, PagedResourcesAssembler<EntityModel<EmployeeResp>> assembler) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
         if(optionalSupplier.isEmpty()) {
@@ -408,7 +437,14 @@ public class SupplierRestController {
         Map<Long,User> userMap = users.stream().collect(Collectors.toMap(x->x.getId(),x->x));
 
         Page<EntityModel<EmployeeResp>> list = employees.map(x->{
+
             EntityModel<EmployeeResp> employeeRespEntityModel= EmployeeResp.pageElementfrom(Triplet.with(supplier,x,userMap.get(x.getUserId())));
+            employeeRespEntityModel.add(linkTo(methodOn(BookingRestController.class).createBooking(null)).withRel("booking"));
+            employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(x.getId())).withRel("getEmployee"));
+            employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).delete(x.getId())).withRel("deleteEmployee"));
+            employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).Page_updateEmployee(x.getId())).withRel("Page_updateEmployee"));
+
+            employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).updateEmployee(x.getId(),null)).withRel("updateEmployee"));
             return employeeRespEntityModel;
         });
 
@@ -500,81 +536,6 @@ public class SupplierRestController {
 
 
 
-    @Operation(summary = "1、申请认证")
-    @PostMapping(value = "/suppliers/{SUPPLIER_ID}/applications", produces = "application/json")
-    public ApplyCertification applyCertification(@PathVariable long SUPPLIER_ID, @RequestBody @Valid CertificationApplyReq pojo) {
-
-
-        Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
-
-        if(optionalSupplier.isPresent()){
-            ApplyCertification settleAccount = applyForApprovalService.apply(optionalSupplier.get(),pojo);
-
-            return settleAccount;
-        }else{
-            throw new BookNotFoundException(SUPPLIER_ID,"找不到供应商");
-        }
-
-
-    }
-
-
-
-    @Operation(summary = "1、申请")
-    @PostMapping(value = "/suppliers/{SUPPLIER_ID}/request", produces = "application/json")
-    public ApplyCertification createRequest(@PathVariable long SUPPLIER_ID,@RequestParam EnumApplicationType type, @RequestBody @Valid CertificationApplyReq pojo) {
-
-
-        Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
-
-        if(optionalSupplier.isPresent()){
-            ApplyCertification settleAccount = applyForApprovalService.apply(optionalSupplier.get(),pojo);
-
-            return settleAccount;
-        }else{
-            throw new BookNotFoundException(SUPPLIER_ID,"找不到供应商");
-        }
-
-
-    }
-
-
-    @Operation(summary = "1、拒绝")
-    @DeleteMapping(value = "/requests/{REQUEST_ID}", produces = "application/json")
-    public ApplyCertification rejectRequest(@PathVariable long REQUEST_ID, @RequestBody @Valid CertificationApplyReq pojo) {
-
-
-        Optional<ApplyCertification> optionalSupplier = applyCertificationRepository.findById(REQUEST_ID);
-
-        if(optionalSupplier.isPresent()){
-            ApplyCertification settleAccount = applyForApprovalService.reject(optionalSupplier.get(),pojo);
-
-            return settleAccount;
-        }else{
-            throw new BookNotFoundException(REQUEST_ID,"找不到请求"+ EnumApplicationType.Merchants_settled.name());
-        }
-
-
-    }
-
-
-    @Operation(summary = "1、批准申请")
-    @PutMapping(value = "/requests/{REQUEST_ID}", produces = "application/json")
-    public ApplyCertification approveRequest(@PathVariable long REQUEST_ID, @RequestBody @Valid CertificationApplyReq pojo) {
-
-        Optional<ApplyCertification> optionalSupplier = applyCertificationRepository.findById(REQUEST_ID);
-
-        if(optionalSupplier.isPresent()){
-            ApplyCertification settleAccount = applyForApprovalService.approve(optionalSupplier.get(),pojo);
-            return settleAccount;
-        }else{
-            throw new BookNotFoundException(REQUEST_ID,"找不到请求"+ EnumApplicationType.Merchants_settled.name());
-        }
-
-
-    }
-
-
 
 /*    @Operation(summary = "3、list所有员工")
     @GetMapping(value = "/{SUPPLIER_ID}/campaigns", produces = "application/json")
@@ -653,7 +614,7 @@ public class SupplierRestController {
 
             List<PublicationEntry> publicationEntryList = publicationEntryRepository.findAll();
             Map<Long, Long> 每一个消费券的领取的数量 = publicationEntryList.stream()
-                    .collect(groupingBy(PublicationEntry::getCampaign_id,Collectors.counting() ));
+                    .collect(groupingBy(PublicationEntry::getCampaign,Collectors.counting() ));
 
 
 

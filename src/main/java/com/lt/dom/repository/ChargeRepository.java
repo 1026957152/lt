@@ -11,4 +11,6 @@ public interface ChargeRepository extends JpaRepository<Charge
 			, Long> {
 
     Optional<Charge> findByOrderId(String out_trade_no);
+
+    Optional<Charge> findByCode(String out_trade_no);
 }

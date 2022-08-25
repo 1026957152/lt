@@ -6,19 +6,34 @@ import com.lt.dom.otcenum.Enumfailures;
 public class BookNotFoundException extends RuntimeException {
 
     private long id;
-    private String object;
+    private Enumfailures error = Enumfailures.resource_not_found;
+
+    public Enumfailures getError() {
+        return error;
+    }
+
+    public void setError(Enumfailures error) {
+        this.error = error;
+    }
+
+    private String message;
     private String detail;
-    public BookNotFoundException(long id,String object) {
+    public BookNotFoundException(long id,String message) {
         this.id = id;
-        this.object = object;
+        this.message = message;
     }
 
-    public BookNotFoundException(String document_id, String simpleName) {
+    public BookNotFoundException(String message,String detail) {
 
-        this.object = document_id;
-        this.detail = simpleName;
+        this.message = message;
+        this.detail = detail;
     }
+    public BookNotFoundException(Enumfailures error, String message) {
 
+        this.error = error;
+        this.message = message;
+        this.detail = message;
+    }
     public String getDetail() {
         return detail;
     }
@@ -35,11 +50,11 @@ public class BookNotFoundException extends RuntimeException {
         this.id = id;
     }
 
-    public String getObject() {
-        return object;
+    public String getMessage() {
+        return message;
     }
 
-    public void setObject(String object) {
-        this.object = object;
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

@@ -35,12 +35,12 @@ public class ImportExcelBookingTraveler {
     private String id;
     @ExcelProperty(value = "游客手机号", index = 2)
     private String tel_home;
-    @ExcelProperty(value = "数量", index = 3)
-    private BigDecimal price;
+/*    @ExcelProperty(value = "数量", index = 3)
+    private BigDecimal price;*/
  
-    @ExcelProperty(value = "时间", index = 4)
+/*    @ExcelProperty(value = "时间", index = 4)
     @DateTimeFormat("yyyy-MM-dd")
-    private Date createDate;
+    private Date createDate;*/
 
     public String getName() {
         return name;
@@ -66,7 +66,7 @@ public class ImportExcelBookingTraveler {
         this.id = id;
     }
 
-    public BigDecimal getPrice() {
+/*    public BigDecimal getPrice() {
         return price;
     }
 
@@ -80,5 +80,5 @@ public class ImportExcelBookingTraveler {
 
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
-    }
+    }*/
 }

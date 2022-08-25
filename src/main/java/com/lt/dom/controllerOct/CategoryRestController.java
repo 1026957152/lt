@@ -7,6 +7,7 @@ import com.lt.dom.error.No_voucher_suitable_for_publicationException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.BookingPojo;
 import com.lt.dom.otcReq.CategoryPojo;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.CategoryRepository;
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.VoucherRepository;
@@ -61,7 +62,7 @@ public class CategoryRestController {
 
         if(optionalProduct.isPresent()) {
             System.out.println("找不到产品");
-            throw new ExistException("已经存在");
+            throw new ExistException(Enumfailures.general_exists_error,"已经存在");
         }
         Category category = new Category();
         category.setCategory(pojo.getCategory());

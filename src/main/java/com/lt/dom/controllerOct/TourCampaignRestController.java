@@ -1,27 +1,36 @@
 package com.lt.dom.controllerOct;
 
 import com.lt.dom.OctResp.*;
+import com.lt.dom.RealNameAuthentication.PhoneAuth;
+import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
 import com.lt.dom.domain.CouponTemplatePojoList;
 import com.lt.dom.error.*;
 import com.lt.dom.excel.ImportExcelBookingTraveler;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
-import com.lt.dom.otcenum.EnumDocumentType;
-import com.lt.dom.otcenum.EnumOrderStatus;
-import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import com.lt.dom.requestvo.ProductSubVo;
 import com.lt.dom.serviceOtc.*;
 import com.lt.dom.util.CheckIdcardIsLegal;
+import com.lt.dom.vo.FlowButtonVo;
+import com.lt.dom.vo.TravelerVo;
+import com.lt.dom.vo.UserVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
+import org.javatuples.Quartet;
 import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,6 +41,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -54,7 +65,11 @@ public class TourCampaignRestController {
     private TourBookingRepository tourBookingRepository;
 
 
+    @Autowired
+    private CampaignAssignToTourProductRepository campaignAssignToTourProductRepository;
 
+    @Autowired
+    private RealNameAuthenticationServiceImpl realNameAuthenticationService;
     @Autowired
     private TourCampaignServiceImpl tourCampaignService;
     @Autowired
@@ -77,34 +92,161 @@ public class TourCampaignRestController {
 
     @Autowired
     private GuideRepository guideRepository;
+    @Autowired
+    private CampaignRepository campaignRepository;
+    @Autowired
+    private AssetServiceImpl assetService;
+
+    @Autowired
+    private PublicationServiceImpl publicationService;
+
+    @Autowired
+    private CampaignAssignToTourBookingRepository campaignAssignToTourBookingRepository;
+    @Autowired
+    private AuthenticationFacade authenticationFacade;
+
+    @Autowired
+    private RoleServiceImpl roleService;
+
+    @Autowired
+    private ApplyForApprovalServiceImpl applyForApprovalService;
+
+
 
     @Operation(summary = "1、获得订购")
     @GetMapping(value = "/tour_bookings/{RESERVATOIN_ID}", produces = "application/json")
-    public ResponseEntity<TourbookingTourResp> getReservation(@PathVariable long RESERVATOIN_ID) {
+    public ResponseEntity<EntityModel<TourbookingTourResp>> getReservation(@PathVariable long RESERVATOIN_ID) {
+
+
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        UserVo user = authenticationFacade.getUserVo(authentication);
+
+
+
         Optional<TourBooking> optionalProduct = tourBookingRepository.findById(RESERVATOIN_ID);
 
 
-        if(optionalProduct.isPresent()) {
+        if(optionalProduct.isEmpty()) {
                 System.out.println("找不到产品");
                 throw new BookNotFoundException(RESERVATOIN_ID,Product.class.getSimpleName());
-
         }
-            TourBooking reservation = optionalProduct.get();
+            TourBooking tourBooking = optionalProduct.get();
 
             if(optionalProduct.get().getProductType().equals(EnumProductType.Daytour)){
 
 
                 Optional<Product> product = productRepository.findById(optionalProduct.get().getProductId());
-                Optional<Tour> optionalTour = tourRepository.findById(product.get().getRaletiveId());
-                List<Traveler> travelers = travelerRepository.findAllByBooking(reservation.getId());
-                List<Document> documents = documentRepository.findAllByRaletiveId(reservation.getId());
+                Optional<Tour> optionalTour = tourRepository.findById(product.get().getTypeToWho());
+                List<Traveler> travelers = travelerRepository.findAllByBooking(tourBooking.getId());
+                List<Document> documents = documentRepository.findAllByRaletiveId(tourBooking.getId());
+                Optional<Asset> assetResp  = assetService.getQrOptional(tourBooking.getCode());
 
-                TourbookingTourResp reservationTourResp = TourbookingTourResp.toResp(Quintet.with(reservation,product.get(),optionalTour.get(),travelers,documents));
 
-                reservationTourResp.add(linkTo(methodOn(TourCampaignRestController.class).bulkAddTravelers(reservation.getId(),null)).withRel("add_travelers_url"));
-                reservationTourResp.add(linkTo(methodOn(TourCampaignRestController.class).createDocuments(reservation.getId(),new BookingDocumentIdsResp())).withRel("add_documents_url"));
 
-                return ResponseEntity.ok(reservationTourResp);
+
+
+                List<PublicationEntry> publicationEntryList = publicationService.list(EnumAssociatedType.tour_booking,tourBooking.getId());
+
+
+
+                List<CampaignAssignToTourBooking> campaignAssignToTourBookings = campaignAssignToTourBookingRepository.findByTourBooking(tourBooking.getId());
+                List<Campaign> campaigns = campaignRepository.findAllById(campaignAssignToTourBookings.stream().map(x->x.getCampaign()).collect(Collectors.toSet()));
+
+                Map<Long,Campaign> longCampaignMap = campaigns.stream().collect(Collectors.toMap(x->x.getId(),x->x));
+
+
+                Map<Long,List<PublicationEntry>> longListMap= publicationEntryList.stream().collect(Collectors.groupingBy(x->x.getCampaign()));
+                List cc = campaignAssignToTourBookings.stream().map(x->{
+                    Campaign campaign = longCampaignMap.get(x.getCampaign());
+                    return Map.of("name",campaign.getName(),
+                            "code",campaign.getCode(),
+                            "total_count",travelers.size(),
+                            "claim_count",longListMap.getOrDefault(campaign.getId(),Arrays.asList()).size());
+                }).collect(Collectors.toList());
+
+
+
+
+                TourbookingTourResp reservationTourResp = TourbookingTourResp.toResp(Quintet.with(tourBooking,product.get(),optionalTour.get(),travelers,documents),assetResp.get());
+               // reservationTourResp.setDocuments(DocumentResp.Listfrom(documents));
+                reservationTourResp.setDocumentGroups(DocumentResp.groupfrom(documents));
+
+/*
+
+                publicationEntryList.stream()
+                        .collect(Collectors.groupingBy(x->longCampaignMap.get(x.getCampaign_id()).getName(),collectingAndThen(toList(),list->{
+                            return list.stream().map(xx->{
+                                return xx;
+                            }).collect(toList());
+                        }))).entrySet().stream().map(x->{
+
+                            List<PublicationEntry> list = x.getValue();
+
+                            return Map.of("name",x.getKey(),"claim_count",list.size(),"items",x.getValue());
+                        }).collect(Collectors.toList());
+*/
+
+                reservationTourResp.setPublication_entrys(cc);
+
+
+
+
+                Optional<RequestResp> request = applyForApprovalService.getRequst(EnumRequestType.tour_approve,tourBooking.getCode());
+
+                if(request.isPresent()){
+                    reservationTourResp.setReviews(request.get().getReviews());
+                }else{
+                    reservationTourResp.setReviews(Arrays.asList());
+                }
+
+
+                EntityModel entityModel = EntityModel.of(reservationTourResp);
+                entityModel.add(linkTo(methodOn(TourCampaignRestController.class).bulkAddTravelers(tourBooking.getId(),null)).withRel("addBulkTraveler"));
+                entityModel.add(linkTo(methodOn(TourCampaignRestController.class).createDocuments(tourBooking.getId(),new BookingDocumentIdsResp())).withRel("addDocument"));
+                entityModel.add(linkTo(methodOn(TourCampaignRestController.class).addTravelers(tourBooking.getId(),null)).withRel("addTraveler"));
+
+
+                if(roleService.valid(user.getRoles(),EnumRole.ROLE_TRAVEL_AGENCY)){
+                    if(tourBooking.getStatus().equals(EnumTourBookingStatus_.Draft)){
+
+                        Link link = linkTo(methodOn(TourCampaignRestController.class).商户初次提交(tourBooking.getId(),null)).withRel(EnumRequestFlow.商户初次提交.id);
+                        entityModel.add(link);
+
+                        reservationTourResp.setFlowButton(new FlowButtonVo(EnumRequestApprove.request,link,EnumRequestFlow.商户初次提交.id));
+                    }
+                    if(tourBooking.getStatus().equals(EnumTourBookingStatus_.AwaitingBill_photo_image)){
+
+                        Link link = linkTo(methodOn(TourCampaignRestController.class).商户二次提交(tourBooking.getId(),null)).withRel(EnumRequestFlow.商户二次提交.id);
+                        entityModel.add(link);
+                        reservationTourResp.setFlowButton(new FlowButtonVo(EnumRequestApprove.request,link,EnumRequestFlow.商户二次提交.id));
+                    }
+                }
+                if(roleService.valid(user.getRoles(),EnumRole.ROLE_ADMIN)){
+                    if(tourBooking.getStatus().equals(EnumTourBookingStatus_.Pending)){
+                        Link link = linkTo(methodOn(TourCampaignRestController.class).旅投初次审核(tourBooking.getId(),null)).withRel(EnumRequestFlow.旅投初次审核.id);
+                        entityModel.add(link);
+                        reservationTourResp.setFlowButton(new FlowButtonVo(EnumRequestApprove.examine,link,EnumRequestFlow.旅投初次审核.id));
+                    }
+                    if(tourBooking.getStatus().equals(EnumTourBookingStatus_.PendingBill_photo_image)){
+
+                        Link link = linkTo(methodOn(TourCampaignRestController.class).旅投二次审核(tourBooking.getId(),null)).withRel(EnumRequestFlow.旅投二次审核.id);
+                        entityModel.add(link);
+                        reservationTourResp.setFlowButton(new FlowButtonVo(EnumRequestApprove.examine,link,EnumRequestFlow.旅投二次审核.id));
+                    }
+                }
+
+                if(roleService.valid(user.getRoles(),EnumRole.ROLE_GOVERNMENT)){
+
+                    if(tourBooking.getStatus().equals(EnumTourBookingStatus_.AwaitingFundAppropriation)){
+
+                        Link link = linkTo(methodOn(TourCampaignRestController.class).文旅局审核(tourBooking.getId(),null)).withRel(EnumRequestFlow.文旅局审核.id);
+                        entityModel.add(link);
+                        reservationTourResp.setFlowButton(new FlowButtonVo(EnumRequestApprove.examine,link,EnumRequestFlow.文旅局审核.id));
+                    }
+                }
+                return ResponseEntity.ok(entityModel);
+
             }
             System.out.println("抛出异常");
             throw new ResponseStatusException(
@@ -113,36 +255,75 @@ public class TourCampaignRestController {
 
     }
 
+
+
+
+
+
+
+    @GetMapping(value = "/tour_bookings/page", produces = "application/json")
+    public EntityModel<Map<String,Object>> Page_pageReservation() {
+
+
+
+        EntityModel entityModel = EntityModel.of(Map.of("status_list", Arrays.stream(EnumTourBookingStatus_.values()).map(x->{
+
+                    EnumResp enumResp = new EnumResp();
+
+                    enumResp.setId(x.name());
+                    enumResp.setText(x.toString());
+                    return enumResp;
+                }).collect(Collectors.toList())
+        ));
+
+        entityModel.add(linkTo(methodOn(TourCampaignRestController.class).pageReservation(null,null)).withRel("upload_bussiness_license_url"));
+        return entityModel;
+    }
+
+
+
+
+
+
+
     @Operation(summary = "1、获得订购")
     @GetMapping(value = "/tour_bookings", produces = "application/json")
-    public ResponseEntity<Page<TourbookingTourResp>> pageReservation(@ModelAttribute PageReq pageReq ) {
+    public ResponseEntity<PagedModel> pageReservation( Pageable pageReq , PagedResourcesAssembler<EntityModel<TourbookingTourResp>> assembler) {
 
 
 
-        Page<TourBooking> optionalProduct = tourBookingRepository.findAll(PageRequest.of(pageReq.getPage(),pageReq.getLimit()));
+        Page<TourBooking> optionalProduct = tourBookingRepository.findAll(pageReq);
 
 
-        Page<TourbookingTourResp> page =  optionalProduct.map(x->{
+        Page<EntityModel<TourbookingTourResp>> page =  optionalProduct.map(x->{
 
             if(x.getProductType().equals(EnumProductType.Daytour)){
                 Optional<Product> product = productRepository.findById(x.getProductId());
-                Optional<Tour> optionalTour = tourRepository.findById(product.get().getRaletiveId());
+                Optional<Tour> optionalTour = tourRepository.findById(product.get().getTypeToWho());
                 List<Traveler> travelers = travelerRepository.findAllByBooking(x.getId());
                 List<Document> documents = documentRepository.findAllByRaletiveId(x.getId());
 
-                TourbookingTourResp resp = TourbookingTourResp.toResp(Quintet.with(x,product.get(),optionalTour.get(),travelers,documents));
 
+                Optional<Asset> asset = assetService.getQrOptional(x.getCode());
+                TourbookingTourResp resp = TourbookingTourResp.toResp(Quintet.with(x,product.get(),optionalTour.get(),travelers,documents),asset.get());
 
-                resp.add(linkTo(methodOn(TourCampaignRestController.class).bulkAddTravelers(x.getId(),null)).withRel("add_travelers_url"));
-                resp.add(linkTo(methodOn(TourCampaignRestController.class).createDocuments(x.getId(),new BookingDocumentIdsResp())).withRel("add_documents_url"));
+                EntityModel entityModel = EntityModel.of(resp);
 
-                return TourbookingTourResp.toResp(Quintet.with(x,product.get(),optionalTour.get(),travelers,documents));
+                entityModel.add(linkTo(methodOn(TourCampaignRestController.class).bulkAddTravelers(x.getId(),null)).withRel("addTraveler"));
+                entityModel.add(linkTo(methodOn(TourCampaignRestController.class).createDocuments(x.getId(),new BookingDocumentIdsResp())).withRel("addDocument"));
+                try {
+                    entityModel.add(linkTo(methodOn(TourCampaignRestController.class).importExcelSubjectPreview(x.getId(),null)).withRel("addDocument"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                return entityModel;
             }else{
-                return new TourbookingTourResp();
+                return EntityModel.of(new TourbookingTourResp());
             }
         });
 
-        return ResponseEntity.ok(page);
+        return ResponseEntity.ok(assembler.toModel(page));
 
 
 
@@ -150,36 +331,189 @@ public class TourCampaignRestController {
 
 
 
+
+
+
+
+
+    @GetMapping(value = "/tour_bookings/Page_createTourBooking", produces = "application/json")
+    public EntityModel<Map<String,Object>> Page_createTourBooking() {
+
+        List<Product> products = productRepository.findAll();
+
+
+
+        List<CampaignAssignToTourProduct> campaignAssignToTourProducts = campaignAssignToTourProductRepository.findByProductIn(products.stream().map(x->x.getId()).collect(toList()));
+
+        Map<Long,Campaign> campaignMap = campaignRepository.findAllById(campaignAssignToTourProducts.stream().map(x->x.getCampaign()).collect(toList()))
+                .stream().collect(Collectors.toMap(e->e.getId(),x->x));
+
+        Map<Long,List<Campaign>> campaignMap1 = campaignAssignToTourProducts.stream()
+                .collect(Collectors.groupingBy(x->x.getProduct(),collectingAndThen(toList(),list->{
+            return list.stream().map(xx->{
+                return campaignMap.get(xx.getCampaign());
+            }).collect(toList());
+
+        })));
+
+
+        EntityModel entityModel = EntityModel.of(Map.of(
+                "product_list", products.stream().map(x->{
+
+
+                    List<Object>  aaa = campaignMap1.get(x.getId()).stream().map(x_->{
+                        EnumLongIdResp enumResp_ = new EnumLongIdResp();
+                        enumResp_.setId(x_.getId());
+                        enumResp_.setText(x_.getName());
+                        enumResp_.setInfo(x_.getName()+"_"+x_.getCode());
+                        return enumResp_;
+
+                    }).collect(toList());
+
+                    EnumLongIdResp enumResp = new EnumLongIdResp();
+                    enumResp.setId(x.getId());
+                    enumResp.setText(x.getName());
+                    enumResp.setInfo(Map.of("campaigns",aaa));
+
+
+                    return enumResp;
+                }).collect(toList())));
+        entityModel.add(linkTo(methodOn(SearchRestController.class).searchCampaign(null,null,null)).withRel("searchCampaigns"));
+
+        entityModel.add(linkTo(methodOn(DocumentRestController.class).createDocuments(null)).withRel("importCRV"));
+        entityModel.add(linkTo(methodOn(TourCampaignRestController.class).createTourBooking(null)).withRel("createTourBooking"));
+      //  Link link = new Link(FileStorageServiceImpl.url("templete_import_traveler.xlsx"),"getTemplete_import_traveler");
+     //   Link link =  linkTo(FileUploadController.class).slash(""+"templete_import_traveler.xlsx").withRel("getTemplete_import_traveler");
+
+        entityModel.add(FileStorageServiceImpl.url_static("templete_import_traveler.xlsx","downloadTemplate_import_traveler_excel"));
+
+
+        try {
+            entityModel.add(linkTo(methodOn(TourCampaignRestController.class).importExcel(null)).withRel("importTraveler"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        entityModel.add(linkTo(methodOn(SearchRestController.class).searchGuide(null,null,null)).withRel("searchGuide"));
+
+
+
+        return entityModel;
+    }
+
+
+
     @Operation(summary = "2、下单购买")
     @PostMapping(value = "/tour_bookings", produces = "application/json")
-    public ResponseEntity createBooking(@RequestBody @Valid TourBookingPojo pojo) {
+    public ResponseEntity createTourBooking(@RequestBody @Valid TourBookingPojo pojo) {
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        UserVo user = authenticationFacade.getUserVo(authentication);
 
 
         Optional<Product> optionalProduct = productRepository.findById(pojo.getProductId());
 
-        if(optionalProduct.isPresent()){
+        if(optionalProduct.isEmpty()) {
+            throw new BookNotFoundException(pojo.getProductId(), "找不到产品");
+        }
 
-            List<Campaign> campaigns = campaignService.getQualification();
+        Product product = optionalProduct.get();
+
+            List<Campaign> campaigns = campaignService.getQualification(product);
 
             if(campaigns.size() == 0){
-                throw new No_voucher_suitable_for_publicationException(0,Reservation.class.getSimpleName(),"没有 优惠券配额");
+                throw new BookNotFoundException(Enumfailures.no_voucher_suitable_for_publication.name(),"没有 优惠券配额");
+               // throw new No_voucher_suitable_for_publicationException(0,Reservation.class.getSimpleName(),"没有 优惠券配额");
             }
 
-            Optional<Guide> guideOptional = guideRepository.findById(pojo.getAdditional_info().getGuide());
+            Optional<Guide> guideOptional = guideRepository.findById(pojo.getTour().getGuide());
             if(guideOptional.isEmpty()){
                 throw new BookNotFoundException(0,"找不到导游");
             }
 
-            Triplet<TourBooking,Product,Tour> booking = tourCampaignService.book(optionalProduct.get(),
-                    campaigns.stream().findAny().get(),
-                    pojo);
-            ReservationTourResp resp = ReservationTourResp.toResp(booking);
+            Guide guide = guideOptional.get();
+
+
+
+
+        List<Pair<EnumDocumentType,String>> docTypeWithDocCodepairList = new ArrayList<>();
+        if(nonNull(pojo.getContract_files()))
+            docTypeWithDocCodepairList.addAll(pojo.getContract_files().stream().map(x->Pair.with(EnumDocumentType.contract,x)).collect(toList()));
+        if(nonNull(pojo.getInsurance_policy_files()))
+            docTypeWithDocCodepairList.addAll(pojo.getInsurance_policy_files().stream().map(x->Pair.with(EnumDocumentType.insurance_policy,x)).collect(toList()));
+/*        if(nonNull(pojo.getPhoto_files()))
+            docTypeWithDocCodepairList.addAll(pojo.getPhoto_files().stream().map(x->Pair.with(EnumDocumentType.photo,x)).collect(toList()));
+        if(nonNull(pojo.getBill_files()))
+            docTypeWithDocCodepairList.addAll(pojo.getBill_files().stream().map(x->Pair.with(EnumDocumentType.bill,x)).collect(toList()));*/
+
+        System.out.println("--getInsurance_policy_files------------------------"+pojo.getInsurance_policy_files());
+
+
+
+        List<TempDocument> tempDocuments = tempDocumentRepository.findAllByCodeIn(docTypeWithDocCodepairList.stream().map(x->x.getValue1()).distinct().collect(toList()));
+
+        System.out.println("------------------------------------------------"+tempDocuments.toString());
+
+        if(tempDocuments.size() ==0){
+            throw new BookNotFoundException(1,"找不到上传文件");
+        }
+
+        Map<String,TempDocument> documentMap = tempDocuments.stream().collect(Collectors.toMap(x->x.getCode(),x->x));
+
+        List<Pair<EnumDocumentType,TempDocument>> docTypeWithTempDocPairList = docTypeWithDocCodepairList.stream().map(x->{
+            TempDocument tempDocument = documentMap.get(x.getValue1());
+            return Pair.with(x.getValue0(),tempDocument);
+        }).collect(toList());
+
+
+
+
+
+
+        if(docTypeWithTempDocPairList.isEmpty()){
+            throw new ExistException(Enumfailures.missing_documents,"需要附上申请文档， 合同，合影照片，保险单和发票");
+        }
+
+        List<TravelerReq> travelerReqList = pojo.getTravelers();
+
+        List<PhoneAuth> travelerReqs = travelerReqList.stream().map(x->{
+            PhoneAuth auth = new PhoneAuth();
+            auth.setIdCardName(x.getName());
+            auth.setIdCardNo(x.getId());
+            auth.setPhoneNo(x.getTel_home());
+            return auth;
+        }).collect(Collectors.toList());
+
+        Pair<List<PhoneAuth>, List<PhoneAuth>> phoneAuthPhoneAuthPair = realNameAuthenticationService.bulkCheckRealname(travelerReqs);
+
+        List<TravelerVo> travelerVoList = phoneAuthPhoneAuthPair.getValue1().stream().map(x->{
+            TravelerVo traveler = new TravelerVo();
+            traveler.setId(x.getIdCardNo());
+            traveler.setName(x.getIdCardName());
+            traveler.setTel_home(x.getPhoneNo());
+            return traveler;
+        }).collect(Collectors.toList());
+
+
+
+
+
+
+        Triplet<TourBooking,Product, ProductSubVo> booking = tourCampaignService.book(
+                product,
+                campaigns,
+                guide,
+                pojo,travelerVoList,user.getSupplier());
+
+        TourBooking tourBooking = booking.getValue0();
+
+        List<Document> documents = fileStorageService.saveFromTempDocumentList(tourBooking.getId(),docTypeWithTempDocPairList);
+
+
+            ReservationTourResp resp = ReservationTourResp.toResp(Quartet.with(booking.getValue0(),booking.getValue1(),booking.getValue2(),Collections.EMPTY_LIST));
 
             return ResponseEntity.ok(resp);
-        }else{
-            System.out.println("找不到产品");
-            throw new BookNotFoundException(pojo.getProductId(),"找不到产品");
-        }
+
 
 
     }
@@ -195,18 +529,20 @@ public class TourCampaignRestController {
 
 
         Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
-        if(optionalReservation.isPresent()){
+        if(optionalReservation.isEmpty()) {
+
+            throw new BookNotFoundException(RESERVATOIN_ID,Product.class.getSimpleName());
+
+        }
+
+
             TourBooking reservation = optionalReservation.get();
 
-            if(!reservation.getStatus().equals(EnumOrderStatus.Pending)){
+            if(!reservation.getStatus().equals(EnumTourBookingStatus_.Draft)){
                 throw new Booking_not_pendingException(reservation.getId(),TourBooking.class.getSimpleName(),"订单非等待提交状态，不得提交"+reservation.getStatus());
             }
             Traveler booking = tourCampaignService.addTraveler(optionalReservation.get(),transferPojo);
             return ResponseEntity.ok(booking);
-        }else{
-            System.out.println("找不到产品");
-            throw new BookNotFoundException(RESERVATOIN_ID,Product.class.getSimpleName());
-        }
 
     }
 
@@ -219,13 +555,13 @@ public class TourCampaignRestController {
         Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
         if(optionalReservation.isPresent()){
             TourBooking reservation = optionalReservation.get();
-            if(!reservation.getStatus().equals(EnumOrderStatus.Pending)){
+            if(!reservation.getStatus().equals(EnumTourBookingStatus.Pending)){
                 throw new Booking_not_pendingException(reservation.getId(),Reservation.class.getSimpleName(),"订单非等待提交状态，不得提交"+reservation.getStatus());
             }
 
 
 
-            List<Traveler> bookings = tourCampaignService.addBulkTraveler(optionalReservation.get(),transferPojo);
+            List<Traveler> bookings = tourCampaignService.addBulkTraveler(optionalReservation.get(),transferPojo.getTravelers());
             return ResponseEntity.ok(bookings);
         }else{
             System.out.println("找不到产品");
@@ -238,14 +574,58 @@ public class TourCampaignRestController {
 
 
 
+    @RequestMapping("/tour_bookings/{RESERVATOIN_ID}/travelers/importCSV/prview")
+    public ResponseEntity importExcelPreview(@PathVariable long RESERVATOIN_ID, MultipartFile file) throws IOException {
+
+
+        Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
+        if(optionalReservation.isEmpty()){
+            throw new BookNotFoundException(RESERVATOIN_ID,"找不到");
+        }
+        TourBooking reservation = optionalReservation.get();
+        if(!reservation.getStatus().equals(EnumTourBookingStatus.Pending)){
+            throw new Booking_not_pendingException(reservation.getId(),Reservation.class.getSimpleName(),"订单非等待提交状态，不得提交"+reservation.getStatus());
+        }
+
+
+        List<ImportExcelBookingTraveler> importExcelBookingTravelers = importCVSService.importBulkTravelerExcelSubject(file,file.getInputStream());
+        List<ImportExcelBookingTravelerResp> postsPerType = importExcelBookingTravelers.stream()
+                .map(x->{
+                    ImportExcelBookingTravelerResp importExcelBookingTravelerResp = new ImportExcelBookingTravelerResp();
+                    importExcelBookingTravelerResp.setName(x.getName());
+                   // importExcelBookingTravelerResp.setCreateDate(x.getCreateDate());
+                    importExcelBookingTravelerResp.setTel_home(x.getTel_home());
+                    importExcelBookingTravelerResp.setId(x.getId());
+
+                    if(CheckIdcardIsLegal.checkIdCard(x.getId()) != "yes"){
+                        importExcelBookingTravelerResp.setResult("正确的");
+                    }else{
+                        importExcelBookingTravelerResp.setResult("错误");
+                    }
+
+                    return importExcelBookingTravelerResp;
+
+                })
+                .collect(toList());
+
+        return ResponseEntity.ok(postsPerType);
+
+    }
+
+
+
+
+
     @RequestMapping("/tour_bookings/{RESERVATOIN_ID}/travelers/importCSV/async")
     public ResponseEntity importExcelSubjectPreview(@PathVariable long RESERVATOIN_ID, MultipartFile file) throws IOException {
 
         //<ImportExcel>
         Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
-        if(optionalReservation.isPresent()){
+        if(optionalReservation.isEmpty()){
+            throw new BookNotFoundException(RESERVATOIN_ID,"找不到");
+        }
             TourBooking reservation = optionalReservation.get();
-            if(!reservation.getStatus().equals(EnumOrderStatus.Pending)){
+            if(!reservation.getStatus().equals(EnumTourBookingStatus.Pending)){
                 throw new Booking_not_pendingException(reservation.getId(),Reservation.class.getSimpleName(),"订单非等待提交状态，不得提交"+reservation.getStatus());
             }
 
@@ -260,25 +640,72 @@ public class TourCampaignRestController {
                             return Pair.with("错误的",x);
                         }
                     })
-                   // .collect(groupingBy(x->x.getValue0()));
-                    .collect(Collectors.toList());
+                    // .collect(groupingBy(x->x.getValue0()));
+                    .collect(toList());
 
-            List<ImportExcelBookingTraveler> aa = postsPerType.stream().filter(x->x.getValue0()== "正确的").map(x->x.getValue1()).collect(Collectors.toList());
+            List<ImportExcelBookingTraveler> aa = postsPerType.stream().filter(x->x.getValue0()== "正确的").map(x->x.getValue1()).collect(toList());
+
+
 
             if(aa.isEmpty()){
                 ImportExcel bookings = tourCampaignService.addBulkTravelerByImportCVS(optionalReservation.get(), importExcelBookingTravelers);
                 return ResponseEntity.ok(bookings);
             }
 
-
-
             return ResponseEntity.ok(postsPerType);
+    }
 
 
-        }else{
-            System.out.println("找不到产品");
-            throw new BookNotFoundException(RESERVATOIN_ID,Product.class.getSimpleName());
-        }
+
+
+
+
+
+
+
+
+
+
+    @RequestMapping("/travelers/importCSV")
+    public ResponseEntity importExcel(MultipartFile file) throws IOException {
+
+
+
+        List<ImportExcelBookingTraveler> importExcelBookingTravelers = importCVSService.importBulkTravelerExcelSubject(file,file.getInputStream());
+
+        List<Pair<String,ImportExcelBookingTravelerResp>> postsPerType = importExcelBookingTravelers.stream()
+                .map(x->{
+
+                    ImportExcelBookingTravelerResp importExcelBookingTravelerResp = new ImportExcelBookingTravelerResp();
+                    importExcelBookingTravelerResp.setId(x.getId());
+                    importExcelBookingTravelerResp.setName(x.getName());
+                    importExcelBookingTravelerResp.setTel_home(x.getTel_home());
+
+                    if(CheckIdcardIsLegal.checkIdCard(x.getId()) != "yes"){
+                        importExcelBookingTravelerResp.setResult("正确的");
+                        return Pair.with("正确的",importExcelBookingTravelerResp);
+                    }else{
+                        importExcelBookingTravelerResp.setResult("错误的");
+                        return Pair.with("错误的",importExcelBookingTravelerResp);
+                    }
+                })
+                // .collect(groupingBy(x->x.getValue0()));
+                .collect(toList());
+
+        List<ImportExcelBookingTravelerResp> aa = postsPerType.stream().filter(x->x.getValue0()== "正确的").map(x->x.getValue1()).collect(toList());
+
+        List<ImportExcelBookingTravelerResp> aaerr = postsPerType.stream().filter(x->x.getValue0()== "错误的").map(x->x.getValue1()).collect(toList());
+
+
+        String greetings = String.format(
+                "成功 %1$d, 失败 %2$d !",
+                aa.size(),
+                aaerr.size());
+
+        Map map = Map.of("success",aa,"error",aaerr,"info",Map.of("message",greetings,"success_number",aa.size(),"failure_number",aaerr.size()));
+
+        return ResponseEntity.ok(map);
+
 
 
     }
@@ -295,8 +722,27 @@ public class TourCampaignRestController {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     @GetMapping(value = "/tour_bookings/{RESERVATOIN_ID}/documents", produces = "application/json")
-    public ResponseEntity<Map<EnumDocumentType,List<DocumentResp>>> listDocuments(@PathVariable long RESERVATOIN_ID, CouponTemplatePojoList  couponTemplatePojoList) {
+    public ResponseEntity<Map<EnumDocumentType,List<EntityModel<DocumentResp>>>> listDocuments(@PathVariable long RESERVATOIN_ID, CouponTemplatePojoList  couponTemplatePojoList) {
         Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
         if(optionalReservation.isPresent()){
 
@@ -315,20 +761,25 @@ public class TourCampaignRestController {
 
 
     @PostMapping(value = "/tour_bookings/{RESERVATOIN_ID}/documents/ids", produces = "application/json")
-    public ResponseEntity<List<EntityModel<MessageFileResp>>> createDocuments(@PathVariable long RESERVATOIN_ID, @ModelAttribute BookingDocumentIdsResp bookingDocumentResp ) {
+    public ResponseEntity<List<EntityModel<MessageFileResp>>> createDocuments(@PathVariable long RESERVATOIN_ID, @RequestBody BookingDocumentIdsResp bookingDocumentResp ) {
         //@RequestParam("files") List<MultipartFile> files
         Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
 
+
+
+
+
         List<Pair<EnumDocumentType,String>> docTypeWithDocCodepairList = new ArrayList<>();
         if(nonNull(bookingDocumentResp.getContract_files()))
-            docTypeWithDocCodepairList.addAll(bookingDocumentResp.getContract_files().stream().map(x->Pair.with(EnumDocumentType.contract,x)).collect(Collectors.toList()));
+            docTypeWithDocCodepairList.addAll(bookingDocumentResp.getContract_files().stream().map(x->Pair.with(EnumDocumentType.contract,x)).collect(toList()));
         if(nonNull(bookingDocumentResp.getInsurance_policy_files()))
-            docTypeWithDocCodepairList.addAll(bookingDocumentResp.getInsurance_policy_files().stream().map(x->Pair.with(EnumDocumentType.insurance_policy,x)).collect(Collectors.toList()));
+            docTypeWithDocCodepairList.addAll(bookingDocumentResp.getInsurance_policy_files().stream().map(x->Pair.with(EnumDocumentType.insurance_policy,x)).collect(toList()));
         if(nonNull(bookingDocumentResp.getPhoto_files()))
-            docTypeWithDocCodepairList.addAll(bookingDocumentResp.getPhoto_files().stream().map(x->Pair.with(EnumDocumentType.photo,x)).collect(Collectors.toList()));
+            docTypeWithDocCodepairList.addAll(bookingDocumentResp.getPhoto_files().stream().map(x->Pair.with(EnumDocumentType.photo,x)).collect(toList()));
         if(nonNull(bookingDocumentResp.getBill_files()))
-            docTypeWithDocCodepairList.addAll(bookingDocumentResp.getBill_files().stream().map(x->Pair.with(EnumDocumentType.bill,x)).collect(Collectors.toList()));
+            docTypeWithDocCodepairList.addAll(bookingDocumentResp.getBill_files().stream().map(x->Pair.with(EnumDocumentType.bill,x)).collect(toList()));
 
+        System.out.println("--docTypeWithDocCodepairList------------------------"+docTypeWithDocCodepairList);
 
         System.out.println("--getInsurance_policy_files------------------------"+bookingDocumentResp.getInsurance_policy_files());
 
@@ -338,7 +789,7 @@ public class TourCampaignRestController {
         }
 
 
-            List<TempDocument> tempDocuments = tempDocumentRepository.findAllByCodeIn(docTypeWithDocCodepairList.stream().map(x->x.getValue1()).distinct().collect(Collectors.toList()));
+            List<TempDocument> tempDocuments = tempDocumentRepository.findAllByCodeIn(docTypeWithDocCodepairList.stream().map(x->x.getValue1()).distinct().collect(toList()));
 
 
             System.out.println("------------------------------------------------"+tempDocuments.toString());
@@ -352,7 +803,7 @@ public class TourCampaignRestController {
             List<Pair<EnumDocumentType,TempDocument>> docTypeWithTempDocPairList = docTypeWithDocCodepairList.stream().map(x->{
                 TempDocument tempDocument = documentMap.get(x.getValue1());
                 return Pair.with(x.getValue0(),tempDocument);
-            }).collect(Collectors.toList());
+            }).collect(toList());
 
 
 
@@ -366,7 +817,7 @@ public class TourCampaignRestController {
                 List<Document> documents = fileStorageService.saveFromTempDocumentList(RESERVATOIN_ID,docTypeWithTempDocPairList);
                 return ResponseEntity.ok(MessageFileResp.fromDocuments(documents.stream().map(x->{
                     return Pair.with(FileStorageServiceImpl.url(x.getFileName()),x);
-                }).collect(Collectors.toList())));
+                }).collect(toList())));
 
 
 
@@ -386,19 +837,269 @@ public class TourCampaignRestController {
 
 
     @GetMapping(value = "/tour_bookings/{RESERVATOIN_ID}/campaigns", produces = "application/json")
-    public ResponseEntity<List<Campaign>> listCampaigns(@PathVariable long RESERVATOIN_ID) {
+    public ResponseEntity<PagedModel> listCampaigns(@PathVariable long RESERVATOIN_ID,Pageable pageable,PagedResourcesAssembler<EntityModel<Map>> assembler)  {
         Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
-        if(optionalReservation.isPresent()){
-
-            TourBooking reservation = optionalReservation.get();
-            List<Campaign> documents = tourCampaignService.listCampaigns(optionalReservation.get());
-            //      ResponseEntity responseEntity = ResponseEntity.ok(DocumentResp.from(documents));
-
-            return ResponseEntity.ok(documents);
-        }else{
-            System.out.println("找不到产品");
+        if(optionalReservation.isEmpty()) {
             throw new BookNotFoundException(RESERVATOIN_ID,Product.class.getSimpleName());
         }
+        TourBooking reservation = optionalReservation.get();
+        Page<CampaignAssignToTourBooking> campaignAssignToTourProducts = campaignAssignToTourBookingRepository.findAllByTourBooking(reservation.getId(),pageable);
+
+        List<Campaign> campaigns =  campaignRepository.findAllById(campaignAssignToTourProducts.stream().map(x->x.getCampaign()).collect(Collectors.toList()));
+
+
+        Map<Long,Campaign> longCampaignMap = campaigns.stream().collect(Collectors.toMap(x->x.getId(),x->x));
+
+        List<Traveler> travelers = travelerRepository.findAllByBooking(reservation.getId());
+
+
+
+        Map<Long,List<PublicationEntry>> longListMap_publi  = publicationService.list(EnumAssociatedType.tour_booking,reservation.getId())
+                .stream().collect(Collectors.groupingBy(x->x.getCampaign()));
+
+
+
+        PagedModel pagedModel= assembler.toModel(campaignAssignToTourProducts.map(x->{
+
+            List<PublicationEntry>publicationEntryList =  longListMap_publi.get(x.getCampaign());
+
+            Map<Long,List<PublicationEntry>> longListMap= publicationEntryList.stream().collect(Collectors.groupingBy(x_public->x_public.getCampaign()));
+
+
+                Campaign campaign = longCampaignMap.get(x.getCampaign());
+            Optional<Asset> assetResp  = assetService.getQrOptional(x.getCode());
+            return EntityModel.of(Map.of("name",campaign.getName(),
+                        "code",campaign.getCode(),
+                        "total_count",travelers.size(),
+                        "claim_count",longListMap.get(campaign.getId()).size(),
+                    "asset",AssetResp.from(assetResp.get()))
+                    );
+
+        }));
+
+        return ResponseEntity.ok(pagedModel);
+
+    }
+
+
+
+
+
+    //TODO 领券核销
+    @PostMapping(value = "/tour_bookings/{RESERVATOIN_ID}/商户提交旅投初次审核", produces = "application/json")
+    public ResponseEntity<TourBooking> 商户初次提交(@PathVariable long RESERVATOIN_ID, @RequestBody BookingPayPojo transferPojo) {
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        User user = authenticationFacade.getUser(authentication);
+
+
+        Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
+
+        if(optionalReservation.isEmpty()) {
+            throw new BookNotFoundException(RESERVATOIN_ID,"找不到订单 tourbooking"+ RESERVATOIN_ID);
+        }
+
+        TourBooking tourBooking = optionalReservation.get();
+
+        if(!tourBooking.getStatus().equals(EnumTourBookingStatus.Draft)){
+            throw new Booking_not_pendingException(tourBooking.getId(),Reservation.class.getSimpleName(),"订单非等待草稿状态，不得提交"+tourBooking.getStatus());
+        }
+
+
+        List<Document> documents = documentRepository.findAllByRaletiveId(tourBooking.getId());
+        if(documents.isEmpty()){
+            Optional<Document> optionalDocument = documents.stream().filter(x->x.getType().equals(EnumDocumentType.insurance_policy)).findAny();
+            throw new Missing_documentException(tourBooking.getId(),Reservation.class.getSimpleName(),"需要附上申请文档， 合同，合影照片，保险单和发票"+(optionalDocument.isPresent()?"":"无保险单"));
+        }
+
+        Optional<Supplier> optionalSupplier = supplierRepository.findById(tourBooking.getRedeemer());
+
+
+        applyForApprovalService.create(EnumRequestType.tour_approve,tourBooking,user);
+
+        tourBooking.setStatus(EnumTourBookingStatus_.Pending);
+        tourBooking = tourBookingRepository.save(tourBooking);
+
+        return ResponseEntity.ok(tourBooking);
+
+    }
+
+
+
+
+
+    //TODO 领券核销
+    @PostMapping(value = "/tour_bookings/{RESERVATOIN_ID}/旅投初次审核通过", produces = "application/json")
+    public ResponseEntity<TourBooking> 旅投初次审核(@PathVariable long RESERVATOIN_ID, @RequestBody ReviewReq reviewReq) {
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        User user = authenticationFacade.getUser(authentication);
+
+
+        Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
+
+        if(optionalReservation.isEmpty()) {
+            throw new BookNotFoundException(RESERVATOIN_ID,"找不到订单 tourbooking"+ RESERVATOIN_ID);
+        }
+
+        TourBooking tourBooking = optionalReservation.get();
+
+        if(!tourBooking.getStatus().equals(EnumTourBookingStatus.Pending)){
+            throw new Booking_not_pendingException(tourBooking.getId(),Reservation.class.getSimpleName(),"订单非等待草稿状态，不得提交"+tourBooking.getStatus());
+        }
+
+
+
+        applyForApprovalService.create(EnumRequestType.tour_approve,tourBooking,user);
+        if(reviewReq.getType().equals(EnumRequestApproveReject.Approve)){
+            tourBooking.setStatus(EnumTourBookingStatus_.AwaitingBill_photo_image);
+            tourBooking = tourBookingRepository.save(tourBooking);
+
+        }
+        if(reviewReq.getType().equals(EnumRequestApproveReject.Reject)){
+            tourBooking.setStatus(EnumTourBookingStatus_.Draft);
+            tourBooking = tourBookingRepository.save(tourBooking);
+
+        }
+        return ResponseEntity.ok(tourBooking);
+
+    }
+
+
+    //TODO 领券核销
+    @PostMapping(value = "/tour_bookings/{RESERVATOIN_ID}/商户二次提交审核", produces = "application/json")
+    public ResponseEntity<TourBooking> 商户二次提交(@PathVariable long RESERVATOIN_ID, @RequestBody ReviewReq reviewReq) {
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        User user = authenticationFacade.getUser(authentication);
+
+
+        Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
+
+        if(optionalReservation.isEmpty()) {
+            throw new BookNotFoundException(RESERVATOIN_ID,"找不到订单 tourbooking"+ RESERVATOIN_ID);
+        }
+
+        TourBooking tourBooking = optionalReservation.get();
+
+
+        if(!tourBooking.getStatus().equals(EnumTourBookingStatus_.AwaitingBill_photo_image)){
+            throw new Booking_not_pendingException(tourBooking.getId(),Reservation.class.getSimpleName(),"订单非等待草稿状态，不得提交"+tourBooking.getStatus());
+        }
+
+
+        List<Document> documents = documentRepository.findAllByRaletiveId(tourBooking.getId());
+        if(documents.isEmpty()){
+            Optional<Document> optionalDocument = documents.stream().filter(x->x.getType().equals(EnumDocumentType.insurance_policy)).findAny();
+            throw new Missing_documentException(tourBooking.getId(),Reservation.class.getSimpleName(),"需要附上申请文档， 合同，合影照片，保险单和发票"+(optionalDocument.isPresent()?"":"无保险单"));
+        }
+
+        applyForApprovalService.addReviews(EnumRequestType.tour_approve,tourBooking.getCode(),reviewReq);
+
+        tourBooking.setStatus(EnumTourBookingStatus_.AwaitingBill_photo_image);
+        tourBooking = tourBookingRepository.save(tourBooking);
+
+        return ResponseEntity.ok(tourBooking);
+
+    }
+
+    //TODO 领券核销
+    @PostMapping(value = "/tour_bookings/{RESERVATOIN_ID}/旅投二次审核通过", produces = "application/json")
+    public ResponseEntity<TourBooking> 旅投二次审核(@PathVariable long RESERVATOIN_ID, @RequestBody ReviewReq reviewReq) {
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        User user = authenticationFacade.getUser(authentication);
+
+        Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
+        if(optionalReservation.isEmpty()) {
+            throw new BookNotFoundException(RESERVATOIN_ID,"找不到订单 tourbooking"+ RESERVATOIN_ID);
+        }
+
+        TourBooking tourBooking = optionalReservation.get();
+        if(!tourBooking.getStatus().equals(EnumTourBookingStatus_.AwaitingBill_photo_image)){
+            throw new Booking_not_pendingException(tourBooking.getId(),Reservation.class.getSimpleName(),"订单非等待草稿状态，不得提交"+tourBooking.getStatus());
+        }
+
+
+        applyForApprovalService.addReviews(EnumRequestType.tour_approve,tourBooking.getCode(),reviewReq);
+
+
+        if(reviewReq.getType().equals(EnumRequestApproveReject.Approve)){
+            tourBooking.setStatus(EnumTourBookingStatus_.AwaitingFundAppropriation);
+            tourBooking = tourBookingRepository.save(tourBooking);
+        }
+        if(reviewReq.getType().equals(EnumRequestApproveReject.Reject)){
+            tourBooking.setStatus(EnumTourBookingStatus_.AwaitingBill_photo_image);
+            tourBooking = tourBookingRepository.save(tourBooking);
+        }
+
+        return ResponseEntity.ok(tourBooking);
+
+    }
+
+
+    //TODO 领券核销
+    @PostMapping(value = "/tour_bookings/{RESERVATOIN_ID}/文旅局审核", produces = "application/json")
+    public ResponseEntity<TourBooking> 文旅局审核(@PathVariable long RESERVATOIN_ID, @RequestBody ReviewReq reviewReq) {
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        User user = authenticationFacade.getUser(authentication);
+
+        Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
+        if(optionalReservation.isEmpty()) {
+            throw new BookNotFoundException(RESERVATOIN_ID,"找不到订单 tourbooking"+ RESERVATOIN_ID);
+        }
+
+        TourBooking tourBooking = optionalReservation.get();
+        if(!tourBooking.getStatus().equals(EnumTourBookingStatus.Draft)){
+            throw new Booking_not_pendingException(tourBooking.getId(),Reservation.class.getSimpleName(),"订单非等待草稿状态，不得提交"+tourBooking.getStatus());
+        }
+
+
+        applyForApprovalService.addReviews(EnumRequestType.tour_approve,tourBooking.getCode(),reviewReq);
+        tourBooking.setStatus(EnumTourBookingStatus_.Fulfillment);
+        tourBooking = tourBookingRepository.save(tourBooking);
+
+        return ResponseEntity.ok(tourBooking);
+
+    }
+
+    //TODO 领券核销
+    @PostMapping(value = "/tour_bookings/{RESERVATOIN_ID}/request_approve", produces = "application/json")
+    public ResponseEntity<TourbookingTourResp> request_approve(@PathVariable long RESERVATOIN_ID, @RequestBody BookingPayPojo transferPojo) {
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        User user = authenticationFacade.getUser(authentication);
+
+
+        Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
+
+
+        if(optionalReservation.isEmpty()) {
+            throw new BookNotFoundException(RESERVATOIN_ID,"找不到订单 tourbooking"+ RESERVATOIN_ID);
+        }
+
+            TourBooking tourBooking = optionalReservation.get();
+            if(!tourBooking.getStatus().equals(EnumTourBookingStatus.Pending)){
+                throw new Booking_not_pendingException(tourBooking.getId(),Reservation.class.getSimpleName(),"订单非等待提交状态，不得提交"+tourBooking.getStatus());
+            }
+
+
+            List<Document> documents = documentRepository.findAllByRaletiveId(tourBooking.getId());
+            if(documents.isEmpty()){
+                Optional<Document> optionalDocument = documents.stream().filter(x->x.getType().equals(EnumDocumentType.insurance_policy)).findAny();
+                throw new Missing_documentException(tourBooking.getId(),Reservation.class.getSimpleName(),"需要附上申请文档， 合同，合影照片，保险单和发票"+(optionalDocument.isPresent()?"":"无保险单"));
+
+            }
+
+            Optional<Supplier> optionalSupplier = supplierRepository.findById(tourBooking.getRedeemer());
+
+            TourBooking booking = tourCampaignService.tourBookingRequestLvApproval(optionalSupplier.get(),tourBooking,transferPojo,user);
+
+            List<Traveler> travelers = travelerRepository.findAllByBooking(tourBooking.getId());
+           // List<Document> documents = documentRepository.findAllByRaletiveId(reservation.getId());
+
+            return ResponseEntity.ok(TourbookingTourResp.toResp(booking,travelers,documents));
 
     }
 
@@ -409,54 +1110,42 @@ public class TourCampaignRestController {
 
 
     //TODO 领券核销
-    @PostMapping(value = "/tour_bookings/{RESERVATOIN_ID}/submit", produces = "application/json")
-    public ResponseEntity<TourbookingTourResp> submit(@PathVariable long RESERVATOIN_ID, @RequestBody BookingPayPojo transferPojo) {
+    @PostMapping(value = "/tour_bookings/{RESERVATOIN_ID}/approve", produces = "application/json")
+    public ResponseEntity<TourbookingTourResp> approve(@PathVariable long RESERVATOIN_ID, @RequestBody BookingPayPojo transferPojo) {
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        User user = authenticationFacade.getUser(authentication);
 
 
         Optional<TourBooking> optionalReservation = tourBookingRepository.findById(RESERVATOIN_ID);
 
 
-        if(optionalReservation.isPresent()){
-            TourBooking reservation = optionalReservation.get();
-            if(!reservation.getStatus().equals(EnumOrderStatus.Pending)){
-                throw new Booking_not_pendingException(reservation.getId(),Reservation.class.getSimpleName(),"订单非等待提交状态，不得提交"+reservation.getStatus());
-            }
+        if(optionalReservation.isEmpty()) {
+            throw new BookNotFoundException(RESERVATOIN_ID,"找不到订单 tourbooking"+ RESERVATOIN_ID);
+        }
 
-
-            List<Document> documents = documentRepository.findAllByRaletiveId(reservation.getId());
-            if(documents.isEmpty()){
-                Optional<Document> optionalDocument = documents.stream().filter(x->x.getType().equals(EnumDocumentType.insurance_policy)).findAny();
-
-                throw new Missing_documentException(reservation.getId(),Reservation.class.getSimpleName(),"需要附上申请文档， 合同，合影照片，保险单和发票"+(optionalDocument.isPresent()?"":"无保险单"));
-
-            }
-
-
-
-            Optional<Supplier> optionalSupplier = supplierRepository.findById(reservation.getRedeemer());
-
-
-            TourBooking booking = tourCampaignService.submit(optionalSupplier.get(),optionalReservation.get(),transferPojo);
-
-
-            List<Traveler> travelers = travelerRepository.findAllByBooking(reservation.getId());
-           // List<Document> documents = documentRepository.findAllByRaletiveId(reservation.getId());
-
-
-            return ResponseEntity.ok(TourbookingTourResp.toResp(booking,travelers,documents));
-
-        }else{
-            System.out.println("抛出异常");
-            throw new BookNotFoundException(RESERVATOIN_ID,Reservation.class.getSimpleName());
+        TourBooking tourBooking = optionalReservation.get();
+        if(!tourBooking.getStatus().equals(EnumTourBookingStatus.Pending)){
+            throw new Booking_not_pendingException(tourBooking.getId(),Reservation.class.getSimpleName(),"订单非等待提交状态，不得提交"+tourBooking.getStatus());
         }
 
 
+        List<Document> documents = documentRepository.findAllByRaletiveId(tourBooking.getId());
+        if(documents.isEmpty()){
+            Optional<Document> optionalDocument = documents.stream().filter(x->x.getType().equals(EnumDocumentType.insurance_policy)).findAny();
+            throw new Missing_documentException(tourBooking.getId(),Reservation.class.getSimpleName(),"需要附上申请文档， 合同，合影照片，保险单和发票"+(optionalDocument.isPresent()?"":"无保险单"));
+
+        }
+
+        Optional<Supplier> optionalSupplier = supplierRepository.findById(tourBooking.getRedeemer());
+
+        TourBooking booking = tourCampaignService.tourBookingRequestLvApproval(optionalSupplier.get(),tourBooking,transferPojo,user);
+
+        List<Traveler> travelers = travelerRepository.findAllByBooking(tourBooking.getId());
+
+        return ResponseEntity.ok(TourbookingTourResp.toResp(booking,travelers,documents));
 
     }
-
-
-
-
 
 
 

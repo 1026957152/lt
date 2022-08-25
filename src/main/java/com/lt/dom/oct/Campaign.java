@@ -1,16 +1,44 @@
 package com.lt.dom.oct;
 
-import com.lt.dom.otcenum.EnumCampaignCreationStatus;
-import com.lt.dom.otcenum.EnumCompaignType;
-import com.lt.dom.otcenum.EnumDiscountVoucherCategory;
-import com.lt.dom.otcenum.EnumVoucherType;
+import com.lt.dom.otcenum.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Campaign {
+
+    @CreatedDate
+    LocalDateTime created_at ;
+
+    @LastModifiedDate
+    LocalDateTime updated_at ;
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
+    }
+
+    public LocalDateTime getUpdated_at() {
+        return updated_at;
+    }
+
+    public void setUpdated_at(LocalDateTime updated_at) {
+        this.updated_at = updated_at;
+    }
+
+    @NotNull
+    private EnumCampaignStatus status;
+
     @Version
     private Integer version;
 
@@ -37,6 +65,9 @@ public class Campaign {
 
     @Column(name = "limit_")
     private int limit;
+    private boolean pay;
+    private int payAmount;
+    private String name_long;
 
     public int getLimit() {
         return limit;
@@ -70,8 +101,8 @@ public class Campaign {
         this.scenario = scenario;
     }
 
-    private LocalDate start_date;
-    private LocalDate expiration_date;
+    private LocalDateTime start_date;
+    private LocalDateTime expiration_date;
 
     private int expiry_days;
 
@@ -113,24 +144,24 @@ public class Campaign {
         this.name = name;
     }
 
-    public LocalDate getStart_date() {
+    public LocalDateTime getStart_date() {
         return start_date;
     }
 
-    public void setStart_date(LocalDate start_date) {
+    public void setStart_date(LocalDateTime start_date) {
         this.start_date = start_date;
     }
 
-    public LocalDate getExpiration_date() {
+    public LocalDateTime getExpiration_date() {
         return expiration_date;
     }
 
-    public void setExpiration_date(LocalDate expiration_date) {
+    public void setExpiration_date(LocalDateTime expiration_date) {
         this.expiration_date = expiration_date;
     }
 
 
-    public int getVouchers_count() {
+    public int getVoucher_count() {
         return vouchers_count;
     }
 
@@ -285,6 +316,15 @@ public class Campaign {
 
 
 
+    private long total_published;
+
+    public long getTotal_published() {
+        return total_published;
+    }
+
+    public void setTotal_published(long total_published) {
+        this.total_published = total_published;
+    }
 
     private long total_redeemed;
     private long total_failed;
@@ -371,5 +411,37 @@ public class Campaign {
 
     public int getClain_limit() {
         return clain_limit;
+    }
+
+    public void setStatus(EnumCampaignStatus status) {
+        this.status = status;
+    }
+
+    public EnumCampaignStatus getStatus() {
+        return status;
+    }
+
+    public void setPay(boolean pay) {
+        this.pay = pay;
+    }
+
+    public boolean getPay() {
+        return pay;
+    }
+
+    public void setPayAmount(int payAmount) {
+        this.payAmount = payAmount;
+    }
+
+    public int getPayAmount() {
+        return payAmount;
+    }
+
+    public String getName_long() {
+        return name_long;
+    }
+
+    public void setName_long(String name_long) {
+        this.name_long = name_long;
     }
 }

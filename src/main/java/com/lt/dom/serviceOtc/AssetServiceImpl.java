@@ -8,16 +8,14 @@ import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumAssetType;
 import com.lt.dom.repository.AssetRepository;
 import com.lt.dom.repository.BookingRuleRepository;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,6 +52,21 @@ public class AssetServiceImpl {
         return asset;
     }
 
+    public List<Asset> newQrWithSave(List<Pair<String, Long>> collect) {
+        List<Asset> assets = collect.stream().map(x->{
+
+            Asset asset = new Asset();
+            asset.setIdId(x.getValue0());
+            asset.setSource(x.getValue1());
+            asset.setType(EnumAssetType.qr);
+            asset.setUrl(ltConfig.Url(x.getValue0()));
+
+            return asset;
+
+        }).collect(Collectors.toList());
+
+        return assetRepository.saveAll(assets);
+    }
     public List<Asset> newQr(List<Voucher> vouchers) {
 
         List<Asset> assets = vouchers.stream().map(x->{
@@ -103,5 +116,17 @@ public class AssetServiceImpl {
         asset = assetRepository.save(asset);
 
         return asset;
+    }
+
+    public Asset newQr(TourBooking tourBooking) {
+        return newQr(tourBooking.getCode(),tourBooking.getId());
+    }
+
+
+    public Map<String, Asset> getQrs(List<String> collect) {
+
+        List<Asset> assets = assetRepository.findByTypeAndIdIdIn(EnumAssetType.qr,new HashSet(collect));
+
+        return assets.stream().collect(Collectors.toMap(e->e.getIdId(),e->e));
     }
 }

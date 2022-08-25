@@ -1,23 +1,16 @@
 package com.lt.dom.serviceOtc;
 
 
-import com.lt.dom.OctResp.CampaignResp;
-import com.lt.dom.OctResp.ClainQuotaStatisticsResp;
 import com.lt.dom.config.LtConfig;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.CompaignPojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.util.CodeConfig;
 import com.lt.dom.util.VoucherCodes;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -47,7 +40,7 @@ public class VoucherAsyncServiceImpl {
 
 
         Campaign finalCampaign = campaign;
-        List<Voucher> vouchers = IntStream.range(0,campaign.getVouchers_count()).boxed().map(x->{
+        List<Voucher> vouchers = IntStream.range(0,campaign.getVoucher_count()).boxed().map(x->{
             Voucher voucher = new Voucher();
             String no = VoucherCodes.generate(config);
             System.out.println("Execute method asynchronously. "

@@ -1,12 +1,13 @@
 package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.controllerOct.FileUploadController;
+import com.lt.dom.controllerOct.RequestFuckRestController;
 import com.lt.dom.controllerOct.SupplierRestController;
 import com.lt.dom.domain.SettleAccount;
 import com.lt.dom.oct.Asset;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.otcenum.EnumBussinessType;
+import com.lt.dom.otcenum.EnumSupplierStatus;
 import com.lt.dom.otcenum.EnumSupplierType;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
@@ -25,6 +26,23 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
 
 
     private String object = "supplier";
+    private String type_text;
+    private String business_type_text;
+    private EnumSupplierStatus status;
+    private String status_text;
+    private String location;
+    private int verify_status;
+    private EntityModel<BalanceResp> balance;
+
+    public static SupplierResp from(RequestResp request) {
+        SupplierResp supplierResp = new SupplierResp();
+    //    supplierResp.setCode(request.getMerchantsSettledReq().getSupplier_name());
+        supplierResp.setName(request.getMerchantsSettledReq().getSupplier_name());
+        supplierResp.setDesc(request.getMerchantsSettledReq().getDesc());
+        supplierResp.setType(request.getMerchantsSettledReq().getSupplier_type());
+        supplierResp.setLocation(request.getMerchantsSettledReq().getLocation_text());
+        return supplierResp;
+    }
 
     public String getObject() {
         return object;
@@ -42,8 +60,8 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
     public static SupplierResp from(Supplier supplier, List<Asset> assets) {
         SupplierResp supplierResp = SupplierResp.from(supplier);
 
-        supplierResp.add(linkTo(methodOn(SupplierRestController.class).applyCertification(supplier.getId(),null)).withRel("apply_for_approval_url"));
-        supplierResp.add(linkTo(methodOn(SupplierRestController.class).pageEmployess(supplier.getId(),null)).withRel("employee_url"));
+        supplierResp.add(linkTo(methodOn(RequestFuckRestController.class).applyCertification(supplier.getId(),null)).withRel("apply_for_approval_url"));
+        supplierResp.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.getId(),null)).withRel("employee_url"));
 
 
         supplierResp.setAssets(assets.stream().map(x->AssetResp.from(x)).collect(Collectors.toList()));
@@ -56,7 +74,12 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
         supplierResp.setName(supplier.getName());
         supplierResp.setDesc(supplier.getDesc());
         supplierResp.setType(supplier.getType());
+        supplierResp.setType_text(supplier.getType().toString());
         supplierResp.setBusiness_type(supplier.getBusiness_type());
+        supplierResp.setBusiness_type_text(supplier.getBusiness_type().toString());
+        supplierResp.setStatus(supplier.getStatus());
+        supplierResp.setStatus_text(supplier.getStatus().toString());
+        supplierResp.setLocation(supplier.getLocationName());
         return supplierResp;
     }
 
@@ -127,6 +150,63 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
 
     public EnumBussinessType getBusiness_type() {
         return business_type;
+    }
+
+    public void setType_text(String type_text) {
+        this.type_text = type_text;
+    }
+
+    public String getType_text() {
+        return type_text;
+    }
+
+    public void setBusiness_type_text(String business_type_text) {
+        this.business_type_text = business_type_text;
+    }
+
+    public String getBusiness_type_text() {
+        return business_type_text;
+    }
+
+    public void setStatus(EnumSupplierStatus status) {
+        this.status = status;
+    }
+
+    public EnumSupplierStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus_text(String status_text) {
+        this.status_text = status_text;
+    }
+
+    public String getStatus_text() {
+        return status_text;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setVerify_status(int verify_status) {
+        this.verify_status = verify_status;
+    }
+
+    public int getVerify_status() {
+        return verify_status;
+    }
+
+    public void setBalance(EntityModel<BalanceResp> balance) {
+
+        this.balance = balance;
+    }
+
+    public EntityModel<BalanceResp> getBalance() {
+        return balance;
     }
 
     public static class ContactDTO {

@@ -6,6 +6,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Openid {
@@ -28,8 +30,11 @@ public class Openid {
 
     private EnumAssetType type;
 
+    @NotNull
     private String code;//	string	The ID of the user
+    @NotNull
     private String openid;
+    @NotEmpty
     private String openid_name;
     private Integer openid_gender;
     private String openid_image;

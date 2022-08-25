@@ -1,5 +1,11 @@
 package com.lt.dom.otcenum;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 public enum EnumProductType {
 
     Showtime ("Allocates costs across your targets based on the proportional weighted cost of each target."),
@@ -28,7 +34,29 @@ public enum EnumProductType {
     Customproduct("Custom product    This lets you create a product completely from scratch, with all options available.");
 
 
-    EnumProductType(String desc) {
 
+
+
+
+    private static ResourceBundle resourceBundle = ResourceBundle.getBundle("messages",
+            Locale.getDefault());
+
+    public String name;
+
+    @Autowired
+    private MessageSource messageSource;
+
+    EnumProductType(String name) {
+        this.name = name;
     }
+
+    @Override
+    public String toString() {
+
+        String displayStatusString = resourceBundle.getString("page.systemadministration.product.type."
+                + this.name());
+        return displayStatusString;
+    }
+
+
 }

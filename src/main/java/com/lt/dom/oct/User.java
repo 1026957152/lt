@@ -3,8 +3,12 @@ package com.lt.dom.oct;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.otcenum.EnumCapabilities;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -12,11 +16,24 @@ import java.util.Set;
 
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 
 public class User {
 
     @Version
     private Integer version;
+    private String nick_name;
+    private String openid;
+    private boolean openidLink;
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @JsonProperty("id")
@@ -52,10 +69,21 @@ public class User {
 
     @Transient
     private PingxxUser pingxxUser;
-    private String created_date;//	string	The date and time of when the user was created, in ISO 8601 format
+
+    @NotNull
+    @CreatedDate
+    private LocalDateTime created_at;//	string	The date and time of when the user was created, in ISO 8601 format
     private String last_updated;//	string	The date and time of when the user was last updated, in ISO 8601 format
     private String first_name;//	string	The user’s first name
     private String last_name;//	string	The user’s last name
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
+    }
 
     public String getFirst_name() {
         return first_name;
@@ -76,6 +104,16 @@ public class User {
     private String username;//	string	The user’s username*
     private String email;//	string	The user’s email address
     private String phone;//	string	The user’s phone number
+
+    private boolean phoneVerifid;//	string	The user’s phone number
+
+    public boolean isPhoneVerifid() {
+        return phoneVerifid;
+    }
+
+    public void setPhoneVerifid(boolean phoneVerifid) {
+        this.phoneVerifid = phoneVerifid;
+    }
 
     public String getUsername() {
         return username;
@@ -222,5 +260,29 @@ public class User {
     @Override
     public String toString() {
         return ReflectionToStringBuilder.toString(this);
+    }
+
+    public void setNick_name(String nick_name) {
+        this.nick_name = nick_name;
+    }
+
+    public String getNick_name() {
+        return nick_name;
+    }
+
+    public void setOpenid(String openid) {
+        this.openid = openid;
+    }
+
+    public String getOpenid() {
+        return openid;
+    }
+
+    public void setOpenidLink(boolean openidLink) {
+        this.openidLink = openidLink;
+    }
+
+    public boolean getOpenidLink() {
+        return openidLink;
     }
 }

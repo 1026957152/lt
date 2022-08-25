@@ -19,10 +19,7 @@ public class Review {
     @Id
     private long id;
 
-    @JsonProperty("id")
-    private String idX;
-    @JsonProperty("object")
-    private String object;
+
     @JsonProperty("billing_zip")
 
     private String billingZip;
@@ -31,10 +28,22 @@ public class Review {
     @JsonProperty("charge")
     private String charge;
 
+    @JsonProperty("owner")
+    private String owner;
+
+    @JsonProperty("owner")
+    private LocalDateTime submitted_at;
+    @JsonProperty("owner")
+    private String commit_id;
+
+    @JsonProperty("owner")
+    private String author_association;
+
 
     @JsonProperty("closed_reason")
     private String closedReason;
     private LocalDateTime created_at;
+    private long request;
 
     public long getId() {
         return id;
@@ -44,21 +53,6 @@ public class Review {
         this.id = id;
     }
 
-    public String getIdX() {
-        return idX;
-    }
-
-    public void setIdX(String idX) {
-        this.idX = idX;
-    }
-
-    public String getObject() {
-        return object;
-    }
-
-    public void setObject(String object) {
-        this.object = object;
-    }
 
     public String getBillingZip() {
         return billingZip;
@@ -168,5 +162,11 @@ public class Review {
     private String session;
 
 
+    public void setRequest(long request) {
+        this.request = request;
+    }
 
+    public long getRequest() {
+        return request;
+    }
 }

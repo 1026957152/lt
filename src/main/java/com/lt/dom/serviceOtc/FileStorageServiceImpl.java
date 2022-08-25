@@ -1,5 +1,6 @@
 package com.lt.dom.serviceOtc;
 
+import com.alipay.api.internal.util.file.IOUtils;
 import com.lt.dom.OctResp.DocumentResp;
 import com.lt.dom.controllerOct.FileUploadController;
 import com.lt.dom.oct.Document;
@@ -13,13 +14,16 @@ import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import javax.imageio.ImageIO;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +36,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
 /**
@@ -54,6 +59,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Autowired
     private IdGenServiceImpl idGenService;
+
 
     @Override
     public void init() {
@@ -162,11 +168,27 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public TempDocument saveWithTempDocument(MultipartFile x) {
+        TempDocument document = new TempDocument();
+        document.setCode(idGenService.tempDocumentCode());
+
+        try (InputStream input = x.getInputStream()) {
+            try {
+
+                if(ImageIO.read(input) == null){
+                    document.setImage(false);
+                }else{
+                    document.setImage(true);
+                }
+                // It's an image (only BMP, GIF, JPG and PNG are recognized).
+            } catch (Exception e) {
+                // It's not an image.
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         String extension = StringUtils.getFilenameExtension(x.getOriginalFilename());
 
-        TempDocument document = new TempDocument();
-        document.setCode(idGenService.tempDocumentCode());
 
 
         String filename = document.getCode()+"."+extension;
@@ -195,6 +217,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
             Document document = new Document();
             document.setExtension(extension);
+            document.setImage(tempDocument.getImage());
             document.setCode(tempDocument.getCode());
             document.setType(documentType);
             document.setRaletiveId(id);
@@ -255,26 +278,67 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     public static String url(Document x) {
 
-        String url = MvcUriComponentsBuilder
+
+       return  linkTo(FileUploadController.class).slash("files/"+x.getFileName()).toUriComponentsBuilder().build().toString();
+
+/*        String url = MvcUriComponentsBuilder
                 .fromMethodName(FileUploadController.class,
                         "getFile",
                         x.getFileName()
-                ).build().toString();
+                ).build().toString();*/
+
+/*        String url = MvcUriComponentsBuilder
+                .fromMethodName(FileUploadController.class,
+                        "getFile",
+                        x.getFileName()
+                ).build().toString();*/
 
 
-        return url;
+      //  return url;
 
     }
+
+    public static String url(TempDocument tempDocument) {
+        return url(tempDocument.getFileName());
+    }
+
+
     public static String url(String filename) {
 
-        String url = MvcUriComponentsBuilder
+        return  linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString();
+
+/*        String url = MvcUriComponentsBuilder
                 .fromMethodName(FileUploadController.class,
                         "getFile",
                         filename
                 ).build().toString();
 
 
-        return url;
+        return url;*/
 
+    }
+
+    public static Link url_static(String filename, String name) {
+
+        return  linkTo(FileUploadController.class).slash("files/"+filename).withRel(name);
+
+/*        String url = MvcUriComponentsBuilder
+                .fromMethodName(FileUploadController.class,
+                        "getFile",
+                        filename
+                ).build().toString();
+
+
+        return url;*/
+
+    }
+    public Map<EnumDocumentType,TempDocument> loadTempDocument(List<Pair<EnumDocumentType, String>> asList) {
+
+        Map<String,EnumDocumentType> documentTypeMap = asList.stream().collect(Collectors.toMap(e->e.getValue1(),e->e.getValue0()));
+
+        List<TempDocument> tempDocuments = tempDocumentRepository.findAllByCodeIn(asList.stream().map(x->x.getValue1()).collect(Collectors.toList()));
+
+        Map<EnumDocumentType,TempDocument> m = tempDocuments.stream().collect(Collectors.toMap(x->documentTypeMap.get(x.getCode()),x->x));
+        return m;
     }
 }

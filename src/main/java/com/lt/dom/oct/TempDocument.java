@@ -25,6 +25,7 @@ public class TempDocument {
     private String originalFilename;
     private String url;
     private Long size;
+    private boolean image;
 
     public Long getSize() {
         return size;
@@ -91,5 +92,13 @@ public class TempDocument {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public void setImage(boolean image) {
+        this.image = image;
+    }
+
+    public boolean getImage() {
+        return image;
     }
 }

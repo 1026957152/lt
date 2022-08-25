@@ -1,5 +1,11 @@
 package com.lt.dom.otcenum;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 public enum EnumTranType {//交易类型
     recharge("充值"),
     recharge_refund("充值退款"),
@@ -24,5 +30,19 @@ public enum EnumTranType {//交易类型
 
     EnumTranType(String 入账退款) {
 
+    }
+
+    @Autowired
+    private MessageSource messageSource;
+
+
+    private static ResourceBundle resourceBundle = ResourceBundle.getBundle("messages",
+            Locale.getDefault());
+    @Override
+    public String toString() {
+
+        String displayStatusString = resourceBundle.getString("page.systemadministration.payment.tran.type."
+                + this.name());
+        return displayStatusString;
     }
 }

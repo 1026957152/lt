@@ -3,6 +3,8 @@ package com.lt.dom.otcReq;
 import com.lt.dom.otcenum.EnumBussinessType;
 import com.lt.dom.otcenum.EnumSupplierType;
 
+import javax.validation.constraints.NotNull;
+
 public class SupplierPojo {
 
 
@@ -10,7 +12,10 @@ public class SupplierPojo {
     private String lastName;//	string	The user’s last name
     private String phone;//	string	The user’s last name
 
+    @NotNull
     private String supplierName;// 公司名称	Display name for the suplier
+
+    @NotNull
     private EnumSupplierType type;//  运营商， 售票者
 
  //   @Pattern(regexp = "^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$")
@@ -23,6 +28,8 @@ public class SupplierPojo {
     private String state;
     private String locality;
     private String street;
+
+    @NotNull
     private EnumBussinessType business_type;
     private String location;
     private String locationName;

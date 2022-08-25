@@ -2,7 +2,6 @@ package com.lt.dom.serviceOtc;
 
 import com.lt.dom.OctResp.ChargeResp;
 import com.lt.dom.OctResp.ReservationResp;
-import com.lt.dom.OctResp.TourbookingResp;
 import com.lt.dom.RealNameAuthentication.PhoneAuth;
 import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
 import com.lt.dom.error.Booking_not_pendingException;
@@ -12,11 +11,12 @@ import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import com.lt.dom.requestvo.BookingTypeTowhoVo;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,7 +40,7 @@ public class BookingServiceImpl {
     @Autowired
     private TourRepository tourRepository;
     @Autowired
-    private CampaignAssignToReservationRepository campaignAssignToReservationRepository;
+    private CampaignAssignToTourProductRepository campaignAssignToTourProductRepository;
 
     @Autowired
     private PricingTypeRepository pricingTypeRepository;
@@ -73,73 +73,75 @@ public class BookingServiceImpl {
     InchargeBookingRepository inchargeBookingRepository;
 
 
-    public Triplet<Reservation,Product,Tour> book(Product product, BookingPojo pojo) {
+    public Pair<Reservation,BookingTypeTowhoVo> book(BookingTypeTowhoVo bookingTypeTowhoVo, BookingPojo pojo) {
 
 
-        List<Voucher> vouchers = pojo.getDiscounts().stream().map(x->new Voucher()).collect(Collectors.toList());
-       // Voucher voucher = voucherService.领券(product);
+        if(bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Product)){
+            Product product = bookingTypeTowhoVo.getProduct();
+            List<Voucher> vouchers = pojo.getDiscounts().stream().map(x->new Voucher()).collect(Collectors.toList());
+            // Voucher voucher = voucherService.领券(product);
 
 
-        int va = voucherService.获得折扣金额(product,vouchers);
+            int va = voucherService.获得折扣金额(product,vouchers);
 
 
-        Reservation reservation = new Reservation();
-        reservation.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
-        reservation.setCode(idGenService.bookingNo());
-        reservation.setItems_discount_amount(va);
-        reservation.setTotal_discount_amount(va);
-        reservation.setProductType(product.getType());
-        reservation.setProductId(product.getId());
-        reservation.setRedeemer(product.getSupplierId());
-
-
-
-
-
-        List<PricingType> pricingTypes = getForProduct(product);
-
-        Map<EnumProductPricingTypeByPerson,Integer> enumProductPricingTypeByPersonIntegerMap = pricingTypes.stream().filter(x->x.getType().equals(EnumProductPricingType.ByPerson)).collect(Collectors.toMap(x->x.getBy(),x->x.getPrice()));
-
-        Integer total  = pojo.getTravelers().stream().mapToInt(x->{
-
-            Integer price = enumProductPricingTypeByPersonIntegerMap.get(x.getBy());
-
-            return price;
-        }).sum();
-
-        reservation.setAmount(total);
-      //  reservation.setTotal_amount(reservation.getAmount()-reservation.getTotal_discount_amount());
-        reservation.setStatus(EnumOrderStatus.Pending);
-
-        reservation = reservationRepository.save(reservation);
+            Reservation reservation = new Reservation();
+            reservation.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
+            reservation.setCode(idGenService.bookingNo());
+            reservation.setItems_discount_amount(va);
+            reservation.setTotal_discount_amount(va);
+            reservation.setProductType(product.getType());
+            reservation.setProductId(product.getId());
+            reservation.setRedeemer(product.getSupplierId());
 
 
 
-        GuideInchargeBooking guideInchargeBooking = new GuideInchargeBooking();
-        guideInchargeBooking.setBooking(reservation.getId());
-        guideInchargeBooking.setGuideId(pojo.getAdditional_info().getGuide());
-        inchargeBookingRepository.save(guideInchargeBooking);
 
-        Reservation finalReservation = reservation;
-        if(product.getComponents() != null){
-            List<ComponentVounch> componentVounchList =  product.getComponents().stream().map(x->{
-                ComponentVounch componentVounch = new ComponentVounch();
-                componentVounch.setReservationId(finalReservation.getId());
-                componentVounch.setComponentRightId(x.getComponentRightId());
-                componentVounch.setComponentId(x.getId());
-                componentVounch.setCount(1);
-                componentVounch.setSnCode("DDD");
-                componentVounch.setRoyaltyRuleId(x.getRoyaltyRule().getId());
-                return componentVounch;
-            }).collect(Collectors.toList());
+
+            List<PricingType> pricingTypes = getForProduct(product);
+
+            Map<EnumProductPricingTypeByPerson,Integer> enumProductPricingTypeByPersonIntegerMap = pricingTypes.stream().filter(x->x.getType().equals(EnumProductPricingType.ByPerson)).collect(Collectors.toMap(x->x.getBy(),x->x.getPrice()));
+
+            Integer total  = pojo.getTravelers().stream().mapToInt(x->{
+
+                Integer price = enumProductPricingTypeByPersonIntegerMap.get(x.getBy());
+
+                return price;
+            }).sum();
+
+            reservation.setAmount(total);
+            //  reservation.setTotal_amount(reservation.getAmount()-reservation.getTotal_discount_amount());
+
+
+            reservation = reservationRepository.save(reservation);
+            Optional<Tour> tour = tourRepository.findById(product.getTypeToWho());
+            bookingTypeTowhoVo.setTour(tour.get());
+
+            return Pair.with(reservation,bookingTypeTowhoVo);
         }
 
-        if(product.getType().equals(EnumProductType.Daytour)){
-            Optional<Tour> tour = tourRepository.findById(product.getRaletiveId());
-            return Triplet.with(reservation,product,tour.get());
+        if(bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Voucher)) {
+
+            Campaign campaign = bookingTypeTowhoVo.getCampaign();
+            Reservation reservation = new Reservation();
+            if(!ObjectUtils.isEmpty(pojo.getAdditional_info())){
+                reservation.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
+            }
+            reservation.setCode(idGenService.bookingNo());
+            reservation.setAmount(campaign.getPayAmount());
+
+            reservation.setStatus(EnumTourBookingStatus.Draft);
+            reservation = reservationRepository.save(reservation);
+
+
+            return Pair.with(reservation,bookingTypeTowhoVo);
         }
 
-        return Triplet.with(reservation,product,null);
+
+
+
+
+        return Pair.with(null,null);
 
     }
 
@@ -190,7 +192,7 @@ public class BookingServiceImpl {
 
         //int va = redeemService.redeemVounchor(vouchers);  //销和这些券
 
-        reservation.setStatus(EnumOrderStatus.Submitted);
+        reservation.setStatus(EnumTourBookingStatus.Submitted);
         reservation = reservationRepository.save(reservation);
 
 
@@ -199,7 +201,7 @@ public class BookingServiceImpl {
             Charge charge = new Charge();
             charge.setAmount(finalReservation.getTotal_amount());
             charge.setPaid(false);
-            charge.setOrderNo(finalReservation.getId());
+            charge.setBooking(finalReservation.getId());
            // charge.setChannel(x);
             return charge;
         }).collect(Collectors.toList());
@@ -295,23 +297,6 @@ public class BookingServiceImpl {
 
     }
 
-    public ReservationResp toResp(Pair<Reservation,Product> pair) {
-        Reservation booking = pair.getValue0();
-        Product product = pair.getValue1();
-        ReservationResp reservationResp = new ReservationResp();
-
-        reservationResp.setAmount(booking.getAmount());
-        reservationResp.setCode(booking.getCode());
-        reservationResp.setStatus(booking.getStatus());
-
-        reservationResp.setTotal_amount(booking.getTotal_amount());
-        reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
-
-        reservationResp.setProductType(booking.getProductType());
-        reservationResp.setProductCode(product.getCode());
-
-        return reservationResp;
-    }
 
 
 
@@ -322,46 +307,6 @@ public class BookingServiceImpl {
 
 
 
-
-
-
-
-
-    public TourBooking submit(Supplier supplier, TourBooking reservation, BookingPayPojo transferPojo) {
-
-
-        List<Traveler> travelers = travelerRepository.findAllByBooking(reservation.getId());
-
-        if(travelers.size() == 0){
-            throw new Missing_customerException(reservation.getId(),Reservation.class.getSimpleName(),"订单没有游客，需要添加游客再提交");
-        }
-
-        if(!reservation.getStatus().equals(EnumOrderStatus.Pending)){
-
-            throw new Booking_not_pendingException(reservation.getId(),Reservation.class.getSimpleName(),"订单非等待提交状态，不得提交"+reservation.getStatus());
-
-        }
-
-        //获得了 消费券，获得了消费券，获得了消费券，
-        List<Pair<Long,Voucher>> vouchers = publicationService.bulkPublish(supplier,travelers.stream().map(x->x.getId()).collect(Collectors.toList()),reservation.getCampaign());
-
-        Map<Long,Voucher> voucherMap = vouchers.stream().collect(Collectors.toMap(x->x.getValue0(), x->x.getValue1()));
-
-        List<Pair<Traveler,Voucher>> sss = travelers.stream().map(x->{
-            Voucher voucher = voucherMap.get(x.getId());
-            return Pair.with(x,voucher);
-        }).collect(Collectors.toList());
-
-
-        int va = redeemService.bulkRedeemVounchor(reservation.getId(),Reservation.class,sss);  //销和这些券
-
-        reservation.setStatus(EnumOrderStatus.Submitted);
-        reservation = tourBookingRepository.save(reservation);
-
-
-        return reservation;
-
-    }
 
 
 
@@ -377,7 +322,7 @@ public class BookingServiceImpl {
 
     private List<Campaign> campaignForProduct(Product product){
         if(product.getType().equals(EnumProductType.Daytour)){
-            List<CampaignAssignToTourProduct> campaignAssignToTourProducts = campaignAssignToReservationRepository.findByTourId(product.getRaletiveId());
+            List<CampaignAssignToTourProduct> campaignAssignToTourProducts = campaignAssignToTourProductRepository.findByTourId(product.getTypeToWho());
 
             List<Campaign> campaigns =  campaignRepository.findAllById(campaignAssignToTourProducts.stream().map(x->x.getCampaign()).collect(Collectors.toList()));
 

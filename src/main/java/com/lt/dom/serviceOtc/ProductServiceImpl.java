@@ -4,6 +4,7 @@ import com.lt.dom.controllerOct.ProductRestController;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcReq.product.ProductGiftVoucherPojo;
+import com.lt.dom.otcenum.EnumProductStatus;
 import com.lt.dom.otcenum.EnumProductType;
 import com.lt.dom.otcenum.EnumWhenSettle;
 import com.lt.dom.repository.*;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -56,7 +58,9 @@ public class ProductServiceImpl {
     private ComponentRightRepository componentRightRepository;
 
     @Autowired
-    private CampaignAssignToReservationRepository campaignAssignToReservationRepository;
+    private CampaignAssignToTourProductRepository campaignAssignToTourProductRepository;
+
+
 
 
     public Page<Product> listProduct(Supplier supplier, Pageable pageable) {
@@ -72,7 +76,7 @@ public class ProductServiceImpl {
 
 
 
-    public Pair<Product,Supplier> createProduct(Supplier supplier, ProductPojo pojo) {
+    public Pair<Product,Supplier> createProduct(Supplier supplier, ProductPojo pojo, List<Campaign> campaigns) {
         Product product = new Product();
 
        // product.setN(pojo.getName());
@@ -82,7 +86,15 @@ public class ProductServiceImpl {
         product.setName(pojo.getName());
         product.setName_long(pojo.getName_long());
 
+        product.setStatus(EnumProductStatus.draft);
+        product.setCreated_at(LocalDateTime.now());
+        product.setUpdated_at(LocalDateTime.now());
+        product.setAcitve(true);
+        product.setShippable(false);
+
         product = productRepository.save(product);
+
+
 
 
         if(product.getType().equals(EnumProductType.Daytour)){
@@ -90,22 +102,25 @@ public class ProductServiceImpl {
 
             tour.setTour_name(pojo.getName());
             tour.setTour_name_long(pojo.getName_long());
+            tour.setProduct(product.getId());
             tour = tourRepository.save(tour);
-            product.setRaletiveId(tour.getId());
+            product.setTypeToWho(tour.getId());
+
             product = productRepository.save(product);
 
 
             Product finalProduct1 = product;
             Tour finalTour = tour;
-            List<CampaignAssignToTourProduct> list =  pojo.getCampaigns().stream().map(x->{
+            List<CampaignAssignToTourProduct> list =  campaigns.stream().map(x->{
                 CampaignAssignToTourProduct campaignAssignToTourProduct = new CampaignAssignToTourProduct();
                 campaignAssignToTourProduct.setCampaign(x.getId());
+                campaignAssignToTourProduct.setCampaign_code(x.getCode());
                 campaignAssignToTourProduct.setProduct(finalProduct1.getId());
                 campaignAssignToTourProduct.setTourId(finalTour.getId());
                 return campaignAssignToTourProduct;
             }).collect(Collectors.toList());
 
-            list = campaignAssignToReservationRepository.saveAll(list);
+            list = campaignAssignToTourProductRepository.saveAll(list);
 
 
 
@@ -324,5 +339,43 @@ public class ProductServiceImpl {
 
         return product;
 
+    }
+
+    public Pair<Product, Supplier> editProduct(Product product, Supplier supplier, ProductEditPojo pojo, List<Campaign> campaigns) {
+
+        // product.setN(pojo.getName());
+
+
+
+        product.setName(pojo.getName());
+        product.setName_long(pojo.getName_long());
+
+        product.setUpdated_at(LocalDateTime.now());
+
+
+
+        product = productRepository.save(product);
+
+        List<CampaignAssignToTourProduct> campaignAssignToTourProducts = campaignAssignToTourProductRepository.findByProduct(product.getId());
+        campaignAssignToTourProductRepository.deleteAll(campaignAssignToTourProducts);
+
+        Product finalProduct1 = product;
+        if(product.getType().equals(EnumProductType.Daytour)){
+            Optional<Tour> optional = tourRepository.findByProduct(product.getId());
+            Tour finalTour = optional.get();
+            List<CampaignAssignToTourProduct> list =  campaigns.stream().map(x->{
+                CampaignAssignToTourProduct campaignAssignToTourProduct = new CampaignAssignToTourProduct();
+                campaignAssignToTourProduct.setCampaign(x.getId());
+                campaignAssignToTourProduct.setCampaign_code(x.getCode());
+                campaignAssignToTourProduct.setProduct(finalProduct1.getId());
+                campaignAssignToTourProduct.setTourId(finalTour.getId());
+                return campaignAssignToTourProduct;
+            }).collect(Collectors.toList());
+
+            list = campaignAssignToTourProductRepository.saveAll(list);
+        }
+
+
+        return Pair.with(product,supplier);
     }
 }

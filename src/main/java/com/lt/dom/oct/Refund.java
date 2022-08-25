@@ -26,6 +26,7 @@ public class Refund {
 
     private int amount;
     private String code;
+    private String charge_Code;
 
     public int getAmount() {
         return amount;
@@ -92,6 +93,14 @@ public class Refund {
 
     public String getCode() {
         return code;
+    }
+
+    public void setCharge_Code(String charge_code) {
+        this.charge_Code = charge_code;
+    }
+
+    public String getCharge_Code() {
+        return charge_Code;
     }
 
 /*    "id": "re_y1u944PmfnrTHyvnL0nD0iD1",

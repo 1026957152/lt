@@ -1,4 +1,7 @@
 
+
+
+
 spring:
   servlet:
     multipart:
@@ -24,20 +27,27 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
     show-sql: true
 
+  mvc:
+    static-path-pattern: /oct/files/**
+  web:
+    resources:
+      static-locations: classpath:/images/,file:E://work//dom//fileStorage//,classpath:/static,classpath:/public
 lt:
   url: http://localhost:8080
 
+
+
 # 服务商 AppID
 wxpay:
-  app_id: wx06706b4df0e7e9ec
+  app_id: wx626ed6460e6dd971
   # 商户号
-  mch_id: 1326370001
+  mch_id: 1630279599
   # 子商户号
   sub_mch_id: 1326370001
   # 商户的 key（私钥）
-  key: PHC578EWS415THG321GTQ874YLKEE666
+  key: bitqqf8cie5mia20fb0yugc3m715v2eo
   # 证书地址
-  cert_path: /xxx/xxxx/xx/apiclient_cert.p12
+  cert_path: E:\work\dom\src\main\resources\apiclient_cert.p12
   # API 支付请求地址
   pay_url: https://api.mch.weixin.qq.com/pay/unifiedorder
   # API 查询请求地址
@@ -47,15 +57,23 @@ wxpay:
   # 回调地址
   tenpay_order_callback: https://39.106.34.220:8080/oct/xxxxxx
   # 交易类型
-  trade_type_app: APP
+  trade_type_app: JSAPI
+  #APP
 
+  refundNotifyUrl: https://39.106.34.220:8080/oct/wechat/pay/refund_notify
 
-  refundNotifyUrl: https://bfb3-221-237-148-6.ap.ngrok.io/wechat/pay/refund_notify
 
 
 wx:
-  app_id: wxada5ab1a8c131d85
-  secret: bdde4cd0c7eff399037992a53dba9826
+  app_id: wx626ed6460e6dd971
+  secret: 1f3055e00adf20e81f54d87b174a2b70
+  app: wxada5ab1a8c131d85
+  sec: bdde4cd0c7eff399037992a53dba9826
+
+wxmerchant:
+  app_id: wx56e4655ed33d5eca
+  secret: 6304bf22f38b3bb4432eafb96be809f6
+
 
 jwt:
   secret: 123
@@ -69,6 +87,11 @@ dll:
 
 logging:
   level:
+    root=WARN:
+    com:
+      config: DEBUG
+      lt:
+        dom.controllerOct: TRACE
     org:
       springframework:
         security: DEBUG
@@ -78,5 +101,10 @@ logging:
 
 bezkoder:
   app:
-    jwtExpirationMs: 86400000
+    jwtExpirationMs: 8640000000
+ #     jwtExpirationMs: 86400000
     jwtSecret: bezKoderSecretKey
+
+
+yunpian_sms:
+  apikey: 220dbf356cc27ef60b69d99d28c74f0e

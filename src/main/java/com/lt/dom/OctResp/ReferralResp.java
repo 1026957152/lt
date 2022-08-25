@@ -1,9 +1,15 @@
 package com.lt.dom.OctResp;
 
+import com.lt.dom.oct.Referral;
+
 public class ReferralResp {
 
     private String referral_url;// 和 referral_code
     private String referral_code;//
+
+    public static ReferralResp from(Referral referral) {
+        return null;
+    }
 
     public String getReferral_url() {
         return referral_url;

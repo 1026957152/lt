@@ -3,6 +3,7 @@ package com.lt.dom.otcReq;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.OctResp.PublicationEntryResp;
 import com.lt.dom.oct.DayRule;
+import com.lt.dom.otcenum.EnumBookingOjbectType;
 import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
 
 import javax.validation.Valid;
@@ -14,13 +15,15 @@ import java.util.List;
 
 public class BookingPojo {
 
-    @NotNull
+
     private Tour additional_info;
 
     private String important_note;//	The staff entered "pinned note" on the booking
     private String workflow_note;//	The staff entered note form the "workflow" tab on the booking
+    private Long campaign;
+    private EnumBookingOjbectType type;
 
-    @Valid
+
     public Tour getAdditional_info() {
         return additional_info;
     }
@@ -43,6 +46,22 @@ public class BookingPojo {
 
     public void setWorkflow_note(String workflow_note) {
         this.workflow_note = workflow_note;
+    }
+
+    public Long getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(Long campaign) {
+        this.campaign = campaign;
+    }
+
+    public EnumBookingOjbectType getType() {
+        return type;
+    }
+
+    public void setType(EnumBookingOjbectType type) {
+        this.type = type;
     }
 
     public static class Tour {
@@ -202,7 +221,7 @@ public class BookingPojo {
     }
 
 
-    @Valid
+
     @Size(min=1, max=100)
     List<TravelerReq> travelers;
 

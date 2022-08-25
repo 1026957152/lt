@@ -1,8 +1,6 @@
 package com.lt.dom.controllerOct;
 
 import com.lt.dom.OctResp.CampaignResp;
-import com.lt.dom.OctResp.ExportResp;
-import com.lt.dom.OctResp.MessageFileResp;
 import com.lt.dom.OctResp.ScenarioResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
@@ -12,14 +10,15 @@ import com.lt.dom.otcReq.ScenarioAddCampaignReq;
 import com.lt.dom.otcReq.ScenarioAssignmentReq;
 import com.lt.dom.otcReq.ScenarioReq;
 import com.lt.dom.otcenum.EnumDocumentType;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
 import org.javatuples.Pair;
+import org.javatuples.Quartet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +27,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -80,13 +78,24 @@ public class ScenarioRestController {
 
 
             EntityModel entityModel = EntityModel.of(scenarioResp);
-            entityModel.add(linkTo(methodOn(CampaignRestController.class).pageCampaign(1,null,null)).withRel("getCampaigns"));
+            entityModel.add(linkTo(methodOn(CampaignRestController.class).getCampaignList(null,null,null)).withRel("getCampaigns"));
 
-            Page<Campaign> campaignPageable = campaignRepository.findAll(PageRequest.of(0,1000));
+            Page<Campaign> campaignPageable = campaignRepository.findAllByScenario(scenario.getId(),PageRequest.of(0,1000));
 
-            List<CampaignResp> campaignResps =  CampaignResp.pageMapToListSimple(campaignPageable);
+        //    List<CampaignResp> campaignResps =  CampaignResp.pageMapToListSimple(campaignPageable).getContent();
 
+        List<EntityModel<CampaignResp>> campaignResps = campaignPageable.map(x->{
 
+            EntityModel<CampaignResp> entityModel1 =
+                    EntityModel.of(CampaignResp.simple(Pair.with(x,Optional.empty())));
+
+            entityModel1.add(linkTo(methodOn(BookingRestController.class).立即下单(x.getId(),null)).withRel("clainWithPay"));
+            entityModel1.add(linkTo(methodOn(PublicationRestController.class).createPublication(x.getId(),null,null)).withRel("clain"));
+
+            entityModel1.add(linkTo(methodOn(ScenarioRestController.class).getCampaign(x.getId())).withSelfRel());
+
+            return entityModel1;
+        }).getContent();
 
             scenarioResp.setCampaigns(campaignResps);
 
@@ -95,6 +104,27 @@ public class ScenarioRestController {
 
 
 
+
+    }
+
+    @GetMapping(value = "/scenarios/campaigns/{CAMPAIGN_ID}", produces = "application/json")
+    public ResponseEntity<EntityModel> getCampaign(@PathVariable long CAMPAIGN_ID) {
+
+        Optional<Campaign> validatorOptional = campaignRepository.findById(CAMPAIGN_ID);
+        if(validatorOptional.isEmpty()) {
+
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到 活动"+CAMPAIGN_ID);
+        }
+        Campaign campaign = validatorOptional.get();
+
+                CampaignResp campaignResp = CampaignResp.simple(Pair.with(campaign,Optional.empty()));
+
+                EntityModel entityModel = EntityModel.of(campaignResp);
+        entityModel.add(linkTo(methodOn(ScenarioRestController.class).getCampaign(campaign.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(BookingRestController.class).立即下单(campaign.getId(),null)).withRel("clainWithPay"));
+        entityModel.add(linkTo(methodOn(PublicationRestController.class).createPublication(campaign.getId(),null,null)).withRel("clain"));
+
+        return ResponseEntity.ok(entityModel);
 
     }
 
@@ -170,7 +200,7 @@ public class ScenarioRestController {
 
         List<ScenarioAssignment> scenarioAssignments = scenarioAssignmentRepository.findByScenarioAndSupplier(optional.get().getId(),optionalSupplier.get().getId());
         if(!scenarioAssignments.isEmpty()){
-            throw new ExistException("已经存在了");
+            throw new ExistException(Enumfailures.general_exists_error,"已经存在了");
         }
         ScenarioAssignment scenarioAssignment =  campaignService.addScenarioAssignment(optional.get(),optionalSupplier.get(),scenarioReq.getNote());
         return ResponseEntity.ok(scenarioAssignment);
@@ -211,7 +241,7 @@ public class ScenarioRestController {
 
         }
         if(optionalCampaign.get().getScenario() == optional.get().getId() ){
-            throw new ExistException("已经存在了");
+            throw new ExistException(Enumfailures.general_exists_error,"已经存在了");
         }
         Campaign scenarioAssignment =  campaignService.addScenarioCampaign(optional.get(),optionalCampaign.get());
         return ResponseEntity.ok(scenarioAssignment);

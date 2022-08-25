@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface AssetRepository extends JpaRepository<Asset
 			, Long> {
@@ -21,4 +22,6 @@ public interface AssetRepository extends JpaRepository<Asset
     Optional<Asset> findByTypeAndSource(EnumAssetType qr, long id);
 
     Optional<Asset> findByTypeAndIdId(EnumAssetType qr, String code);
+
+    List<Asset> findByTypeAndIdIdIn(EnumAssetType qr, Set<String> collect);
 }

@@ -1,46 +1,34 @@
 package com.lt.dom.controllerOct;
 
-import com.github.wxpay.sdk.WXPay;
-import com.github.wxpay.sdk.WXPayConstants;
-import com.github.wxpay.sdk.WXPayUtil;
+import com.google.gson.Gson;
 import com.lt.dom.OctResp.*;
-import com.lt.dom.config.WxConfigUtil;
+import com.lt.dom.OctResp.ChargeResp;
 import com.lt.dom.config.WxPayConfig;
 import com.lt.dom.domain.CouponTemplatePojoList;
 import com.lt.dom.error.*;
-import com.lt.dom.excel.ImportExcelBookingTraveler;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
-import com.lt.dom.otcenum.EnumDocumentType;
-import com.lt.dom.otcenum.EnumOrderStatus;
-import com.lt.dom.otcenum.EnumPayChannel;
-import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import com.lt.dom.requestvo.BookingTypeTowhoVo;
 import com.lt.dom.serviceOtc.*;
-import com.lt.dom.util.CheckIdcardIsLegal;
 import com.lt.dom.util.HttpUtils;
+import com.lt.dom.vo.ChargeMetadataVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
-import org.javatuples.Quintet;
-import org.javatuples.Triplet;
+import org.javatuples.Quartet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,6 +51,14 @@ public class BookingRestController {
 
     @Autowired
     private WxPayConfig wxPayConfig;
+    @Autowired
+    private CampaignRepository campaignRepository;
+
+    @Autowired
+    private OpenidRepository openidRepository;
+
+    @Autowired
+    private AuthenticationFacade authenticationFacade;
 
     @Autowired
     private ProductRepository productRepository;
@@ -92,7 +88,7 @@ public class BookingRestController {
     @Autowired
     private GuideRepository guideRepository;
     @Autowired
-    private PaymentRepository paymentRepository;
+    private AssetServiceImpl assetService;
 
 
 
@@ -102,18 +98,26 @@ public class BookingRestController {
         Optional<Reservation> optionalProduct = reservationRepository.findById(RESERVATOIN_ID);
 
 
-        if(optionalProduct.isPresent()){
-            Reservation reservation = optionalProduct.get();
+        if(optionalProduct.isEmpty()) {
+            throw new BookNotFoundException(RESERVATOIN_ID,Product.class.getSimpleName());
+
+        }
+        Reservation reservation = optionalProduct.get();
+
 
             if(optionalProduct.get().getProductType().equals(EnumProductType.Daytour)){
 
                 // reservationResp = new ReservationResp();
                 Optional<Product> product = productRepository.findById(optionalProduct.get().getProductId());
-                Optional<Tour> optionalTour = tourRepository.findById(product.get().getRaletiveId());
+                Optional<Tour> optionalTour = tourRepository.findById(product.get().getTypeToWho());
                 List<Traveler> travelers = travelerRepository.findAllByBooking(reservation.getId());
                 List<Document> documents = documentRepository.findAllByRaletiveId(reservation.getId());
+                Optional<Asset> assetResp  = assetService.getQrOptional(reservation.getCode());
+                BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
+                bookingTypeTowhoVo.setProduct(product.get());
+                bookingTypeTowhoVo.setTour(optionalTour.get());
 
-                BookingResp bookingResp = BookingResp.toResp(Quintet.with(reservation,product.get(),optionalTour.get(),travelers,documents));
+                BookingResp bookingResp = BookingResp.toResp(Quartet.with(reservation,bookingTypeTowhoVo,travelers,documents),assetResp.get());
 
                 bookingResp.add(linkTo(methodOn(PaymentRestController.class).wxPayRequest(reservation.getId(),null)).withRel("pay_url"));
              //   BookingResp.add(linkTo(methodOn(BookingRestController.class).bulkAddTravelers(reservation.getId(),null)).withRel("add_travelers_url"));
@@ -121,13 +125,10 @@ public class BookingRestController {
 
                 return ResponseEntity.ok(bookingResp);
             }
-            System.out.println("抛出异常");
+
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
-        }else{
-            System.out.println("找不到产品");
-            throw new BookNotFoundException(RESERVATOIN_ID,Product.class.getSimpleName());
-        }
+
 
     }
 
@@ -142,17 +143,21 @@ public class BookingRestController {
 
             if(x.getProductType().equals(EnumProductType.Daytour)){
                 Optional<Product> product = productRepository.findById(x.getProductId());
-                Optional<Tour> optionalTour = tourRepository.findById(product.get().getRaletiveId());
+                Optional<Tour> optionalTour = tourRepository.findById(product.get().getTypeToWho());
                 List<Traveler> travelers = travelerRepository.findAllByBooking(x.getId());
                 List<Document> documents = documentRepository.findAllByRaletiveId(x.getId());
 
-                BookingResp resp = BookingResp.toResp(Quintet.with(x,product.get(),optionalTour.get(),travelers,documents));
+                BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
+                bookingTypeTowhoVo.setProduct(product.get());
+                bookingTypeTowhoVo.setTour(optionalTour.get());
+
+                BookingResp resp = BookingResp.toResp(Quartet.with(x,bookingTypeTowhoVo,travelers,documents));
 
                 resp.add(linkTo(methodOn(BookingRestController.class).pay(x.getId(),null)).withRel("pay_url"));
 
                 resp.add(linkTo(methodOn(BookingRestController.class).createDocuments(x.getId(),new BookingDocumentIdsResp())).withRel("add_documents_url"));
 
-                return BookingResp.toResp(Quintet.with(x,product.get(),optionalTour.get(),travelers,documents));
+                return resp;//BookingResp.toResp(Quartet.with(x,bookingTypeTowhoVo,travelers,documents));
             }else{
                 return new BookingResp();
             }
@@ -165,28 +170,44 @@ public class BookingRestController {
 
 
 
+
+
+
+
+
+
     @Operation(summary = "2、下单购买")
     @PostMapping(value = "/bookings", produces = "application/json")
     public ResponseEntity createBooking(@RequestBody @Valid BookingPojo pojo) {
 
 
-        Optional<Product> optionalProduct = productRepository.findById(pojo.getProductId());
+        BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
+        bookingTypeTowhoVo.setToWhoTyp(pojo.getType());
 
-        if(optionalProduct.isEmpty()) {
-            System.out.println("找不到产品");
-            throw new BookNotFoundException(pojo.getProductId(),"找不到产品");
-
+        if(pojo.getType().equals(EnumBookingOjbectType.Voucher)){
+            Optional<Campaign> optionalCampaign = campaignRepository.findById(pojo.getProductId());
+            if(optionalCampaign.isEmpty()) {
+                throw new BookNotFoundException(pojo.getProductId(),"找不到产品");
+            }
+            Campaign campaign = optionalCampaign.get();
+            if(!campaign.getPay()){
+                throw new BookNotFoundException(pojo.getProductId(),"改券不属于支付类型");
+            }
+            bookingTypeTowhoVo.setCampaign(optionalCampaign.get());
+        }
+        if(pojo.getType().equals(EnumBookingOjbectType.Product)){
+            Optional<Product> optionalProduct = productRepository.findById(pojo.getProductId());
+            if(optionalProduct.isEmpty()) {
+                throw new BookNotFoundException(pojo.getProductId(),"找不到产品");
+            }
+            bookingTypeTowhoVo.setProduct(optionalProduct.get());
         }
 
+        Pair<Reservation, BookingTypeTowhoVo> booking = bookingService.book(bookingTypeTowhoVo,pojo);
 
-            Triplet<Reservation,Product,Tour> booking = bookingService.book(optionalProduct.get(),
+        BookingResp resp = BookingResp.toResp(booking);
 
-                    pojo);
-            BookingResp resp = BookingResp.toResp(booking);
-
-            return ResponseEntity.ok(resp);
-
-
+        return ResponseEntity.ok(resp);
 
     }
 
@@ -203,7 +224,7 @@ public class BookingRestController {
         Optional<Reservation> optionalReservation = reservationRepository.findById(RESERVATOIN_ID);
         if(optionalReservation.isPresent()){
             Reservation reservation = optionalReservation.get();
-            if(!reservation.getStatus().equals(EnumOrderStatus.Pending)){
+            if(!reservation.getStatus().equals(EnumTourBookingStatus.Pending)){
                 throw new Booking_not_pendingException(reservation.getId(),Reservation.class.getSimpleName(),"订单非等待提交状态，不得提交"+reservation.getStatus());
             }
             Traveler booking = bookingService.addTraveler(optionalReservation.get(),transferPojo);
@@ -227,7 +248,7 @@ public class BookingRestController {
 
 
     @GetMapping(value = "/bookings/{RESERVATOIN_ID}/documents", produces = "application/json")
-    public ResponseEntity<Map<EnumDocumentType,List<DocumentResp>>> listDocuments(@PathVariable long RESERVATOIN_ID, CouponTemplatePojoList  couponTemplatePojoList) {
+    public ResponseEntity<Map<EnumDocumentType,List<EntityModel<DocumentResp>>>> listDocuments(@PathVariable long RESERVATOIN_ID, CouponTemplatePojoList  couponTemplatePojoList) {
         Optional<Reservation> optionalReservation = reservationRepository.findById(RESERVATOIN_ID);
         if(optionalReservation.isPresent()){
 
@@ -343,19 +364,21 @@ public class BookingRestController {
     public PaymentResp pay(@PathVariable long RESERVATOIN_ID, @RequestBody BookingPayPojo transferPojo) {
 
 
-        Optional<Reservation> optionalReservation = reservationRepository.findById(RESERVATOIN_ID);
+        Optional<Reservation> optionalReservation = null;//reservationRepository.findById(RESERVATOIN_ID);
+
+        Reservation reservation_ = new Reservation();
+        reservation_.setAmount(10);
+        reservation_.setCode("111111111111111");
+        optionalReservation = Optional.of(reservation_);
 
         if(optionalReservation.isPresent()){
             Reservation reservation = optionalReservation.get();
             User user = new User();
-            Payment payment = new Payment();
-            payment.setAmount(reservation.getAmount());
-            payment.setBalance(reservation.getAmount());
-            payment.setDate(LocalDateTime.now());
-            payment.setVoided(false);
-            payment.setCustomer(user.getId());
-            payment.setReference(reservation.getCode());
-            payment = paymentService.createPayment(payment);
+            user.setId(1l);
+
+         //   Payment payment = paymentService.createPayment(payment);
+
+            Payment payment = paymentService.createPayment(reservation.getAmount(),user.getId(),reservation.getCode());
             payment.setRecipient(reservation.getRedeemer());
             PaymentResp resp = PaymentResp.from(payment);
             resp.add(linkTo(methodOn(PaymentRestController.class).wxPayRequest(payment.getId(),null)).withRel("wx_pay_url"));
@@ -366,10 +389,76 @@ public class BookingRestController {
             throw new BookNotFoundException(RESERVATOIN_ID,Product.class.getSimpleName());
         }
 
-
-
-
     }
+
+
+
+
+
+    @RequestMapping(value = "/pay_now/{CAMPAIGN_ID}")
+    public Map 立即下单(@PathVariable long CAMPAIGN_ID, HttpServletRequest request) {
+
+
+
+
+        Authentication authentication = authenticationFacade.getAuthentication();
+
+        User user = authenticationFacade.getUser(authentication);
+
+        Optional<Openid> optional = openidRepository.findByUserIdAndLink(user.getId(),true);
+
+        if(optional.isEmpty()){
+            throw new BookNotFoundException(CAMPAIGN_ID,"未绑定产品");
+        }
+        Optional<Campaign> optionalCampaign = campaignRepository.findById(CAMPAIGN_ID);
+        if(optionalCampaign.isEmpty()) {
+            throw new BookNotFoundException(CAMPAIGN_ID,"找不到产品");
+        }
+        Campaign campaign = optionalCampaign.get();
+        if(!campaign.getPay()){
+            throw new BookNotFoundException(CAMPAIGN_ID,"改券不属于支付类型");
+        }
+
+        BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
+        bookingTypeTowhoVo.setToWhoTyp(EnumBookingOjbectType.Voucher);
+        bookingTypeTowhoVo.setCampaign(optionalCampaign.get());
+
+        BookingPojo pojo = new BookingPojo();
+
+        Pair<Reservation, BookingTypeTowhoVo> booking = bookingService.book(bookingTypeTowhoVo, pojo);
+
+        String ip = HttpUtils.getRequestIP(request);
+
+        Reservation reservation = booking.getValue0();
+
+        Payment payment = paymentService.createPayment(reservation.getAmount(),user.getId(),reservation.getCode());
+        payment.setRecipient(reservation.getRedeemer());
+
+      //  resp.add(linkTo(methodOn(PaymentRestController.class).wxPayRequest(payment.getId(),null)).withRel("wx_pay_url"));
+
+
+        // double totalAmount = 0.01;
+        int totalAmount = payment.getAmount();
+        // 微信的支付单位是分所以要转换一些单位
+        long  totalproce =Long.parseUnsignedLong(totalAmount+"");//Long.parseUnsignedLong(totalAmount*100+"");
+
+
+        Voucher voucher = campaignService.retain(campaign);
+        Gson gson = new Gson();
+        ChargeMetadataVo chargeMetadataVo = new ChargeMetadataVo();
+        chargeMetadataVo.setCampaign(campaign.getId());
+        chargeMetadataVo.setCampaign_code(campaign.getCode());
+        chargeMetadataVo.setVolume_up_voucher(voucher.getId());
+        chargeMetadataVo.setPayer(user.getId());
+        chargeMetadataVo.setBooking(reservation.getId());
+        String metadata = gson.toJson(chargeMetadataVo);
+        Map  charge = paymentService.createRefund(ip,payment.getCode(),reservation,totalproce,optional.get().getOpenid(),user,metadata);
+
+
+
+        return charge;
+    }
+
 
 
 

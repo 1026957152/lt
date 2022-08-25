@@ -27,12 +27,14 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -102,7 +104,6 @@ public class UserRestController {
                 userResp = UserResp.userWithOpenidLink(Pair.with(x,openidMap.get(x.getId())));
             }else{
                 userResp = UserResp.from(x);
-
             }
             return EntityModel.of(userResp);
         });
@@ -112,25 +113,44 @@ public class UserRestController {
 
 
 
-    @GetMapping(value = "/users/current",produces = "application/json")
+    @GetMapping(value = "/users/me",produces = "application/json")
     public ResponseEntity<EntityModel> getCurrent() {
 
         Authentication authentication =  authenticationFacade.getAuthentication();
 
-        String userphone = null;
-        if(authentication != null && authentication.isAuthenticated()){
-            UserDetails user_ = (UserDetails)authentication.getPrincipal();
+        System.out.println("--------++++++++++"+authentication.toString());
+       // String userphone = null;
+        Optional<User> optionalUser = Optional.empty();
+        if (authentication instanceof AnonymousAuthenticationToken) {
 
-            Optional<User> optionalUser = userRepository.findByUsername(user_.getUsername());
-            if(optionalUser.isEmpty()){
-                throw new BookNotFoundException(user_.getUsername(),"找不到用户");
-            }
-            userphone = optionalUser.get().getPhone();
+            Optional<Openid> optional = openidRepository.findByOpenid((String)authentication.getPrincipal());
+
+            EntityModel entityModel = EntityModel.of(UserResp.from(optional.get()));
+            entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).postRealnameAuths(null)).withRel("realnameAuth"));
+            entityModel.add(linkTo(methodOn(EmpowerRestController.class).mini_getPhone(null)).withRel("getPhone"));
+
+            return ResponseEntity.ok(entityModel);
+
+
+
+
         }else{
-            userphone = "13468801684";
+            if(authentication.isAuthenticated()){
+                UserDetails user_ = (UserDetails)authentication.getPrincipal();
+
+                optionalUser = userRepository.findByUsername(user_.getUsername());
+                if(optionalUser.isEmpty()){
+
+                    optionalUser = userRepository.findByPhone(user_.getUsername());
+                    if(optionalUser.isEmpty()){
+                        throw new BookNotFoundException(user_.getUsername(),"找不到用户");
+                    }
+                }
+                //userphone = optionalUser.get().getPhone();
+            }
         }
 
-        Optional<User> optionalUser = userService.getActiveOneByPhone(userphone);
+        System.out.println("------2222222222222--++++++++++"+authentication.toString());
 
 
      //   UserDetails user_de = (UserDetails)authentication.getPrincipal();
@@ -140,61 +160,16 @@ public class UserRestController {
 
      //   Optional<User> optionalUser = userRepository.findByPhone(user_de.getUsername());
 
-        if(optionalUser.isPresent()){
+
             User user = optionalUser.get();
 
 
+            return ResponseEntity.ok(userService.getBigUser(user));
 
-
-
-
-
-            Optional<Openid> optionalOpenid = openidRepository.findByUserIdAndLink(user.getId(),true);
-            UserResp userResp = null;
-            if(optionalOpenid.isPresent()){
-                userResp = UserResp.userWithOpenidLink(Pair.with(user,optionalOpenid.get()));
-            }else{
-                userResp = UserResp.from(user);
-            }
-            EntityModel entityModel = EntityModel.of(userResp);
-
-
-            Optional<Asset> optionalAsset =assetService.getQrOptional(user.getCode());
-
-            if(optionalAsset.isPresent()){
-                userResp.setAsset(AssetResp.from(optionalAsset.get()));
-            }
-            Optional<Employee> optional = employeeRepository.findByUserId(user.getId());
-            if(optional.isPresent()){
-                userResp.setHired(true);
-                Optional<Supplier> optionalSupplier = supplierRepository.findById(optional.get().getSuplierId());
-                SupplierResp supplierResp = SupplierResp.from(optionalSupplier.get());
-                EntityModel supplierRespEntityModel = EntityModel.of(supplierResp);
-                supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(optional.get().getSuplierId())).withRel("getSupplier"));
-                userResp.setSupplier(supplierRespEntityModel);
-                entityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(optional.get().getSuplierId())).withRel("getSupplier"));
-                entityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchorBycode(null,null)).withRel("redeem"));
-                entityModel.add(linkTo(methodOn(RedemptionRestController.class).pageRedemptionEntry(optional.get().getSuplierId(),null,null)).withRel("getRedemptionEntrys"));
-
-            }
-            entityModel.add(linkTo(methodOn(UserRestController.class).beGuide(user.getId())).withRel("beGuide"));
-            if(!user.isRealNameVerified()){
-                entityModel.add(linkTo(methodOn(UserRestController.class).postRealnameAuths(user.getId(),null)).withRel("realnameAuths"));
-            }
-            entityModel.add(linkTo(methodOn(PublicationRestController.class).pageUserPublicationResp(user.getId(),null,null,null)).withRel("getVoucherList"));
-            entityModel.add(linkTo(methodOn(UserRestController.class).pageReservation(user.getId(),null,null)).withRel("getBookingList"));
-
-
-
-
-
-            return ResponseEntity.ok(entityModel);
-        }else{
-            throw new BookNotFoundException(0,User.class.getSimpleName());
-
-        }
 
     }
+
+
 
 
 /*
@@ -267,7 +242,7 @@ public class UserRestController {
     @PostMapping(value = "/users",produces = "application/json")
     public User createUser(@RequestBody @Valid UserPojo pojo) {
 
-        User user = userService.createUser(pojo);
+        User user = userService.createUser(pojo, Arrays.asList());
 
         return user;
     }
@@ -282,14 +257,14 @@ public class UserRestController {
 
         Optional<User> optionalUser = userRepository.findById(USER_ID);
 
-        if(optionalUser.isPresent()){
-            User user = realnameAuthsService.postRealnameAuths(optionalUser.get(),realnameAuthsReq);
-            return ResponseEntity.ok(user);
-
-        }else{
+        if(optionalUser.isEmpty()) {
             throw new BookNotFoundException(USER_ID,User.class.getSimpleName());
 
         }
+
+        User user = realnameAuthsService.postRealnameAuths(optionalUser.get(),realnameAuthsReq);
+        return ResponseEntity.ok(user);
+
 
     }
 
@@ -304,21 +279,22 @@ public class UserRestController {
 
         Optional<User> optionalUser = userRepository.findById(USER_ID);
 
-        if(optionalUser.isPresent()){
-            Optional<Guide> user = guideRepository.findByUserId(optionalUser.get().getId());
-            if(user.isEmpty()){
-                Guide guide = guideService.beGuide(optionalUser.get());
-                return ResponseEntity.ok(guide);
-            }else {
-                throw new User_already_be_guideException(USER_ID,User.class.getSimpleName(),optionalUser.get().getCode() + "该用户已经是 导游身份了");
-
-
-            }
-
-
-        }else{
+        if(optionalUser.isEmpty()){
             throw new BookNotFoundException(USER_ID,User.class.getSimpleName());
+
         }
+        if(!optionalUser.get().isRealNameVerified()){
+            throw new BookNotFoundException(USER_ID,"非实名认证，无法成为导游");
+
+        }
+        Optional<Guide> optionalGuide = guideRepository.findByUserId(optionalUser.get().getId());
+        if(optionalGuide.isEmpty()){
+            Guide guide = guideService.beGuide(optionalUser.get());
+            return ResponseEntity.ok(guide);
+        }else {
+            throw new User_already_be_guideException(USER_ID,User.class.getSimpleName(),optionalUser.get().getCode() + "该用户已经是 导游身份了");
+        }
+
 
     }
 
@@ -341,7 +317,9 @@ public class UserRestController {
         Page<Reservation> reservationPage = reservationRepository.findAll(pageable);
         Page<BookingResp> page =  reservationPage.map(x->{
             Optional<Product> product = productRepository.findById(x.getProductId());
-            BookingResp resp = BookingResp.toResp(Pair.with(x,product.get()));
+
+
+            BookingResp resp = BookingResp.totoResp(Pair.with(x,product.get()));
             resp.add(linkTo(methodOn(BookingRestController.class).pay(x.getId(),null)).withRel("pay_url"));
             return resp;
         });

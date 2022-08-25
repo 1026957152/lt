@@ -28,7 +28,15 @@ public class RealnameAuthsReq {
     @JsonProperty("xaccount_type")
     private String xaccountType;
 
+    public boolean isLive_mode() {
+        return live_mode;
+    }
 
+    public void setLive_mode(boolean live_mode) {
+        this.live_mode = live_mode;
+    }
+
+    private boolean live_mode = true;
     @NotEmpty
     private String real_name;
     @NotEmpty

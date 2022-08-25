@@ -4,7 +4,6 @@ import com.lt.dom.otcenum.EnumPublicationObjectType;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -48,10 +47,10 @@ public class RedemptionEntry {
     private String code;
     @NotNull
     private boolean bulk;
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
     private LocalDateTime redeem_at;
     private String voucherCode;
-    private LocalDateTime issued_at;
+    private LocalDateTime published_at;
 
     public boolean isRollback() {
         return rollback;
@@ -135,12 +134,12 @@ public class RedemptionEntry {
         return bulk;
     }
 
-    public LocalDateTime getCreated_at() {
-        return created_at;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreated_at(LocalDateTime created_at) {
-        this.created_at = created_at;
+    public void setCreatedAt(LocalDateTime created_at) {
+        this.createdAt = created_at;
     }
 
     public void setRedeem_at(LocalDateTime redeem_at) {
@@ -159,12 +158,12 @@ public class RedemptionEntry {
         return voucherCode;
     }
 
-    public void setIssued_at(LocalDateTime issued_at) {
-        this.issued_at = issued_at;
+    public void setPublished_at(LocalDateTime issued_at) {
+        this.published_at = issued_at;
     }
 
-    public LocalDateTime getIssued_at() {
-        return issued_at;
+    public LocalDateTime getPublished_at() {
+        return published_at;
     }
 
     public void setHolder(String holder) {

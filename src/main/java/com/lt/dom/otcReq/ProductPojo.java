@@ -46,6 +46,17 @@ public class ProductPojo {
     @Valid
     private List<Price> prices;
 
+
+    private List<String> images;
+
+    public List<String> getImages() {
+        return images;
+    }
+
+    public void setImages(List<String> images) {
+        this.images = images;
+    }
+
     public List<Price> getPrices() {
         return prices;
     }
@@ -161,36 +172,90 @@ public class ProductPojo {
 
 
 
-    @Valid
-    List<CampaignReq> campaigns;
-
-    public List<CampaignReq> getCampaigns() {
+    @Size(max = 30)
+    List<Long> campaigns;
+    public List<Long> getCampaigns() {
         return campaigns;
     }
 
-    public void setCampaigns(List<CampaignReq> campaigns) {
+    public void setCampaigns(List<Long> campaigns) {
         this.campaigns = campaigns;
     }
 
-    public static class CampaignReq {
-
-
-        @NotNull
-        private long id;
-
-        public long getId() {
-            return id;
-        }
-
-        public void setId(long id) {
-            this.id = id;
-        }
-    }
 
 
     @Override
     public String toString() {
         return ReflectionToStringBuilder.toString(this);
     }
+
+    public DayTour getDay_tour() {
+        return day_tour;
+    }
+
+    public void setDay_tour(DayTour day_tour) {
+        this.day_tour = day_tour;
+    }
+
+    public DayTour day_tour;
+
+
+    public static class DayTour {
+        @Size(max = 30)
+        List<Long> campaigns;
+        public List<Long> getCampaigns() {
+            return campaigns;
+        }
+
+        public void setCampaigns(List<Long> campaigns) {
+            this.campaigns = campaigns;
+        }
+
+        private String guide_id;//	ID number for the lead customer
+
+        @NotNull
+        private Long guide;//
+
+        public Long getGuide() {
+            return guide;
+        }
+
+        public void setGuide(Long guide) {
+            this.guide = guide;
+        }
+
+        private String title;//
+        private String starts_at;//
+        private String ends_at;//
+        private String line_info;//
+
+        public String getGuide_id() {
+            return guide_id;
+        }
+
+        public void setGuide_id(String guide_id) {
+            this.guide_id = guide_id;
+        }
+
+        public String getLine_info() {
+            return line_info;
+        }
+
+        public void setLine_info(String line_info) {
+            this.line_info = line_info;
+        }
+/*
+                      "": "2014-09-01",
+                              "ends_at": "2014-09-30",*/
+        // tour guide 旅行团：tour group 旅行社： travel agency
+
+
+
+    }
+
+
+
+
+
 
 }

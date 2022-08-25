@@ -2,11 +2,11 @@ package com.lt.dom.oct;
 
 import com.lt.dom.otcenum.EnumChargeStatus;
 import com.lt.dom.otcenum.EnumPayChannel;
+import com.lt.dom.otcenum.EnumRefundStatus;
+import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
-import javax.persistence.Version;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,10 +17,18 @@ public class Charge {
     @Version
     private Integer version;
 
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
     private String orderId;
     private String code;
+    private int application_fee_amount;
+
+    @NotNull
+    private long payment;
+    private long refund;
+    private EnumRefundStatus refundStatus;
 
     public long getId() {
         return id;
@@ -33,12 +41,13 @@ public class Charge {
     private LocalDateTime created;
     private Boolean livemode;
     private Boolean paid;
-    private Boolean refunded;
+    private boolean refunded;
     private Boolean reversed;
     private String app;
 
     private EnumPayChannel channel;
-    private long orderNo;
+    @NotNull
+    private long booking;
     private String clientIp;
     private Integer amountX;
     private Integer amountSettle;
@@ -70,11 +79,11 @@ public class Charge {
         this.paid = paid;
     }
 
-    public Boolean getRefunded() {
+    public boolean getRefunded() {
         return refunded;
     }
 
-    public void setRefunded(Boolean refunded) {
+    public void setRefunded(boolean refunded) {
         this.refunded = refunded;
     }
 
@@ -102,12 +111,12 @@ public class Charge {
         this.channel = channel;
     }
 
-    public long getOrderNo() {
-        return orderNo;
+    public long getBooking() {
+        return booking;
     }
 
-    public void setOrderNo(long orderNo) {
-        this.orderNo = orderNo;
+    public void setBooking(long orderNo) {
+        this.booking = orderNo;
     }
 
     public String getClientIp() {
@@ -230,11 +239,11 @@ public class Charge {
         this.failureMsg = failureMsg;
     }
 
-    public MetadataDTO getMetadata() {
+    public String getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(MetadataDTO metadata) {
+    public void setMetadata(String metadata) {
         this.metadata = metadata;
     }
 
@@ -265,8 +274,8 @@ public class Charge {
     private Integer amountRefunded;
     private String failureCode;
     private String failureMsg;
-    @Transient
-    private MetadataDTO metadata;
+    @Length(max = 2000)
+    private String metadata;
     @Transient
     private CredentialDTO credential;
     private String description;
@@ -296,6 +305,38 @@ public class Charge {
 
     public String getCode() {
         return code;
+    }
+
+    public void setApplication_fee_amount(int application_fee_amount) {
+        this.application_fee_amount = application_fee_amount;
+    }
+
+    public int getApplication_fee_amount() {
+        return application_fee_amount;
+    }
+
+    public void setPayment(long payment) {
+        this.payment = payment;
+    }
+
+    public long getPayment() {
+        return payment;
+    }
+
+    public void setRefund(long refund) {
+        this.refund = refund;
+    }
+
+    public long getRefund() {
+        return refund;
+    }
+
+    public EnumRefundStatus getRefundStatus() {
+        return refundStatus;
+    }
+
+    public void setRefundStatus(EnumRefundStatus refundStatus) {
+        this.refundStatus = refundStatus;
     }
 
     public static class ExtraDTO {
@@ -381,4 +422,11 @@ public class Charge {
         }
     },
             "description": null*/
+
+
+    private long timeStamp;//: '',
+    private long nonceStr;//: '',
+    private long package_;//: '',
+    private long signType;//: 'MD5',
+    private long paySign;//: '',
 }

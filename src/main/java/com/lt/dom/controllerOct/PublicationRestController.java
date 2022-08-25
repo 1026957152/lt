@@ -1,47 +1,51 @@
 package com.lt.dom.controllerOct;
 
 import com.lt.dom.OctResp.PublicationResp;
-import com.lt.dom.OctResp.RedemptionEntryResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.Campaign_inactiveException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.PublicationPojo;
 import com.lt.dom.otcReq.PublicationSearchPojo;
+import com.lt.dom.otcReq.VoucherResp;
 import com.lt.dom.otcenum.EnumAssetType;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
-import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
 import com.lt.dom.serviceOtc.AssetServiceImpl;
 import com.lt.dom.serviceOtc.DeviceService;
 import com.lt.dom.serviceOtc.IAuthenticationFacade;
 import com.lt.dom.serviceOtc.PublicationServiceImpl;
+import com.lt.dom.specification.VoucherQueryfieldsCriteria;
+import com.lt.dom.specification.VoucherSpecification;
+import com.lt.dom.vo.VoucherPublicationPaymentVo;
 import org.javatuples.Quartet;
 import org.javatuples.Quintet;
-import org.javatuples.Triplet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 //import ua_parser.Parser;
 //import ua_parser.Client;
 
@@ -52,6 +56,7 @@ import static java.util.Objects.isNull;
 @RequestMapping("/oct")
 public class PublicationRestController {
 
+    Logger logger = LoggerFactory.getLogger(PublicationRestController.class);
 
     @Autowired
     private ProductRepository productRepository;
@@ -82,12 +87,75 @@ public class PublicationRestController {
     private TravelerRepository travelerRepository;
     @Autowired
     private SupplierRepository supplierRepository;
+    @Autowired
+    private PublicationRepository publicationRepository;
 
+    @Autowired
+    private PublicationEntryRepository publicationEntryRepository;
 
 /*
     @Autowired
     private Parser uaParser;
 */
+
+
+
+
+
+    @GetMapping(value = "/users/{USER_ID}/voucherList", produces = "application/json")
+    public PagedModel getVoucherList(@PathVariable long USER_ID, @ModelAttribute PublicationSearchPojo pojo, Pageable pageable, PagedResourcesAssembler<EntityModel<PublicationResp>> assembler) {
+
+        logger.debug(pojo.toString());
+
+
+        System.out.println("参数 "+pojo.toString());
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+
+
+        User user =  authenticationFacade.getUser(authentication);
+        VoucherQueryfieldsCriteria voucherQueryfieldsCriteria = new VoucherQueryfieldsCriteria();
+        voucherQueryfieldsCriteria.setPublishTo(user.getId());
+        voucherQueryfieldsCriteria.setStatus(pojo.getStatus());
+
+        Specification<Voucher> specification = VoucherSpecification.toP(voucherQueryfieldsCriteria);
+
+        Page<Voucher> voucherList = voucherRepository.findAll(specification,pageable);
+
+        List<PublicationEntry> publicationResps = publicationEntryRepository.findAllByVoucherIn(voucherList.stream().map(e->e.getId()).collect(Collectors.toList()));
+
+
+        List<Campaign> campaigns = campaignRepository.findAllById(publicationResps.stream().map(x->x.getCampaign()).collect(Collectors.toList()));
+        List<Asset> assets = assetRepository.findAllByTypeAndIdIdIn(EnumAssetType.qr,voucherList.stream().map(x->x.getCode()).collect(Collectors.toList()));
+        Map<Long,Campaign> longCampaignMap = campaigns.stream().collect(Collectors.toMap(x->x.getId(), x->x));
+        Map<Long,List<PublicationEntry>> longPublicationEntryMap = publicationResps.stream().collect(Collectors.groupingBy(x->x.getVoucher()));
+        Map<Long,List<Asset>> longListMap =
+                assets.stream().collect(Collectors.groupingBy(x->x.getSource()));
+
+
+        return assembler.toModel(voucherList.map(voucher->{
+            Campaign campaign = longCampaignMap.get(voucher.getCampaign());
+
+            List<Asset> assetList = longListMap.get(voucher.getId());
+
+            List<PublicationEntry> x= longPublicationEntryMap.get(voucher.getId());
+            EntityModel entityModel = EntityModel.of(PublicationResp.sigleFrom(Quartet.with(x,voucher,campaign,assetList)));
+            PublicationEntry publicationEntry = x.get(0);
+            if(publicationEntry.getPaied()){
+                entityModel.add(linkTo(methodOn(PaymentRestController.class).refund(publicationEntry.getCharge(),null)).withRel("refund"));
+            }
+
+            return entityModel;
+        }));
+
+
+
+    }
+
+
+
+
+
 
     @GetMapping(value = "/users/{USER_ID}/publications", produces = "application/json")
     public PagedModel pageUserPublicationResp(@PathVariable long USER_ID, @ModelAttribute PublicationSearchPojo pojo, Pageable pageable, PagedResourcesAssembler<EntityModel<PublicationResp>> assembler) {
@@ -95,8 +163,9 @@ public class PublicationRestController {
         Authentication authentication =  authenticationFacade.getAuthentication();
 
 
-        User user = null;
-        if(authentication == null){
+
+        User user =  authenticationFacade.getUser(authentication);
+/*        if(authentication == null){
             Optional<User> validatorOptional = userRepository.findByPhone("13468801684");
             if(validatorOptional.isEmpty()) {
 
@@ -104,15 +173,15 @@ public class PublicationRestController {
 
             }
         }else{
-            user =  authenticationFacade.getUser(authentication);
-        }
+
+        }*/
 
 
 
             Page<PublicationEntry> publicationResps = publicationService.pagePublication(user,pojo,pageable);
 
-            List<Campaign> campaigns = campaignRepository.findAllById(publicationResps.stream().map(x->x.getCampaign_id()).collect(Collectors.toList()));
-            List<Voucher> vouchers = voucherRepository.findAllById(publicationResps.stream().map(x->x.getVoucherId()).collect(Collectors.toList()));
+            List<Campaign> campaigns = campaignRepository.findAllById(publicationResps.stream().map(x->x.getCampaign()).collect(Collectors.toList()));
+            List<Voucher> vouchers = voucherRepository.findAllById(publicationResps.stream().map(x->x.getVoucher()).collect(Collectors.toList()));
             List<Asset> assets = assetRepository.findAllByTypeAndIdIdIn(EnumAssetType.qr,vouchers.stream().map(x->x.getCode()).collect(Collectors.toList()));
             Map<Long,Campaign> longCampaignMap = campaigns.stream().collect(Collectors.toMap(x->x.getId(), x->x));
             Map<Long,Voucher> longVoucherMap = vouchers.stream().collect(Collectors.toMap(x->x.getId(),x->x));
@@ -121,10 +190,20 @@ public class PublicationRestController {
 
 
             return assembler.toModel(publicationResps.map(x->{
-                Campaign campaign = longCampaignMap.get(x.getCampaign_id());
-                Voucher voucher = longVoucherMap.get(x.getVoucherId());
-                List<Asset> assetList = longListMap.get(x.getVoucherId());
-                return EntityModel.of(PublicationResp.sigleFrom(Quartet.with(x,voucher,campaign,assetList)));
+                Campaign campaign = longCampaignMap.get(x.getCampaign());
+                Voucher voucher = longVoucherMap.get(x.getVoucher());
+                List<Asset> assetList = longListMap.get(x.getVoucher());
+
+            //    EntityModel entityModel = EntityModel.of(VoucherResp.from(Quartet.with(x,voucher,campaign,assetList),Optional.empty()));
+
+
+                EntityModel entityModel = EntityModel.of(PublicationResp.sigleFrom(Quartet.with(Arrays.asList(x),voucher,campaign,assetList)));
+
+                if(x.getPaied()){
+                    entityModel.add(linkTo(methodOn(PaymentRestController.class).refund(x.getCharge(),null)).withRel("refund"));
+                }
+
+                return entityModel;
             }));
 
 
@@ -163,6 +242,9 @@ public class PublicationRestController {
         User user =  authenticationFacade.getUser(authentication);
 
 
+        if(!user.isRealNameVerified()){
+
+        }
 
 
         publicationPojo.setUser(user.getId());
@@ -205,7 +287,6 @@ public class PublicationRestController {
         if(validatorOptional.isEmpty()) {
             System.out.println("找不到消费活动");
             throw new BookNotFoundException(CAMPAIGN_ID,Campaign.class.getSimpleName());
-
         }
         Campaign campaign = validatorOptional.get();
         if(!validatorOptional.get().isActive()) {
@@ -218,6 +299,8 @@ public class PublicationRestController {
             if(isNull(publicationPojo.getType())){
                 publicationPojo.setType(EnumPublicationObjectType.customer);
                 publicationPojo.setUser(user.getId());
+
+                publishTowhoVo.setToWho(user.getId());
                 publishTowhoVo.setToWhoTyp(EnumPublicationObjectType.customer);
                 publishTowhoVo.setUser(user);
             }else{
@@ -229,6 +312,7 @@ public class PublicationRestController {
                     }
                     publishTowhoVo.setToWhoTyp(EnumPublicationObjectType.customer);
                     publishTowhoVo.setUser(objectUser.get());
+                    publishTowhoVo.setToWho(publishTowhoVo.getUser().getId());
                 }
                 if(publicationPojo.getType().equals(EnumPublicationObjectType.business)){
                     Optional<Supplier> optionalSupplier = supplierRepository.findById(publicationPojo.getSupplier());
@@ -238,6 +322,7 @@ public class PublicationRestController {
                     }
                     publishTowhoVo.setToWhoTyp(EnumPublicationObjectType.business);
                     publishTowhoVo.setSupplier(optionalSupplier.get());
+                    publishTowhoVo.setToWho(publishTowhoVo.getSupplier().getId());
                 }
                 if(publicationPojo.getType().equals(EnumPublicationObjectType.traveler)){
                     Optional<Traveler> optionalTraveler = travelerRepository.findById(publicationPojo.getTraveler());
@@ -247,14 +332,17 @@ public class PublicationRestController {
                     }
                     publishTowhoVo.setToWhoTyp(EnumPublicationObjectType.traveler);
                     publishTowhoVo.setTraveler(optionalTraveler.get());
+                    publishTowhoVo.setToWho(publishTowhoVo.getTraveler().getId());
                 }
             }
 
+            System.out.println("====发给其他人发给谁：============================="+publishTowhoVo.toString());
 
+        VoucherPublicationPaymentVo voucherPublicationPaymentVo = new VoucherPublicationPaymentVo();
 
+        voucherPublicationPaymentVo.setFree(true);
 
-            Quartet<PublicationEntry, Voucher,Campaign,PublishTowhoVo> voucherPair = publicationService.CreatePublication(validatorOptional.get(),publicationPojo,session,publishTowhoVo);
-
+            Quartet<PublicationEntry, Voucher,Campaign,PublishTowhoVo> voucherPair = publicationService.CreatePublication(campaign,publicationPojo,session,publishTowhoVo, voucherPublicationPaymentVo);
 
 
             List<Asset> assets = assetService.getQr(voucherPair.getValue1().getCode());

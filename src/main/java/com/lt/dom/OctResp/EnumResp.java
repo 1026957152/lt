@@ -1,6 +1,11 @@
 package com.lt.dom.OctResp;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.util.List;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EnumResp {
 
 
@@ -10,7 +15,9 @@ public class EnumResp {
     private String id;
     private String name;
     private String text;
-    private boolean selected;
+    private Boolean selected;
+    private List<EnumResp> subitems
+            ;
 
     public void setId(String id) {
         this.id = id;
@@ -36,11 +43,19 @@ public class EnumResp {
         return text;
     }
 
-    public void setSelected(boolean selected) {
+    public void setSelected(Boolean selected) {
         this.selected = selected;
     }
 
-    public boolean getSelected() {
+    public Boolean getSelected() {
         return selected;
+    }
+
+    public void setSubitems(List<EnumResp> subitems) {
+        this.subitems = subitems;
+    }
+
+    public List<EnumResp> getSubitems() {
+        return subitems;
     }
 }

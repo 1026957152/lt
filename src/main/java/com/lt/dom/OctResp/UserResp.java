@@ -6,6 +6,7 @@ import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.EnumBussinessType;
 import com.lt.dom.otcenum.EnumSupplierType;
+import com.lt.dom.vo.GuideSummaryVo;
 import org.javatuples.Pair;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
@@ -50,13 +51,20 @@ public class UserResp extends RepresentationModel<UserResp> {
 
     private String id_card;
 
-    private String token;
+
     private String nick_name;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private EntityModel<AssetResp> asset;
     private Integer gender;
     private String avatar;
     private boolean real_name_verified;
+    private boolean tour_guide;
+    private BalanceResp balance;
+    private EntityModel request;
+    private boolean phone_Verifid;
+    private String token;
+    private EntityModel<GuideSummaryVo> tour;
+
 
 /*    nick_name 昵称：
     gender 性别：
@@ -83,9 +91,19 @@ public class UserResp extends RepresentationModel<UserResp> {
         userResp.setSupplier_bussiness_type(supplier.getBusiness_type());
         userResp.setSupplier_type(supplier.getType());
         userResp.setSupplier_code(supplier.getCode());
-        userResp.setRoles(user.getRoles().stream().map(x->{
+        userResp.setRoles_(user.getRoles().stream().map(x->{
             return RoleResp.from(x);
         }).collect(Collectors.toList()));
+        return userResp;
+    }
+
+    public static UserResp from商家入驻(User user) {
+        UserResp userResp = new UserResp();
+        userResp.setMobile(user.getPhone());
+        userResp.setFirst_name(user.getFirst_name());
+        userResp.setLast_name(user.getLast_name());
+        userResp.setUser_code(user.getCode());
+        userResp.setNick_name(user.getNick_name());
         return userResp;
     }
 
@@ -147,15 +165,21 @@ public class UserResp extends RepresentationModel<UserResp> {
         //userResp.setLast_name(user.getLast_name());
         userResp.setReal_name_verified(user.isRealNameVerified());
         if(user.isRealNameVerified()){
-            userResp.setReal_name(user.getRealName());
+
             userResp.setId_card(user.getIdCard());
         }
+        userResp.setReal_name(user.getRealName());
+        userResp.setNick_name(user.getNick_name());
 
-
+        userResp.setPhone_Verifid(user.isPhoneVerifid());
         userResp.setMobile(user.getPhone());
         userResp.setUser_code(user.getCode());
+        userResp.setRoles_(user.getRoles().stream().map(x->{
+            return RoleResp.simplefrom(x);
+        }).collect(Collectors.toList()));
+
         userResp.setRoles(user.getRoles().stream().map(x->{
-            return RoleResp.from(x);
+            return x.getName();
         }).collect(Collectors.toList()));
         return userResp;
     }
@@ -228,13 +252,13 @@ public class UserResp extends RepresentationModel<UserResp> {
         openidResp.setReal_name_verified(user.isRealNameVerified());
 
         if(user.isRealNameVerified()){
-            openidResp.setReal_name(user.getRealName());
             openidResp.setId_card(user.getIdCard());
         }
-
+        openidResp.setReal_name(user.getRealName());
+        openidResp.setPhone_Verifid(user.isPhoneVerifid());
         openidResp.setMobile(user.getPhone());
         openidResp.setUser_code(user.getCode());
-        openidResp.setRoles(user.getRoles().stream().map(x->{
+        openidResp.setRoles_(user.getRoles().stream().map(x->{
             return RoleResp.from(x);
         }).collect(Collectors.toList()));
         return openidResp;
@@ -248,14 +272,22 @@ public class UserResp extends RepresentationModel<UserResp> {
         return user_code;
     }
 
+    private List<RoleResp> _roles;
+    private List<String> roles;
 
-    private List<RoleResp> roles;
+    public List<RoleResp> getRoles_() {
+        return _roles;
+    }
 
-    public List<RoleResp> getRoles() {
+    public void setRoles_(List<RoleResp> roles) {
+        this._roles = roles;
+    }
+
+    public List<String> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<RoleResp> roles) {
+    public void setRoles(List<String> roles) {
         this.roles = roles;
     }
 
@@ -338,13 +370,6 @@ public class UserResp extends RepresentationModel<UserResp> {
 
 
 
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public String getToken() {
-        return token;
-    }
 
     public void setNick_name(String nickName) {
         this.nick_name = nickName;
@@ -386,5 +411,53 @@ public class UserResp extends RepresentationModel<UserResp> {
 
     public boolean getReal_name_verified() {
         return real_name_verified;
+    }
+
+    public void setTour_guide(boolean tour_guide) {
+        this.tour_guide = tour_guide;
+    }
+
+    public boolean getTour_guide() {
+        return tour_guide;
+    }
+
+    public void setBalance(BalanceResp balance) {
+        this.balance = balance;
+    }
+
+    public BalanceResp getBalance() {
+        return balance;
+    }
+
+    public void setRequest(EntityModel request) {
+        this.request = request;
+    }
+
+    public EntityModel getRequest() {
+        return request;
+    }
+
+    public void setPhone_Verifid(boolean phone_verifid) {
+        this.phone_Verifid = phone_verifid;
+    }
+
+    public boolean getPhone_Verifid() {
+        return phone_Verifid;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setTour(EntityModel<GuideSummaryVo> tour) {
+        this.tour = tour;
+    }
+
+    public EntityModel<GuideSummaryVo> getTour() {
+        return tour;
     }
 }

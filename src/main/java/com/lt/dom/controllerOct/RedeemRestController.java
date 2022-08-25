@@ -1,5 +1,6 @@
 package com.lt.dom.controllerOct;
 
+import com.lt.dom.OctResp.RedemptionEntryResp;
 import com.lt.dom.OctResp.RedemptionResp;
 import com.lt.dom.domain.CouponTemplatePojo;
 import com.lt.dom.error.BookNotFoundException;
@@ -118,19 +119,17 @@ public class RedeemRestController {
                 throw new voucher_disabledException(voucher.get().getId(),"");
 
             }
-/*            Supplier employee = userDetails.getSupplier();
 
-            if(!(voucher.get().getValidatorSupplier() == employee.getId())){
-                throw new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
-            }*/
 
                 Optional<Campaign> optionalCampaign = campaignRepository.findById(voucher.get().getCampaign());
 
                 boolean v = redeemService.是否符合验证(optionalCampaign.get(),new Supplier());
                 if(v){
                     Triplet<RedemptionEntry,Redemption, PublishTowhoVo> pair= redeemService.bulkRedeemVounchor(voucher.get(),optionalCampaign.get(),new Supplier());
-                    return RedemptionResp.from(pair);
+
+                    EntityModel<RedemptionResp> redemptionEntryEntityModel =  EntityModel.of(RedemptionResp.from(pair));
+
+                    return redemptionEntryEntityModel;
                 }else{
 
                     throw new Voucher_has_no_permistion_redeemException(voucher.get().getId(),"Foo Not Found","该商户无法核销该券");

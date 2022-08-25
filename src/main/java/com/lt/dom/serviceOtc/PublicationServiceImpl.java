@@ -2,28 +2,25 @@ package com.lt.dom.serviceOtc;
 
 
 import com.lt.dom.OctResp.PublicationResp;
-import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.No_voucher_suitable_for_publicationException;
 import com.lt.dom.notification.EventHandler;
 import com.lt.dom.notification.VouncherPublishedVo;
+import com.lt.dom.notification.event.OnVoucherPublishedEvent;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.PublicationPojo;
 import com.lt.dom.otcReq.PublicationSearchPojo;
-import com.lt.dom.otcenum.EnumPublicationObjectType;
-import com.lt.dom.otcenum.EnumSessionFor;
-import com.lt.dom.otcenum.EnumVoucherStatus;
-import com.lt.dom.otcenum.Enumfailures;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
+import com.lt.dom.vo.VoucherPublicationPaymentVo;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
-import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -52,34 +49,33 @@ public class PublicationServiceImpl {
     private EventHandler eventHandler;
 
     @Autowired
+    private CampaignServiceImpl campaignService;
+
+    @Autowired
     private SessionRepository sessionRepository;
 
+    @Autowired
+    ApplicationEventPublisher eventPublisher;
 
 
-    public Quartet<PublicationEntry,Voucher,Campaign,PublishTowhoVo> CreatePublication(Campaign campaign, PublicationPojo publicationPojo, Session session, PublishTowhoVo publishTowhoVo) {
+    public Quartet<PublicationEntry,Voucher,Campaign,PublishTowhoVo> CreatePublication(Campaign campaign, PublicationPojo publicationPojo, Session session, PublishTowhoVo publishTowhoVo, VoucherPublicationPaymentVo voucherPublicationPaymentVo) {
 
-        Optional<Voucher> optionalVoucher = voucherRepository.findFirstByCampaignAndActive(campaign.getId(),false);
+      //  asset(publishTowhoVo.getToWhoTyp());
 
 
-        if(optionalVoucher.isEmpty()) {
+        Voucher voucher = campaignService.retain(campaign);
 
-            throw new No_voucher_suitable_for_publicationException(campaign.getId(),Voucher.class.getSimpleName(),"没有足够的 可发布的优惠券");
-        }
-            Voucher voucher = optionalVoucher.get();
+
 
             Publication publication = new Publication();
             publication = publicationRepository.save(publication);
 
             PublicationEntry publicationEntry = new PublicationEntry();
-            publicationEntry.setPublicationId(publication.getId());
+            publicationEntry.setPublication(publication.getId());
 
 
 
-
-
-        publicationEntry.setToWhoType(publishTowhoVo.getToWhoTyp());
-
-
+            publicationEntry.setToWhoType(publishTowhoVo.getToWhoTyp());
 
 
 
@@ -91,11 +87,18 @@ public class PublicationServiceImpl {
             }
             if(publicationEntry.getToWhoType().equals(EnumPublicationObjectType.traveler)){
                 publicationEntry.setToWho(publishTowhoVo.getTraveler().getId());
+
             }
 
             publicationEntry.setPublished_at(LocalDate.now());
-            publicationEntry.setCampaign_id(campaign.getId());
-            publicationEntry.setVoucherId(optionalVoucher.get().getId());
+            publicationEntry.setCampaign(campaign.getId());
+            publicationEntry.setVoucher(voucher.getId());
+            publicationEntry.setAssociatedType(EnumAssociatedType.none);
+            publicationEntry.setFree(voucherPublicationPaymentVo.getFree());
+            publicationEntry.setPaied(voucherPublicationPaymentVo.getPaied());
+            if(voucherPublicationPaymentVo.getPaied()){
+                publicationEntry.setCharge(voucherPublicationPaymentVo.getCharge().getId());
+            }
 
             publicationEntry = publicationEntryRepository.save(publicationEntry);
 
@@ -109,28 +112,41 @@ public class PublicationServiceImpl {
             voucher.setExpiration_date(LocalDateTime.now().plusDays(campaign.getExpiry_days()));
 
             voucher.setStart_date(LocalDateTime.now());
-            voucher.setStatus(EnumVoucherStatus.Issued);
+            voucher.setStatus(EnumVoucherStatus.Published);
             voucher.setQuantity(1);
             voucher.setActive(true);
+            voucher.setPublishToType(publishTowhoVo.getToWhoTyp());
+            voucher.setPublishTo(publishTowhoVo.getToWho());
+
             voucher = voucherRepository.save(voucher);
 
 
 
 
-            VouncherPublishedVo orderPaidVo = new VouncherPublishedVo();
-            orderPaidVo.setPublicationEntry(publicationEntry);
-            orderPaidVo.setPublication(publication);
-            orderPaidVo.setVoucher(voucher);
-            orderPaidVo.setPublicationToType(publicationEntry.getToWhoType());
+            VouncherPublishedVo vouncherPublishedVo = new VouncherPublishedVo();
+            vouncherPublishedVo.setPublicationEntry(publicationEntry);
+            vouncherPublishedVo.setPublication(publication);
+            vouncherPublishedVo.setVoucher(voucher);
+            vouncherPublishedVo.setPublicationToType(publicationEntry.getToWhoType());
 
             if(publicationEntry.getToWhoType().equals(EnumPublicationObjectType.business)){
-                orderPaidVo.setSupplier(publishTowhoVo.getSupplier());
+                vouncherPublishedVo.setSupplier(publishTowhoVo.getSupplier());
             }
-            eventHandler.voucher_published(orderPaidVo);
+       //     eventHandler.voucher_published(vouncherPublishedVo);
+
+
+        campaign.setTotal_published(campaign.getTotal_published()+1);
+            if(campaign.getTotal_published() >= campaign.getVoucher_count()){
+                campaign.setActive(false);
+            }
+        campaignService.updateSummary(campaign);
+
+
+        eventPublisher.publishEvent(new OnVoucherPublishedEvent(new User(),
+                null, EnumEvents.voucher$published));
 
             return Quartet.with(publicationEntry,voucher,campaign,publishTowhoVo);
 
-           // return PublicationResp.from(publicationEntry);
 
 
     }
@@ -153,7 +169,7 @@ public class PublicationServiceImpl {
         Publication finalPublication = publication;
         List<PublicationEntry> publicationEntryList = voucherList.stream().map(x->{
             PublicationEntry publicationEntry = new PublicationEntry();
-            publicationEntry.setPublicationId(finalPublication.getId());
+            publicationEntry.setPublication(finalPublication.getId());
             publicationEntry.setToWho(1);
             publicationEntry.setPublished_at(LocalDate.now());
             return publicationEntry;
@@ -186,7 +202,7 @@ public class PublicationServiceImpl {
 
 
 
-    public List<Pair<Long,Voucher>> bulkPublish(Supplier supplier, List<Long> travelers, long campaign) {
+    public List<Pair<Long,Voucher>> bulkPublish(Supplier supplier_, List<Long> travelers, long campaign, EnumAssociatedType tour_booking, long id) {
 
 
 
@@ -202,12 +218,14 @@ public class PublicationServiceImpl {
         Publication finalPublication = publication;
         List<PublicationEntry> publicationList = list.stream().map(x->{
             PublicationEntry publicationEntry = new PublicationEntry();
-            publicationEntry.setPublicationId(finalPublication.getId());
+            publicationEntry.setPublication(finalPublication.getId());
             publicationEntry.setToWhoType(EnumPublicationObjectType.business);
-            publicationEntry.setToWho(supplier.getId());
+            publicationEntry.setToWho(1);
             publicationEntry.setPublished_at(LocalDate.now());
-            publicationEntry.setCampaign_id(campaign);
-            publicationEntry.setVoucherId(x.getId());
+            publicationEntry.setCampaign(campaign);
+            publicationEntry.setVoucher(x.getId());
+            publicationEntry.setAssociatedId(id);
+            publicationEntry.setAssociatedType(tour_booking);
             return publicationEntry;
 
         }).collect(Collectors.toList());
@@ -226,5 +244,25 @@ public class PublicationServiceImpl {
         Page<PublicationEntry> publicationEntryList = publicationEntryRepository.findByToWhoTypeAndToWho(EnumPublicationObjectType.customer,user.getId(),pageable);
 
         return publicationEntryList;
+    }
+
+    public List<PublicationEntry> list(EnumAssociatedType tour_booking, long code) {
+
+        List<PublicationEntry> publicationEntryList = publicationEntryRepository.findByAssociatedTypeAndAssociatedId(EnumAssociatedType.tour_booking,code);
+
+        return publicationEntryList;
+    }
+
+    public void refundPublication(long voucher_id) {
+
+        Optional<Voucher> voucherOptional = voucherRepository.findById(voucher_id);
+        Voucher voucher = voucherOptional.get();
+
+        voucher.setStatus(EnumVoucherStatus.Unavailable);
+        voucherRepository.save(voucher);
+
+        Optional<PublicationEntry> optionalPublicationEntry = publicationEntryRepository.findByVoucher(voucher_id);
+
+        PublicationEntry publicationEntry = optionalPublicationEntry.get();
     }
 }

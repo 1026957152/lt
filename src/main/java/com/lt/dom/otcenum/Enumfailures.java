@@ -63,7 +63,9 @@ public enum Enumfailures {
 
     username_already_exists_error("用户名已经存在"),
 
+    general_exists_error("用户名已经存在"),
 
+    user_not_found("user_not_found"),
 
 
 
@@ -88,14 +90,48 @@ public enum Enumfailures {
 
     REPEAT_REGISTRATION("	F	Repeated registration for merchant"),
    // Prompt the user not to register repeatedly.
+
+
+    Missing_credentials("","401.missing_credential"),
+    //BadJwtException("用户名已经存在"),
+
+
+    Invalid_credentials("","401.invalid_credentials"),
+    Expired_credentials("","401.expired_credentials"),
+
+
+
+    Need_real_name("需要实名人认证");
+
+
+    // 401	40	Missing credentials: e.g. missing Authorization header, missing token, missing Bearer prefix…	Verify Authorization header is present, with valid Bearer token
+//401	41	Invalid credentials: e.g. invalid client_id and/or client_secret, pending or revoked client_id…	Check your app’s credentials on the ‘Application details’ page of our developer portal. You may have renewed your credentials
+//401	42	Expired credentials: e.g. expired OAuth 2.0 token
+
     ;
 
 
     private String text;
 
+    private String message_code;
+
+    public String getMessage_code() {
+        return message_code;
+    }
+
+    public void setMessage_code(String message_code) {
+        this.message_code = message_code;
+    }
+
     Enumfailures(String barcode) {
 
         this.text = barcode;
+    }
+
+    Enumfailures(String barcode,String message_code) {
+
+        this.text = barcode;
+        this.message_code = message_code;
     }
 
     public String getText() {

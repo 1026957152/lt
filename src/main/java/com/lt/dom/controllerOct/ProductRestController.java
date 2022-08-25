@@ -1,33 +1,29 @@
 package com.lt.dom.controllerOct;
 
+import com.lt.dom.OctResp.EnumLongIdResp;
+import com.lt.dom.OctResp.EnumResp;
 import com.lt.dom.OctResp.ProductResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
-import com.lt.dom.otcenum.EnumProductComponentSource;
-import com.lt.dom.repository.ProductRepository;
-import com.lt.dom.repository.SupplierRepository;
+import com.lt.dom.otcenum.*;
+import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.ProductServiceImpl;
-import com.lt.dom.serviceOtc.ValidatorScanServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -39,7 +35,7 @@ public class ProductRestController {
 
 
     @Autowired
-    private ValidatorScanServiceImpl validatorScanService;
+    private CampaignRepository campaignRepository;
 
     @Autowired
     private ProductServiceImpl productService;
@@ -49,6 +45,11 @@ public class ProductRestController {
 
     @Autowired
     private SupplierRepository supplierRepository;
+    @Autowired
+    private TourRepository tourRepository;
+
+    @Autowired
+    private CampaignAssignToTourProductRepository campaignAssignToTourProductRepository;
 
 
 
@@ -57,35 +58,86 @@ public class ProductRestController {
     public EntityModel<ProductResp> getProduct(@PathVariable long PRODUCT_ID) {
 
         Optional<Product> validatorOptional = productRepository.findById(PRODUCT_ID);
-        if(validatorOptional.isPresent()){
+
+
+        if(validatorOptional.isEmpty()){
             throw new BookNotFoundException(PRODUCT_ID,"找不到产品");
         }
-        EntityModel entityModel = EntityModel.of(ProductResp.from(validatorOptional.get()));
+        Product product = validatorOptional.get();
 
-        entityModel.add(linkTo(methodOn(ProductRestController.class).getProduct(validatorOptional.get().getId())).withRel("getProduct"));
-        entityModel.add(linkTo(methodOn(ProductRestController.class).addCampaigns(validatorOptional.get().getId(),null)).withRel("addCampaign"));
-        entityModel.add(linkTo(methodOn(ProductRestController.class).addCampaigns(validatorOptional.get().getId(),null)).withRel("addCampaign"));
+        EntityModel entityModel = null;
+        if(product.getType().equals(EnumProductType.Daytour)){
+
+            Optional<Tour> tour = tourRepository.findByProduct(product.getId());
+
+            List<CampaignAssignToTourProduct> campaignAssignToTourProducts = campaignAssignToTourProductRepository.findByTourId(tour.get().getId());
+
+            List<Campaign> campaigns = campaignRepository.findAllById(campaignAssignToTourProducts.stream().map(x->x.getCampaign()).collect(Collectors.toList()));
+
+            entityModel = EntityModel.of(ProductResp.dayTourFrom(product,tour.get(),campaigns));
+
+        }else{
+            entityModel = EntityModel.of(ProductResp.from(product));
+
+        }
+
+
+        entityModel.add(linkTo(methodOn(ProductRestController.class).getProduct(validatorOptional.get().getId())).withSelfRel());
+      //  entityModel.add(linkTo(methodOn(ProductRestController.class).addCampaigns(validatorOptional.get().getId(),null)).withRel("addCampaign"));
 
         return entityModel;
 
 
     }
 
+    @Operation(summary = "1、查询Product对象列表")
+    @GetMapping(value = "/suppler/{SUPPLIER_ID}/products/page", produces = "application/json")
+    public EntityModel Page_pageProduct(@PathVariable long SUPPLIER_ID) {
+
+        EntityModel entityModel = EntityModel.of(Map.of("status_list", Arrays.stream(EnumProductStatus.values()).map(x->{
+
+                    EnumResp enumResp = new EnumResp();
+
+                    enumResp.setId(x.name());
+                    enumResp.setText(x.toString());
+                    return enumResp;
+                }).collect(Collectors.toList())
+        ));
+
+        entityModel.add(linkTo(methodOn(TourCampaignRestController.class).pageReservation(null,null)).withRel("upload_bussiness_license_url"));
+        return entityModel;
+    }
+
 
 
     @Operation(summary = "1、查询Product对象列表")
     @GetMapping(value = "/suppler/{SUPPLIER_ID}/products", produces = "application/json")
-    public Page<ProductResp> listProduct(@PathVariable long SUPPLIER_ID, Pageable pageable) {
+    public PagedModel pageProduct(@PathVariable long SUPPLIER_ID, Pageable pageable, PagedResourcesAssembler<EntityModel<ProductResp>> assembler) {
 
         Optional<Supplier> validatorOptional = supplierRepository.findById(SUPPLIER_ID);
-        if(validatorOptional.isPresent()){
+        if(validatorOptional.isEmpty()) {
 
-                return productService.listProduct(validatorOptional.get(),pageable).map(x->ProductResp.from(Pair.with(x,validatorOptional.get())));
-
+            throw new BookNotFoundException("找不到供应商","找不到供应商");
         }
-        System.out.println("抛出异常");
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
+
+
+
+          return  assembler.toModel(productService.listProduct(validatorOptional.get(),pageable).map(x->{
+
+              EntityModel entityModel= EntityModel.of(ProductResp.from(Pair.with(x,validatorOptional.get())));
+              entityModel.add(linkTo(methodOn(ProductRestController.class).delete(x.getId())).withRel("delete"));
+              entityModel.add(linkTo(methodOn(ProductRestController.class).Page_editProduct(x.getId())).withRel("Page_edit"));
+
+
+              entityModel.add(linkTo(methodOn(ProductRestController.class).editProduct(x.getId(),null)).withRel("edit"));
+              entityModel.add(linkTo(methodOn(ProductRestController.class).getProduct(x.getId())).withSelfRel());
+
+
+
+                      return entityModel;
+                }));
+
+
     }
 
 
@@ -94,6 +146,55 @@ public class ProductRestController {
 
 
 
+
+
+
+
+
+
+    @GetMapping(value = "/supplier/{SUPPLIER_ID}/products/parameters", produces = "application/json")
+    public EntityModel<Map<String,Object>> createProductParameters(@PathVariable long SUPPLIER_ID) {
+
+        List<Campaign> products = campaignRepository.findAll();
+
+
+        EntityModel entityModel = EntityModel.of(Map.of(
+                "product_type_list", Arrays.asList(EnumProductType.Daytour).stream().map(x->{
+                    EnumResp enumResp = new EnumResp();
+                    enumResp.setId(x.name());
+                    //  enumResp.setName(x.name());
+                    enumResp.setText(x.toString());
+
+                    return enumResp;
+                }).collect(Collectors.toList()),
+                "price_type_list", Arrays.stream(EnumProductPricingType.values()).map(x->{
+                    EnumResp enumResp = new EnumResp();
+                    enumResp.setId(x.name());
+                    //  enumResp.setName(x.name());
+                    enumResp.setText(x.toString());
+
+                    if(x.equals(EnumProductPricingType.ByPerson)){
+                        enumResp.setSubitems(Arrays.stream(EnumProductPricingTypeByPerson.values()).map(x_by_person->{
+                            EnumResp enumResp_by_person = new EnumResp();
+                            enumResp_by_person.setId(x_by_person.name());
+                            //  enumResp.setName(x.name());
+                            enumResp_by_person.setText(x_by_person.toString());
+                            return enumResp_by_person;
+                        }).collect(Collectors.toList()));
+
+                    }
+                    return enumResp;
+                }).collect(Collectors.toList()),
+                "campaign_list", products.stream().map(x->{
+                    EnumLongIdResp enumResp = new EnumLongIdResp();
+                    enumResp.setId(x.getId());
+                    enumResp.setText(x.getName());
+                    return enumResp;
+                }).collect(Collectors.toList())));
+
+        entityModel.add(linkTo(methodOn(DocumentRestController.class).createDocuments(null)).withRel("upload_bussiness_license_url"));
+        return entityModel;
+    }
     @Operation(summary = "2、创建Product对象")
     @PostMapping(value = "/suppler/{SUPPLIER_ID}/products", produces = "application/json")
     public ResponseEntity<ProductResp> createProduct(@PathVariable long SUPPLIER_ID,@RequestBody @Valid ProductPojo pojo) {
@@ -103,7 +204,25 @@ public class ProductRestController {
         if(validatorOptional.isEmpty()) {
             throw new BookNotFoundException(SUPPLIER_ID,Supplier.class.getSimpleName());
         }
-                Pair<Product,Supplier> product=  productService.createProduct(validatorOptional.get(),pojo);
+
+
+  /*      default boolean existsAllById(Set<UUID> ids) {
+            return countAllByIdIn(ids).equals(ids.size());
+        }*/
+
+        if(pojo.getType().equals(EnumProductType.Daytour)){
+            if(pojo.getCampaigns().size()< 1){
+                throw new BookNotFoundException("",pojo.getCampaigns()+ "必须包含活动");
+
+            }
+        }
+        List<Campaign> campaigns = campaignRepository.findAllById(new HashSet(pojo.getCampaigns()));
+        if(campaigns.size() != pojo.getCampaigns().size()){
+
+            throw new BookNotFoundException("",pojo.getCampaigns()+ "有不存在的 campaigns");
+        }
+
+                Pair<Product,Supplier> product=  productService.createProduct(validatorOptional.get(),pojo,campaigns);
                 URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                         .path("/{id}")
                         .buildAndExpand(product.getValue0().getId())
@@ -113,15 +232,92 @@ public class ProductRestController {
 
 
     }
+
+
+
+
+
+    @Operation(summary = "1、查询Product对象列表")
+    @GetMapping(value = "/products/{PRODUCT_ID}/page", produces = "application/json")
+    public EntityModel Page_editProduct(@PathVariable long PRODUCT_ID) {
+        Optional<Product> validatorOptional = productRepository.findById(PRODUCT_ID);
+        if(validatorOptional.isEmpty()) {
+            throw new BookNotFoundException(PRODUCT_ID,Supplier.class.getSimpleName());
+        }
+        Product product = validatorOptional.get();
+        List<Campaign> campaigns = campaignRepository.findAll();
+        List<CampaignAssignToTourProduct> campaignAssignToTourProducts = campaignAssignToTourProductRepository.findByProduct(product.getId());
+
+        List<Long> hasList = campaignAssignToTourProducts.stream().map(x->x.getCampaign()).collect(Collectors.toList());
+        EntityModel entityModel = EntityModel.of(Map.of("product_type_list", Arrays.stream(EnumProductType.values()).map(x->{
+
+                    EnumResp enumResp = new EnumResp();
+                    enumResp.setId(x.name());
+                    enumResp.setText(x.toString());
+                    enumResp.setSelected(product.getType().equals(x));
+                    return enumResp;
+                }).collect(Collectors.toList()),
+                "product",ProductResp.from(product),
+                "campaign_list", campaigns.stream().map(x->{
+                    EnumLongIdResp enumResp = new EnumLongIdResp();
+                    enumResp.setId(x.getId());
+                    enumResp.setText(x.getName());
+                    enumResp.setSelected(hasList.contains(x.getId()));
+                    return enumResp;
+                }).collect(Collectors.toList())
+        ));
+
+        entityModel.add(linkTo(methodOn(ProductRestController.class).editProduct(product.getId(),null)).withRel("editProduct"));
+        return entityModel;
+    }
+
+
+
+
+    @PutMapping(value = "/products/{PRODUCT_ID}", produces = "application/json")
+    public ResponseEntity<ProductResp> editProduct(@PathVariable long PRODUCT_ID,@RequestBody @Valid ProductEditPojo pojo) {
+
+        System.out.println("---------------"+ pojo.toString());
+        Optional<Product> validatorOptional = productRepository.findById(PRODUCT_ID);
+        if(validatorOptional.isEmpty()) {
+            throw new BookNotFoundException(PRODUCT_ID,Supplier.class.getSimpleName());
+        }
+        Product product = validatorOptional.get();
+
+        List<Campaign> campaigns = campaignRepository.findAllById(new HashSet(pojo.getCampaigns()));
+        if(campaigns.size() != pojo.getCampaigns().size()){
+
+            throw new BookNotFoundException("",pojo.getCampaigns()+ "有不存在的 campaigns");
+        }
+
+
+        Optional<Supplier> optionalSupplier = supplierRepository.findById(product.getSupplierId());
+        Supplier supplier = optionalSupplier.get();
+
+        Pair<Product,Supplier> product_pair=  productService.editProduct(product,supplier,pojo,campaigns);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(product_pair.getValue0().getId())
+                .toUri();
+        return ResponseEntity.created(uri)
+                .body(ProductResp.from(product));
+
+
+    }
     @Operation(summary = "3、更改Product对象")
     @PutMapping(value = "/___suppler/{SUPPLIER_ID}/products/{PRODUCT_ID}", produces = "application/json")
     public ProductResp updateComponentRight(@PathVariable int SUPPLIER_ID,@PathVariable int PRODUCT_ID, Map metadata) {
         return null;
     }
-    @Operation(summary = "4、删除Product对象")
-    @DeleteMapping(value = "/suppler/{SUPPLIER_ID}/products/{PRODUCT_ID}", produces = "application/json")
-    public void delete(@PathVariable String SUPPLIER_ID,@PathVariable int PRODUCT_ID) {
 
+
+    @Operation(summary = "4、删除Product对象")
+    @DeleteMapping(value = "/products/{PRODUCT_ID}", produces = "application/json")
+    public ResponseEntity<Void> delete(@PathVariable long PRODUCT_ID) {
+
+        productRepository.deleteById(PRODUCT_ID);
+
+        return ResponseEntity.ok().build();
     }
 
 

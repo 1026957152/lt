@@ -1,10 +1,18 @@
 package com.lt.dom.config;
 
+import com.google.gson.Gson;
+import com.lt.dom.controllerOct.PublicationRestController;
+import com.lt.dom.error.Error401Exception;
 import com.lt.dom.oct.Privilege;
 import com.lt.dom.oct.Role;
 import com.lt.dom.oct.User;
+import com.lt.dom.otcenum.EnumIdentityType;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.RoleRepository;
 import com.lt.dom.repository.UserRepository;
+import com.lt.dom.vo.IdentityVo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,6 +28,7 @@ import java.util.*;
 @Service("userDetailsService")
 
 public class MyUserDetailsService implements UserDetailsService {
+    Logger logger = LoggerFactory.getLogger(MyUserDetailsService.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -34,8 +43,17 @@ public class MyUserDetailsService implements UserDetailsService {
     private RoleRepository roleRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email)
+    public UserDetails loadUserByUsername(String ident)
       throws UsernameNotFoundException {
+
+        Gson gson = new Gson();
+
+        IdentityVo identityVo = gson.fromJson(ident,IdentityVo.class);
+
+
+        String email = identityVo.getCredential();
+
+        logger.debug("登录 username:{}",email);
         System.out.println("空的吗--"+email);
         List<User> list = userRepository.findAll();
         System.out.println("空的吗 多少-"+list.size());
@@ -46,21 +64,40 @@ public class MyUserDetailsService implements UserDetailsService {
             System.out.println("2222"+u.getPhone());
 
         }
+        Optional<User> optionalUser = Optional.empty();
+        if(identityVo.getType().equals(EnumIdentityType.phone)){
+           optionalUser = userRepository.findByPhone(email);
+
+        }
+        if(identityVo.getType().equals(EnumIdentityType.weixin)){
+            optionalUser = userRepository.findByOpenidAndOpenidLink(email,true);
+
+        }
+
+        if(optionalUser.isEmpty()){
+            String s = "微信，和 手机 号 找不到用户"+ identityVo.getType()+" "+identityVo.getCredential();
+            System.out.println(s);
+            throw new Error401Exception(Enumfailures.Missing_credentials,s);
+
+        }
         //Optional<User> optionalUser = userRepository.findByUsername(email);
-        Optional<User> optionalUser = userRepository.findByPhone(email);
 
 
+
+/*
         if(optionalUser.isEmpty()){
              optionalUser = userRepository.findByUsername(email);
         }
+*/
 
-        if (optionalUser.isEmpty()) {
+
+/*        if (optionalUser.isEmpty()) {
             System.out.println("空的吗"+email);
             return new org.springframework.security.core.userdetails.User(
               " ", " ", true, true, true, true, 
               getAuthorities(Arrays.asList(
                 roleRepository.findByName("ROLE_USER"))));
-        }
+        }*/
 
 
         User user = optionalUser.get();
@@ -76,7 +113,7 @@ public class MyUserDetailsService implements UserDetailsService {
         }
         System.out.println("找到了而设备ia啊啊啊啊啊"+user.getPhone()+ "------"+user.getPassword());
         return new org.springframework.security.core.userdetails.User(
-          user.getUsername(), user.getPassword(), user.isEnabled(), true, true,
+          user.getPhone(), user.getPassword(), user.isEnabled(), true, true,
           true, getAuthorities(user.getRoles()));
     }
 

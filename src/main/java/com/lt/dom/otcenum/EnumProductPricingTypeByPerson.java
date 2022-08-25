@@ -1,5 +1,11 @@
 package com.lt.dom.otcenum;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 public enum EnumProductPricingTypeByPerson {
     UNIQUE_PRICE("Everyone"),
     ADULT("Adult"),
@@ -31,7 +37,24 @@ public enum EnumProductPricingTypeByPerson {
     ;
 
 
-    EnumProductPricingTypeByPerson(String s) {
-        
+    private static ResourceBundle resourceBundle = ResourceBundle.getBundle("messages",
+            Locale.getDefault());
+
+    public String name;
+
+    @Autowired
+    private MessageSource messageSource;
+
+    EnumProductPricingTypeByPerson(String name) {
+        this.name = name;
     }
+
+    @Override
+    public String toString() {
+
+        String displayStatusString = resourceBundle.getString("page.systemadministration.product.price.type.byperson.type."
+                + this.name());
+        return displayStatusString;
+    }
+
 }

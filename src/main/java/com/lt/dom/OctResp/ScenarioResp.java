@@ -7,6 +7,7 @@ import com.lt.dom.oct.Document;
 import com.lt.dom.oct.Scenario;
 import com.lt.dom.otcenum.EnumDocumentType;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -21,8 +22,9 @@ public class ScenarioResp {
     private String image;
     private String name;
     private String code;
-    private List<CampaignResp> campaigns;
+    private List<EntityModel<CampaignResp>> campaigns;
     private String image_small;
+    private long campaign_count;
 
     public static ScenarioResp from(Scenario scenario, Map<EnumDocumentType,List<String>> document) {
 
@@ -48,11 +50,12 @@ public class ScenarioResp {
         this.image = image;
     }
 
-    public static ScenarioResp from(Scenario scenario) {
+    public static ScenarioResp from(Scenario scenario,long campaign_count) {
 
         ScenarioResp scenarioResp = new ScenarioResp();
         scenarioResp.setName(scenario.getName());
         scenarioResp.setCode(scenario.getCode());
+        scenarioResp.setCampaign_count(campaign_count);
         return scenarioResp;
     }
 
@@ -76,11 +79,11 @@ public class ScenarioResp {
         this.name = name;
     }
 
-    public  void setCampaigns(List<CampaignResp> campaigns) {
+    public  void setCampaigns(List<EntityModel<CampaignResp>> campaigns) {
         this.campaigns = campaigns;
     }
 
-    public List<CampaignResp> getCampaigns() {
+    public List<EntityModel<CampaignResp>> getCampaigns() {
         return campaigns;
     }
 
@@ -90,5 +93,13 @@ public class ScenarioResp {
 
     public String getImage_small() {
         return image_small;
+    }
+
+    public void setCampaign_count(long campaign_count) {
+        this.campaign_count = campaign_count;
+    }
+
+    public long getCampaign_count() {
+        return campaign_count;
     }
 }

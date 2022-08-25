@@ -21,6 +21,7 @@ public class UserPojo {
     private String phone;//	string	The user’s phone number
     private String password;
     private List<String> roles;
+    private String nick_name;
 
     public String getFirst_name() {
         return first_name;
@@ -105,5 +106,13 @@ public class UserPojo {
 
     public void setIdCard(String idCard) {
         this.idCard = idCard;
+    }
+
+    public void setNick_name(String nick_name) {
+        this.nick_name = nick_name;
+    }
+
+    public String getNick_name() {
+        return nick_name;
     }
 }

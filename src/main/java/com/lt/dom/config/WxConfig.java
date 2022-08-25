@@ -13,6 +13,30 @@ public class WxConfig {
     @Value("${wx.secret}")
     private String secret;
 
+
+    // 服务商 AppID
+    @Value("${wxmerchant.app_id}")
+    private String wxmerchant_appId;
+    // 商户号
+    @Value("${wxmerchant.secret}")
+    private String wxmerchant_secret;
+
+    public String getWxmerchant_appId() {
+        return wxmerchant_appId;
+    }
+
+    public void setWxmerchant_appId(String wxmerchant_appId) {
+        this.wxmerchant_appId = wxmerchant_appId;
+    }
+
+    public String getWxmerchant_secret() {
+        return wxmerchant_secret;
+    }
+
+    public void setWxmerchant_secret(String wxmerchant_secret) {
+        this.wxmerchant_secret = wxmerchant_secret;
+    }
+
     public String getAppId() {
         return appId;
     }

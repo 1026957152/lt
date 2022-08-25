@@ -5,11 +5,8 @@ import com.lt.dom.error.Quantity_exceededException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ClainQuotaReq;
 import com.lt.dom.otcReq.QuotaReq;
-import com.lt.dom.otcReq.ValueListReq;
 import com.lt.dom.otcenum.EnumClainQuotaType;
 import com.lt.dom.otcenum.EnumQuotaType;
-import com.lt.dom.otcenum.EnumValueListItemType;
-import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.ClainQuotaRepository;
 import com.lt.dom.repository.QuotaRepository;
 import com.lt.dom.repository.ScenarioRepository;
@@ -45,7 +42,7 @@ public class ClainQuotaServiceImpl {
         List<ClainQuota> quotas = clainQuotaRepository.findAll(example);
 
 
-        long count = campaign.getVouchers_count() - quotas.stream().mapToLong(x->x.getQuota()).sum();
+        long count = campaign.getVoucher_count() - quotas.stream().mapToLong(x->x.getQuota()).sum();
 
         if(count >= clainQuotaReq.getQuota()){
 
@@ -109,7 +106,7 @@ public class ClainQuotaServiceImpl {
         List<Quota> quotas = quotaRepository.findAll(example);
 
 
-        long count = campaign.getVouchers_count() - quotas.stream().mapToLong(x->x.getQuota()).sum();
+        long count = campaign.getVoucher_count() - quotas.stream().mapToLong(x->x.getQuota()).sum();
 
 
         if(count < clainQuotaReq.getQuota()) {

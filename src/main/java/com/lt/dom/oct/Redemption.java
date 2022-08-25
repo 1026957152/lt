@@ -1,5 +1,7 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.otcenum.EnumAssociatedType;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -41,14 +43,14 @@ public class Redemption {
     public void setId(long id) {
         this.id = id;
     }
-    private String relatedObjectType;
+    private EnumAssociatedType relatedObjectType;
     private long relatedObjectId;
 
-    public String getRelatedObjectType() {
+    public EnumAssociatedType getRelatedObjectType() {
         return relatedObjectType;
     }
 
-    public void setRelatedObjectType(String related_object_type) {
+    public void setRelatedObjectType(EnumAssociatedType related_object_type) {
         this.relatedObjectType = related_object_type;
     }
 

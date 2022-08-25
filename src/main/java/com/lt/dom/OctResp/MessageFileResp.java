@@ -24,21 +24,36 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
  **/
 public class MessageFileResp  {
 
-    private String message;
+
     private String code;
     private String fileName;
     private String originalFilename;
     private LocalDateTime created_at;
     private String url;
+    private boolean image;
 
-    public MessageFileResp(String message) {
-        this.message = message;
-    }
 
     public MessageFileResp() {
 
     }
+    public static EntityModel<MessageFileResp> from(TempDocument x) {
 
+
+            MessageFileResp tempDocument = new MessageFileResp();
+            tempDocument.setCode(x.getCode());
+            tempDocument.setFileName(x.getFileName());
+            tempDocument.setOriginalFilename(x.getOriginalFilename());
+            tempDocument.setCreated_at(x.getCreated_at());
+            tempDocument.setUrl(x.getUrl());
+            tempDocument.setImage(x.getImage());
+            EntityModel<MessageFileResp> entityModel = EntityModel.of(tempDocument);
+            entityModel.add(linkTo(methodOn(DocumentRestController.class).createDocuments(null)).withSelfRel());
+            entityModel.add(linkTo(methodOn(DocumentRestController.class).deleteTempDocuments(x.getCode())).withRel("delete_url"));
+
+            return entityModel;
+
+
+    }
     public static List<EntityModel<MessageFileResp>> from(List<TempDocument> documents) {
 
         List<EntityModel<MessageFileResp>> entityModels =  documents.stream().map(x->{
@@ -48,10 +63,10 @@ public class MessageFileResp  {
             tempDocument.setOriginalFilename(x.getOriginalFilename());
             tempDocument.setCreated_at(x.getCreated_at());
             tempDocument.setUrl(x.getUrl());
+            tempDocument.setImage(x.getImage());
             EntityModel<MessageFileResp> entityModel = EntityModel.of(tempDocument);
             entityModel.add(linkTo(methodOn(DocumentRestController.class).createDocuments(null)).withSelfRel());
             entityModel.add(linkTo(methodOn(DocumentRestController.class).deleteTempDocuments(x.getCode())).withRel("delete_url"));
-
 
             return entityModel;
         }).collect(Collectors.toList());
@@ -77,13 +92,6 @@ public class MessageFileResp  {
             return entityModel;
         }).collect(Collectors.toList());
 
-    }
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 
     public void setCode(String code) {
@@ -124,5 +132,13 @@ public class MessageFileResp  {
 
     public String getUrl() {
         return url;
+    }
+
+    public void setImage(boolean image) {
+        this.image = image;
+    }
+
+    public boolean getImage() {
+        return image;
     }
 }

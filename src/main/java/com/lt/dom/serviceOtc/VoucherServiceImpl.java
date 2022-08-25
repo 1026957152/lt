@@ -12,8 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,9 +54,13 @@ public class VoucherServiceImpl {
         campaign.setClaimable(compaignPojo.isClaimable());
         campaign.setExpiry_days(compaignPojo.getExpiry_days());
         campaign.setActive(compaignPojo.isActive());
+        campaign.setPay(compaignPojo.isPay());
+
+        campaign.setPayAmount(compaignPojo.getPay_amount());
 
         campaign.setCode(idGenService.campaignNo());
         campaign.setName(compaignPojo.getName());
+        campaign.setName_long(compaignPojo.getName_long());
         campaign.setDescription(compaignPojo.getName_long());
         campaign.setScenario(scenario.getId());
 
@@ -87,7 +89,7 @@ public class VoucherServiceImpl {
 
             }
         }
-        CompaignPojo.code_config code_config = compaignPojo.getCode_config();
+        CompaignPojo.Code_config code_config = compaignPojo.getCode_config()!=null?compaignPojo.getCode_config():(new CompaignPojo.Code_config());
 
 
 
@@ -104,13 +106,13 @@ public class VoucherServiceImpl {
         campaign.setPattern(config.getPattern());
 
 
+        campaign.setStatus(EnumCampaignStatus.Draft);
         campaign = campaignRepository.save(campaign);
 
         assetService.newQr(campaign);
 
 
         voucherAsyncService.异步新建(config, campaign);
-
 
 
 
@@ -161,11 +163,11 @@ public class VoucherServiceImpl {
         List<Quota> quotas = quotaRepository.findByCompaign(campaign.getId());
 
         ClainQuotaStatisticsResp clainQuotaStatisticsResp = new ClainQuotaStatisticsResp();
-        clainQuotaStatisticsResp.setTotalCount(campaign.getVouchers_count());
-        clainQuotaStatisticsResp.setTotalAmount(campaign.getVouchers_count()*campaign.getAmount_off());
+        clainQuotaStatisticsResp.setTotalCount(campaign.getVoucher_count());
+        clainQuotaStatisticsResp.setTotalAmount(campaign.getVoucher_count()*campaign.getAmount_off());
         clainQuotaStatisticsResp.setAllocatedQuotaCount(quotas.size());
         clainQuotaStatisticsResp.setAllocatedVoucherCount(quotas.stream().mapToLong(x->x.getQuota()).sum());
-        clainQuotaStatisticsResp.setUnAllocatedVoucherCount(campaign.getVouchers_count() - quotas.stream().mapToLong(x->x.getQuota()).sum());
+        clainQuotaStatisticsResp.setUnAllocatedVoucherCount(campaign.getVoucher_count() - quotas.stream().mapToLong(x->x.getQuota()).sum());
 
 
         List<ClainQuotaStatisticsResp.ClainQuotaPojo> clainQuotaPojos =  quotas.stream().filter(x->x.getType().equals(EnumQuotaType.Scenario)).map(x->{

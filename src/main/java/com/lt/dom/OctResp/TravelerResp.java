@@ -1,6 +1,8 @@
 package com.lt.dom.OctResp;
 
 
+import cn.hutool.core.util.DesensitizedUtil;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.Traveler;
 
 import javax.persistence.Entity;
@@ -18,6 +20,8 @@ public class TravelerResp {
 
 
     private String name;///
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String age;///
 
     private String idNo;///
@@ -26,10 +30,12 @@ public class TravelerResp {
     public static List<TravelerResp> Listfrom(List<Traveler> travelers) {
         return travelers.stream().map(x->{
             TravelerResp travelerResp = new TravelerResp();
-            travelerResp.setAge(x.getAge());
-            travelerResp.setName(x.getName());
-            travelerResp.setIdNo(x.getIdNo());
-            travelerResp.setTel_home(x.getTel_home());
+       //     travelerResp.setAge(x.getAge());
+            travelerResp.setName(DesensitizedUtil.chineseName(x.getName()));
+
+
+            travelerResp.setIdNo(DesensitizedUtil.idCardNum(x.getIdNo(), 1, 2));
+            travelerResp.setTel_home(DesensitizedUtil.mobilePhone(x.getTel_home()));
             return travelerResp;
         }).collect(Collectors.toList());
     }

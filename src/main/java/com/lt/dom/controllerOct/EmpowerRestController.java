@@ -78,8 +78,14 @@ public class EmpowerRestController {
  //   public EmpowerResp mini_getPhone(@RequestParam(value = "code",required = true) String code)
     {
         ///     POST https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=ACCESS_TOKEN
+        Token accessToken = null;
+        if(code.getType() == 2){
+            accessToken = CommonUtil.getToken(wxConfig.getWxmerchant_appId(), wxConfig.getWxmerchant_secret());
+        }else{
+            accessToken = CommonUtil.getToken(wxConfig.getAppId(), wxConfig.getSecret());
 
-        Token accessToken = CommonUtil.getToken(wxConfig.getAppId(), wxConfig.getSecret());
+        }
+
 
         String url = "https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=" + accessToken.getAccessToken();
 
@@ -224,7 +230,7 @@ public class EmpowerRestController {
                 System.out.println(forObject);
 
 
-                if(false && forObject.containsKey("errcode") && !forObject.getString("errcode").equals("0")){
+                if( forObject.containsKey("errcode") && !forObject.getInteger("errcode").equals(0)){
                     throw new BookNotFoundException("","请求微信 s/jscode2session 错我"+forObject);
 
                 }
@@ -298,11 +304,14 @@ public class EmpowerRestController {
 
 
 
-                String jwt = jwtUtils.generateJwtToken(0, openid);
+              String jwt = jwtUtils.generateJwtToken(0, openid);
                 UserResp openidResp = UserResp.userWithOpenidLink(Pair.with(optionalUser.get(),openid1));
                 openidResp.setToken(jwt);
 
-                openidResp.add(linkTo(methodOn(PublicationRestController.class).pageUserPublicationResp(optionalUser.get().getId(),null,null,null)).withRel("getVoucherList"));
+               // openidResp.add(linkTo(methodOn(PublicationRestController.class).pageUserPublicationResp(optionalUser.get().getId(),null,null,null)).withRel("getVoucherList"));
+
+                openidResp.add(linkTo(methodOn(PublicationRestController.class).getVoucherList(optionalUser.get().getId(),null,null,null)).withRel("getVoucherList"));
+
                 openidResp.add(linkTo(methodOn(UserRestController.class).getCurrent()).withRel("getCurrent"));
 
                 return openidResp;

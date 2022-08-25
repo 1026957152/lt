@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.swing.text.html.parser.Entity;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,6 +97,27 @@ public class DocumentRestController {
     }
 
 
+
+
+    @PostMapping(value = "/document")
+    public EntityModel<MessageFileResp> uploadDocument(@RequestParam(value = "file",required = true) MultipartFile file) {
+
+
+        try {
+
+            TempDocument document = fileStorageService.saveWithTempDocument(file);
+            document.setUrl(FileStorageServiceImpl.url(document.getFileName()));
+
+            return MessageFileResp.from(document);//new MessageFile("Upload file successfully: "+fileNames_));
+        }catch (Exception e){
+
+            e.printStackTrace();
+            throw new RuntimeException(e);
+            //return ResponseEntity.badRequest()
+            //     .body(new MessageFile("Could not upload the file:"+fileNames));
+        }
+
+    }
 
 
 

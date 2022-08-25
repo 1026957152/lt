@@ -29,6 +29,7 @@ public class Tour {
 
     //If there are multiple start times per day or the start time varies by day then the value will be "MULTI"
     private String end_time;//	End time for the Tour/Hotel.
+    private long product;
 
     public long getId() {
         return id;
@@ -92,5 +93,13 @@ public class Tour {
 
     public void setEnd_time(String end_time) {
         this.end_time = end_time;
+    }
+
+    public void setProduct(long product) {
+        this.product = product;
+    }
+
+    public long getProduct() {
+        return product;
     }
 }

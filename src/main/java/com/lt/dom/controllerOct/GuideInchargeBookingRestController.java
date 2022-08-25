@@ -11,6 +11,7 @@ import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,10 +42,10 @@ public class GuideInchargeBookingRestController {
 
 
     @GetMapping(value = "incharge_bookings", produces = "application/json")
-    public Page<GuideInchargeBooking> listAvailability(@PathVariable long PRODUCT_ID, PageReq pageReq) {
+    public Page<GuideInchargeBooking> listAvailability(@PathVariable long PRODUCT_ID, Pageable pageable) {
 
 
-        Page<GuideInchargeBooking> validatorOptional = inchargeBookingRepository.findAll(PageRequest.of(0,1));
+        Page<GuideInchargeBooking> validatorOptional = inchargeBookingRepository.findAll(pageable);
 
 
 

@@ -1,14 +1,30 @@
 package com.lt.dom.otcReq;
 
+import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.lt.dom.otcenum.EnumCompaignType;
 import com.lt.dom.otcenum.EnumDiscountVoucherCategory;
 import com.lt.dom.otcenum.EnumVoucherType;
+import com.lt.dom.util.AESUtil;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.sql.Timestamp;
 import java.time.LocalDate;
-
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalField;
+import java.util.List;
 
 
 public class CompaignPojo {
@@ -17,15 +33,15 @@ public class CompaignPojo {
 
 
 
-    public class code_config {
+    public static class Code_config {
 
         private Integer length;
         private String charset;
         private String prefix;
         private String postfix;
 
-        @NotNull
-        private String pattern;
+
+        private String pattern ="TT-NI-############";
 
         public Integer getLength() {
             return length;
@@ -74,7 +90,7 @@ public class CompaignPojo {
     }
 
     @NotNull
-    private EnumCompaignType campaignType;
+    private EnumCompaignType campaignType = EnumCompaignType.LOYALTY_PROGRAM;
 
     @NotEmpty
     @Size(max = 50)
@@ -92,16 +108,19 @@ public class CompaignPojo {
         this.name_long = name_long;
     }
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     @NotNull
-    private LocalDate start_date;
+    private LocalDateTime start_date;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     @NotNull
-    private LocalDate expiration_date;
-    private code_config code_config;
+    private LocalDateTime expiration_date;
+
+    @NotNull
+    private Code_config code_config = new CompaignPojo.Code_config();
 
     @NotNull
     private long scenario;
 
-    @NotEmpty
     private String category;
 
     public String getCategory() {
@@ -120,14 +139,26 @@ public class CompaignPojo {
         this.scenario = scenario;
     }
 
-    public CompaignPojo.code_config getCode_config() {
+    public Code_config getCode_config() {
         return code_config;
     }
 
-    public void setCode_config(CompaignPojo.code_config code_config) {
+    public void setCode_config(Code_config code_config) {
         this.code_config = code_config;
     }
 
+
+
+  //  @NotNull
+    private List<Long> recipients;
+
+    public List<Long> getRecipients() {
+        return recipients;
+    }
+
+    public void setRecipients(List<Long> recipients) {
+        this.recipients = recipients;
+    }
 
     @NotNull
     private VoucherPojo voucher;
@@ -207,7 +238,25 @@ public class CompaignPojo {
 
     private boolean claimable;
 
+    @NotNull
+    private boolean pay;
+    private int pay_amount;
 
+    public boolean isPay() {
+        return pay;
+    }
+
+    public void setPay(boolean pay) {
+        this.pay = pay;
+    }
+
+    public int getPay_amount() {
+        return pay_amount;
+    }
+
+    public void setPay_amount(int pay_amount) {
+        this.pay_amount = pay_amount;
+    }
 
     private int expiry_days;
 
@@ -230,7 +279,8 @@ public class CompaignPojo {
         this.claimable = claimable;
     }
 
-    private Integer clain_limit;
+    @NotNull
+    private Integer clain_limit = 1;
 
     public Integer getClain_limit() {
         return clain_limit;
@@ -239,7 +289,7 @@ public class CompaignPojo {
     public void setClain_limit(Integer clain_limit) {
         this.clain_limit = clain_limit;
     }
-
+    @NotNull
     private boolean active;
 
     public EnumCompaignType getCampaignType() {
@@ -258,19 +308,19 @@ public class CompaignPojo {
         this.name = name;
     }
 
-    public LocalDate getStart_date() {
+    public LocalDateTime getStart_date() {
         return start_date;
     }
 
-    public void setStart_date(LocalDate start_date) {
+    public void setStart_date(LocalDateTime start_date) {
         this.start_date = start_date;
     }
 
-    public LocalDate getExpiration_date() {
+    public LocalDateTime getExpiration_date() {
         return expiration_date;
     }
 
-    public void setExpiration_date(LocalDate expiration_date) {
+    public void setExpiration_date(LocalDateTime expiration_date) {
         this.expiration_date = expiration_date;
     }
 
@@ -323,5 +373,63 @@ public class CompaignPojo {
 
     public void setClaim_text(String claim_text) {
         this.claim_text = claim_text;
+    }
+
+    public static class Student implements Serializable {
+        private String name;
+        private long age;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public long getAge() {
+            return age;
+        }
+
+        public void setAge(long age) {
+            this.age = age;
+        }
+// standard setters and getters
+    }
+
+     public static void main(String[] a)
+            throws InvalidKeySpecException, NoSuchAlgorithmException,
+            IllegalBlockSizeException, InvalidKeyException, BadPaddingException,
+            InvalidAlgorithmParameterException, NoSuchPaddingException {
+
+         LocalDateTime now = LocalDateTime.now();
+         Timestamp timestamp = Timestamp.valueOf(now);
+
+         System.out.println(now);            // 2019-06-14T15:50:36.068076300
+         System.out.println(timestamp.getTime());      // 2019-06-14 15:50:36.0680763
+
+         //  Timestamp to LocalDateTime
+         LocalDateTime localDateTime = timestamp.toLocalDateTime();
+
+         System.out.println(localDateTime);  // 2019-06-14T15:50:36
+
+         Student student = new Student();
+         student.setAge(timestamp.getTime());
+         student.setName("www.baeldung.com");
+         JSON.toJSONString(student);
+        String plainText =JSON.toJSONString(student);// "www.baeldung.com"+ timestamp.getTime();
+        String password = "baeldung";
+        String salt = "12345678";
+        IvParameterSpec ivParameterSpec = AESUtil.generateIv();
+        SecretKey key = AESUtil.getKeyFromPassword(password,salt);
+        String cipherText = AESUtil.encryptPasswordBased(plainText, key, ivParameterSpec);
+        String decryptedCipherText = AESUtil.decryptPasswordBased(
+                cipherText, key, ivParameterSpec);
+
+        System.out.println("cipherText"+cipherText);
+
+        System.out.println("plainText"+plainText);
+        System.out.println("decryptedCipherText"+decryptedCipherText);
+
     }
 }

@@ -6,7 +6,6 @@ import com.lt.dom.notification.EventHandler;
 import com.lt.dom.notification.OrderPaidVo;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.SettleAccountPojo;
-import com.lt.dom.otcenum.EnumFlowType;
 import com.lt.dom.otcenum.EnumTranType;
 import com.lt.dom.otcenum.EnumUserType;
 import com.lt.dom.repository.*;
@@ -138,7 +137,7 @@ public class SettleAccountServiceImpl {
             transactionEntry.setTransactionId(balanceTransaction.getId());
             transactionEntry.setType(EnumTranType.credited); //入账
             transactionEntry.setAmount(charge.getAmount());
-            transactionEntry.setAvailable_balance(optionalBalance.get().getAmount());
+            transactionEntry.setAvailable_balance(optionalBalance.get().getAvailable_amount());
             transactionEntry.setUser(product.getSupplierId());
             transactionEntry = transactionEntryRepository.save(transactionEntry);  //  首先结算到 产品发布者的结算账户里，
 

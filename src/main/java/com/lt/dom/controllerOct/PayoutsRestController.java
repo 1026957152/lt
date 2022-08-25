@@ -9,7 +9,7 @@ import com.github.binarywang.wxpay.service.impl.WxPayServiceImpl;
 import com.github.wxpay.sdk.WXPay;
 import com.github.wxpay.sdk.WXPayConstants;
 import com.github.wxpay.sdk.WXPayUtil;
-import com.lt.dom.config.WxConfigUtil;
+//import com.lt.dom.config.WxConfigUtil;
 import com.lt.dom.config.WxPayConfig;
 import com.lt.dom.domain.SettleAccount;
 import com.lt.dom.error.BookNotFoundException;
@@ -45,7 +45,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/oct")
-public class PayoutsRestController {
+public class PayoutsRestController {   // 微信的企业支付，
 
 
     @Autowired

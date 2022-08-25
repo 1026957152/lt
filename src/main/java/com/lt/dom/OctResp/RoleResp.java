@@ -5,10 +5,13 @@ import com.lt.dom.oct.NameAllowedPair;
 import com.lt.dom.oct.Privilege;
 import com.lt.dom.oct.Role;
 import com.lt.dom.oct.User;
+import com.lt.dom.otcenum.EnumRole;
+import org.springframework.hateoas.CollectionModel;
 
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -16,6 +19,8 @@ public class RoleResp {
 
     private String name;
 
+    public RoleResp() {
+    }
 
 /*
     private List<NameAllowedPair> authorizedViewsAndActions;
@@ -30,8 +35,29 @@ public class RoleResp {
         this.name = name;
     }
 
-    public static List<RoleResp> from(List<Role> validatorOptional) {
-        return validatorOptional.stream().map(x->{
+    public static CollectionModel<RoleResp> from(List<Role> validatorOptional) {
+        return CollectionModel.of(fromWithoutModel(validatorOptional));
+
+    }
+
+    public static RoleResp simplefrom(Role x) {
+        RoleResp roleResp = new RoleResp();
+        roleResp.setId(x.getName());
+        roleResp.setText(EnumRole.valueOf(x.getName()).toString());
+        roleResp.setEnabled(x.isEnabled());
+        return roleResp;
+    }
+    public static RoleResp from(Role x) {
+        RoleResp roleResp = new RoleResp(x.getName());
+        roleResp.setEnabled(x.isEnabled());
+        roleResp.setId(x.getName());
+        roleResp.setText(EnumRole.valueOf(x.getName()).toString());
+        roleResp.setEnabled(x.isEnabled());
+        return roleResp;
+    }
+
+    public static List<RoleResp> fromWithoutModel(List<Role> roles) {
+        return roles.stream().map(x->{
 
             return RoleResp.from(x);
 
@@ -43,17 +69,6 @@ public class RoleResp {
             }).collect(Collectors.toList()));
             return resp;*/
         }).collect(Collectors.toList());
-
-    }
-
-    public static RoleResp from(Role x) {
-        RoleResp roleResp = new RoleResp(x.getName());
-        roleResp.setEnabled(x.isEnabled());
-        roleResp.setId(x.getName());
-        roleResp.setText(x.getName());
-        roleResp.setEnabled(x.isEnabled());
-
-        return roleResp;
     }
 
 
@@ -102,14 +117,14 @@ public class RoleResp {
 
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Collection<PrivilegeResp> privileges;
+    private List<EnumResp> privileges;
 
-    public void setPrivileges(Collection<PrivilegeResp> privileges) {
+    public void setPrivileges(List<EnumResp> privileges) {
 
         this.privileges = privileges;
     }
 
-    public Collection<PrivilegeResp> getPrivileges() {
+    public List<EnumResp> getPrivileges() {
         return privileges;
     }
 
