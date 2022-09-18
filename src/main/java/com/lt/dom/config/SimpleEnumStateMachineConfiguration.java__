@@ -1,0 +1,69 @@
+package com.lt.dom.config;
+
+import com.lt.dom.state.ApplicationReviewEvents;
+import com.lt.dom.state.ApplicationReviewStates;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.statemachine.config.EnableStateMachine;
+import org.springframework.statemachine.config.EnableStateMachineFactory;
+import org.springframework.statemachine.config.StateMachineConfigurerAdapter;
+import org.springframework.statemachine.config.builders.StateMachineConfigurationConfigurer;
+import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
+import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
+import org.springframework.statemachine.persist.StateMachineRuntimePersister;
+
+import java.util.Arrays;
+import java.util.HashSet;
+
+//@EnableJpaRepositories({"org.springframework.statemachine.data.jpa","com.lt.dom.repository"})
+//@EntityScan({"org.springframework.statemachine.data.jpa","com.lt.dom.oct","com.lt.dom.domain"})
+@Configuration
+@EnableStateMachine
+//@EnableStateMachineFactory
+public class SimpleEnumStateMachineConfiguration
+        extends StateMachineConfigurerAdapter
+        <ApplicationReviewStates, ApplicationReviewEvents> {
+
+/*    @Autowired
+    private StateMachineRuntimePersister<ApplicationReviewStates, ApplicationReviewEvents, String> stateMachineRuntimePersister;
+
+    @Override
+    public void configure(StateMachineConfigurationConfigurer<ApplicationReviewStates, ApplicationReviewEvents> config)
+            throws Exception {
+        config
+                .withPersistence()
+                .runtimePersister(stateMachineRuntimePersister);
+    }*/
+
+
+    @Override
+    public void configure(StateMachineStateConfigurer<ApplicationReviewStates, ApplicationReviewEvents> states)
+      throws Exception {
+ 
+        states
+          .withStates()
+          .initial(ApplicationReviewStates.PEER_REVIEW)
+          .end(ApplicationReviewStates.PEER_REVIEW)
+          .states(
+            new HashSet<ApplicationReviewStates>(Arrays.asList(ApplicationReviewStates.PEER_REVIEW, ApplicationReviewStates.PEER_REVIEW, ApplicationReviewStates.PEER_REVIEW)));
+
+    }
+
+    @Override
+    public void configure(
+      StateMachineTransitionConfigurer<ApplicationReviewStates, ApplicationReviewEvents> transitions)
+      throws Exception {
+ 
+        transitions.withExternal()
+          .source(ApplicationReviewStates.PEER_REVIEW).target(ApplicationReviewStates.PEER_REVIEW).event(ApplicationReviewEvents.APPROVE).and()
+          .withExternal()
+          .source(ApplicationReviewStates.PEER_REVIEW).target(ApplicationReviewStates.PEER_REVIEW).event(ApplicationReviewEvents.APPROVE).and()
+          .withExternal()
+          .source(ApplicationReviewStates.PEER_REVIEW).target(ApplicationReviewStates.PEER_REVIEW).event(ApplicationReviewEvents.REJECT);
+    }
+
+
+
+}
