@@ -9,23 +9,14 @@ import java.util.List;
 public class ValidatorPojo {  // 这个就是机器了啊
 
 
-    private long quipment;
-    private long user;
+    private List<Long> item_ids;
 
-    public long getQuipment() {
-        return quipment;
+    public List<Long> getItem_ids() {
+        return item_ids;
     }
 
-    public void setQuipment(long quipment) {
-        this.quipment = quipment;
-    }
-
-    public long getUser() {
-        return user;
-    }
-
-    public void setUser(long user) {
-        this.user = user;
+    public void setItem_ids(List<Long> item_ids) {
+        this.item_ids = item_ids;
     }
 
     private EnumValidatorType type; //指定人工，机器, 所有人工

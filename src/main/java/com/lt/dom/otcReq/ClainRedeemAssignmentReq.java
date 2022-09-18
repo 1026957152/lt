@@ -1,9 +1,6 @@
 package com.lt.dom.otcReq;
 
 
-import com.lt.dom.otcenum.EnumClaimOrRedeem;
-import com.lt.dom.otcenum.EnumQuotaType;
-
 import javax.validation.constraints.NotNull;
 
 

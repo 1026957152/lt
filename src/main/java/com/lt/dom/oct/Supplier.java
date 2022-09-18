@@ -64,7 +64,9 @@ public class Supplier {
     }
 
     @NotNull
-    private String code;
+    
+@Column(unique=true) 
+private String code;
 
     public String getCode() {
         return code;

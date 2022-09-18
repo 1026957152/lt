@@ -11,7 +11,6 @@ import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,7 +45,7 @@ public class EventListener {
 
 
             ComponentVounch componentVounch = new ComponentVounch();
-            componentVounch.setComponentRightId(x.getComponentRightId());
+            componentVounch.setComponentRight(x.getComponentRightId());
 
             Voucher voucher = new Voucher();
             voucher.setType(EnumVoucherType.RIGHT_VOUCHER);
@@ -81,7 +80,7 @@ public class EventListener {
 
             if(x.getValue2().getExtend().equals(EnumValidatorRedemExtent.权益券)){
 
-                validatorService.push(x.getValue2().getValidators(),x.getValue0());
+                //validatorService.push(x.getValue2().getValidators(),x.getValue0());
             }
 
 

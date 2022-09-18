@@ -1,6 +1,7 @@
 package com.lt.dom.OctResp;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.gson.Gson;
 import com.lt.dom.oct.TempDocument;
 import com.lt.dom.otcReq.MerchantsSettledReq;
@@ -12,10 +13,10 @@ import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 import java.util.Map;
 
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MerchantsSettledReqResp {
     @NotEmpty
     private String supplier_name;
@@ -53,26 +54,44 @@ public class MerchantsSettledReqResp {
         merchantsSettledReqResp.setUser_phone(max.getUser_phone());
         merchantsSettledReqResp.setSupplier_name(max.getSupplier_name());
         merchantsSettledReqResp.setSupplier_type(max.getSupplier_type());
-        merchantsSettledReqResp.setSupplier_type_text(max.getSupplier_type().toString());
+        merchantsSettledReqResp.setSupplier_type_text(max.getAllowed_supplier().getType().toString());
 
 
-        merchantsSettledReqResp.setBusiness_type_text(max.getSupplier_type().toString());
+        merchantsSettledReqResp.setBusiness_type_text(max.getBusiness_type().toString());
 
         merchantsSettledReqResp.setLocation_text(max.getLocation().getAddress());
 
         if(!documents.isEmpty()){
-            merchantsSettledReqResp.setLiability_insurance_image(FileStorageServiceImpl.url(documents.get(EnumDocumentType.liability_insurance)));
-            merchantsSettledReqResp.setLicense_image(FileStorageServiceImpl.url(documents.get(EnumDocumentType.license)));
-            merchantsSettledReqResp.setBussiness_license(FileStorageServiceImpl.url(documents.get(EnumDocumentType.business_license)));
+
+            if(documents.containsKey(EnumDocumentType.liability_insurance)){
+                merchantsSettledReqResp.setLiability_insurance_image(FileStorageServiceImpl.url(documents.get(EnumDocumentType.liability_insurance)));
+            }else{
+                merchantsSettledReqResp.setLiability_insurance_image(new PhotoResp());
+            }
+            if(documents.containsKey(EnumDocumentType.license)){
+                merchantsSettledReqResp.setLicense_image(FileStorageServiceImpl.url(documents.get(EnumDocumentType.license)));
+            }else{
+                merchantsSettledReqResp.setLicense_image(new PhotoResp());
+            }
+            if(documents.containsKey(EnumDocumentType.business_license)){
+                merchantsSettledReqResp.setBussiness_license(FileStorageServiceImpl.url(documents.get(EnumDocumentType.business_license)));
+            }else {
+                merchantsSettledReqResp.setBussiness_license(new PhotoResp());
+            }
+            if(documents.containsKey(EnumDocumentType.license_for_opening_bank_account)){
+                merchantsSettledReqResp.setLicense_for_opening_bank_account(FileStorageServiceImpl.url(documents.get(EnumDocumentType.license_for_opening_bank_account)));
+            }else{
+                merchantsSettledReqResp.setLicense_for_opening_bank_account(new PhotoResp());
+            }
         }
 
         return merchantsSettledReqResp;
     }
 
-    public static MerchantsSettledReqResp fromJsonString(String additional_info) {
+    public static MerchantsSettledReq fromJsonString(String additional_info) {
         Gson gson = new Gson();
 
-        return gson.fromJson(additional_info,MerchantsSettledReqResp.class);
+        return gson.fromJson(additional_info,MerchantsSettledReq.class);
     }
 
     public void setLocation(Location location) {
@@ -239,7 +258,7 @@ public class MerchantsSettledReqResp {
     private String bank_name;
   //  @Size(min = 1,max = 10)
      @NotEmpty
-    private String bussiness_license;
+    private PhotoResp bussiness_license;
     @NotNull
     private Boolean term;  // 这个就是机器了啊
 
@@ -320,11 +339,11 @@ public class MerchantsSettledReqResp {
         this.bank_name = bank_name;
     }
 
-    public String getBussiness_license() {
+    public PhotoResp getBussiness_license() {
         return bussiness_license;
     }
 
-    public void setBussiness_license(String bussiness_license) {
+    public void setBussiness_license(PhotoResp bussiness_license) {
         this.bussiness_license = bussiness_license;
     }
 
@@ -336,34 +355,35 @@ public class MerchantsSettledReqResp {
         this.term = term;
     }
 
-    String business_license_image;
-    String license_image;
-    String liability_insurance_image;
+    PhotoResp business_license_image;
+    PhotoResp license_image;
+    PhotoResp liability_insurance_image;
+    PhotoResp license_for_opening_bank_account;
 
    //TODO @NotEmpty
     String phone; //官方联系电话
 
-    public String getBusiness_license_image() {
+    public PhotoResp getBusiness_license_image() {
         return business_license_image;
     }
 
-    public void setBusiness_license_image(String business_license_image) {
+    public void setBusiness_license_image(PhotoResp business_license_image) {
         this.business_license_image = business_license_image;
     }
 
-    public String getLicense_image() {
+    public PhotoResp getLicense_image() {
         return license_image;
     }
 
-    public void setLicense_image(String license_image) {
+    public void setLicense_image(PhotoResp license_image) {
         this.license_image = license_image;
     }
 
-    public String getLiability_insurance_image() {
+    public PhotoResp getLiability_insurance_image() {
         return liability_insurance_image;
     }
 
-    public void setLiability_insurance_image(String liability_insurance_image) {
+    public void setLiability_insurance_image(PhotoResp liability_insurance_image) {
         this.liability_insurance_image = liability_insurance_image;
     }
 
@@ -375,6 +395,11 @@ public class MerchantsSettledReqResp {
         this.phone = phone;
     }
 
+    public PhotoResp getLicense_for_opening_bank_account() {
+        return license_for_opening_bank_account;
+    }
 
-
+    public void setLicense_for_opening_bank_account(PhotoResp license_for_opening_bank_account) {
+        this.license_for_opening_bank_account = license_for_opening_bank_account;
+    }
 }

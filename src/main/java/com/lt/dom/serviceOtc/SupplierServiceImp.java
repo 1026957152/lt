@@ -1,9 +1,12 @@
 package com.lt.dom.serviceOtc;
 
+import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.ExistException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.EnumEmployeeStatus;
 import com.lt.dom.otcenum.EnumSupplierStatus;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.EmployeeRepository;
 import com.lt.dom.repository.RoleRepository;
 import com.lt.dom.repository.SupplierRepository;
@@ -17,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SupplierServiceImp {
@@ -34,11 +38,41 @@ public class SupplierServiceImp {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private RoleRepository roleRepository;
+
 
 
     public Employee 成为员工(Supplier referral, User user){
+
+        List<Employee> employees = employeeRepository.findBySuplierId(referral.getId());
+
+
+        if(employees.stream() // 如果存在，且 不活跃，则激活。
+                .filter(x->x.getUserId() == user.getId())
+                .filter(x->x.getStatus().equals(EnumEmployeeStatus.active)).findAny().isPresent()){
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"已经是公司 职工");
+        }
+
+
+        employeeRepository.saveAll(employeeRepository.findAllByUserId(user.getId()).stream() // TODO 把仙子服务的全部给 不服务
+                .filter(x->x.getStatus().equals(EnumEmployeeStatus.active)).map(e->{
+                    e.setStatus(EnumEmployeeStatus.inactive);
+                    return e;
+                }).collect(Collectors.toList()));
+
+
+        Optional<Employee> employeeOptional = employees.stream() // TODO 曾经服务过，拿过恢复过来，
+                .filter(x->x.getUserId() == user.getId())
+                .filter(x->x.getStatus().equals(EnumEmployeeStatus.inactive)).findAny();
+
+        if(employeeOptional.isPresent()){
+            Employee employee = employeeOptional.get();
+            employee.setStatus(EnumEmployeeStatus.active);
+            employee =employeeRepository.save(employee);
+            return employee;
+        }
+
+
+
 
         Employee royaltyRuleData = new Employee();
         royaltyRuleData.setCode(idGenService.employeeNo());
@@ -89,6 +123,14 @@ public class SupplierServiceImp {
 
 
     public Triplet<Supplier,Employee,User> createEmployee(Supplier supplier, EmployerPojo employerPojo, List<String> hasEnumRoles) {
+
+        Optional<User> optional = userRepository.findByPhone(employerPojo.getPhone());
+        if(optional.isPresent()){
+            User user = optional.get();
+
+            Employee employee = 成为员工(supplier,user);
+            return Triplet.with(supplier,employee,user);
+        }
 
 
         UserPojo userPojo = new UserPojo();

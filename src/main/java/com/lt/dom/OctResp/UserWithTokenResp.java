@@ -12,7 +12,7 @@ public class UserWithTokenResp {
 
     private String token;
     private EntityModel info;
-    private int status;
+
 
     public void setInfo(EntityModel info) {
 
@@ -32,11 +32,4 @@ public class UserWithTokenResp {
         return token;
     }
 
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public int getStatus() {
-        return status;
-    }
 }

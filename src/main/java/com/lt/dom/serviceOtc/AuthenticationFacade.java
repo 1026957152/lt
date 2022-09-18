@@ -25,7 +25,7 @@ public class AuthenticationFacade implements IAuthenticationFacade {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private UserServiceImpl userService;
+    private UserVoServiceImpl userService;
 
     @Override
     public Authentication getAuthentication() {

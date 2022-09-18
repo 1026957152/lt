@@ -10,4 +10,7 @@ public interface PricingTypeRepository extends JpaRepository<PricingType
 			, Long> {
 
     List<PricingType> findByProductId(long id);
+
+    List<PricingType> findByProductIdIn(List<Long> collect);
+
 }

@@ -1,10 +1,13 @@
 package com.lt.dom.serviceOtc;
 
+import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.oct.Document;
 import com.lt.dom.oct.Reservation;
 import com.lt.dom.oct.TempDocument;
 import com.lt.dom.oct.TourBooking;
 import com.lt.dom.otcenum.EnumDocumentType;
+import com.lt.dom.otcenum.EnumPhotos;
+import com.lt.dom.vo.ImageVo;
 import org.javatuples.Pair;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,11 +41,36 @@ public interface FileStorageService {
 
     TempDocument saveWithTempDocument(MultipartFile x);
 
-    List<Document> saveFromTempDocumentList(long id, List<Pair<EnumDocumentType, TempDocument>> fileNames);
+    List<Document> saveFromTempDocumentCode(String code, List<Pair<EnumDocumentType, TempDocument>> fileNames);
+
+    List<Document> saveFromTempDocumentCode(long id, List<Pair<EnumDocumentType, TempDocument>> fileNames);
 
 
     Document saveFromTempDocument(long id, Pair<EnumDocumentType, TempDocument> x);
 
     List<String> loadDocuments(EnumDocumentType scenario_logo, long id);
+
+    List<PhotoResp> loadDocuments(EnumDocumentType scenario_logo, String reference);
+
+    List<PhotoResp> loadDocumentsWithCode(EnumDocumentType scenario_logo, String reference);
+
     Map<EnumDocumentType, List<String>> loadDocuments(List<EnumDocumentType> scenario_logo, long id);
+
+    PhotoResp loadDocument(String thumbnail_image);
+
+    PhotoResp loadDocument(EnumDocumentType type, String thumbnail_image);
+
+
+    PhotoResp loadDocument(List<EnumPhotos> asList, EnumDocumentType type, String reference);
+
+    PhotoResp loadDocumentWithCode(EnumDocumentType type, String code);
+
+    String saveFromTempDocumentCode(String objectCode, EnumDocumentType type, String tempDocCode);
+
+    String saveFromTempDocument(String objectCode, EnumDocumentType type, TempDocument tempDocCode);
+
+
+    Document saveFromTempDocumentWithRich(String objectCode, ImageVo imageVo, EnumDocumentType type, TempDocument tempDocCode);
+
+    Map<String,List<PhotoResp>> loadDocuments(EnumDocumentType scenario_logo, List<String> reference);
 }

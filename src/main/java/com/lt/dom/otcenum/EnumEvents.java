@@ -23,6 +23,9 @@ public enum EnumEvents {
     redemption$failed("redemption.failed"),
     redemption$rollback$failed("redemption.rollback.failed"),
     redemption$rollback_succeeded(" redemption.rollback.succeeded"),
+    bulk_redemption$succeeded("redemption.succeeded"),
+    bulk_redemption$failed("redemption.failed"),
+
 
 
     voucher$validation$succeeded("voucher.validation.succeeded"),
@@ -38,6 +41,7 @@ public enum EnumEvents {
     voucher$published("voucher.published"),
     voucher$validation_rules$deleted("voucher.validation_rules.deleted"),
     voucher$disabled("voucher.disabled"),
+    voucher$bulk_published("voucher.published"),
 
 
     voucher$validation$failed("voucher.validation.failed"),
@@ -91,9 +95,28 @@ public enum EnumEvents {
 
 
 
+    order$CREATE("order.CREATE"),// Occurs whenever a charge description or metadata is updated.
+
+    gift$DELIVERY_CONFIRMED("gift.DELIVERY_CONFIRMED"),//Occurs whenever a pending charge is created.
+    gift$DELIVERY_BOUNCED("gift.DELIVERY_BOUNCED"),//Occurs whenever a charge is refunded, including partial refunds.
+    gift$REDEEMED("gift.REDEEMED"),//Occurs whenever a charge is successful.
+    gift$PAYOUT_FAILED("gift.PAYOUT_FAILED"),// Occurs whenever a charge description or metadata is updated.
+
+    gift$PAYOUT_CANCELED("gift.PAYOUT_CANCELED"),// Occurs whenever a charge description or metadata is updated.
+
+/*
+    order.CREATE	Emitted only when the ordering channel is one other than the API
+    gift.DELIVERY_CONFIRMED	GiftRocket successfully delivered the gift via sms or email
+    gift.DELIVERY_BOUNCED	GiftRocket failed to deliver the gift via sms or email
+    gift.REDEEMED	Recipient redeemed their gift
+    gift.PAYOUT_FAILED	The payout failed and the gift is again in a redeemable state
+    gift.PAYOUT_CANCELED	The payout was canceled by an account admin and the gift is again in a redeemable state
+    funding.NFS	Your current order exceeds your funding balance.*/
+
+
+    qrcode_reader$scan("charge.failed")
 
     ;
-
 
     EnumEvents(String barcode) {
 

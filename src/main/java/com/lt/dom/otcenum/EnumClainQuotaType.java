@@ -5,6 +5,7 @@ public enum EnumClainQuotaType {
     supplier__scenario("supplier.scenario","应用场景"),
     customer__segment("customer.segment","应用场景"),
     customer__list("supplier.scenario","应用场景"),
+    supplier_list("supplier.scenario","应用场景"),
 
 
 

@@ -83,17 +83,8 @@ public class TourCampaignServiceImpl {
     @Autowired
     private GuideServiceImpl guideService;
 
-    public Triplet<TourBooking,Product,ProductSubVo> book(Product product, List<Campaign> campaignList, Guide guide, TourBookingPojo pojo, List<TravelerVo> travelerVoList, Supplier supplier) {
+    public Triplet<TourBooking,Product,ProductSubVo> book(Product product, List<Campaign> campaignList, Guide guide, TourBookingPojo pojo, List<TravelerVo> travelerVoList, Supplier supplier, Session session) {
 
-
-
-
-
-        //List<Voucher> vouchers = pojo.getDiscounts().stream().map(x->new Voucher()).collect(Collectors.toList());
-       // Voucher voucher = voucherService.领券(product);
-
-
-      //  int va = voucherService.获得折扣金额(product,vouchers);
 
 
         TourBooking tourBooking = new TourBooking();
@@ -121,7 +112,7 @@ public class TourCampaignServiceImpl {
 
      //   reservation.setAmount(total);
       //  reservation.setTotal_amount(reservation.getAmount()-reservation.getTotal_discount_amount());
-        tourBooking.setStatus(EnumTourBookingStatus_.Draft);
+        tourBooking.setStatus(EnumTourBookingStatus.Draft);
         tourBooking.setCreated_at(LocalDateTime.now());
 
         tourBooking.setOwner(supplier.getId());
@@ -148,7 +139,7 @@ public class TourCampaignServiceImpl {
 
 
         if(product.getType().equals(EnumProductType.Daytour)){
-            Optional<Tour> tour = tourRepository.findById(product.getTypeToWho());
+            Optional<Tour> tour = tourRepository.findById(product.getTypeTo());
             productSubVo.setTour(tour.get());
 
 
@@ -163,8 +154,10 @@ public class TourCampaignServiceImpl {
             System.out.println("添加 旅行人啊啊啊啊"+travelers);
 
             TourBooking finalTourBooking = tourBooking;
+
+
             campaignList.stream().forEach(x->{
-                publicationService.bulkPublish(supplier,travelers.stream().map(xx->xx.getId()).collect(Collectors.toList()), x.getId(),EnumAssociatedType.tour_booking, finalTourBooking.getId());
+                publicationService.bulkPublish(supplier,travelers, x,EnumAssociatedType.tour_booking, finalTourBooking.getId(),productSubVo,session);
 
             });
 
@@ -296,7 +289,7 @@ public class TourCampaignServiceImpl {
 
         //int va = redeemService.redeemVounchor(vouchers);  //销和这些券
 
-        reservation.setStatus(EnumTourBookingStatus_.Completed);
+        reservation.setStatus(EnumTourBookingStatus.Completed);
         reservation = tourBookingRepository.save(reservation);
 
 
@@ -379,9 +372,9 @@ public class TourCampaignServiceImpl {
         }).collect(Collectors.toList());
 
 
-        int va = redeemService.bulkRedeemVounchor(tourBooking.getId(),EnumAssociatedType.booking,sss);  //销和这些券
+        int va = redeemService.RedeemVounchor(tourBooking.getId(),EnumAssociatedType.booking,sss);  //销和这些券
 
-        tourBooking.setStatus(EnumTourBookingStatus_.Completed);
+        tourBooking.setStatus(EnumTourBookingStatus.Completed);
         tourBooking = tourBookingRepository.save(tourBooking);
 
 
@@ -409,7 +402,7 @@ public class TourCampaignServiceImpl {
 
        // Request va = applyForApprovalService.create(EnumRequestType.tour_approve,tourBooking,user);  //销和这些券
 
-        tourBooking.setStatus(EnumTourBookingStatus_.Pending);
+        tourBooking.setStatus(EnumTourBookingStatus.Pending);
         tourBooking = tourBookingRepository.save(tourBooking);
 
 
@@ -435,7 +428,7 @@ public class TourCampaignServiceImpl {
 
     private List<CampaignAssignToTourBooking> bookingCopyCampaigsFromProduct(TourBooking tourBooking, Product product, List<Traveler> travelers){
         if(product.getType().equals(EnumProductType.Daytour)){
-            List<CampaignAssignToTourProduct> campaignAssignToTourProducts = campaignAssignToTourProductRepository.findByTourId(product.getTypeToWho());
+            List<CampaignAssignToTourProduct> campaignAssignToTourProducts = campaignAssignToTourProductRepository.findByTourId(product.getTypeTo());
 
 
 

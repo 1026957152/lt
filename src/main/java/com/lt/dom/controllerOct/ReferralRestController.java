@@ -3,10 +3,18 @@ package com.lt.dom.controllerOct;
 import com.lt.dom.OctResp.ReferralResp;
 
 
+import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.Referral;
+import com.lt.dom.oct.User;
+import com.lt.dom.otcReq.PassCreatePojo;
 import com.lt.dom.otcReq.ReferralPojo;
+import com.lt.dom.otcenum.EnumReferralType;
+import com.lt.dom.otcenum.Enumfailures;
+import com.lt.dom.repository.ReferralRepository;
+import com.lt.dom.repository.UserRepository;
 import com.lt.dom.serviceOtc.ReferralServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
@@ -16,22 +24,64 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 import java.sql.Ref;
+import java.util.Optional;
 import java.util.UUID;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/oct")
 public class ReferralRestController {
+    @Autowired
+    public UserRepository userRepository;
+    @Autowired
+    public ReferralRepository referralRepository;
 
 
     @Autowired
     public ReferralServiceImpl referralService;
 
 
-    @PostMapping(value = "/{USER_ID}/referrals/", produces = "application/json")
-    public ReferralResp createReferral(@RequestBody @Valid ReferralPojo pojo) {
-        Referral referral = referralService.create(pojo);
+    @PostMapping(value = "/users/{USER_ID}/referrals", produces = "application/json")
+    public ReferralResp createReferral(@PathVariable long USER_ID,@RequestBody @Valid ReferralPojo pojo) {
+
+        Optional<User> validatorOptional = userRepository.findById(USER_ID);
+
+        if(validatorOptional.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到用户");
+        }
+        User user = validatorOptional.get();
+
+        Referral referral = referralService.create(user,EnumReferralType.fill_up_passager_info,pojo);
 
         return ReferralResp.from(referral);
+
+    }
+
+
+
+    @GetMapping(value = "/referrals", produces = "application/json")
+    public EntityModel getReferral(@RequestParam @Valid String id) {
+
+
+        Optional<Referral> optionalReferral = referralRepository.findByCode(id);
+        if(optionalReferral.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到用户");
+        }
+        Referral referral = optionalReferral.get();
+
+
+        if(referral.getType().equals(EnumReferralType.fill_up_passager_info)){
+            EntityModel entityModel = EntityModel.of(referral);
+
+
+            entityModel.add(linkTo(methodOn(PassengerRestController.class).createPassenger(referral.getUser(),null)).withSelfRel());
+
+            return entityModel;
+        }
+
+        return null;
 
     }
 
@@ -41,6 +91,23 @@ public class ReferralRestController {
 
 
         Referral referral = referralService.getUserAndProductByScene(code);
+
+        return ReferralResp.from(referral);
+    }
+
+
+    @GetMapping(value = "/users/{USER_ID}/referral_link", produces = "application/json")
+    public ReferralResp getReferral_link(@PathVariable long USER_ID) {  // scene 最大 32各字符
+
+
+            Optional<User> validatorOptional = userRepository.findById(USER_ID);
+
+            if(validatorOptional.isEmpty()){
+                throw new BookNotFoundException(Enumfailures.not_found,"找不到用户");
+            }
+            User user = validatorOptional.get();
+
+            Referral referral = null;//referralService.getUserAndProductByScene(code);
 
         return ReferralResp.from(referral);
     }

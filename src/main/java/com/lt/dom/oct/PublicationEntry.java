@@ -7,6 +7,7 @@ import com.lt.dom.otcenum.EnumPublicationObjectType;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class PublicationEntry {
@@ -34,6 +35,7 @@ public class PublicationEntry {
     private boolean free;
     private long charge;
     private boolean paied;
+    private String session_ip;
 
     public long getAssociatedId() {
         return associatedId;
@@ -79,7 +81,7 @@ public class PublicationEntry {
         this.id = id;
     }
 
-    public LocalDate published_at;
+    public LocalDateTime published_at;
 
     public String getSource_id() {
         return source_id;
@@ -121,11 +123,11 @@ public class PublicationEntry {
         this.toWho = toWho;
     }
 
-    public LocalDate getPublished_at() {
+    public LocalDateTime getPublished_at() {
         return published_at;
     }
 
-    public void setPublished_at(LocalDate published_at) {
+    public void setPublished_at(LocalDateTime published_at) {
         this.published_at = published_at;
     }
 
@@ -151,5 +153,13 @@ public class PublicationEntry {
 
     public boolean getPaied() {
         return paied;
+    }
+
+    public void setSession_ip(String session_ip) {
+        this.session_ip = session_ip;
+    }
+
+    public String getSession_ip() {
+        return session_ip;
     }
 }

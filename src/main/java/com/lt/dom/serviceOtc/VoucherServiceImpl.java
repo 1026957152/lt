@@ -7,13 +7,19 @@ import com.lt.dom.otcReq.CompaignPojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.util.CodeConfig;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED;
+
 
 @Service
 public class VoucherServiceImpl {
@@ -27,7 +33,7 @@ public class VoucherServiceImpl {
     private VoucherAsyncServiceImpl voucherAsyncService;
 
     @Autowired
-    private DiscountRepository discountRepository;
+    private VoucherRepository voucherRepository;
 
     @Autowired
     private ScenarioRepository scenarioRepository;
@@ -39,9 +45,11 @@ public class VoucherServiceImpl {
 
 
 
+    @Transactional(propagation = NOT_SUPPORTED) // we're going to handle transactions manually
+    public Pair<CodeConfig,Campaign> createLoyaltyCompaign(CompaignPojo compaignPojo, Scenario scenario)  {
+        String code  = idGenService.campaignNo();
 
-    public Campaign createLoyaltyCompaign(CompaignPojo compaignPojo, Scenario scenario)  {
-
+        System.out.println(code+"新建啊啊"+compaignPojo.getName());
         if(!compaignPojo.getCampaignType().equals(EnumCompaignType.LOYALTY_PROGRAM)){
             throw  new RuntimeException("");
         }
@@ -58,7 +66,8 @@ public class VoucherServiceImpl {
 
         campaign.setPayAmount(compaignPojo.getPay_amount());
 
-        campaign.setCode(idGenService.campaignNo());
+        campaign.setCode(code);
+
         campaign.setName(compaignPojo.getName());
         campaign.setName_long(compaignPojo.getName_long());
         campaign.setDescription(compaignPojo.getName_long());
@@ -95,8 +104,6 @@ public class VoucherServiceImpl {
 
 
 
-
-
         CodeConfig config = new CodeConfig(code_config.getLength(),code_config.getCharset(),code_config.getPrefix(),code_config.getPostfix(),code_config.getPattern());
 
         campaign.setLength(config.getLength());
@@ -107,19 +114,18 @@ public class VoucherServiceImpl {
 
 
         campaign.setStatus(EnumCampaignStatus.Draft);
-        campaign = campaignRepository.save(campaign);
+        campaign = campaignRepository.saveAndFlush(campaign);
 
         assetService.newQr(campaign);
 
 
-        voucherAsyncService.异步新建(config, campaign);
 
 
 
 
 
 
-        return campaign;
+        return Pair.with(config,campaign);
     }
 
 
@@ -189,5 +195,10 @@ public class VoucherServiceImpl {
         redemptions.setTotal_failed(0);
         clainQuotaStatisticsResp.setRedemptions(redemptions);
         return clainQuotaStatisticsResp;
+    }
+
+    public void update(Voucher voucher, EnumEvents events) {
+
+        voucherRepository.save(voucher);
     }
 }

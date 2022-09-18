@@ -1,30 +1,36 @@
 package com.lt.dom.notification.event;
 
 import com.lt.dom.oct.User;
+import com.lt.dom.oct.Voucher;
+import com.lt.dom.otcenum.EnumEvents;
 import org.springframework.context.ApplicationEvent;
 
 import java.util.Locale;
 
 public class OnVoucherRedeamedEvent extends ApplicationEvent {
-    private String appUrl;
+    private EnumEvents events;
     private Locale locale;
     private User user;
 
     public OnVoucherRedeamedEvent(
-      User user, Locale locale, String appUrl) {
+      User user, Locale locale, EnumEvents appUrl) {
         super(user);
         
         this.user = user;
         this.locale = locale;
-        this.appUrl = appUrl;
+        this.events = appUrl;
     }
 
-    public String getAppUrl() {
-        return appUrl;
+    public OnVoucherRedeamedEvent(User user, Voucher x, Object appUrl, EnumEvents bulk_redemption$succeeded) {
+        super(user);
     }
 
-    public void setAppUrl(String appUrl) {
-        this.appUrl = appUrl;
+    public EnumEvents getAppUrl() {
+        return events;
+    }
+
+    public void setAppUrl(EnumEvents appUrl) {
+        this.events = appUrl;
     }
 
     public Locale getLocale() {

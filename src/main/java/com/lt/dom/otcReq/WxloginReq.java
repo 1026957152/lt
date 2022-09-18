@@ -10,7 +10,9 @@ import javax.validation.constraints.NotNull;
 public class WxloginReq {  // 这个就是机器了啊
 
     @NotEmpty
-    private String code;
+    
+
+private String code;
 
     @NotEmpty
     private String openid;

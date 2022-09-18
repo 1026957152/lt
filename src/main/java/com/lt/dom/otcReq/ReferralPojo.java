@@ -16,6 +16,22 @@ public class ReferralPojo {
 
     private String string_value;
 
+    private Fill_up_passager_info fill_up_passager_info;
+
+    public class Fill_up_passager_info {
+
+
+    }
+
+
+    public Fill_up_passager_info getFill_up_passager_info() {
+        return fill_up_passager_info;
+    }
+
+    public void setFill_up_passager_info(Fill_up_passager_info fill_up_passager_info) {
+        this.fill_up_passager_info = fill_up_passager_info;
+    }
+
     public long getLong_value() {
         return long_value;
     }

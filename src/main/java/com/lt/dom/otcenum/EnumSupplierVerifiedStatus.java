@@ -1,10 +1,10 @@
 package com.lt.dom.otcenum;
 
 public enum EnumSupplierVerifiedStatus {
-    verified(0),
-    unverified(-1),
 
-
+    completed(-1),
+    rejected(-1),
+    pending(-1),
 
     ;
 

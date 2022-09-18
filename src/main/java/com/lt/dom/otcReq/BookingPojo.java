@@ -24,6 +24,15 @@ public class BookingPojo {
     private EnumBookingOjbectType type;
 
 
+    @NotNull
+    @Size(min=1, max=100)
+    List<TravelerReq> travelers;
+    private Long pricingType;
+
+    @NotNull
+    private Long count = 1l;
+
+
     public Tour getAdditional_info() {
         return additional_info;
     }
@@ -64,6 +73,22 @@ public class BookingPojo {
         this.type = type;
     }
 
+    public Long getPricingType() {
+        return pricingType;
+    }
+
+    public void setPricingType(Long pricingType) {
+        this.pricingType = pricingType;
+    }
+
+    public Long getCount() {
+        return count;
+    }
+
+    public void setCount(Long count) {
+        this.count = count;
+    }
+
     public static class Tour {
 
         private String guide_id;//	ID number for the lead customer
@@ -80,7 +105,9 @@ public class BookingPojo {
         }
 
         private String title;//
-        private String code;//
+        
+
+private String code;//
         private String customer_count;//
         private String starts_at;//
         private String ends_at;//
@@ -222,8 +249,6 @@ public class BookingPojo {
 
 
 
-    @Size(min=1, max=100)
-    List<TravelerReq> travelers;
 
     public List<TravelerReq> getTravelers() {
         return travelers;

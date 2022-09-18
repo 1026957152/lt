@@ -1,23 +1,25 @@
 package com.lt.dom.serviceOtc;
 
+import com.google.gson.Gson;
 import com.lt.dom.controllerOct.ProductRestController;
+import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcReq.product.ProductGiftVoucherPojo;
-import com.lt.dom.otcenum.EnumProductStatus;
-import com.lt.dom.otcenum.EnumProductType;
-import com.lt.dom.otcenum.EnumWhenSettle;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import com.lt.dom.vo.BookingRuleVO;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import javax.transaction.Transactional;
+import java.time.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -60,22 +62,29 @@ public class ProductServiceImpl {
     @Autowired
     private CampaignAssignToTourProductRepository campaignAssignToTourProductRepository;
 
+    @Autowired
+    private AttractionRepository attractionRepository;
 
+
+    @Autowired
+    private PriceServiceImpl priceService;
+
+    @Autowired
+    private ComponentRightServiceImpl componentRightService;
 
 
     public Page<Product> listProduct(Supplier supplier, Pageable pageable) {
-
-
 
         return productRepository.findBySupplierId(supplier.getId(),pageable);
     }
 
 
+    Gson gson = new Gson();
 
 
 
 
-
+    @Transactional
     public Pair<Product,Supplier> createProduct(Supplier supplier, ProductPojo pojo, List<Campaign> campaigns) {
         Product product = new Product();
 
@@ -85,6 +94,7 @@ public class ProductServiceImpl {
         product.setSupplierId(supplier.getId());
         product.setName(pojo.getName());
         product.setName_long(pojo.getName_long());
+        product.setLong_desc(pojo.getLong_desc());
 
         product.setStatus(EnumProductStatus.draft);
         product.setCreated_at(LocalDateTime.now());
@@ -92,10 +102,88 @@ public class ProductServiceImpl {
         product.setAcitve(true);
         product.setShippable(false);
 
+        product.setAvailability_type(pojo.getAvailability_type());
+
+        product.setShippable(pojo.getShippable());
+        product.setShipping_rate(pojo.getShipping_rate());
+        ;
+        product.setRefund(pojo.getIs_refund());
+        product.setLong_desc(pojo.getLong_desc());
+        product.setRefund_note(pojo.getRefund().getNote());
+        product.setNote(pojo.getNote());
+        product.setTags_json((new Gson()).toJson(Arrays.asList(EnumProductTag.支持一卡通,EnumProductTag.支持一卡通)));
+
+        product.setPaymentMethods_json((new Gson()).toJson(pojo.getPayment_methods()));
         product = productRepository.save(product);
 
 
 
+
+
+        if(product.getType().equals(EnumProductType.Attraction)){
+
+
+            Optional<Attraction> attractionOptional = attractionRepository.findById(pojo.getAttraction().getId());
+            if(attractionOptional.isEmpty()){
+                throw new BookNotFoundException(Enumfailures.not_found,"找不到景区");
+            }
+            Attraction attraction = attractionOptional.get();
+
+            product.setTypeTo(attraction.getId());
+
+            product.setDefault_price(0L);
+            product = productRepository.save(product);
+
+
+
+
+            if(pojo.getRoyalties() != null){
+
+
+                componentRightService.assingtoProduct(product,pojo.getRoyalties());
+
+            }
+       /*     if(pojo.getRights() != null){
+                List<ComponentRight> componentRights = componentRightRepository.findAllById(pojo.getRights());
+
+
+                if((componentRights.size() == 0)  || (componentRights.size() != pojo.getRights().size())){
+
+                    throw new BookNotFoundException(Enumfailures.not_found,pojo.getRights()+ "找不到权益，或权益为空");
+                }
+                Product finalProduct1 = product;
+
+
+
+                List<Component> list =  componentRights.stream().map(x->{
+                    Component component = new Component();
+                    component.setUnit_off(x.getQuantity());
+                    component.setDuration(x.getDuration());
+                    component.setComponentRight(x.getId());
+                    component.setProduct(finalProduct1.getId());
+                    component.setSupplier(x.getSupplier());
+                    component.setValidate_way(x.getV());
+                    return component;
+                }).collect(Collectors.toList());
+
+                list = componentRepository.saveAll(list);
+
+            }
+*/
+
+
+
+        }
+
+
+
+        if(product.getType().equals(EnumProductType.Pass)){
+
+
+            componentRightService.assingtoProduct(product,pojo.getPass().getRoyalties());
+
+
+        }
 
         if(product.getType().equals(EnumProductType.Daytour)){
             Tour tour = new Tour();
@@ -103,9 +191,14 @@ public class ProductServiceImpl {
             tour.setTour_name(pojo.getName());
             tour.setTour_name_long(pojo.getName_long());
             tour.setProduct(product.getId());
-            tour = tourRepository.save(tour);
-            product.setTypeToWho(tour.getId());
+            tour.setLine_info(pojo.getDay_tour().getLine_info());
+            tour.setDays(pojo.getDay_tour().getDays().value);
+            tour.setHotels(gson.toJson(pojo.getDay_tour().getHotels()));
 
+            tour = tourRepository.save(tour);
+
+
+            product.setTypeTo(tour.getId());
             product = productRepository.save(product);
 
 
@@ -140,55 +233,175 @@ public class ProductServiceImpl {
 
 
 
+
+
+
+
         if(pojo.getPrices() != null){
-            List<PricingType>  priceTyps = pojo.getPrices().stream().map(x->{
-
-                PricingType pricingType = new PricingType();
-                pricingType.setProductId(finalProduct.getId());
-                pricingType.setType(x.getType());
-                switch (x.getType()){
-                    case ByPerson :{
-                        pricingType.setPrice(x.getByPerson().getPrice());
-                        pricingType.setBy(x.getBy());
-                    }
-                    break; //可选
-                    case ByItem :{
-                        pricingType.setLable(x.getByItem().getLable());
-                        pricingType.setPrice(x.getByItem().getPrice());
-                    }
-                    break; //可选
-                    case Fixed :{
-                        pricingType.setPrice(x.getFixed().getPrice());
-                    }
-                    break; //可选
-                    case ByHour :{
-                        pricingType.setPrice(x.getByHour().getPrice());
-                        pricingType.setMax(x.getByHour().getMax());
-                        pricingType.setMin(x.getByHour().getMin());
-                    };
-                    break; //可选
-                    case ByDay:{
-                        pricingType.setPrice(x.getByHour().getPrice());
-                        pricingType.setMax(x.getByHour().getMax());
-                        pricingType.setMin(x.getByHour().getMin());
-                    };
-                    break; //可选
-                    default:
-
-                }
 
 
-                return pricingType;
+            List<ComponentRight> componentRights = componentRightRepository
+                    .findAllById(pojo.getPrices().stream().map(e->e.getRights()).flatMap(List::stream).collect(Collectors.toList()));
+
+
+
+
+            List<Triplet<PricingType,String,List<ComponentRight>>>  priceTyps = pojo.getPrices().stream().map(x->{
+
+                PricingType pricingType = priceService.getPriceType(finalProduct,x);
+
+                String seq = UUID.randomUUID().toString();
+                pricingType.setStreamSeq(seq);
+                return Triplet.with(pricingType,seq,componentRights);
             }).collect(Collectors.toList());
 
 
-            pricingTypeRepository.saveAll(priceTyps);
+
+
+            List<PricingType> priceTypeList = pricingTypeRepository.saveAll(priceTyps.stream().map(e->e.getValue0()).collect(Collectors.toList()));
+
+
+
+            product.setDefault_price(priceTypeList.get(0).getId());
+
+
+            Map<String,PricingType> pricingTypeMap = priceTypeList.stream().collect(Collectors.toMap(e->e.getStreamSeq(),e->e));
+
+
+
+            List<Component> componentList_all_pricetype = priceTyps.stream().map(ee->{
+                List<ComponentRight> componentRightList = ee.getValue2();
+                PricingType pricingType = pricingTypeMap.get(ee.getValue1());
+
+                return componentRightList.stream().map(com->{
+                    Component component = new Component();
+                    component.setUnit_off(com.getQuantity());
+                    component.setDuration(com.getDuration());
+                    component.setComponentRight(com.getId());
+                    component.setPriceingType(pricingType.getId());
+                    component.setSupplier(com.getSupplier());
+
+                    //  component.setRoyaltyPercent(royalty.getPercent());
+
+                    return component;
+                }).collect(Collectors.toList());
+
+            }).flatMap(List::stream).collect(Collectors.toList());
+
+
+            componentRepository.saveAll(componentList_all_pricetype);
+
+        }
+
+
+        if(pojo.getPrice() != null){
+
+
+            PricingType pricingType = priceService.getPriceType(product,pojo.getPrice());
+            pricingType = pricingTypeRepository.save(pricingType);
+            product.setDefault_price(pricingType.getId());
+
+        }
+
+
+        if(pojo.getBooking_rules() != null){
+            List<BookingRuleVO> bookingRuleVOList  = addBookingRuleWithValidate(product,pojo.getBooking_rules());
+
+            List<BookingRule> bookingRule  = addBookingRule(product,bookingRuleVOList);
+
+
         }
 
 
 
+
+        product = productRepository.save(product);
+
         return Pair.with(product,supplier);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public Pair<Product,Supplier> createPass(Supplier supplier, ProductPojo pojo, List<ComponentRight> componentRightList_) {
+        Product product = new Product();
+
+        product.setType(pojo.getType());
+        product.setCode(idGenService.productNo());
+        product.setSupplierId(supplier.getId());
+        product.setName(pojo.getName());
+        product.setName_long(pojo.getName_long());
+
+        product.setStatus(EnumProductStatus.draft);
+        product.setCreated_at(LocalDateTime.now());
+        product.setUpdated_at(LocalDateTime.now());
+        product.setAcitve(true);
+        product.setShippable(false);
+
+        if(pojo.getPass().getRoyalties().stream()
+                .filter(e->e.getValidate_way().equals(EnumValidateWay.offline_manual))
+                .findAny().isPresent()){
+            product.setValidate_way(EnumValidateWay.offline_manual);
+        }else{
+            product.setValidate_way(EnumValidateWay.none);
+
+        }
+
+
+        product.setRefund(pojo.getIs_refund());
+        product.setLong_desc(pojo.getLong_desc());
+        product.setRefund_note(pojo.getRefund().getNote());
+        product.setNote(pojo.getNote());
+        product.setTags_json((new Gson()).toJson(Arrays.asList(EnumProductTag.支持一卡通,EnumProductTag.支持一卡通)));
+
+        product.setPaymentMethods_json((new Gson()).toJson(pojo.getPayment_methods()));
+        product = productRepository.save(product);
+
+
+
+
+
+
+
+
+        if(product.getType().equals(EnumProductType.Pass)){
+            componentRightService.assingtoProduct(product,pojo.getPass().getRoyalties());
+        }
+
+
+
+        if(pojo.getPrices() != null){
+
+            List<PricingType> pricingTypes = priceService.getPriceType(product,pojo.getPrices());
+            List<PricingType> priceTypeList = pricingTypeRepository.saveAll(pricingTypes);
+        }
+
+
+        if(pojo.getPrice() != null){
+            PricingType pricingType = priceService.getPriceType(product,pojo.getPrice());
+            pricingType = pricingTypeRepository.save(pricingType);
+        }
+
+
+        return Pair.with(product,supplier);
+    }
+
+
+
+
+
+
+
+
 
 
 
@@ -204,14 +417,66 @@ public class ProductServiceImpl {
         return productRepository.findOne(example);
     }
 
-    public BookingRule addBookingRule(Product product, BookingRuleDeparturePojo pojo) {
 
-        BookingRule bookingRule = new BookingRule();
-        bookingRule.setProductId(product.getId());
+    @Transactional
+    public List<BookingRule> addBookingRule(Product product, List<BookingRuleVO> pojo) {
+        bookingRuleRepository.deleteAllByProduct(product.getId());
 
-        bookingRuleRepository.save(bookingRule);
 
-        return bookingRuleRepository.save(bookingRule);
+
+
+        List<BookingRule> bookingRuleList = pojo.stream().map(e->{
+
+
+            BookingRule bookingRuleVO = new BookingRule();
+
+            bookingRuleVO.setProduct(product.getId());
+            bookingRuleVO.setRangetype(e.getRangetype());
+            bookingRuleVO.setBookable(e.getBookable());
+            bookingRuleVO.setPriority(e.getPriority());
+
+            if(e.getRangetype().equals(EnumAvailabilityRangetype.Date_range)){
+
+                // Parses the date
+/*                LocalDate dt1
+                        = LocalDate
+                        .parse("2018-11-03T12:45:30");*/
+                bookingRuleVO.setBookings_from(e.getBookings_from());
+                bookingRuleVO.setBookings_to(e.getBookings_to());
+
+            }
+
+            if(e.getRangetype().equals(EnumAvailabilityRangetype.Time_Range_$all_week$)){
+
+
+                // Parses the date
+/*                LocalDate dt1
+                        = LocalDate
+                        .parse("2018-11-03T12:45:30");*/
+
+                bookingRuleVO.setTime_from(e.getTime_from());
+                bookingRuleVO.setTime_to(e.getTime_to());
+
+            }
+                        if(e.getRangetype().equals(EnumAvailabilityRangetype.Range_of_months)){
+
+                         //   bookingRuleVO.setMonth_from(e.getMonth_from());
+                         //   bookingRuleVO.setMonth_to(e.getMonth_to());
+                            bookingRuleVO.setMonths_json(new Gson().toJson(e.getMonths()));
+                        }
+            if(e.getRangetype().equals(EnumAvailabilityRangetype.Range_of_weeks)){
+
+             //   bookingRuleVO.setWeek_from(e.getWeek_from());
+                bookingRuleVO.setWeeks_json(new Gson().toJson(e.getWeeks()));
+              //  bookingRuleVO.setWeek_to(e.getWeek_to());
+
+            }
+            return bookingRuleVO;
+        }).collect(Collectors.toList());
+
+
+
+        return bookingRuleRepository.saveAll(bookingRuleList);
     }
 
 
@@ -228,11 +493,15 @@ public class ProductServiceImpl {
 
 
         Component component = new Component();
-        component.setSupplier(pojo.getSupplier());
-        component.setProductId(product.getId());
-        component.setSupplierId(componentRight.getSupplierId());
+
+
+        //component.setO(pojo.getSourceType());
+
+
+        component.setProduct(product.getId());
+        component.setSupplier(componentRight.getSupplier());
         component.setRecipient(pojo.getRecipient());
-        component.setComponentRightId(pojo.getComponentRightId());
+        component.setComponentRight(pojo.getComponentRightId());
         component.setUnit_off(pojo.getQuantity());
 
         component =componentRepository.save(component);
@@ -258,6 +527,10 @@ public class ProductServiceImpl {
         return null;
     }
 
+
+
+
+
     public RoyaltyRule addRoyaltyRuleToComponentRight(ComponentRight componentRight, RoyaltyRulePojo pojo) throws Exception {
 
 
@@ -269,7 +542,7 @@ public class ProductServiceImpl {
            // royaltyRule.setSourceType(component.get().getSupplier());
             royaltyRule.setRecipient(pojo.getRecipient());
             royaltyRule.setComponentId(component.get().getId());
-            royaltyRule.setComponentRightId(component.get().getComponentRightId());
+            royaltyRule.setComponentRight(component.get().getComponentRightId());
             royaltyRule.setProductId(component.get().getProductId());
             royaltyRule.setWhenSettle(EnumWhenSettle.payed);
             royaltyRule.setCategory(pojo.getCategory());
@@ -288,9 +561,6 @@ public class ProductServiceImpl {
         return null;
     }
 
-    public Optional<Component> getComponentById(long product_id, int component_rights_id) {
-        return null;
-    }
 
     public BookingQuestion addBookingQuestion(Product product, BookingQuestionPojo pojo) {
         BookingQuestion bookingQuestion = new BookingQuestion();
@@ -377,5 +647,127 @@ public class ProductServiceImpl {
 
 
         return Pair.with(product,supplier);
+    }
+
+    public List<EnumProductType> getSupportProductType() {
+
+
+        return Arrays.asList(EnumProductType.Daytour,
+                EnumProductType.Pass,
+                EnumProductType.Attraction);
+    }
+
+    public List<BookingRuleVO> addBookingRuleWithValidate(Product product, List<BookingRulePojoFuck> pojo) {
+
+
+
+        List<BookingRulePojo> bookingRuleVOList = pojo.stream().map(e->{
+            BookingRulePojo bookingRuleVO = new BookingRulePojo();
+            bookingRuleVO.setBookable(e.getBookable());
+            bookingRuleVO.setPriority(e.getPriority());
+            bookingRuleVO.setRangetype(e.getType());
+
+            if(e.getType().equals(EnumAvailabilityRangetype.Date_range)){
+
+
+
+                // Parses the date
+/*                LocalDate dt1
+                        = LocalDate
+                        .parse("2018-11-03T12:45:30");*/
+                bookingRuleVO.setFrom((String)(e.getValues().get(0)));
+                bookingRuleVO.setTo((String)(e.getValues().get(1)));
+
+            }
+            if(e.getType().equals(EnumAvailabilityRangetype.Range_of_months)){
+
+
+                bookingRuleVO.setMonths((e.getValues().stream().map(month->{
+                    return (String)month;
+                }).collect(Collectors.toList())));
+                //   bookingRuleVO.setMonth_to(Month.valueOf(e.getTo()));
+            }
+            if(e.getType().equals(EnumAvailabilityRangetype.Time_Range_$all_week$)){
+
+
+                // Parses the date
+/*                LocalDate dt1
+                        = LocalDate
+                        .parse("2018-11-03T12:45:30");*/
+
+                bookingRuleVO.setFrom((String)e.getValues().get(0));
+                bookingRuleVO.setTo((String)e.getValues().get(0));
+
+            }
+
+            if(e.getType().equals(EnumAvailabilityRangetype.Range_of_weeks)){
+
+                bookingRuleVO.setWeeks((e.getValues().stream().map(month->{
+                    return (String)month;
+                }).collect(Collectors.toList())));
+
+
+            }
+            return bookingRuleVO;
+        }).collect(Collectors.toList());
+
+
+
+
+
+        List<BookingRuleVO> bookingRuleVOList_ = bookingRuleVOList.stream().map(e->{
+            BookingRuleVO bookingRuleVO = new BookingRuleVO();
+            bookingRuleVO.setBookable(e.getBookable());
+            bookingRuleVO.setPriority(e.getPriority());
+            bookingRuleVO.setRangetype(e.getRangetype());
+            if(e.getRangetype().equals(EnumAvailabilityRangetype.Date_range)){
+
+
+                // Parses the date
+/*                LocalDate dt1
+                        = LocalDate
+                        .parse("2018-11-03T12:45:30");*/
+                bookingRuleVO.setBookings_from(LocalDate
+                        .parse(e.getFrom()));
+                bookingRuleVO.setBookings_to(LocalDate
+                        .parse(e.getTo()));
+
+            }
+            if(e.getRangetype().equals(EnumAvailabilityRangetype.Range_of_months)){
+
+
+                bookingRuleVO.setMonths((e.getMonths().stream().map(month->{
+                    return Month.valueOf(month);
+                }).collect(Collectors.toList())));
+                //   bookingRuleVO.setMonth_to(Month.valueOf(e.getTo()));
+            }
+            if(e.getRangetype().equals(EnumAvailabilityRangetype.Time_Range_$all_week$)){
+
+
+                // Parses the date
+/*                LocalDate dt1
+                        = LocalDate
+                        .parse("2018-11-03T12:45:30");*/
+
+                bookingRuleVO.setTime_from(LocalTime
+                        .parse(e.getFrom()));
+                bookingRuleVO.setTime_to(LocalTime
+                        .parse(e.getTo()));
+
+            }
+
+            if(e.getRangetype().equals(EnumAvailabilityRangetype.Range_of_weeks)){
+
+                bookingRuleVO.setWeeks((e.getWeeks().stream().map(month->{
+                    return DayOfWeek.valueOf(month);
+                }).collect(Collectors.toList())));
+
+
+            }
+            return bookingRuleVO;
+        }).collect(Collectors.toList());
+
+        return bookingRuleVOList_;//
+
     }
 }

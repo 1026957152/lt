@@ -1,10 +1,7 @@
 package com.lt.dom.otcReq;
 
 import com.lt.dom.OctResp.AttributeResp;
-import com.lt.dom.otcenum.EnumAvailabilityType;
-import com.lt.dom.otcenum.EnumProductPricingType;
-import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
-import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.otcReq.product.ProductGiftVoucherPojo;
 import com.lt.dom.vo.ByHour;
 import com.lt.dom.vo.ByItem;
@@ -26,12 +23,66 @@ public class ProductPojo {
     private String name;
     private String source_id;
 
-    private EnumAvailabilityType availability;
+    private EnumAvailabilityType availability_type = EnumAvailabilityType.OPENING_HOURS;
     @NotNull
     private EnumProductType type ;//Museums, Attractions or Hop on Hop off tours
     @NotEmpty
     @Size(max = 100)
     private String name_long;
+
+    @Size(max = 100)
+    private String long_desc;
+
+    public EnumAvailabilityType getAvailability_type() {
+        return availability_type;
+    }
+
+    public void setAvailability_type(EnumAvailabilityType availability_type) {
+        this.availability_type = availability_type;
+    }
+
+    @Valid
+    private List<BookingRulePojoFuck> booking_rules;
+    private Integer shipping_rate;
+
+    public List<BookingRulePojoFuck> getBooking_rules() {
+        return booking_rules;
+    }
+
+    public void setBooking_rules(List<BookingRulePojoFuck> booking_rules) {
+        this.booking_rules = booking_rules;
+    }
+
+    private Boolean is_refund;
+    private String note;
+    private EnumValidateWay validate_way = EnumValidateWay.none;
+
+    public EnumValidateWay getValidate_way() {
+        return validate_way;
+    }
+
+    public void setValidate_way(EnumValidateWay validate_way) {
+        this.validate_way = validate_way;
+    }
+
+    private List<Royalty> royalties;
+
+    public List<Royalty> getRoyalties() {
+        return royalties;
+    }
+
+    public void setRoyalties(List<Royalty> royalties) {
+        this.royalties = royalties;
+    }
+
+
+    public String getLong_desc() {
+        return long_desc;
+    }
+
+    public void setLong_desc(String long_desc) {
+        this.long_desc = long_desc;
+    }
 
     public EnumProductType getType() {
         return type;
@@ -45,15 +96,45 @@ public class ProductPojo {
 
     @Valid
     private List<Price> prices;
+    @Valid
+    private Price price;
 
+    public Price getPrice() {
+        return price;
+    }
 
-    private List<String> images;
+    public void setPrice(Price price) {
+        this.price = price;
+    }
 
-    public List<String> getImages() {
+    private List<ImageReq> images;
+
+    private List<EnumPayChannel> payment_methods;
+
+    public List<EnumPayChannel> getPayment_methods() {
+        return payment_methods;
+    }
+
+    public void setPayment_methods(List<EnumPayChannel> payment_methods) {
+        this.payment_methods = payment_methods;
+    }
+
+    @Size(min = 0,max = 30)
+    List<Long> rights;
+
+    public List<Long> getRights() {
+        return rights;
+    }
+
+    public void setRights(List<Long> rights) {
+        this.rights = rights;
+    }
+
+    public List<ImageReq> getImages() {
         return images;
     }
 
-    public void setImages(List<String> images) {
+    public void setImages(List<ImageReq> images) {
         this.images = images;
     }
 
@@ -73,6 +154,21 @@ public class ProductPojo {
         this.name_long = name_long;
     }
 
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public Integer getShipping_rate() {
+        return shipping_rate;
+    }
+
+    public void setShipping_rate(Integer shipping_rate) {
+        this.shipping_rate = shipping_rate;
+    }
 
 
     public static class Price {
@@ -85,6 +181,21 @@ public class ProductPojo {
         private ByItem byItem;
         private ByPerson byPerson;
         private Fixed fixed;
+
+
+
+
+        @Size(min = 0,max = 30)
+        List<Long> rights;
+
+        public List<Long> getRights() {
+            return rights;
+        }
+
+        public void setRights(List<Long> rights) {
+            this.rights = rights;
+        }
+
         @Override
         public String toString() {
             return ReflectionToStringBuilder.toString(this);
@@ -171,6 +282,7 @@ public class ProductPojo {
 
 
 
+/*
 
     @Size(max = 30)
     List<Long> campaigns;
@@ -182,6 +294,7 @@ public class ProductPojo {
         this.campaigns = campaigns;
     }
 
+*/
 
 
     @Override
@@ -197,11 +310,12 @@ public class ProductPojo {
         this.day_tour = day_tour;
     }
 
+
     public DayTour day_tour;
 
 
     public static class DayTour {
-        @Size(max = 30)
+        @Size(min = 1,max = 30)
         List<Long> campaigns;
         public List<Long> getCampaigns() {
             return campaigns;
@@ -211,31 +325,51 @@ public class ProductPojo {
             this.campaigns = campaigns;
         }
 
-        private String guide_id;//	ID number for the lead customer
+        EnumDaytourDays days;
+        private List<String> hotels;
+
+        public EnumDaytourDays getDays() {
+            return days;
+        }
+
+        public void setDays(EnumDaytourDays days) {
+            this.days = days;
+        }
+
+        public List<String> getHotels() {
+            return hotels;
+        }
+
+        public void setHotels(List<String> hotels) {
+            this.hotels = hotels;
+        }
+
+        /*        private String guide_id;//	ID number for the lead customer
 
         @NotNull
-        private Long guide;//
-
+        private Long guide;//*/
+/*
         public Long getGuide() {
             return guide;
         }
 
         public void setGuide(Long guide) {
             this.guide = guide;
-        }
+        }*/
 
         private String title;//
         private String starts_at;//
         private String ends_at;//
+        @NotNull
         private String line_info;//
 
-        public String getGuide_id() {
+/*        public String getGuide_id() {
             return guide_id;
         }
 
         public void setGuide_id(String guide_id) {
             this.guide_id = guide_id;
-        }
+        }*/
 
         public String getLine_info() {
             return line_info;
@@ -253,9 +387,156 @@ public class ProductPojo {
 
     }
 
+    @Valid
+    public Refund refund;
+
+    public Boolean getIs_refund() {
+        return is_refund;
+    }
+
+    public void setIs_refund(Boolean is_refund) {
+        this.is_refund = is_refund;
+    }
+
+    public Refund getRefund() {
+        return refund;
+    }
+
+    public void setRefund(Refund refund) {
+        this.refund = refund;
+    }
+
+    public static class Refund {
+
+        //@NotEmpty
+        private String note;
+
+        public String getNote() {
+            return note;
+        }
+
+        public void setNote(String note) {
+            this.note = note;
+        }
+    }
 
 
 
 
 
+
+    @Valid
+    public Pass pass;
+
+    public Pass getPass() {
+        return pass;
+    }
+
+    public void setPass(Pass pass) {
+        this.pass = pass;
+    }
+
+    public static class Pass {
+        @Size(min = 1,max = 30)
+        private List<Royalty> royalties;
+        private Iterable<Long> rights;
+
+        public List<Royalty> getRoyalties() {
+            return royalties;
+        }
+
+
+
+        public void setRights(Iterable<Long> rights) {
+            this.rights = rights;
+        }
+    }
+
+
+    public static class Royalty {
+
+        private long component_right;
+        private int amount;
+        private int percent;
+        private EnumValidateWay validate_way = EnumValidateWay.none;
+
+        public EnumValidateWay getValidate_way() {
+            return validate_way;
+        }
+
+        public void setValidate_way(EnumValidateWay validate_way) {
+            this.validate_way = validate_way;
+        }
+
+        public long getComponent_right() {
+            return component_right;
+        }
+
+        public void setComponent_right(long component_right) {
+            this.component_right = component_right;
+        }
+
+        public int getPercent() {
+            return percent;
+        }
+
+        public void setPercent(int percent) {
+            this.percent = percent;
+        }
+    }
+
+
+
+
+
+
+
+    @Valid
+    public Attraction attraction;
+
+    public Attraction getAttraction() {
+        return attraction;
+    }
+
+    public void setAttraction(Attraction attraction) {
+        this.attraction = attraction;
+    }
+
+    public static class Attraction {
+
+
+        private Long id;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+    }
+
+
+
+
+
+    public Boolean shippable = false;
+
+    public List<String> shipping_rates;
+
+    public Boolean getShippable() {
+        return shippable;
+    }
+
+    public void setShippable(Boolean shippable) {
+        this.shippable = shippable;
+    }
+
+    public List<String> getShipping_rates() {
+        return shipping_rates;
+    }
+
+    public void setShipping_rates(List<String> shipping_rates) {
+        this.shipping_rates = shipping_rates;
+    }
 }

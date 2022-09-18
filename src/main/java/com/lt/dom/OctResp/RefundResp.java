@@ -4,6 +4,7 @@ import com.lt.dom.oct.Refund;
 import com.lt.dom.otcenum.EnumRefundReason;
 import com.lt.dom.otcenum.EnumRefundStatus;
 
+import javax.persistence.Column;
 import java.time.LocalDateTime;
 
 
@@ -18,6 +19,7 @@ public class RefundResp {
 
 
     private int amount;
+    @Column(unique=true)
     private String code;
     private String charge_code;
     private String status_text;

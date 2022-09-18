@@ -2,10 +2,8 @@ package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.lt.dom.controllerOct.BookingRestController;
-import com.lt.dom.controllerOct.CampaignRestController;
-import com.lt.dom.controllerOct.PublicationRestController;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.QuotaReq;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import org.javatuples.Pair;
@@ -13,17 +11,17 @@ import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.RepresentationModel;
 
+import javax.persistence.Column;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -51,10 +49,75 @@ public class CampaignResp  {
     private String name_long;
     private String active_text;
     private String discount_category_text;
-    private int totol_count;
+    private Long totol_count;
     private long published_count;
     private String status_text;
     private long unpublished_count;
+    private Map<String, Object> parameters;
+    private EnumCampaignStatus status;
+    private List<QuotaReq> redeem_quotas;
+    private CampaignSummary summary;
+
+    public static CampaignResp from(Campaign campaign) {
+        CampaignResp campaignResp = new CampaignResp();
+        campaignResp.setCampaignType(campaign.getCampaignType());
+
+        campaignResp.setActive(campaign.isActive());
+        campaignResp.setActive_text(campaign.isActive()?"活跃":"不活跃");
+        campaignResp.setStart_date(campaign.getStart_date());
+        campaignResp.setExpiration_date(campaign.getExpiration_date());
+        campaignResp.setDescription(campaign.getDescription());
+        campaignResp.setCharset(campaign.getCharset());
+        campaignResp.setName(campaign.getName());
+        campaignResp.setName_long(campaign.getName_long());
+        campaignResp.setLength(campaign.getLength());
+        campaignResp.setPostfix(campaign.getPostfix());
+        campaignResp.setPrefix(campaign.getPrefix());
+        campaignResp.setPattern(campaign.getPattern());
+        campaignResp.setVoucher_type(campaign.getVouchertype());
+        campaignResp.setVoucher_type_text(campaign.getVouchertype().toString());
+        campaignResp.setVoucher_count(campaign.getVoucher_count());
+        campaignResp.setCode(campaign.getCode());
+        campaignResp.setDescription(campaign.getDescription());
+        campaignResp.setExpiry_days(campaign.getExpiry_days());
+        campaignResp.setPay(campaign.getPay());
+        if(campaign.getPay()){
+            campaignResp.setPay_amount(campaign.getPayAmount());
+        }
+
+        campaignResp.setStatus_text(campaign.getStatus().toString());
+        campaignResp.setStatus(campaign.getStatus());
+        if(EnumDiscountVoucherCategory.AMOUNT.equals(campaign.getDiscountCategory())){
+            campaignResp.setVoucher_info(campaign.getDiscountCategory().toString() +"" +campaign.getAmount_off());
+            campaignResp.setDiscount_category_text(campaign.getDiscountCategory().toString());
+            campaignResp.setDiscount_category(campaign.getDiscountCategory());
+
+        }else{
+            campaignResp.setVoucher_info("????");
+
+        }
+
+
+
+        campaignResp.setVouchers_generation_status(campaign.getVouchers_generation_status());
+        if(campaign.getVouchertype().equals(EnumVoucherType.DISCOUNT_VOUCHER)){
+            campaignResp.setDiscount_category(campaign.getDiscountCategory());
+            if(campaign.getDiscountCategory().equals(EnumDiscountVoucherCategory.AMOUNT)){
+                campaignResp.setAmount_off(campaign.getAmount_off());
+            }
+            if(campaign.getDiscountCategory().equals(EnumDiscountVoucherCategory.PERCENT)){
+                campaignResp.setPercent_off(campaign.getPercent_off());
+            }
+            if(campaign.getDiscountCategory().equals(EnumDiscountVoucherCategory.UNIT)){
+                campaignResp.setUnit_off(campaign.getUnit_off());
+            }
+        }
+
+
+        campaignResp.setCategory(campaign.getCategory());
+        return campaignResp;
+
+    }
 
 
     public String getQr_url() {
@@ -90,9 +153,11 @@ public class CampaignResp  {
 
 
     private String category;
-    private List<Quota> quotas;
+    private List<QuotaReq> claim_quotas;
     private String scenarioCode;
-    private String code;
+    
+@Column(unique=true)
+private String code;
     private List<DocumentResp> documents;
     private String imageLogo;
 
@@ -118,7 +183,7 @@ public class CampaignResp  {
         this.category = category;
     }
 
-    private int voucher_count;
+    private Long voucher_count;
     private EnumCampaignCreationStatus vouchers_generation_status; //IN_PROGRESS, DONE, ERROR
     private String description;
     private boolean active;
@@ -160,11 +225,11 @@ public class CampaignResp  {
 
 
 
-    public int getVoucher_count() {
+    public Long getVoucher_count() {
         return voucher_count;
     }
 
-    public void setVoucher_count(int vouchers_count) {
+    public void setVoucher_count(Long vouchers_count) {
         this.voucher_count = vouchers_count;
     }
 
@@ -304,12 +369,12 @@ public class CampaignResp  {
         return scenario;
     }
 
-    public void setClainQuotas(List<Quota> quotas) {
-        this.quotas = quotas;
+    public void setClain_quotas(List<QuotaReq> claim_quotas) {
+        this.claim_quotas = claim_quotas;
     }
 
-    public List<Quota> getClainQuotas() {
-        return quotas;
+    public List<QuotaReq> getClainQuotas() {
+        return claim_quotas;
     }
 
     public void setScenarioCode(String scenarioCode) {
@@ -384,13 +449,14 @@ public class CampaignResp  {
         campaignResp.setStart_date(campaign.getStart_date());
         campaignResp.setExpiration_date(campaign.getExpiration_date());
         ;
-        String start = campaign.getStart_date().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH"));
-        String end = campaign.getExpiration_date().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH"));
+        String start = campaign.getStart_date().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+        String end = campaign.getExpiration_date().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
         campaignResp.setStart_date_text(start);
         campaignResp.setExpiration_date_text(end);
 
-        campaignResp.setStart_expiration_date_text(start+"时 ~"+end+"时");
+        ;
+        campaignResp.setStart_expiration_date_text(String.format("%s~%s",start,end));
 
 
         campaignResp.setDescription(campaign.getDescription());
@@ -469,7 +535,8 @@ public class CampaignResp  {
         campaignResp.setExpiry_days(campaign.getExpiry_days());
         campaignResp.setPay(campaign.getPay());
         campaignResp.setPay_amount(campaign.getPayAmount());
-
+        campaignResp.setStatus_text(campaign.getStatus().toString());
+        campaignResp.setStatus(campaign.getStatus());
         if(EnumDiscountVoucherCategory.AMOUNT.equals(campaign.getDiscountCategory())){
             campaignResp.setVoucher_info(campaign.getDiscountCategory().toString() +"" +campaign.getAmount_off());
             campaignResp.setDiscount_category_text(campaign.getDiscountCategory().toString());
@@ -501,10 +568,16 @@ public class CampaignResp  {
             }
         }
 
+        ;
+        campaignResp.setRedeem_quotas(quotas.stream().filter(x->x.getClaimRedeem().equals(EnumQuotaClaimOrRedeem.redeem)).map(x->{
+            return QuotaReq.from(x);
+        }).collect(Collectors.toList()));
+
+        campaignResp.setClain_quotas(quotas.stream().filter(x->x.getClaimRedeem().equals(EnumQuotaClaimOrRedeem.claim)).map(x->{
+            return QuotaReq.from(x);
+        }).collect(Collectors.toList()));
 
 
-
-        campaignResp.setClainQuotas(quotas);
         campaignResp.setCategory(campaign.getCategory());
         return campaignResp;
     }
@@ -667,11 +740,11 @@ public class CampaignResp  {
         return discount_category_text;
     }
 
-    public void setTotol_count(int totol_count) {
+    public void setTotol_count(Long totol_count) {
         this.totol_count = totol_count;
     }
 
-    public int getTotol_count() {
+    public Long getTotol_count() {
         return totol_count;
     }
 
@@ -697,5 +770,163 @@ public class CampaignResp  {
 
     public long getUnpublished_count() {
         return unpublished_count;
+    }
+
+    public void setParameters(Map<String, Object> parameters) {
+        this.parameters = parameters;
+    }
+
+    public Map<String, Object> getParameters() {
+        return parameters;
+    }
+
+    public void setStatus(EnumCampaignStatus status) {
+        this.status = status;
+    }
+
+    public EnumCampaignStatus getStatus() {
+        return status;
+    }
+
+    public void setRedeem_quotas(List<QuotaReq> redeem_quotas) {
+        this.redeem_quotas = redeem_quotas;
+    }
+
+    public List<QuotaReq> getRedeem_quotas() {
+        return redeem_quotas;
+    }
+
+    public void setSummary(CampaignSummary summary) {
+        this.summary = summary;
+    }
+
+    public CampaignSummary getSummary() {
+        return summary;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class CampaignSummary {
+
+
+
+        public static CampaignSummary from(Campaign campaign) {
+
+            CampaignSummary campaignSummary = new CampaignSummary();
+            campaignSummary.setTotol(campaign.getVoucher_count());
+            campaignSummary.setTotal_published(campaign.getTotal_published());
+            campaignSummary.setTotal_redeemed(campaign.getTotal_redeemed());
+            campaignSummary.setTotal_succeeded(campaign.getTotal_succeeded());
+            campaignSummary.setTotal_unpublished(campaignSummary.getTotol()-campaignSummary.getTotal_published());
+            campaignSummary.setTotal_bulk_published(campaignSummary.getTotol()-campaignSummary.getTotal_published());
+            campaignSummary.setTotal_bulk_writenoff(campaign.getTotal_redeemed());
+
+
+            return campaignSummary;
+
+        }
+
+
+        private Long total_published;
+        private Long total_bulk_published;
+        private Long total_bulk_writenoff;
+        private Long totol;
+
+
+        private Long total_unpublished;
+
+        private Long total_redeemed;
+        private Long total_failed;
+        private Long total_succeeded;
+        private Long total_rolled_back;
+        private Long total_rollback_failed;
+        private Long total_rollback_succeeded;
+
+        public Long getTotal_published() {
+            return total_published;
+        }
+
+        public void setTotal_published(Long total_published) {
+            this.total_published = total_published;
+        }
+
+        public Long getTotol() {
+            return totol;
+        }
+
+        public void setTotol(Long totol) {
+            this.totol = totol;
+        }
+
+        public long getTotal_unpublished() {
+            return total_unpublished;
+        }
+
+        public void setTotal_unpublished(Long unpublished_count) {
+            this.total_unpublished = unpublished_count;
+        }
+
+        public Long getTotal_redeemed() {
+            return total_redeemed;
+        }
+
+        public void setTotal_redeemed(Long total_redeemed) {
+            this.total_redeemed = total_redeemed;
+        }
+
+        public Long getTotal_failed() {
+            return total_failed;
+        }
+
+        public void setTotal_failed(Long total_failed) {
+            this.total_failed = total_failed;
+        }
+
+        public Long getTotal_succeeded() {
+            return total_succeeded;
+        }
+
+        public void setTotal_succeeded(Long total_succeeded) {
+            this.total_succeeded = total_succeeded;
+        }
+
+        public Long getTotal_rolled_back() {
+            return total_rolled_back;
+        }
+
+        public void setTotal_rolled_back(Long total_rolled_back) {
+            this.total_rolled_back = total_rolled_back;
+        }
+
+        public Long getTotal_rollback_failed() {
+            return total_rollback_failed;
+        }
+
+        public void setTotal_rollback_failed(Long total_rollback_failed) {
+            this.total_rollback_failed = total_rollback_failed;
+        }
+
+        public Long getTotal_rollback_succeeded() {
+            return total_rollback_succeeded;
+        }
+
+        public void setTotal_rollback_succeeded(Long total_rollback_succeeded) {
+            this.total_rollback_succeeded = total_rollback_succeeded;
+        }
+
+        public void setTotal_bulk_published(Long total_bulk_published) {
+            this.total_bulk_published = total_bulk_published;
+        }
+
+        public Long getTotal_bulk_published() {
+            return total_bulk_published;
+        }
+
+        public void setTotal_bulk_writenoff(Long total_bulk_writenoff) {
+            this.total_bulk_writenoff = total_bulk_writenoff;
+        }
+
+        public Long getTotal_bulk_writenoff() {
+            return total_bulk_writenoff;
+        }
     }
 }

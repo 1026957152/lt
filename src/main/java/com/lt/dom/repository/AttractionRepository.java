@@ -8,8 +8,10 @@ import java.util.List;
 
 public interface AttractionRepository extends JpaRepository<Attraction
 			, Long> {
+    List<Attraction> findAllBySupplier(long id);
 
 
-	List<Attraction> findByTouristAttractionId(long tourist_attraction_id);
+
+//	List<Attraction> findByTouristAttractionId(long tourist_attraction_id);
 
 }

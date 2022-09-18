@@ -19,7 +19,9 @@ public class VoucherShadow {
   //  @JsonProperty("id")
     private long id;
 
-    private String code;
+    
+@Column(unique=true) 
+private String code;
     private long campaign;
     private long relateId;
     private boolean published;

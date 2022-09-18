@@ -3,12 +3,15 @@ package com.lt.dom.controllerOct;
 import com.lt.dom.OctResp.PublicationResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.Campaign_inactiveException;
+import com.lt.dom.error.ExistException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.PublicationPojo;
 import com.lt.dom.otcReq.PublicationSearchPojo;
 import com.lt.dom.otcReq.VoucherResp;
 import com.lt.dom.otcenum.EnumAssetType;
+import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
 import com.lt.dom.serviceOtc.AssetServiceImpl;
@@ -17,6 +20,7 @@ import com.lt.dom.serviceOtc.IAuthenticationFacade;
 import com.lt.dom.serviceOtc.PublicationServiceImpl;
 import com.lt.dom.specification.VoucherQueryfieldsCriteria;
 import com.lt.dom.specification.VoucherSpecification;
+import com.lt.dom.util.HttpUtils;
 import com.lt.dom.vo.VoucherPublicationPaymentVo;
 import org.javatuples.Quartet;
 import org.javatuples.Quintet;
@@ -145,10 +149,10 @@ public class PublicationRestController {
                 entityModel.add(linkTo(methodOn(PaymentRestController.class).refund(publicationEntry.getCharge(),null)).withRel("refund"));
             }
 
+            entityModel.add(linkTo(methodOn(VoucherRestController.class).refresh(voucher.getId())).withRel("qr_refresh"));
+
             return entityModel;
         }));
-
-
 
     }
 
@@ -240,11 +244,12 @@ public class PublicationRestController {
         Authentication authentication =  authenticationFacade.getAuthentication();
 
         User user =  authenticationFacade.getUser(authentication);
-
+        String ip = HttpUtils.getRequestIP(request);
 
         if(!user.isRealNameVerified()){
 
         }
+
 
 
         publicationPojo.setUser(user.getId());
@@ -273,6 +278,7 @@ public class PublicationRestController {
 
 
         Session session = new Session();
+        session.setIp(ip);
 /*
         session.setBrowser(c.userAgent.family);
         session.setPlatform(c.os.family);
@@ -286,11 +292,17 @@ public class PublicationRestController {
         Optional<Campaign> validatorOptional = campaignRepository.findById(CAMPAIGN_ID);
         if(validatorOptional.isEmpty()) {
             System.out.println("找不到消费活动");
-            throw new BookNotFoundException(CAMPAIGN_ID,Campaign.class.getSimpleName());
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到消费活动");
         }
         Campaign campaign = validatorOptional.get();
         if(!validatorOptional.get().isActive()) {
             throw new Campaign_inactiveException(campaign.getId(),Campaign.class.getSimpleName(),"活动未开放");
+        }
+
+        long exists = publicationEntryRepository.countByToWhoTypeAndToWhoAndCampaign(EnumPublicationObjectType.customer,user.getId(),campaign.getId());
+
+        if(exists>=campaign.getClain_limit()){
+            throw new ExistException(Enumfailures.invalid_product,"领券超出限额");
         }
 
 

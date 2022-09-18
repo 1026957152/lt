@@ -2,7 +2,9 @@ package com.lt.dom.oct;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.otcenum.EnumLogicalType;
 import com.lt.dom.otcenum.EnumValueListItemType;
+import com.lt.dom.otcenum.EnumValueListType;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -24,7 +26,29 @@ public class ValueList {
     private String created_by;
 
     private String metadata;
-    private String code;
+    
+@Column(unique=true) 
+private String code;
+    private EnumValueListType type;
+
+    private EnumLogicalType logical_type;
+    private String type_text;
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public EnumLogicalType getLogical_type() {
+        return logical_type;
+    }
+
+    public void setLogical_type(EnumLogicalType logical_type) {
+        this.logical_type = logical_type;
+    }
 
     public long getId() {
         return id;
@@ -88,5 +112,21 @@ public class ValueList {
 
     public String getCode() {
         return code;
+    }
+
+    public void setType(EnumValueListType type) {
+        this.type = type;
+    }
+
+    public EnumValueListType getType() {
+        return type;
+    }
+
+    public void setType_text(String type_text) {
+        this.type_text = type_text;
+    }
+
+    public String getType_text() {
+        return type_text;
     }
 }

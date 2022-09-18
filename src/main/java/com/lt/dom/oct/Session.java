@@ -17,6 +17,7 @@ public class Session {
     private EnumSessionFor to;//
 
     private long toWho;//
+    private String ip;
 
     public long getId() {
         return id;
@@ -84,4 +85,11 @@ public class Session {
     }
 
 
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getIp() {
+        return ip;
+    }
 }

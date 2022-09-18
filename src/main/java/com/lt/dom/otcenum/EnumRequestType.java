@@ -22,7 +22,6 @@ public enum EnumRequestType {
 
     tour_approve("voucher_for_batches"),
 
-    //  Approve or Deny a Voucher for Payment -
     ;
 
 

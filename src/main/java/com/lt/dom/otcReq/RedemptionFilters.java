@@ -1,7 +1,7 @@
 package com.lt.dom.otcReq;
 
 
-import com.lt.dom.otcenum.EnumTourBookingStatus;
+import com.lt.dom.otcenum.EnumBookingStatus;
 import com.lt.dom.otcenum.EnumPayChannel;
 
 import java.time.LocalDate;
@@ -12,7 +12,7 @@ public class RedemptionFilters {  // 这个就是机器了啊
 
     private LocalDate Booking_Date;//: This is the date of when the booking was created, online or internally.
     private LocalDate FulfilmentDate;//: This is the date of when your guests attend (or complete) their experience with you.
-    private EnumTourBookingStatus OrderStatus;//: Select an order status from the list to show only those order statuses.
+    private EnumBookingStatus OrderStatus;//: Select an order status from the list to show only those order statuses.
     private EnumPayChannel PaymentStatus;//: Select a payment status from the list to show only those payment statuses.
 
     public LocalDate getBooking_Date() {
@@ -31,11 +31,11 @@ public class RedemptionFilters {  // 这个就是机器了啊
         FulfilmentDate = fulfilmentDate;
     }
 
-    public EnumTourBookingStatus getOrderStatus() {
+    public EnumBookingStatus getOrderStatus() {
         return OrderStatus;
     }
 
-    public void setOrderStatus(EnumTourBookingStatus orderStatus) {
+    public void setOrderStatus(EnumBookingStatus orderStatus) {
         OrderStatus = orderStatus;
     }
 

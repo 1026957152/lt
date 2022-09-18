@@ -223,7 +223,7 @@ public class CompaignPojo {
         this.voucher = voucher;
     }
 
-    private int vouchers_count;
+    private Long vouchers_count;
     private String vouchers_generation_status; //IN_PROGRESS, DONE, ERROR
 
     @NotEmpty
@@ -326,11 +326,11 @@ public class CompaignPojo {
 
 
 
-    public int getVouchers_count() {
+    public Long getVouchers_count() {
         return vouchers_count;
     }
 
-    public void setVouchers_count(int vouchers_count) {
+    public void setVouchers_count(Long vouchers_count) {
         this.vouchers_count = vouchers_count;
     }
 

@@ -7,8 +7,7 @@ import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ClainRedeemAssignmentReq;
 import com.lt.dom.otcReq.ValueListItemReq;
 import com.lt.dom.otcReq.ValueListReq;
-import com.lt.dom.otcenum.EnumValueListItemType;
-import com.lt.dom.otcenum.Enumfailures;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.RuleAssignmentRepository;
 import com.lt.dom.repository.SupplierRepository;
 import com.lt.dom.repository.ValueListItemRepository;
@@ -41,6 +40,29 @@ public class ValueListServiceImpl {
     private SupplierRepository supplierRepository;
 
 
+    public ValueList createValueListWithAdd(ValueListReq pojo) {
+        ValueList valueList =createValueList(pojo);
+
+        List<ValueListItem> optionalValueListItem = valueListItemRepository.findAllByValueList(valueList.getId());
+
+        if(optionalValueListItem.stream().filter(e->pojo.getItem_ids().contains(e.getValue())).findAny().isPresent()){
+            throw new ExistException(Enumfailures.general_exists_error,"已经存在该对象了");
+        }
+
+
+
+        List<ValueListItem> valueListItem = addValueListItem(valueList, pojo.getItem_ids().stream().map(e->{
+
+            ValueListItemReq valueListItemReq = new ValueListItemReq();
+            valueListItemReq.setValue(e.toString());
+            valueListItemReq.setValue_list(valueList.getId());
+            return valueListItemReq;
+        }).collect(Collectors.toList()));
+
+        return valueList;
+    }
+
+
 
     public ValueList createValueList(ValueListReq pojo) {
         ValueList valueList = new ValueList();
@@ -48,7 +70,12 @@ public class ValueListServiceImpl {
         valueList.setCreated(LocalDateTime.now());
         valueList.setAlias(pojo.getAlias());
         valueList.setName(pojo.getName());
-        valueList.setItem_type(pojo.getItem_type());
+
+        valueList.setType(pojo.getType());
+        if(pojo.getType().equals(EnumValueListType.Vendor_groups)){
+            valueList.setItem_type(EnumValueListItemType.supplier_id);
+            valueList.setLogical_type(EnumLogicalType.exclusion);
+        }
 
         valueListRepository.save(valueList);
         return valueList;
@@ -114,6 +141,28 @@ public class ValueListServiceImpl {
         List<ValueListItem> valueListItem = addValueListItem(valueList, Arrays.asList(valueListItemReq));
 
         return valueListItem;
+
+    }
+
+    public ValueList edit(ValueList valueList, ValueListReq pojo) {
+
+        List<ValueListItem> optionalValueListItem = valueListItemRepository.findAllByValueList(valueList.getId());
+
+        if(optionalValueListItem.stream().filter(e->pojo.getItem_ids().contains(e.getValue())).findAny().isPresent()){
+            throw new ExistException(Enumfailures.general_exists_error,"已经存在该对象了");
+        }
+
+
+
+        List<ValueListItem> valueListItem = addValueListItem(valueList, pojo.getItem_ids().stream().map(e->{
+
+            ValueListItemReq valueListItemReq = new ValueListItemReq();
+            valueListItemReq.setValue(e.toString());
+            valueListItemReq.setValue_list(valueList.getId());
+            return valueListItemReq;
+        }).collect(Collectors.toList()));
+
+        return valueList;
 
     }
 }

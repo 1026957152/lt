@@ -1,18 +1,19 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.OctResp.CampaignAssignToTourBookingResp;
-import com.lt.dom.OctResp.GuideInchargeBookingResp;
-import com.lt.dom.OctResp.TourbookingGuideResp;
-import com.lt.dom.OctResp.TourbookingTourResp;
+import com.lt.dom.OctResp.*;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.BookingDocumentIdsResp;
 import com.lt.dom.otcenum.EnumAssociatedType;
+import com.lt.dom.otcenum.EnumExportVoucher;
 import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.otcenum.EnumSupplierType;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.AssetServiceImpl;
 import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import com.lt.dom.specification.GuideSpecification;
+import com.lt.dom.specification.SearchQuery;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Quintet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -59,6 +57,14 @@ public class GuideRestController {
     private CampaignAssignToTourBookingRepository campaignAssignToTourBookingRepository;
     @Autowired
     private SupplierRepository supplierRepository;
+
+    @Autowired
+    private GuideRepository guideRepository;
+
+
+    @Autowired
+    private UserRepository userRepository;
+
 
 
     @GetMapping(value = "guides/{GUIDE_ID}/incharge_bookings", produces = "application/json")
@@ -173,6 +179,54 @@ public class GuideRestController {
     }
 
 
+
+
+
+
+
+
+
+
+    @GetMapping(value = "/guides/Page_getGuideList", produces = "application/json")
+    public EntityModel<Map<String,Object>> Page_getGuideList() {
+
+
+        EntityModel entityModel = EntityModel.of(Map.of("type_list", Arrays.stream(EnumSupplierType.values()).map(x->{
+
+                    EnumResp enumResp = new EnumResp();
+                    enumResp.setId(x.name());
+                    enumResp.setText(x.toString());
+                    return enumResp;
+                }).collect(Collectors.toList()),
+                "status_list", Arrays.stream(EnumSupplierType.values()).map(x->{
+
+                    EnumResp enumResp = new EnumResp();
+                    enumResp.setId(x.name());
+                    enumResp.setText(x.toString());
+                    return enumResp;
+                }).collect(Collectors.toList())));
+        entityModel.add(linkTo(methodOn(ExportRestController.class).createExport(EnumExportVoucher.redemption,null)).withRel("createExport"));
+
+        entityModel.add(linkTo(methodOn(GuideRestController.class).getGuideList(null,null,null)).withRel("getGuideList"));
+        return entityModel;
+    }
+
+    @GetMapping(value = "/guides", produces = "application/json")
+    public ResponseEntity<PagedModel> getGuideList(SearchQuery searchQuery,Pageable pageable, PagedResourcesAssembler<EntityModel<EnumLongIdResp>> assembler) {
+
+        String search = searchQuery.getSearch();
+        System.out.println("=================:" + search.toString() + "");
+        GuideSpecification spec =
+                new GuideSpecification(Arrays.asList("real_name","code","phone"), search); //, "code", "claim_note"
+
+        Page<Guide> campaignPageable = guideRepository.findAll(pageable);
+        List<User> users = userRepository.findAllById(campaignPageable.stream().map(x->x.getUserId()).collect(Collectors.toList()));
+        Map<Long, User> longUserMap = users.stream().collect(Collectors.toMap(x->x.getId(), x->x));
+        Page<EntityModel<EnumLongIdResp>> campaignResps = GuideResp.pageMapToListEnumSimple(campaignPageable,longUserMap);
+        return ResponseEntity.ok(assembler.toModel(campaignResps));
+
+
+    }
 
 
 

@@ -1,9 +1,12 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.otcenum.EnumVoucherRedemptionStatus;
+import com.lt.dom.otcenum.EnumComponentVoucherStatus;
+import com.lt.dom.otcenum.EnumDuration;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class ComponentVounch {   // 这个是 下单的时候， 从 product 中生成 的
@@ -15,12 +18,32 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
     @JsonProperty("id")
     private long id;
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     @Transient
     private RoyaltyRule royaltyRule;
-    private long componentId;
+
+
+    private Long component;
     private long royaltyRuleId;
     private String snCode;
-    private long reservationId;
+    private long reservation;
+
+    @NotNull
+    private EnumDuration duration;
+
+    @NotNull
+    private Long user;
+
+    @NotNull
+    private Long supplier;
+    private long pass;
 
     public RoyaltyRule getRoyaltyRule() {
         return royaltyRule;
@@ -30,21 +53,28 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
         this.royaltyRule = royaltyRule;
     }
 
-    @Transient
-    private ComponentRight componentRight;
 
-    private long componentRightId;
+    private long componentRight;
 
-    public long getComponentRightId() {
-        return componentRightId;
+    public long getComponentRight() {
+        return componentRight;
     }
 
-    public void setComponentRightId(long componentRightId) {
-        this.componentRightId = componentRightId;
+    public void setComponentRight(long componentRightId) {
+        this.componentRight = componentRightId;
     }
 
-    private String name;
-    private EnumVoucherRedemptionStatus voucher_redemption_status;
+    @NotNull
+    private EnumComponentVoucherStatus status;
+
+    public EnumComponentVoucherStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EnumComponentVoucherStatus status) {
+        this.status = status;
+    }
+
     private String redeem_voucher_key;
     @Transient
     private Voucher voucher;
@@ -65,22 +95,36 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
     private String note;
 
 
-    private int count;  //一次， 无数次，  五次，
+    private Long redeemed_quantity;// (integer, required) - How many times a voucher has already been redeemed.
 
-    public int getCount() {
+    private Integer redeemed_amount;// (integer) - Total Amount redeemed by the voucher. Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 balance is written as 10000.
+
+
+
+    private Long count;  //一次， 无数次，  五次，
+
+    public Long getCount() {
         return count;
     }
 
-    public void setCount(int count) {
+    public Long getRedeemed_quantity() {
+        return redeemed_quantity;
+    }
+
+    public void setRedeemed_quantity(Long redeemed_quantity) {
+        this.redeemed_quantity = redeemed_quantity;
+    }
+
+    public void setCount(Long count) {
         this.count = count;
     }
 
-    public void setComponentId(long componentId) {
-        this.componentId = componentId;
+    public void setComponent(Long componentId) {
+        this.component = componentId;
     }
 
-    public long getComponentId() {
-        return componentId;
+    public Long getComponent() {
+        return component;
     }
 
     public void setRoyaltyRuleId(long royaltyRuleId) {
@@ -99,11 +143,48 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
         return snCode;
     }
 
-    public void setReservationId(long reservationId) {
-        this.reservationId = reservationId;
+    public void setReservation(long reservationId) {
+        this.reservation = reservationId;
     }
 
-    public long getReservationId() {
-        return reservationId;
+    public long getReservation() {
+        return reservation;
+    }
+
+    public void setDuration(EnumDuration duration) {
+        this.duration = duration;
+    }
+
+    public EnumDuration getDuration() {
+        return duration;
+    }
+
+    public void setUser(Long user) {
+        this.user = user;
+    }
+
+    public Long getUser() {
+        return user;
+    }
+
+    public void setSupplier(Long supplier) {
+        this.supplier = supplier;
+    }
+
+    public Long getSupplier() {
+        return supplier;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
+
+    public void setPass(long pass) {
+        this.pass = pass;
+    }
+
+    public long getPass() {
+        return pass;
     }
 }

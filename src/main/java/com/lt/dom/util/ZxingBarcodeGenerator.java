@@ -9,7 +9,10 @@ import com.google.zxing.oned.UPCAWriter;
 import com.google.zxing.pdf417.PDF417Writer;
 import com.google.zxing.qrcode.QRCodeWriter;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.util.Base64;
 
 public class ZxingBarcodeGenerator {
 
@@ -47,5 +50,22 @@ public class ZxingBarcodeGenerator {
 
         return MatrixToImageWriter.toBufferedImage(bitMatrix);
     }
+
+
+    public static String base64_png(String barcodeText) throws Exception {
+        QRCodeWriter barcodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = barcodeWriter.encode(barcodeText, BarcodeFormat.QR_CODE, 200, 200);
+
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ImageIO.write(MatrixToImageWriter.toBufferedImage(bitMatrix), "png", os);
+
+
+        String result = Base64.getEncoder().encodeToString(os.toByteArray());
+
+
+        return result;
+    }
+
 
 }

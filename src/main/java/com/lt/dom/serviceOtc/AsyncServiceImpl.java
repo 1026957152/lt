@@ -106,7 +106,7 @@ public class AsyncServiceImpl {
 
             List<RedemptionEntry> redemptionEntryList = redemptionEntryRepository.findAll();
 
-            Map<Long,Supplier> longSupplierMap = supplierRepository.findAllById(redemptionEntryList.stream().map(x->{
+/*            Map<Long,Supplier> longSupplierMap = supplierRepository.findAllById(redemptionEntryList.stream().map(x->{
                 return x.getSupplier();
             }).collect(Collectors.toList())).stream().collect(Collectors.toMap(x->x.getId(),x->x));
 
@@ -121,15 +121,17 @@ public class AsyncServiceImpl {
             }).collect(Collectors.toList()));
 
 
-            Map<Long,Traveler> travelerMap = travelers.stream().collect(Collectors.toMap(x->x.getId(),x->x));
+            Map<Long,Traveler> travelerMap = travelers.stream().collect(Collectors.toMap(x->x.getId(),x->x));*/
+
+
+
             EasyWriteDemo1 excelPOIHelper = new EasyWriteDemo1(fileLocation);
 
-
-
             List<ExcelRedemption> collect = redemptionEntryList.stream().map(x->{
-                Traveler traveler = travelerMap.getOrDefault(x.getRelatedObjectId(),new Traveler());
-                Supplier supplier = longSupplierMap.get(x.getSupplier());
-                return ExcelRedemption.from(x,traveler,supplier);
+/*                Traveler traveler = travelerMap.getOrDefault(x.getRelatedObjectId(),new Traveler());
+                Supplier supplier = longSupplierMap.get(x.getSupplier());*/
+
+                return ExcelRedemption.from(x);
             }).collect(Collectors.toList());
 
             excelPOIHelper.exportRedemptionEntry(collect);

@@ -2,28 +2,30 @@ package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.otcenum.EnumValidatorType;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.*;
 
 @Entity
-public class Validator {  // 这个就是机器了啊
+public class Validator_ {  // 这个就是机器了啊
 
     @Version
     private Integer version;
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @JsonProperty("id")
     private long id;
     private long userId;
 
-    private long equipmentId;
+    private long device;
+    private long role;
 
-    public long getEquipmentId() {
-        return equipmentId;
+    public long getDevice() {
+        return device;
     }
 
-    public void setEquipmentId(long equipmentId) {
-        this.equipmentId = equipmentId;
+    public void setDevice(long equipmentId) {
+        this.device = equipmentId;
     }
 
     private EnumValidatorType type; //指定人工，机器, 所有人工
@@ -93,5 +95,17 @@ public class Validator {  // 这个就是机器了啊
 
     public void setValidatorGroup(ValidatorGroup validatorGroup) {
         this.validatorGroup = validatorGroup;
+    }
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
+
+    public long getRole() {
+        return role;
+    }
+
+    public void setRole(long role) {
+        this.role = role;
     }
 }

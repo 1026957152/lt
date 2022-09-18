@@ -1,15 +1,13 @@
 package com.lt.dom.serviceOtc;
 
-import com.alipay.api.internal.util.file.IOUtils;
-import com.lt.dom.OctResp.DocumentResp;
+import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.controllerOct.FileUploadController;
-import com.lt.dom.oct.Document;
-import com.lt.dom.oct.Reservation;
-import com.lt.dom.oct.TempDocument;
-import com.lt.dom.oct.TourBooking;
+import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumDocumentType;
+import com.lt.dom.otcenum.EnumPhotos;
 import com.lt.dom.repository.DocumentRepository;
 import com.lt.dom.repository.TempDocumentRepository;
+import com.lt.dom.vo.ImageVo;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -17,9 +15,9 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import javax.imageio.ImageIO;
 import java.io.IOException;
@@ -29,9 +27,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.collectingAndThen;
@@ -205,8 +206,87 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     }
 
+
     @Override
-    public List<Document> saveFromTempDocumentList(long id, List<Pair<EnumDocumentType, TempDocument>> fileNames) {
+    public List<Document> saveFromTempDocumentCode(String code, List<Pair<EnumDocumentType, TempDocument>> fileNames) {
+
+
+        List<Document> documents = IntStream.range(0, fileNames.size()).mapToObj(x->{
+            Pair<EnumDocumentType, TempDocument> pair=     fileNames.get(x);
+
+            EnumDocumentType documentType = pair.getValue0();
+            TempDocument tempDocument = pair.getValue1();
+
+            String extension = StringUtils.getFilenameExtension(tempDocument.getOriginalFilename());
+
+            Document document = new Document();
+            document.setIndex(x);
+            document.setExtension(extension);
+            document.setImage(tempDocument.getImage());
+            document.setCode(idGenService.documentCode());
+            document.setTempDocumentCode(tempDocument.getCode());
+
+            document.setType(documentType);
+            document.setReference(code);
+            // document.setRaletiveId(id);
+            String filename = document.getTempDocumentCode()+"."+extension;
+            document.setFileName(filename);
+            document.setCreated_at(LocalDateTime.now());
+            document.setUpdated_at(LocalDateTime.now());
+            document.setSize(tempDocument.getSize());
+            document.setOriginalFilename(tempDocument.getOriginalFilename());
+            return document;
+        })  .collect(Collectors.toList());
+
+
+
+        documents = documentRepository.saveAll(documents);
+
+        return documents;
+    }
+
+
+    private Document saveFromTempDocumentWithRichi(String code, ImageVo imageVo ,Pair<EnumDocumentType, TempDocument> fileNames) {
+
+
+        EnumDocumentType documentType = fileNames.getValue0();
+        TempDocument tempDocument = fileNames.getValue1();
+
+        String extension = StringUtils.getFilenameExtension(tempDocument.getOriginalFilename());
+
+        Document document = new Document();
+        document.setExtension(extension);
+        document.setImage(tempDocument.getImage());
+        document.setCode(idGenService.documentCode());
+        document.setTempDocumentCode(tempDocument.getCode());
+
+        document.setType(documentType);
+        document.setReference(code);
+        // document.setRaletiveId(id);
+        String filename = document.getTempDocumentCode()+"."+extension;
+        document.setFileName(filename);
+        document.setCreated_at(LocalDateTime.now());
+        document.setUpdated_at(LocalDateTime.now());
+        document.setSize(tempDocument.getSize());
+        document.setOriginalFilename(tempDocument.getOriginalFilename());
+
+
+
+        document.setIndex(imageVo.getIndex());
+        document.setDesc(imageVo.getDesc());
+        document.setVisiable(imageVo.isVisible());
+
+
+        document = documentRepository.save(document);
+
+        return document;
+    }
+
+
+
+
+    @Override
+    public List<Document> saveFromTempDocumentCode(long id, List<Pair<EnumDocumentType, TempDocument>> fileNames) {
 
         List<Document> documents = fileNames.stream().map(x->{
 
@@ -248,7 +328,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         document.setCode(tempDocument.getCode());
         document.setType(documentType);
         document.setRaletiveId(id);
-        String filename = document.getCode()+"."+extension;
+        String filename = document.getTempDocumentCode()+"."+extension;
         document.setFileName(filename);
         document.setCreated_at(LocalDateTime.now());
         document.setUpdated_at(LocalDateTime.now());
@@ -264,8 +344,20 @@ public class FileStorageServiceImpl implements FileStorageService {
 
 
     }
+    @Override
+    public List<PhotoResp> loadDocuments(EnumDocumentType scenario_logo, String reference) {
+        List<Document> documents = documentRepository.findAllByTypeAndReference(scenario_logo,reference);
 
+        return documents.stream().map(x->FileStorageServiceImpl.url_range(Arrays.asList(EnumPhotos.thumb),x)).collect(toList());
 
+    }
+
+    @Override
+    public List<PhotoResp> loadDocumentsWithCode(EnumDocumentType scenario_logo, String reference) {
+        List<Document> documents = documentRepository.findAllByTypeAndReference(scenario_logo,reference);
+        return documents.stream().map(x->FileStorageServiceImpl.url_rangeWithCode(x)).collect(toList());
+
+    }
     @Override
     public Map<EnumDocumentType, List<String>> loadDocuments(List<EnumDocumentType> scenario_logo, long id) {
 
@@ -298,9 +390,98 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     }
 
-    public static String url(TempDocument tempDocument) {
+    public static PhotoResp url(TempDocument tempDocument) {
+
+        return url_range(tempDocument);
+    }
+
+
+
+
+    public static PhotoResp url_range(TempDocument tempDocument) {
+
+        String filename = tempDocument.getFileName();
+        PhotoResp photoResp = new PhotoResp();
+
+        photoResp.setUrl_thumbnail(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl_large(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl_xlarge(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl_original(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+
+        photoResp.setDesc("tempDocument.getNote()");
+
+
+
+        return photoResp;
+
+
+
+    }
+
+
+    public static PhotoResp url_range(List<EnumPhotos> enumPhotosList,Document tempDocument) {
+
+
+
+        String filename = tempDocument.getFileName();
+        PhotoResp photoResp = new PhotoResp();
+
+        if(enumPhotosList.contains(EnumPhotos.thumb)){
+            photoResp.setUrl_thumbnail(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+
+        }
+        if(enumPhotosList.contains(EnumPhotos.large)){
+            photoResp.setUrl_xlarge(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+
+        }
+        if(enumPhotosList.contains(EnumPhotos.medium)){
+            photoResp.setUrl_large(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+
+        }
+        if(enumPhotosList.contains(EnumPhotos.full)){
+            photoResp.setUrl_original(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+            photoResp.setUrl(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+
+        }
+
+
+        photoResp.setDesc(tempDocument.getDesc());
+        photoResp.setVisiable(tempDocument.getVisiable());
+        photoResp.setCode(tempDocument.getTempDocumentCode());
+        return photoResp;
+
+
+
+    }
+
+
+    public static PhotoResp url_rangeWithCode(Document document) {
+
+        String filename = document.getFileName();
+        PhotoResp photoResp = new PhotoResp();
+
+        photoResp.setUrl_thumbnail(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl_large(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl_xlarge(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl_original(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+
+        photoResp.setDesc("tempDocument.getNote()");
+
+        photoResp.setCode(document.getTempDocumentCode());
+
+
+        return photoResp;
+
+
+
+    }
+
+    public static String url_(TempDocument tempDocument) {
         return url(tempDocument.getFileName());
     }
+
 
 
     public static String url(String filename) {
@@ -334,6 +515,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
     public Map<EnumDocumentType,TempDocument> loadTempDocument(List<Pair<EnumDocumentType, String>> asList) {
 
+        asList = asList.stream().filter(e-> !ObjectUtils.isEmpty(e.getValue1())).collect(Collectors.toList());
         Map<String,EnumDocumentType> documentTypeMap = asList.stream().collect(Collectors.toMap(e->e.getValue1(),e->e.getValue0()));
 
         List<TempDocument> tempDocuments = tempDocumentRepository.findAllByCodeIn(asList.stream().map(x->x.getValue1()).collect(Collectors.toList()));
@@ -341,4 +523,116 @@ public class FileStorageServiceImpl implements FileStorageService {
         Map<EnumDocumentType,TempDocument> m = tempDocuments.stream().collect(Collectors.toMap(x->documentTypeMap.get(x.getCode()),x->x));
         return m;
     }
+
+
+    @Override
+    public PhotoResp loadDocument(String thumbnail_image) {
+        if(thumbnail_image != null){
+            Optional<Document> documentOptional = documentRepository.findByCode(thumbnail_image);
+
+            if(documentOptional.isPresent()){
+                return url_range(Arrays.asList(EnumPhotos.thumb),documentOptional.get());
+            }
+
+
+        }
+        return null;
+
+    }
+
+    @Override
+    public PhotoResp loadDocument(EnumDocumentType type, String reference) {
+
+
+        return loadDocument(Arrays.asList(EnumPhotos.values()),type,reference);
+
+
+    }
+
+
+    @Override
+    public PhotoResp loadDocument(List<EnumPhotos> asList, EnumDocumentType type, String reference) {
+        List<Document> documentOptional = documentRepository.findAllByTypeAndReference(type,reference);
+
+        if(documentOptional.size() > 0){
+            return url_range(asList,documentOptional.get(0));
+        }
+
+
+        return null;
+    }
+
+    @Override
+    public PhotoResp loadDocumentWithCode(EnumDocumentType type, String code) {
+
+            List<Document> documentOptional = documentRepository.findAllByTypeAndReference(type,code);
+
+            if(documentOptional.size() > 0 ){
+                return url_rangeWithCode(documentOptional.get(0));
+            }
+            return null;
+    }
+
+
+
+
+    @Override
+    public String saveFromTempDocumentCode(String objectCode, EnumDocumentType type, String tempDocCode) {
+
+
+        Optional<TempDocument> tempDocumentOptional_video = tempDocumentRepository.findByCode(tempDocCode);
+
+
+        if(tempDocumentOptional_video.isPresent()){
+            List<Document> documents = saveFromTempDocumentCode(
+                    objectCode,
+                    Arrays.asList(Pair.with(type,tempDocumentOptional_video.get())));
+
+            return documents.get(0).getCode();
+        }
+
+        return null;
+
+    }
+
+    @Override
+    public String saveFromTempDocument(String objectCode, EnumDocumentType type, TempDocument tempDocCode) {
+        List<Document> documents = saveFromTempDocumentCode(
+                objectCode,
+                Arrays.asList(Pair.with(type,tempDocCode)));
+
+        return documents.get(0).getCode();
+    }
+
+    @Override
+    public Document saveFromTempDocumentWithRich(String objectCode, ImageVo imageVo, EnumDocumentType type, TempDocument tempDocCode) {
+
+
+            Document documents = saveFromTempDocumentWithRichi(
+                    objectCode,
+                    imageVo,
+                    Pair.with(type,tempDocCode));
+
+            return documents;
+
+
+    }
+
+    @Override
+    public Map<String, List<PhotoResp>> loadDocuments(EnumDocumentType scenario_logo, List<String> reference) {
+
+        List<Document> documents = documentRepository.findAllByTypeAndReferenceIn(scenario_logo,reference);
+
+        System.out.println("找到了  document "+ documents);
+        Map<String, List<Document>>  stringListMap =  documents.stream().collect(Collectors.groupingBy(e->e.getReference()));
+
+
+       return stringListMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(x->{
+            return FileStorageServiceImpl.url_rangeWithCode(x);
+
+        }).collect(Collectors.toList())));
+
+    }
+
+
 }

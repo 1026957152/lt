@@ -55,7 +55,9 @@ public class ExportResp {
     private EnumExportStatus status;
     private String status_text;
     private String resultUrl;
-    private String code;
+    
+
+private String code;
     private LocalDateTime done_at;
     private long duration;
     private long total_succeeded;

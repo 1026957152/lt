@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.otcenum.EnumRefundReason;
 import com.lt.dom.otcenum.EnumRefundStatus;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -25,7 +22,9 @@ public class Refund {
 
 
     private int amount;
-    private String code;
+    
+@Column(unique=true)
+private String code;
     private String charge_Code;
 
     public int getAmount() {

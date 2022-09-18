@@ -100,7 +100,7 @@ public class AuthenticationTokenProvider implements AuthenticationProvider {
         //TODO 这里 给 赋值 getUsername 是否合适呀，  卫视不复制 getPhone 等
 
 
-        IdentityVo identityVo_ = new IdentityVo(EnumIdentityType.weixin,user.get().getUsername());
+        IdentityVo identityVo_ = new IdentityVo(EnumIdentityType.user_code,user.get().getCode());
 
         org.springframework.security.core.userdetails.UserDetails userDetails =  userDetailsService.loadUserByUsername(gson.toJson(identityVo_));
 

@@ -39,7 +39,9 @@ public class Payout {
     //Message to user further explaining reason for payout failure if available.
 
     private EnumPayoutMethod method;
-    private String code;
+    
+@Column(unique=true) 
+private String code;
 
     public long getId() {
         return id;

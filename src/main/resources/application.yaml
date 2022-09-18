@@ -1,13 +1,37 @@
 
+feign:
+  client:
+    config:
+      remoteRuntimeService:
+        url: "http://your-process-engine-host/rest/engine/default/"
 
+camunda.bpm.client.base-url: http://localhost:8080/engine-rest
+queue:
+  name: teste
 
+server:
+  port: 8082
 
 spring:
+  rabbitmq:
+    host: 10.0.0.50  #mq服务器ip,默认为localhost
+    listener:
+      simple:
+        acknowledge-mode: manual #开启手动Ack
+    publisher-confirm-type: simple
+    publisher-returns: true   # 发送者开启 return 确认机制
+  template:
+    mandatory: true
+
+
+
   servlet:
+
     multipart:
       max-request-size: 50MB
       max-file-size: 50MB
-
+  main:
+    allow-bean-definition-overriding: true
   security:
     user:
       name: user
@@ -35,6 +59,28 @@ spring:
 lt:
   url: http://localhost:8080
 
+
+alipay01:
+  appid: 2016101400683665
+  gatewayUrl: https://openapi.alipaydev.com/gateway.do
+  format: JSON
+  charset: utf-8
+  signType: RSA2
+  notifyUrl: http://39.106.34.220:8080/pa/notify
+  returnUrl: http://nd7b6i.natappfree.cc/return
+  app-private-key: MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCAN0KDGnPDiany6PpGAf9/FQJVNy7kylSJ1w7PBUqQtikMC1qcsQnQkR4I1GfGWxijAhfHGcVBj7rPnfvWArz7NZYtxni/GGEI/kA7OgMorQ+uZ3+Lilbo9Z2qSoKTVy7pm1OOAewCyDs4a08XWPkorqBTIOQTcLCMeSbdN592BokDxEegR2ATXsZ0xJH+CipEoXjyFzmRpueQSQOTg0nAYo0XKch9d0v75euDtztTbVzVY+fXb6uWGiBjo5XikSXOZVrj+HNKtdYiPWgf1PvehCdRtxDKyN4ik6Pz+mwHqsi9ivQJXO6xz+BuRH1R40b2LR5Zxd+YghR9Ya+IqPZDAgMBAAECggEAJZcN6v4AXp2ns83WQlwnmgyAyJcLKoyfSGJCtzMn71FYq21QvYuyAvHoylHrst3WVUQx0G+fw17uOBxrTw0ydrv5MaZ0lCIDoO1Zy4NwlaZXaJxzame+n0ITXW/G5Ie0+0xMrN+nYBFwO1RKtd+h/Ollm7mS5JgvSp/iYw0BtUo+nAPV8xflemxRjbUBD3r74Xp5TLDbuJtLicR/GoM22tdZUspIU78AiSUyehhQ1SkeNjldkCiWQg1XYSzCMza1SM736nJfZAQSsrESAP7fS40m7I3Sq6NlhB7+f9Z2M6hNq+GPqrSUV3WsJrEgWfkgzr8XyrI4XB8n/roO0ZMJAQKBgQDE2fT6vnfh1SZqPUAJ55/IfGdeor62U/TxxJwK0yxiUTCAQFQGHNdoxk9OoPKzm9xNQ5mkNR1jWo80ov2k27isFumMGiVnezkMR94b5JHZoBYcHlhchbbpAdv3HlsaimQqFEgDj+RwaSd0eiV/G/NQd/3TIPllRMkR5UiCcDHbwQKBgQCmvcaj8+7E9eb62PdDrXpnzFpBcHCELkeOSJjysF+gSRZVt7CLe9cfndzOgyxqVQacMhsCFpTQk/apyzLcRNd0yx6IZOhQE1alk3C+EU7NJ1IccgH0mnlA5G9ELf+YIS0glzRzBAh0UTYjCrpAp3z4OgW+Xg0py2bhvVm4yQgjAwKBgBtauks5uoj8SKlMt6BounBusSKadOv7QLdz/ccXTzyeUaIQzlxHF7vsisq/XNqOlw95jFkgNGRBClNjLuIA0mm/iVa5r2bw3Z2SQxAXNBlMwKXJpbe9sQwyAPIXGsvWXVLnnJY6IaFpS11JN/qw1J/i/LehBmcHJvXAqdHOa29BAoGBAJU2z0R5TvtDc2iYMO6HmDq7TSmyjX48TBywKu9Dls/BmBMtRvgL4v+QLcFA8cZWQIwW6sR7oMDnKJ3aEbG8iXMjMjes1ZiTNb8GqqXspzBAN+Lsw4M5mbjQtCG3aDujtNateWpT+Zzd8Cx7tSGWwOcCRZGOaQk11OO+p0QN4xIxAoGBAK+9vcx0CellpCOLrgda+7ZvRLvSRRxXMshmXy6NK7N5VPfHlVtkbvQlrS8sW6TSmTLsTyIvcRBrZEh6ADqMzch+37oZX3GXRrO35pcc+amDuppJk9j/8MSp29NMTMgxD1AabTcqvdj0szJm2QCs99KpOHMeh5YFIHMJLjb0joA5
+  alipay-public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgS7siBDwCsBzdl1bBpv14mRVapoabshXFJ2aiS39+u8/x6ni0rd4P95Ixt+k3pKcB9s3FDb0sTYFMtam+DhMRlIA6vV0QKUkCfiR6+i5iuzKkFHFtxTryIhrNIgm3fpMdHPAIQfMO3sNSBszi7iG9JTCPSU69spxnoz+yoU9H3os9madu3x+sJ4J7v+ftBenPC/XT0bbusJDU0lOxnY9A6ZdKqHabFTr2eupaEBFhkrTLAu1QaGzPfNjxmc9nkwWap+CQ0g4cOkkG8lc3beey+r/hiRBeuy7IQVoRM39B+0R50V3gFrziP/uLTaEfVVe3u61lJk4FMGgKjHvRCzr+wIDAQAB
+
+
+
+
+# 服务商 AppID
+alipay:
+  APPID: 2016101400683665
+  # 商户号
+  PID: 2088102179521190
+  # 商户的 key（私钥）
+  key: bitqqf8cie5mia20fb0yugc3m715v2eo
 
 
 # 服务商 AppID
@@ -90,7 +136,10 @@ logging:
     root=WARN:
     com:
       config: DEBUG
+      serviceOtc: DEBUG
+
       lt:
+        dom: DEBUG
         dom.controllerOct: TRACE
     org:
       springframework:
@@ -108,3 +157,35 @@ bezkoder:
 
 yunpian_sms:
   apikey: 220dbf356cc27ef60b69d99d28c74f0e
+
+
+#camunda.bpm.client:
+#  base-url: http://localhost:8080/engine-rest # the URL pointing to the Camunda Platform Runtime REST API
+#  lock-duration: 1000 # defines how many milliseconds the External Tasks are locked until they can be fetched again
+#  subscriptions:
+#    scoreProvider: # topic name of the External Service Task
+#      variable-names: [] # our business logic doesn't require any variables, so don't fetch them
+#      process-definition-key: lt-process # only filter for External Tasks with this process definition key
+#    loanGranter:
+#      variable-names: customerId, creditScore # only fetch these two variables
+#      process-definition-key: loan_process
+
+logging.level.org.camunda.bpm.client: DEBUG # increase the log level of the application
+
+
+
+
+ali:
+  idcard:
+    AppKey: 204109901
+    AppSecret: 9DWA29BRwOByhVnbl7YUVEzIDLVzVfC1
+    AppCode: e5cccb072eb043d59995645e845eb972
+  bussiness_license:
+    AppKey: 204109901
+    AppSecret: 9DWA29BRwOByhVnbl7YUVEzIDLVzVfC1
+    AppCode: e5cccb072eb043d59995645e845eb972
+
+  idfaceIdentity:
+    AppKey: 204109901
+    AppSecret: 9DWA29BRwOByhVnbl7YUVEzIDLVzVfC1
+    AppCode: e5cccb072eb043d59995645e845eb972

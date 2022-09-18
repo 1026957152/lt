@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface PublicationEntryRepository extends JpaRepository<PublicationEntry
 			, Long> {
 
-    Optional<PublicationEntry> findByVoucher(long id);
+    List<PublicationEntry> findByVoucher(long id);
 
     List<PublicationEntry> findByToWhoTypeAndToWho(EnumPublicationObjectType customer, long id);
 
@@ -25,5 +25,11 @@ public interface PublicationEntryRepository extends JpaRepository<PublicationEnt
     List<PublicationEntry> findByAssociatedTypeAndAssociatedId(EnumAssociatedType tour_booking, long code);
 
     List<PublicationEntry> findAllByVoucherIn(List<Long> collect);
+
+    List<PublicationEntry> findAllByToWhoTypeAndToWhoAndCampaign(EnumPublicationObjectType customer, long id, long id1);
+
+    long countByToWhoTypeAndToWhoAndCampaign(EnumPublicationObjectType customer, long id, long id1);
+
+    List<PublicationEntry> findByAssociatedTypeAndAssociatedIdAndCampaign(EnumAssociatedType tour_booking, long id, long id1);
     /// List<PublicationEntry> findByVoucherId(long id);
 }

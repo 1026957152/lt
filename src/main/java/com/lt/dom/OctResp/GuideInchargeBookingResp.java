@@ -1,19 +1,15 @@
 package com.lt.dom.OctResp;
 
-import com.lt.dom.controllerOct.BookingRestController;
-import com.lt.dom.controllerOct.PaymentRestController;
 import com.lt.dom.oct.CampaignAssignToTourBooking;
 import com.lt.dom.oct.GuideInchargeBooking;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.TourBooking;
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
-import org.springframework.hateoas.RepresentationModel;
+import com.lt.dom.otcenum.EnumTourBookingStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 public class GuideInchargeBookingResp {
@@ -23,7 +19,7 @@ public class GuideInchargeBookingResp {
 
     private String tour_title;
     private String tour_code;
-    private EnumTourBookingStatus_ booking_status;
+    private EnumTourBookingStatus booking_status;
     private String booking_status_text;
     private String tour_line_info;
     private String booking_code;
@@ -32,7 +28,9 @@ public class GuideInchargeBookingResp {
     private String owner;
     private String tourAgent;
     private LocalDateTime created_at;
-    private String code;
+    
+
+private String code;
 
     public static GuideInchargeBookingResp from(GuideInchargeBooking x, TourBooking tourBooking, List<CampaignAssignToTourBooking> campaignAssignToTourBookings, Supplier supplier) {
         GuideInchargeBookingResp guideInchargeBookingResp = new GuideInchargeBookingResp();
@@ -75,11 +73,11 @@ public class GuideInchargeBookingResp {
         return tour_code;
     }
 
-    public void setBooking_status(EnumTourBookingStatus_ booking_status) {
+    public void setBooking_status(EnumTourBookingStatus booking_status) {
         this.booking_status = booking_status;
     }
 
-    public EnumTourBookingStatus_ getBooking_status() {
+    public EnumTourBookingStatus getBooking_status() {
         return booking_status;
     }
 

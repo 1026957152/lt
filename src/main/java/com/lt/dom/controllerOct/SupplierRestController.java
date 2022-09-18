@@ -10,6 +10,7 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
 import com.lt.dom.vo.SupplierPojoVo;
+import com.lt.dom.vo.UserVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,10 @@ public class SupplierRestController {
     @Autowired
     private RoleServiceImpl roleService;
 
+
+    @Autowired
+    private PaymentServiceImpl paymentService;
+
 /*
     @Autowired
     private PagedResourcesAssembler<EmployeeResp> pagedResourcesAssembler;
@@ -97,19 +102,28 @@ public class SupplierRestController {
     @Operation(summary = "1、获得")
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}", produces = "application/json")
     public EntityModel<SupplierResp> getSupplier(@PathVariable  long SUPPLIER_ID) {
-        Optional<Supplier> supplier = supplierRepository.findById(SUPPLIER_ID);
-        if(supplier.isEmpty()) {
+        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
+        if(supplierOptional.isEmpty()) {
             throw new BookNotFoundException("没有找到供应商","没找到");
         }
-            List<Asset> assets = assetRepository.findAllBySource(supplier.get().getId());
 
-            SupplierResp supplierResp = SupplierResp.from(supplier.get(),assets);
-            supplierResp.add(linkTo(methodOn(RequestFuckRestController.class).approveRequest(supplier.get().getId(),null)).withRel("upload_file_url"));
+        Supplier supplier = supplierOptional.get();
+
+        Balance balance = paymentService.balance(supplier.getId(), EnumUserType.business);
+
+        List<Asset> assets = assetRepository.findAllBySource(supplier.getId());
+
+            SupplierResp supplierResp = SupplierResp.from(supplier,assets);
+
+        supplierResp.setBalance(EntityModel.of(BalanceResp.from(balance)));
+
+
+            supplierResp.add(linkTo(methodOn(RequestFuckRestController.class).approveRequest(supplier.getId(),null)).withRel("upload_file_url"));
             supplierResp.add(linkTo(methodOn(RedemptionRestController.class).validateVoucherByCode(null)).withRel("redeem_url"));
-            supplierResp.add(linkTo(methodOn(ProductRestController.class).createProduct(supplier.get().getId(),null)).withRel("create_product_url"));
+            supplierResp.add(linkTo(methodOn(ProductRestController.class).createProduct(supplier.getId(),null)).withRel("create_product_url"));
             supplierResp.add(linkTo(methodOn(BookingRestController.class).createBooking(null)).withRel("booking_url"));
 
-            return EntityModel.of(SupplierResp.from(supplier.get(),assets));
+            return EntityModel.of(supplierResp);
 
 
     }
@@ -377,17 +391,10 @@ public class SupplierRestController {
 
         Authentication authentication =  authenticationFacade.getAuthentication();
 
-        UserDetails user = (UserDetails)authentication.getPrincipal();
-
-        System.out.println(user.getAuthorities());
+        UserVo userVo = authenticationFacade.getUserVo(authentication);
 
 
-        Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
-        if(optionalSupplier.isEmpty()) {
-            throw new BookNotFoundException(SUPPLIER_ID,"找不到供应商");
-
-        }
-        Supplier supplier = optionalSupplier.get();
+        Supplier supplier = userVo.getSupplier();
 
 
         List<String> enumRoles = roleService.get(supplier).stream().map(x->x.name()).collect(Collectors.toList());
@@ -397,6 +404,9 @@ public class SupplierRestController {
         if(hasEnumRoles.isEmpty()){
             throw new BookNotFoundException("无相关权限"+employerPojo.getRoles(),"");
         }
+
+
+
 
 
             Triplet<Supplier,Employee,User> triplet = supplierService.createEmployee(supplier,employerPojo,hasEnumRoles);

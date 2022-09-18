@@ -3,12 +3,6 @@ package com.lt.dom.OctResp;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumCampaignToTourBookingStatus;
 import com.lt.dom.otcenum.EnumPaymentOption;
-import com.lt.dom.otcenum.EnumProductType;
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
-import org.javatuples.Quartet;
-import org.javatuples.Quintet;
-import org.javatuples.Septet;
-import org.javatuples.Triplet;
 import org.springframework.hateoas.EntityModel;
 
 import java.util.List;
@@ -23,7 +17,8 @@ public class CampaignAssignToTourBookingResp {
     List<TravelerResp> travelers;
 
 
-    private String code;
+
+private String code;
 
     private String note;
     private EntityModel<AssetResp> asset;

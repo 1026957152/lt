@@ -1,10 +1,14 @@
 package com.lt.dom.otcenum;
 
+import com.lt.dom.OctResp.EnumResp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public enum EnumPayChannel {
     alipay("支付宝 App 支付"),
@@ -53,8 +57,32 @@ public enum EnumPayChannel {
     cb_wx_pub_scan("跨境微信付款码支付"),
     paypal("PayPal"),
     balance("余额"),
+    free("免费"),
+
     ;
 
+
+    public static List<EnumResp> from() {
+        return Arrays.asList(EnumPayChannel.values()).stream().map(x->{
+            EnumResp enumResp = new EnumResp();
+            enumResp.setId(x.name());
+            //  enumResp.setName(x.name());
+            enumResp.setText(x.toString());
+
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
+
+    public static List<EnumResp> from(List<EnumPayChannel> enumPayChannels) {
+        return enumPayChannels.stream().map(x->{
+            EnumResp enumResp = new EnumResp();
+            enumResp.setId(x.name());
+            //  enumResp.setName(x.name());
+            enumResp.setText(x.toString());
+
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle("messages",
             Locale.getDefault());
 

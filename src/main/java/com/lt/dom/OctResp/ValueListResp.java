@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.oct.ValueList;
 import com.lt.dom.oct.ValueListItem;
 import com.lt.dom.otcenum.EnumValueListItemType;
+import com.lt.dom.otcenum.EnumValueListType;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 
@@ -25,10 +26,14 @@ public class ValueListResp {
     private String created_by;
 
     private String metadata;
-    private String code;
-    private int number;
+    
 
-    public static EntityModel<ValueListResp> from(ValueList user, List<ValueListItem> valueListItems) {
+private String code;
+    private int number;
+    private List<ValueListItem> items;
+    private EnumValueListType type;
+
+    public static ValueListResp from(ValueList user, List<ValueListItem> valueListItems) {
 
         ValueListResp valueListResp = new ValueListResp();
         valueListResp.setAlias(user.getAlias());
@@ -39,11 +44,11 @@ public class ValueListResp {
         valueListResp.setCreated(user.getCreated());
         valueListResp.setCreated_by(user.getCreated_by());
         valueListResp.setNumber(valueListItems.size());
-        EntityModel<ValueListResp> entityModel = EntityModel.of(valueListResp);
+        valueListResp.setType(user.getType());
 
-        return entityModel;
+        valueListResp.setItems(valueListItems);
+        return valueListResp;
     }
-
 
 
     public String getAlias() {
@@ -108,5 +113,21 @@ public class ValueListResp {
 
     public int getNumber() {
         return number;
+    }
+
+    public void setItems(List<ValueListItem> items) {
+        this.items = items;
+    }
+
+    public List<ValueListItem> getItems() {
+        return items;
+    }
+
+    public void setType(EnumValueListType type) {
+        this.type = type;
+    }
+
+    public EnumValueListType getType() {
+        return type;
     }
 }

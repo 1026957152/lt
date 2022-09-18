@@ -15,6 +15,7 @@ public class BookingTypeTowhoVo {
     private Tour tour;
     private Campaign campaign;
     private Product product;
+    private Long count;
 
     public long getToWho() {
         return toWho;
@@ -78,5 +79,13 @@ public class BookingTypeTowhoVo {
 
     public Product getProduct() {
         return product;
+    }
+
+    public void setCount(Long count) {
+        this.count = count;
+    }
+
+    public Long getCount() {
+        return count;
     }
 }

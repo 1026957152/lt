@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Reference;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,6 +25,26 @@ public class Referral {
 
     @CreatedDate
     LocalDateTime created_at ;
+    private String path;
+
+    @NotNull
+    private Long user;
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public LocalDateTime getCreated_at() {
         return created_at;
@@ -128,5 +149,21 @@ public class Referral {
 
     public void setString_value(String string_value) {
         this.string_value = string_value;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setUser(Long user) {
+        this.user = user;
+    }
+
+    public long getUser() {
+        return user;
     }
 }

@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Version;
 
 @Entity
-public class Message {
+public class Message_ {
     @Version
     private Integer version;
     @Id

@@ -11,7 +11,9 @@ public class Scenario {
     @Id
     private long id;
     private String name;
-    private String code;
+    
+@Column(unique=true) 
+private String code;
 
     public String getCode() {
         return code;

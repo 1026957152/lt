@@ -62,7 +62,8 @@ public class UserRestController {
     private GuideServiceImpl guideService;
     @Autowired
     private UserServiceImpl userService;
-
+    @Autowired
+    private UserVoServiceImpl userVoService;
     @Autowired
     private GuideRepository guideRepository;
     @Autowired
@@ -164,7 +165,7 @@ public class UserRestController {
             User user = optionalUser.get();
 
 
-            return ResponseEntity.ok(userService.getBigUser(user));
+            return ResponseEntity.ok(userVoService.getBigUser(user));
 
 
     }
@@ -305,7 +306,7 @@ public class UserRestController {
 
     @Operation(summary = "1、获得订购")
     @GetMapping(value = "/users/{USER_ID}/bookings", produces = "application/json")
-    public PagedModel pageReservation(@PathVariable long USER_ID, Pageable pageable , PagedResourcesAssembler<BookingResp> assembler) {
+    public PagedModel pageReservation(@PathVariable long USER_ID, Pageable pageable , PagedResourcesAssembler<EntityModel<BookingResp>> assembler) {
 
 
         Optional<User> optionalUser = userRepository.findById(USER_ID);
@@ -315,13 +316,15 @@ public class UserRestController {
 
         }
         Page<Reservation> reservationPage = reservationRepository.findAll(pageable);
-        Page<BookingResp> page =  reservationPage.map(x->{
+        Page<EntityModel<BookingResp>> page =  reservationPage.map(x->{
             Optional<Product> product = productRepository.findById(x.getProductId());
 
 
             BookingResp resp = BookingResp.totoResp(Pair.with(x,product.get()));
-            resp.add(linkTo(methodOn(BookingRestController.class).pay(x.getId(),null)).withRel("pay_url"));
-            return resp;
+
+            EntityModel entityModel = EntityModel.of(resp);
+         //   entityModel.add(linkTo(methodOn(BookingRestController.class).选择支付方式_并完成发出支付请求(x.getId(),null,null)).withRel("pay_url"));
+            return entityModel;
         });
         return assembler.toModel(page);
     }

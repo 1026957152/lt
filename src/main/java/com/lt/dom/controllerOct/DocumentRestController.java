@@ -14,6 +14,12 @@ import com.lt.dom.serviceOtc.ClainQuotaServiceImpl;
 import com.lt.dom.serviceOtc.FileStorageService;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import com.lt.dom.serviceOtc.VoucherServiceImpl;
+import com.lt.dom.thiirdAli.idcard.IdCardOcrService;
+import com.lt.dom.thiirdAli.idcard.IdcardFaceVo;
+import com.lt.dom.thiirdAli.idfaceIdentity.IdfaceIdentityOcrService;
+import com.lt.dom.thiirdAli.idfaceIdentity.IdfaceIdentityVo;
+import com.lt.dom.thiirdAli.ocr_business_license.BusinessLicenseVo;
+import com.lt.dom.thiirdAli.ocr_business_license.BussinessLicenseOcrService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Quartet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.swing.text.html.parser.Entity;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +64,17 @@ public class DocumentRestController {
 
     @Autowired
     private LtConfig ltConfig;
+
+    @Autowired
+    IdCardOcrService idCardOcrService;
+
+
+    @Autowired
+    BussinessLicenseOcrService bussinessLicenseOcrService;
+
+    @Autowired
+    IdfaceIdentityOcrService idfaceIdentityOcrService;
+
 
 
     @PostMapping(value = "/documents")
@@ -119,6 +137,41 @@ public class DocumentRestController {
 
     }
 
+    @PostMapping(value = "/ocr_id_scan")
+    public EntityModel<IdcardFaceVo.IdcardFaceVoSimple> idScan(@RequestParam(value = "file",required = true) MultipartFile file) {
+
+
+
+
+        IdcardFaceVo idcardFaceVo = idCardOcrService.main(file);
+
+        return EntityModel.of(idcardFaceVo.toSimple());
+
+    }
+
+    @PostMapping(value = "/ocr_bussiness")
+    public EntityModel<BusinessLicenseVo.BusinessLicenseVoSimple> BusinessLicenseVo(@RequestParam(value = "file",required = true) MultipartFile file) {
+
+
+
+
+        BusinessLicenseVo idcardFaceVo = bussinessLicenseOcrService.main(file);
+
+        return EntityModel.of(idcardFaceVo.toSimple());
+
+    }
+
+    @PostMapping(value = "/idfaceIdentity")
+    public EntityModel<IdfaceIdentityVo> idfaceIdentity(@RequestParam(value = "file",required = true) MultipartFile file) {
+
+
+
+
+        IdfaceIdentityVo idcardFaceVo = idfaceIdentityOcrService.main(null,null,file);
+
+        return EntityModel.of(idcardFaceVo);
+
+    }
 
 
 

@@ -4,22 +4,24 @@ import com.lt.dom.otcenum.EnumAllocationMethod;
 import com.lt.dom.otcenum.EnumRoyaltyRuleCategory;
 import com.lt.dom.otcenum.EnumWhenSettle;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 
 @Entity
 public class RoyaltyRule {
 
-
+    @Version
+    private Integer version;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
     private long componentId;
-    private long componentRightId;
+    private long componentRight;
     private long productId;
 
     private long sourceId;
     private String sourceType;
+    private String splitCode;
 
     public long getSourceId() {
         return sourceId;
@@ -107,12 +109,12 @@ public class RoyaltyRule {
         return componentId;
     }
 
-    public void setComponentRightId(long componentRightId) {
-        this.componentRightId = componentRightId;
+    public void setComponentRight(long componentRightId) {
+        this.componentRight = componentRightId;
     }
 
-    public long getComponentRightId() {
-        return componentRightId;
+    public long getComponentRight() {
+        return componentRight;
     }
 
     public void setProductId(long productId) {
@@ -141,6 +143,14 @@ public class RoyaltyRule {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public void setSplitCode(String splitCode) {
+        this.splitCode = splitCode;
+    }
+
+    public String getSplitCode() {
+        return splitCode;
     }
 
     /*      "royalty_mode": "rate",

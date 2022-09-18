@@ -9,6 +9,7 @@ import java.util.ResourceBundle;
 public enum EnumEmployeeStatus {
 
     active("Barcode scan"),
+    inactive("Barcode scan"),
 
 
 

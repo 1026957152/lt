@@ -30,7 +30,9 @@ public class EmpowerGetPhoneReq extends RepresentationModel<EmpowerGetPhoneReq> 
     }*/
 
     @NotEmpty
-    private String code;
+    
+
+private String code;
 
 
     private int type; //1 用户端 ， 2商户端

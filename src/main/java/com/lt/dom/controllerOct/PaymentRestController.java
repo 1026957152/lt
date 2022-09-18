@@ -231,7 +231,7 @@ public class PaymentRestController {
             }*/
         } catch (Exception e) {
             e.printStackTrace();
-            throw new PaymentException(1,Charge.class.getSimpleName(),e.getMessage());
+            throw new PaymentException(Enumfailures.payment_login_error,e.getMessage());
         }
 
         return null;
@@ -321,8 +321,10 @@ public class PaymentRestController {
                             Charge charge = paymentService.getOneOrderStatusByPayNo(out_trade_no);
                             if(!charge.getPaid()){
 
-                                Optional<Payment> payment = paymentRepository.findByCode(charge.getOrderId());
-                                paymentService.paidChage(charge,payment.get());
+                                Optional<Payment> payment = paymentRepository.findByCode(charge.getPayment_code());
+                                Optional<Reservation> reservationOptional = reservationRepository.findByCode(payment.get().getReference());
+
+                                paymentService.paidChage(charge,payment.get(),reservationOptional.get());
                             }else{
                                logger.info("该订单已支付处理,交易编号为: " + out_trade_no);
 
@@ -509,7 +511,7 @@ public class PaymentRestController {
                 if (map.get("return_code").equals("SUCCESS") && map.get("return_code").equals("SUCCESS")) {
 
 
-                paymentService.createRefund(refundCode,charge,reservation.get());
+                paymentService.createCharge(refundCode,charge,reservation.get());
 
             }
 
@@ -592,7 +594,7 @@ public class PaymentRestController {
                 refund1.setCreated(LocalDateTime.now());
                 refund1.setStatus(EnumRefundStatus.pending);
                 refund1.setCharge(payment.getId());
-                paymentService.createRefund(null,new Charge(),null);
+                paymentService.createCharge(null,new Charge(),null);
 
 
                 //  WxPayRefundResult refund

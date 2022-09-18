@@ -1,13 +1,10 @@
 package com.lt.dom.specification;
 
-import com.lt.dom.oct.Campaign;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.otcenum.EnumSupplierStatus;
 import com.lt.dom.otcenum.EnumSupplierType;
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;

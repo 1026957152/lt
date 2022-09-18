@@ -134,6 +134,8 @@ public class RealnameAuthRestController {
         没有wxlinkUser   没有userReal // 正常绑定*/
 
 
+
+
          realnameAuthsReq.setPhone(phone);
 
         Pair<User, Openid> user = realnameAuthsService.postWxRealnameAuths(openid,realnameAuthsReq);

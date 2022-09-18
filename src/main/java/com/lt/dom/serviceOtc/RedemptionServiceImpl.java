@@ -1,12 +1,9 @@
 package com.lt.dom.serviceOtc;
 
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.RedemPojo;
 import com.lt.dom.otcenum.EnumQuotaType;
-import com.lt.dom.otcenum.EnumValidatorType;
 import com.lt.dom.otcenum.EnumVoucherType;
 import com.lt.dom.repository.*;
-import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -81,7 +78,7 @@ public class RedemptionServiceImpl {
 
         RoyaltySettlement royaltySettlement = new RoyaltySettlement();
         royaltySettlement.setChargeId(charge.getId());
-        royaltySettlement.setReservationId(componentVounch1.getReservationId());
+        royaltySettlement.setReservationId(componentVounch1.getReservation());
         royaltySettlement = royaltySettlementRepository.save(royaltySettlement);
 
         RoyaltyTransaction royaltyTransaction = new RoyaltyTransaction(royaltySettlement.getId(),royaltyRule.getRecipient(),royaltyRule.getAmount());
@@ -97,7 +94,7 @@ public class RedemptionServiceImpl {
 
 
 
-    private List<ComponentVounch> 找到当前权益(Validator validator, Voucher voucher) throws Exception {
+    private List<ComponentVounch> 找到当前权益(Validator_ validator, Voucher voucher) throws Exception {
 
 
         ValidatorGroup validatorGroup = validator.getValidatorGroup();
@@ -114,7 +111,7 @@ public class RedemptionServiceImpl {
                 .withMatcher("model", ignoreCase());
 
         ComponentVounch probe = new ComponentVounch();
-        probe.setComponentRightId(componentRight.getId());
+        probe.setComponentRight(componentRight.getId());
         probe.setVoucherId(voucher.getId());
 
         Example<ComponentVounch> example = Example.of(probe, modelMatcher);

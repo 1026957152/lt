@@ -13,4 +13,6 @@ public interface ValueListItemRepository extends JpaRepository<ValueListItem
 	List<ValueListItem> findAllByValueListIn(List<Long> collect);
 
 	Optional<ValueListItem> findByValueListAndValue(long id, String i);
+
+    List<ValueListItem> findAllByValueList(long id);
 }

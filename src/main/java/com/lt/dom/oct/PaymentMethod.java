@@ -16,7 +16,9 @@ public class PaymentMethod {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;//	integer	The payment’s unique ID
-    private String code;//	string	Object type, payment
+    
+@Column(unique=true) 
+private String code;//	string	Object type, payment
     private EnumPaymentOption payment_method;
     private long customer;//	integer	Associated Customer, if any
     private String object;//	string	Object type, payment

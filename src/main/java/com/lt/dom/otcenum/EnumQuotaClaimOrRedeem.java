@@ -6,32 +6,11 @@ import org.springframework.context.MessageSource;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public enum EnumBookingStatus {
-    // The order's current status:
-    Draft(""),
+public enum EnumQuotaClaimOrRedeem {
+    claim("claim"),
+    redeem("redeem"),
 
-    Pending(""),
-
-    Payment_Pending(""),
-
-    Submitted_Confirmed(""),  //CONFIRMED
-    PAID(""), //  已支付
-
-    EXPIRED(""), //支付超时
-
-
-    Fulfilled(""), // 已履行 合约
-
-
-
-    Errored(""),
-    RefundInProgress(""),
-    Refunded(""),
-    PartialyRefunded(""),
-    Cancelled(""),
-    Abandonded("");
-
-
+    ;
 
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle("messages",
             Locale.getDefault());
@@ -41,16 +20,15 @@ public enum EnumBookingStatus {
     @Autowired
     private MessageSource messageSource;
 
-    EnumBookingStatus(String name) {
+    EnumQuotaClaimOrRedeem(String name) {
         this.name = name;
     }
 
     @Override
     public String toString() {
 
-        String displayStatusString = resourceBundle.getString("page.systemadministration.tour_booking.status."
+        String displayStatusString = resourceBundle.getString("page.systemadministration.quota.activity."
                 + this.name());
         return displayStatusString;
     }
-
-    }
+}

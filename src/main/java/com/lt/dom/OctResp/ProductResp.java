@@ -1,15 +1,21 @@
 package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.gson.Gson;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.BookingRulePojo;
+import com.lt.dom.otcenum.EnumPayChannel;
 import com.lt.dom.otcenum.EnumPaymentOption;
 import com.lt.dom.otcenum.EnumProductStatus;
 import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.vo.AvailabilityVO;
 import org.javatuples.Pair;
+import org.springframework.hateoas.EntityModel;
 
 import javax.persistence.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -21,8 +27,18 @@ public class ProductResp {
     private String type_text;
     private EnumProductStatus status;
     private String status_text;
+    private List<EntityModel> priceTypes;
+    private List<String> tags;
+    private PricingTypeResp default_price;
+    private List<PhotoResp> images;
+    private PhotoResp thumbnail_image;
+    private EntityModel availability;
+    private List<AvailabilityVO> bookingAvailability;
+    private boolean shippable;
+    private String traveller_term;
+    private String booking_note;
 
-    public static Object dayTourFrom(Product product, Tour tour, List<Campaign> campaignAssignToTourProducts) {
+    public static ProductResp dayTourFrom(Product product, Tour tour, List<Campaign> campaignAssignToTourProducts) {
 
 
 
@@ -57,6 +73,26 @@ public class ProductResp {
 
 
 
+
+
+
+
+
+    public static ProductResp from(Product e, List<PricingType> pricingTypeList) {
+
+        ProductResp productResp = ProductResp.from(e);
+
+/*        productResp.setPriceTypes(pricingTypeList.stream().map(ee->{
+            return EntityModel.of(PricingTypeResp.from(ee));
+        }).collect(Collectors.toList()));*/
+
+
+        PricingType pricingType = pricingTypeList.get(0);
+        productResp.setDefault_price(PricingTypeResp.from(pricingType));
+        return productResp;
+    }
+
+
     public ProductTourResp getTour() {
         return tour;
     }
@@ -66,7 +102,9 @@ public class ProductResp {
     }
 
     private String supplier;
-    private String code;
+    
+@Column(unique=true) 
+private String code;
     private String supplierCode;
     private String name;
     private String nameLong;
@@ -122,11 +160,11 @@ public class ProductResp {
         this.theatre = theatre;
     }
 
-    public ProductAttraction getAttraction() {
+    public Attraction getAttraction() {
         return attraction;
     }
 
-    public void setAttraction(ProductAttraction attraction) {
+    public void setAttraction(Attraction attraction) {
         this.attraction = attraction;
     }
 
@@ -142,31 +180,16 @@ public class ProductResp {
     @Transient
     private ProductTheatre theatre;
     @Transient
-    private ProductAttraction attraction;
+    private Attraction attraction;
 
 
     public static ProductResp from(Pair<Product,Supplier> pair) {
         Product product = pair.getValue0();
         Supplier supplier = pair.getValue1();
 
-        ProductResp resp = new ProductResp();
-        resp.setSupplier(product.getSupplierId()+"");
-        resp.setPaymentOptionList(Arrays.asList(EnumPaymentOption.giftCard,
-                EnumPaymentOption.wechat_pay).stream().map(x->{
-            EnumResp enumResp = new EnumResp();
-            enumResp.setId(x.name());
-            enumResp.setText(x.toString());
-            return enumResp;
-        }).collect(Collectors.toList()));
-        resp.setType(product.getType());
-        resp.setType_text(product.getType().toString());
-        resp.setCode(product.getCode());
+        ProductResp resp = ProductResp.from(product);
         resp.setSupplier(supplier.getName());
         resp.setSupplierCode(supplier.getCode());
-        resp.setName(product.getName());
-        resp.setName_long(product.getName_long());
-        resp.setStatus(product.getStatus());
-        resp.setStatus_text(product.getStatus().toString());
         return resp;
     }
 
@@ -174,23 +197,20 @@ public class ProductResp {
 
 
         ProductResp resp = new ProductResp();
-        resp.setSupplier(product.getSupplierId()+"");
-        resp.setPaymentOptionList(Arrays.asList(EnumPaymentOption.giftCard,
-                EnumPaymentOption.wechat_pay).stream().map(x->{
-            EnumResp enumResp = new EnumResp();
-            enumResp.setId(x.name());
-            enumResp.setText(x.toString());
-            return enumResp;
-        }).collect(Collectors.toList()));
+
+        resp.setPaymentOptionList(EnumPayChannel.from(Arrays.stream((new Gson()).fromJson(product.getPaymentMethods_json(), EnumPayChannel[].class)).collect(Collectors.toList())));
         resp.setType(product.getType());
         resp.setType_text(product.getType().toString());
         resp.setCode(product.getCode());
-      //  resp.setSupplier(supplier.getName());
-      //  resp.setSupplierCode(supplier.getCode());
+
         resp.setName(product.getName());
         resp.setName_long(product.getName_long());
         resp.setStatus(product.getStatus());
         resp.setStatus_text(product.getStatus().toString());
+        resp.setShippable(product.getShippable());
+
+
+        resp.setTags((new Gson()).fromJson(product.getTags_json(),List.class));
 
 
         return resp;
@@ -252,10 +272,162 @@ public class ProductResp {
         return status_text;
     }
 
-
-    public class ComponentResp{
-        private String name;
-        private String note;
+    public void setPriceTypes(List<EntityModel> priceTypes) {
+        this.priceTypes = priceTypes;
     }
 
+    public List<EntityModel> getPriceTypes() {
+        return priceTypes;
+    }
+
+    public  void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setDefault_price(PricingTypeResp priceType) {
+        this.default_price = priceType;
+    }
+
+    public PricingTypeResp getDefault_price() {
+        return default_price;
+    }
+
+    public void setImages(List<PhotoResp> images) {
+        this.images = images;
+    }
+
+    public List<PhotoResp> getImages() {
+        return images;
+    }
+
+    public void setThumbnail_image(PhotoResp thumbnail_image) {
+        this.thumbnail_image = thumbnail_image;
+    }
+
+    public PhotoResp getThumbnail_image() {
+        return thumbnail_image;
+    }
+
+    public void setAvailability(EntityModel availability) {
+        this.availability = availability;
+    }
+
+    public EntityModel getAvailability() {
+        return availability;
+    }
+
+    public void setBookingAvailability(List<AvailabilityVO> bookingAvailability) {
+        this.bookingAvailability = bookingAvailability;
+    }
+
+    public List<AvailabilityVO> getBookingAvailability() {
+        return bookingAvailability;
+    }
+
+    public void setShippable(boolean shippable) {
+        this.shippable = shippable;
+    }
+
+    public boolean getShippable() {
+        return shippable;
+    }
+
+    public void setTraveller_term(String traveller_term) {
+        this.traveller_term = traveller_term;
+    }
+
+    public String getTraveller_term() {
+        return traveller_term;
+    }
+
+    public void setBooking_note(String booking_note) {
+        this.booking_note = booking_note;
+    }
+
+    public String getBooking_note() {
+        return booking_note;
+    }
+
+
+    public static class Availability {
+
+        private List<BookingRulePojo> ranges;
+        private Map parameter;
+
+        public static Availability from(List<BookingRule> bookingRuleList) {
+            Availability availability = new Availability();
+            availability.setRanges(bookingRuleList.stream().map(e->{
+                BookingRulePojo bookingRulePojo = new BookingRulePojo();
+                bookingRulePojo.setBookable(e.getBookable());
+                bookingRulePojo.setPriority(e.getPriority());
+
+                bookingRulePojo.setRangetype(e.getRangetype());
+
+
+               // bookingRulePojo.setTo(e.get());
+           //     bookingRulePojo.setFrom(e.getPriority());
+
+                return bookingRulePojo;
+            }).collect(Collectors.toList()));
+
+            return availability;
+        }
+
+        public List<BookingRulePojo> getRanges() {
+            return ranges;
+        }
+
+        public void setRanges(List<BookingRulePojo> ranges) {
+            this.ranges = ranges;
+        }
+
+        public  void setParameter(Map parameter) {
+            this.parameter = parameter;
+        }
+
+        public Map getParameter() {
+            return parameter;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public static class ComponentTap {
+
+        private List<ComponentResp> components;
+
+        public static ComponentTap from(List<Component> bookingRuleList) {
+            ComponentTap availability = new ComponentTap();
+
+            availability.setComponents(bookingRuleList.stream().map(e->{
+                return ComponentResp.from(e);
+            }).collect(Collectors.toList()));
+
+            return availability;
+        }
+
+        public List<ComponentResp> getComponents() {
+            return components;
+        }
+
+        public void setComponents(List<ComponentResp> components) {
+            this.components = components;
+        }
+    }
 }

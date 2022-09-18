@@ -14,16 +14,14 @@ import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
 import org.javatuples.Pair;
-import org.javatuples.Quartet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -80,7 +78,7 @@ public class ScenarioRestController {
             EntityModel entityModel = EntityModel.of(scenarioResp);
             entityModel.add(linkTo(methodOn(CampaignRestController.class).getCampaignList(null,null,null)).withRel("getCampaigns"));
 
-            Page<Campaign> campaignPageable = campaignRepository.findAllByScenario(scenario.getId(),PageRequest.of(0,1000));
+            Page<Campaign> campaignPageable = campaignRepository.findAllByScenario(scenario.getId(),PageRequest.of(0,1000, Sort.by("active").descending().and(Sort.by("id").ascending())));
 
         //    List<CampaignResp> campaignResps =  CampaignResp.pageMapToListSimple(campaignPageable).getContent();
 
@@ -160,7 +158,7 @@ public class ScenarioRestController {
 
 
         Scenario scenario =  campaignService.createScenario(scenarioReq);
-        List<Document> documents = fileStorageService.saveFromTempDocumentList(scenario.getId(),
+        List<Document> documents = fileStorageService.saveFromTempDocumentCode(scenario.getId(),
                 Arrays.asList(Pair.with(EnumDocumentType.scenario_image,tempDocument_image.get()),
                 Pair.with(EnumDocumentType.scenario_image_small,tempDocument_small.get())));
 

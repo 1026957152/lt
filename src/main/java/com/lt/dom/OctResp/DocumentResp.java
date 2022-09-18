@@ -10,6 +10,7 @@ import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import javax.persistence.Column;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,9 @@ public class DocumentResp  {
 
 
     private String resultUrl;
-    private String code;
+    
+@Column(unique=true)
+private String code;
     private String original_filename;
     private EnumDocumentType category;
     private boolean image;

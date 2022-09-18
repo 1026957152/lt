@@ -94,7 +94,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 					System.out.println("解剖" + username);
 					Gson gson = new Gson();
 					LogVo logVo = gson.fromJson(username, LogVo.class);
-					if (logVo.getType() == 1) {
+					if (logVo.getType() == 1) {  //手机号登录
 						username = logVo.getName();
 						IdentityVo identityVo = new IdentityVo(EnumIdentityType.phone,username);
 						UserDetails userDetails = userDetailsService.loadUserByUsername(gson.toJson(identityVo));
@@ -106,7 +106,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 						System.out.println("存入啊啊啊" + userDetails.getUsername());
 						SecurityContextHolder.getContext().setAuthentication(authentication);
 
-					} else {
+					} else { // TODO 微信登录
 
 						if(false && PathMatcherUtil.matches(Arrays.asList(
 								"/oct/realname-auths/individual"
@@ -176,6 +176,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
 
 		return PathMatcherUtil.matches(Arrays.asList(
+				"/oct/qr_nofity",
+				"/oct/openid/merchants_settled",
+				"/oct/openid/merchants_settled/page",
+				"/oct/login",
 				"/oct/index",
 				"/oct/wxLogin",
 				"/oct/campaigns/page",

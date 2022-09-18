@@ -1,9 +1,12 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.otcenum.EnumAssetQtStatus;
 import com.lt.dom.otcenum.EnumAssetType;
+import com.lt.dom.otcenum.EnumAssetType_dynamic_static;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Entity
 public class Asset {
@@ -22,9 +25,31 @@ public class Asset {
     public void setId(long id) {
         this.id = id;
     }
-
     @NotNull
     private EnumAssetType type;
+
+
+    @NotNull
+    private EnumAssetType_dynamic_static qt_type = EnumAssetType_dynamic_static.Dynamic;
+
+
+    private Long place;
+
+
+    private Long organization;
+
+    private EnumAssetQtStatus status;
+
+
+    private LocalDateTime created;//	timestamp	false	true	Created timestamp
+    private LocalDateTime updated;//	timestamp	false	true	Last updated timestamp
+    private LocalDateTime heartbeat;//	timestamp	false	true	Timestamp when the QR Code was last detected
+
+
+
+
+/*    @NotNull
+    private EnumAssetType type;*/
     @NotNull
     private String idId;
     private String url;

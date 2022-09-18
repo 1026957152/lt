@@ -1,6 +1,6 @@
 import com.sun.jna.*;
 
-
+class test {
 interface CLibrary extends Library {
 		CLibrary sdtapi = (CLibrary)
 		Native.loadLibrary((Platform.isWindows() ? ".\\dll\\sdtapi" : "c"),
@@ -14,7 +14,7 @@ interface CLibrary extends Library {
 }
 
 
-class test {
+
 
     	public static void main(String[] args) {
     	

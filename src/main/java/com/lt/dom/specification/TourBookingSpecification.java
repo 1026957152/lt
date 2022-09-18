@@ -1,9 +1,7 @@
 package com.lt.dom.specification;
 
 import com.lt.dom.oct.TourBooking;
-import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.EnumTourBookingStatus;
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.ObjectUtils;
 
@@ -11,7 +9,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +35,7 @@ public class TourBookingSpecification implements Specification<TourBooking> {
         List<Predicate> predicates = new ArrayList<>();
         if (!ObjectUtils.isEmpty(criteria.getStatuses())) {
             predicates.add(builder.in(
-                    root.<List<EnumTourBookingStatus_>> get("status")).value(criteria.getStatuses()));
+                    root.<List<EnumTourBookingStatus>> get("status")).value(criteria.getStatuses()));
         }
         if (!ObjectUtils.isEmpty(criteria.getCode())) {
             predicates.add(builder.like(

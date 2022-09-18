@@ -1,10 +1,13 @@
 package com.lt.dom.otcReq;
 
 import com.lt.dom.otcenum.EnumValidatorType;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 public class RedemBycodePojo {
 
-    private String code;
+    
+
+private String code;
     private float latitude;
     private float longitude;
 
@@ -38,7 +41,8 @@ public class RedemBycodePojo {
 
 public static class Code {
 
-    private String code;///
+
+private String code;///
     private float latitude;///
     private float longitude;
 
@@ -69,6 +73,9 @@ public static class Code {
 
 
 
-
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
 
 }

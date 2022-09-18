@@ -8,6 +8,7 @@ import com.lt.dom.oct.Product;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.otcenum.EnumBussinessType;
 import com.lt.dom.otcenum.EnumRole;
+import com.lt.dom.otcenum.EnumSupplierType;
 import com.lt.dom.repository.BookingRuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,16 +29,35 @@ public class RoleServiceImpl {
 
     public List<EnumRole> get(Supplier supplier) {
 
+
         if(supplier.getBusiness_type().equals(EnumBussinessType.government_entity)){
             return Arrays.asList();
         }
         if(supplier.getBusiness_type().equals(EnumBussinessType.company)){
-            return Arrays.asList(EnumRole.ROLE_VOUCHER_REDEEMER);
+            if(supplier.getType().equals(EnumSupplierType.TravelAgent)){
+                return Arrays.asList(EnumRole.ROLE_TRAVEL_AGENCY,EnumRole.ROLE_VOUCHER_REDEEMER);
+               // return Arrays.asList(EnumRole.ROLE_VOUCHER_REDEEMER);
+
+            }
+
+
+            if(supplier.getType().equals(EnumSupplierType.Bank)){
+
+
+                return Arrays.asList(EnumRole.ROLE_BANK_STAFF);
+                // return Arrays.asList(EnumRole.ROLE_VOUCHER_REDEEMER);
+
+            }else{
+                return Arrays.asList();
+
+            }
+
         }
 
         if(supplier.getBusiness_type().equals(EnumBussinessType.non_profit)){
             return Arrays.asList(EnumRole.ROLE_VOUCHER_REDEEMER);
         }
+
 
 
         throw new BookNotFoundException("未知的机构 类型，找不到相关的 权限列表","");

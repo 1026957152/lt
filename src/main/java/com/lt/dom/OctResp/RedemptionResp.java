@@ -1,7 +1,6 @@
 package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.controllerOct.RedemptionRestController;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumAssociatedType;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
@@ -19,18 +18,17 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 public class RedemptionResp {
 
 
-    private int quantity;
-    private int redeemed_quantity;
+    private Long quantity;
+    private Long redeemed_quantity;
 
     private List<RedemptionEntryResp> entries;
     private LocalDateTime redeem_at;
-    private String reHolder;
+
     private String crypto_code;
     private String voucher_code;
 
@@ -53,8 +51,8 @@ public class RedemptionResp {
             redemptionEntryResp.setRelatedObjectType(pair.getValue0().getRelatedObjectType());
 
             redemptionResp.setEntries(Arrays.asList(redemptionEntryResp));
-            redemptionResp.setReHolder(redemptionEntry.getHolder());
-            redemptionResp.setRedeem_at(redemptionEntry.getRedeem_at());
+
+            redemptionResp.setRedeem_at(redemptionEntry.getRedeemed_at());
             redemptionResp.setEntries(Arrays.asList(redemptionEntryResp));
             redemptionResp.setTowho(Towho.from(publishTowhoVo));
             EntityModel<RedemptionResp> redemptionEntryEntityModel = EntityModel.of(redemptionResp);
@@ -95,6 +93,7 @@ public class RedemptionResp {
         PublishTowhoVo publishTowhoVo = pair.getValue2();
         RedemptionEntry redemptionEntry = pair.getValue0();
         RedemptionResp redemptionResp = new RedemptionResp();
+
         redemptionResp.setRedeemed_quantity(pair.getValue1().getRedeemed_quantity());
         redemptionResp.setRelatedObjectId(pair.getValue1().getRelatedObjectId());
         redemptionResp.setRelatedObjectType(pair.getValue1().getRelatedObjectType());
@@ -107,8 +106,8 @@ public class RedemptionResp {
         redemptionEntryResp.setRelatedObjectType(pair.getValue0().getRelatedObjectType());
 
         redemptionResp.setEntries(Arrays.asList(redemptionEntryResp));
-        redemptionResp.setReHolder(redemptionEntry.getHolder());
-        redemptionResp.setRedeem_at(redemptionEntry.getRedeem_at());
+
+        redemptionResp.setRedeem_at(redemptionEntry.getRedeemed_at());
         redemptionResp.setEntries(Arrays.asList(redemptionEntryResp));
         redemptionResp.setTowho(Towho.from(publishTowhoVo));
         return redemptionResp;
@@ -120,12 +119,12 @@ public class RedemptionResp {
             // entry.setResult(x.getResult());
             // entry.setCustomer_id(x.getCustomer_id());
             entry.setRelatedObjectType(x.getRelatedObjectType());
-            entry.setHolder(x.getHolder());
-            entry.setRedeem_at(x.getRedeem_at());
+
+            entry.setRedeem_at(x.getRedeemed_at());
             entry.setRedeemed_amount(x.getRedeemed_amount());
             entry.setRedeemed_quantity(x.getRedeemed_quantity());
             entry.setCampaign_name(x.getCampaign_name());
-            entry.setVoucher_code(x.getVoucherCode());
+            entry.setVoucher_code(x.getVoucher_code());
 
 
             return entry;
@@ -133,26 +132,6 @@ public class RedemptionResp {
 
     }
 
-    public static Page<EntityModel<RedemptionEntryResp>> pageFrom(Page<RedemptionEntry> clainQuotas) {
-        return clainQuotas.map(x -> {
-            RedemptionEntryResp entry = new RedemptionEntryResp();
-            // entry.setResult(x.getResult());
-            // entry.setCustomer_id(x.getCustomer_id());
-            entry.setRelatedObjectType(x.getRelatedObjectType());
-            entry.setHolder(x.getHolder());
-            entry.setRedeem_at(x.getRedeem_at());
-            entry.setRedeemed_amount(x.getRedeemed_amount());
-            entry.setRedeemed_quantity(x.getRedeemed_quantity());
-            entry.setCampaign_name(x.getCampaign_name());
-            entry.setVoucher_code(x.getVoucherCode());
-            EntityModel<RedemptionEntryResp> redemptionEntryEntityModel = EntityModel.of(entry);
-
-            redemptionEntryEntityModel.add(linkTo(methodOn(RedemptionRestController.class).getRedemption(x.getId())).withRel("upload_file_url"));
-
-            return redemptionEntryEntityModel;
-        });
-
-    }
 
     public static SingleTowho sigleEntryfrom(TourBooking tourBooking, Optional<Campaign> campaigns, List<Traveler> travelerList) {
 
@@ -178,7 +157,7 @@ public class RedemptionResp {
         int num = campaign.getAmount_off()*travelerList.size();
 
         redemptionResp.setVoucher_amount(num);
-        redemptionResp.setVoucher_quantity(travelerList.size());
+        redemptionResp.setVoucher_quantity(Integer.valueOf(travelerList.size()).longValue());
 
         return redemptionResp;
 
@@ -192,19 +171,19 @@ public class RedemptionResp {
         this.entries = entries;
     }
 
-    public int getQuantity() {
+    public Long getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(Long quantity) {
         this.quantity = quantity;
     }
 
-    public int getRedeemed_quantity() {
+    public Long getRedeemed_quantity() {
         return redeemed_quantity;
     }
 
-    public void setRedeemed_quantity(int redeemed_quantity) {
+    public void setRedeemed_quantity(Long redeemed_quantity) {
         this.redeemed_quantity = redeemed_quantity;
     }
 
@@ -246,13 +225,7 @@ public class RedemptionResp {
         return redeem_at;
     }
 
-    public void setReHolder(String reHolder) {
-        this.reHolder = reHolder;
-    }
 
-    public String getReHolder() {
-        return reHolder;
-    }
 
     public void setCrypto_code(String crypto_code) {
         this.crypto_code = crypto_code;
@@ -365,7 +338,7 @@ public class RedemptionResp {
         private String holder_id;
         private String voucher_code;
         private String campaign_title;
-        private int voucher_quantity;
+        private Long voucher_quantity;
         private int voucher_amount;
         private String voucher_type;
         private String holder_phone;
@@ -403,11 +376,11 @@ public class RedemptionResp {
             return campaign_title;
         }
 
-        public void setVoucher_quantity(int voucher_quantity) {
+        public void setVoucher_quantity(Long voucher_quantity) {
             this.voucher_quantity = voucher_quantity;
         }
 
-        public int getVoucher_quantity() {
+        public Long getVoucher_quantity() {
             return voucher_quantity;
         }
 

@@ -12,7 +12,10 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.ProductSubVo;
 import com.lt.dom.serviceOtc.*;
+
+import com.lt.dom.state.WorkflowOrderService;
 import com.lt.dom.util.CheckIdcardIsLegal;
+import com.lt.dom.util.HttpUtils;
 import com.lt.dom.vo.FlowButtonVo;
 import com.lt.dom.vo.TravelerVo;
 import com.lt.dom.vo.UserVo;
@@ -31,10 +34,12 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+//import org.springframework.statemachine.StateMachine;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.*;
@@ -108,8 +113,70 @@ public class TourCampaignRestController {
     @Autowired
     private RoleServiceImpl roleService;
 
+
     @Autowired
     private ApplyForApprovalServiceImpl applyForApprovalService;
+
+    @Autowired
+    private WorkflowOrderService workflowOrderService;
+
+
+
+/*
+    @Autowired
+    private StateMachinePersister<ApplicationReviewStates, ApplicationReviewEvents, String > persister;*/
+
+
+/*
+    @Autowired
+    private StateMachineFactory<ApplicationReviewStates, ApplicationReviewEvents> stateMachineFactory;
+
+*/
+
+
+
+ /*   @Autowired
+    private StateMachine<ApplicationReviewStates, ApplicationReviewEvents> stateMachine;*/
+
+/*
+
+    private StateMachine<ApplicationReviewStates, ApplicationReviewEvents> build(Long employeeId){
+*/
+/*        Optional<Employee> byId = employeeRepository.findById(employeeId);
+        Employee employee = byId.get();*//*
+
+        StateMachine<ApplicationReviewStates, ApplicationReviewEvents> stateMachine = stateMachine.startReactively();
+        stateMachine.stop();
+        stateMachine.getStateMachineAccessor().doWithAllRegions(sma -> {
+            sma.addStateMachineInterceptor(new StateMachineInterceptorAdapter<>() {
+                @Override
+                public void preStateChange(State<ApplicationReviewStates, ApplicationReviewEvents> state,
+                                           Message<String> message,
+                                           Transition<ApplicationReviewStates, ApplicationReviewEvents> transition,
+                                           StateMachine<ApplicationReviewStates, ApplicationReviewEvents> stateMachine,
+                                           StateMachine<ApplicationReviewStates, ApplicationReviewEvents> stateMachine1) {
+*/
+/*                    Optional.ofNullable(message).ifPresent(msg -> {
+                        Long employeeId = Long.class.cast(msg.getHeaders().getOrDefault("EMPLOYEE_ID", -1));
+                        Employee employee = employeeRepository.getById(employeeId);
+                        employee.setState(state.getId());
+                        employeeRepository.save(employee);
+                    });*//*
+
+                }
+            });
+            sma.resetStateMachine(new DefaultStateMachineContext<>(EmployeeState.valueOf(employee.getState().name()), null, null,  null));
+        });
+        stateMachine.start();
+        return stateMachine;
+    }
+*/
+
+
+
+
+
+
 
 
 
@@ -118,13 +185,26 @@ public class TourCampaignRestController {
     public ResponseEntity<EntityModel<TourbookingTourResp>> getReservation(@PathVariable long RESERVATOIN_ID) {
 
 
+        //stateMachineFactory.getStateMachine();
+
+
         Authentication authentication =  authenticationFacade.getAuthentication();
 
         UserVo user = authenticationFacade.getUserVo(authentication);
 
+     /*   StateMachine<ApplicationReviewStates, ApplicationReviewEvents> firstStateMachine = stateMachineFactory.getStateMachine();
 
+      //  stateMachine.startReactively();
+
+        persister
+        try {
+            persister.persist(firstStateMachine,firstStateMachine.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
 
         Optional<TourBooking> optionalProduct = tourBookingRepository.findById(RESERVATOIN_ID);
+
 
 
         if(optionalProduct.isEmpty()) {
@@ -137,7 +217,7 @@ public class TourCampaignRestController {
 
 
                 Optional<Product> product = productRepository.findById(optionalProduct.get().getProductId());
-                Optional<Tour> optionalTour = tourRepository.findById(product.get().getTypeToWho());
+                Optional<Tour> optionalTour = tourRepository.findById(product.get().getTypeTo());
                 List<Traveler> travelers = travelerRepository.findAllByBooking(tourBooking.getId());
                 List<Document> documents = documentRepository.findAllByRaletiveId(tourBooking.getId());
                 Optional<Asset> assetResp  = assetService.getQrOptional(tourBooking.getCode());
@@ -156,13 +236,32 @@ public class TourCampaignRestController {
                 Map<Long,Campaign> longCampaignMap = campaigns.stream().collect(Collectors.toMap(x->x.getId(),x->x));
 
 
+
+
                 Map<Long,List<PublicationEntry>> longListMap= publicationEntryList.stream().collect(Collectors.groupingBy(x->x.getCampaign()));
+
+
+
                 List cc = campaignAssignToTourBookings.stream().map(x->{
                     Campaign campaign = longCampaignMap.get(x.getCampaign());
-                    return Map.of("name",campaign.getName(),
-                            "code",campaign.getCode(),
+
+                    CampaignResp.CampaignSummary campaignSummary = CampaignResp.CampaignSummary.from(campaign);
+
+                    EntityModel entityModel = EntityModel.of(Map.of("name",campaign.getName(),
+                            "code",x.getCode(),
                             "total_count",travelers.size(),
-                            "claim_count",longListMap.getOrDefault(campaign.getId(),Arrays.asList()).size());
+                            "claim_count",-1,
+                            "redeemed_count",x.getRedeemed_count(),
+                            "unredeemed_count",x.getUnredeemed_count(),
+                            "summary",campaignSummary));
+
+                    entityModel.add(linkTo(methodOn(CampaignRestController.class).getCampaign(campaign.getId())).withSelfRel());
+
+
+                    return entityModel;
+
+
+
                 }).collect(Collectors.toList());
 
 
@@ -171,7 +270,8 @@ public class TourCampaignRestController {
                 TourbookingTourResp reservationTourResp = TourbookingTourResp.toResp(Quintet.with(tourBooking,product.get(),optionalTour.get(),travelers,documents),assetResp.get());
                // reservationTourResp.setDocuments(DocumentResp.Listfrom(documents));
                 reservationTourResp.setDocumentGroups(DocumentResp.groupfrom(documents));
-
+              //  reservationTourResp.setPublication_entrys(cc);
+                reservationTourResp.setCampaigns(cc);
 /*
 
                 publicationEntryList.stream()
@@ -187,7 +287,7 @@ public class TourCampaignRestController {
                         }).collect(Collectors.toList());
 */
 
-                reservationTourResp.setPublication_entrys(cc);
+
 
 
 
@@ -208,14 +308,14 @@ public class TourCampaignRestController {
 
 
                 if(roleService.valid(user.getRoles(),EnumRole.ROLE_TRAVEL_AGENCY)){
-                    if(tourBooking.getStatus().equals(EnumTourBookingStatus_.Draft)){
+                    if(tourBooking.getStatus().equals(EnumTourBookingStatus.Draft)){
 
                         Link link = linkTo(methodOn(TourCampaignRestController.class).商户初次提交(tourBooking.getId(),null)).withRel(EnumRequestFlow.商户初次提交.id);
                         entityModel.add(link);
 
                         reservationTourResp.setFlowButton(new FlowButtonVo(EnumRequestApprove.request,link,EnumRequestFlow.商户初次提交.id));
                     }
-                    if(tourBooking.getStatus().equals(EnumTourBookingStatus_.AwaitingBill_photo_image)){
+                    if(tourBooking.getStatus().equals(EnumTourBookingStatus.AwaitingBill_photo_image)){
 
                         Link link = linkTo(methodOn(TourCampaignRestController.class).商户二次提交(tourBooking.getId(),null)).withRel(EnumRequestFlow.商户二次提交.id);
                         entityModel.add(link);
@@ -223,12 +323,12 @@ public class TourCampaignRestController {
                     }
                 }
                 if(roleService.valid(user.getRoles(),EnumRole.ROLE_ADMIN)){
-                    if(tourBooking.getStatus().equals(EnumTourBookingStatus_.Pending)){
+                    if(tourBooking.getStatus().equals(EnumTourBookingStatus.Pending)){
                         Link link = linkTo(methodOn(TourCampaignRestController.class).旅投初次审核(tourBooking.getId(),null)).withRel(EnumRequestFlow.旅投初次审核.id);
                         entityModel.add(link);
                         reservationTourResp.setFlowButton(new FlowButtonVo(EnumRequestApprove.examine,link,EnumRequestFlow.旅投初次审核.id));
                     }
-                    if(tourBooking.getStatus().equals(EnumTourBookingStatus_.PendingBill_photo_image)){
+                    if(tourBooking.getStatus().equals(EnumTourBookingStatus.PendingBill_photo_image)){
 
                         Link link = linkTo(methodOn(TourCampaignRestController.class).旅投二次审核(tourBooking.getId(),null)).withRel(EnumRequestFlow.旅投二次审核.id);
                         entityModel.add(link);
@@ -238,7 +338,7 @@ public class TourCampaignRestController {
 
                 if(roleService.valid(user.getRoles(),EnumRole.ROLE_GOVERNMENT)){
 
-                    if(tourBooking.getStatus().equals(EnumTourBookingStatus_.AwaitingFundAppropriation)){
+                    if(tourBooking.getStatus().equals(EnumTourBookingStatus.AwaitingFundAppropriation)){
 
                         Link link = linkTo(methodOn(TourCampaignRestController.class).文旅局审核(tourBooking.getId(),null)).withRel(EnumRequestFlow.文旅局审核.id);
                         entityModel.add(link);
@@ -266,7 +366,7 @@ public class TourCampaignRestController {
 
 
 
-        EntityModel entityModel = EntityModel.of(Map.of("status_list", Arrays.stream(EnumTourBookingStatus_.values()).map(x->{
+        EntityModel entityModel = EntityModel.of(Map.of("status_list", Arrays.stream(EnumTourBookingStatus.values()).map(x->{
 
                     EnumResp enumResp = new EnumResp();
 
@@ -299,7 +399,7 @@ public class TourCampaignRestController {
 
             if(x.getProductType().equals(EnumProductType.Daytour)){
                 Optional<Product> product = productRepository.findById(x.getProductId());
-                Optional<Tour> optionalTour = tourRepository.findById(product.get().getTypeToWho());
+                Optional<Tour> optionalTour = tourRepository.findById(product.get().getTypeTo());
                 List<Traveler> travelers = travelerRepository.findAllByBooking(x.getId());
                 List<Document> documents = documentRepository.findAllByRaletiveId(x.getId());
 
@@ -343,6 +443,10 @@ public class TourCampaignRestController {
 
 
 
+        Map<Long,Tour> longTourMap = tourRepository.findAllById(products.stream().map(x->x.getTypeTo()).collect(Collectors.toSet()))
+                .stream().collect(Collectors.toMap(e->e.getProduct(),e->e));
+
+
         List<CampaignAssignToTourProduct> campaignAssignToTourProducts = campaignAssignToTourProductRepository.findByProductIn(products.stream().map(x->x.getId()).collect(toList()));
 
         Map<Long,Campaign> campaignMap = campaignRepository.findAllById(campaignAssignToTourProducts.stream().map(x->x.getCampaign()).collect(toList()))
@@ -361,6 +465,8 @@ public class TourCampaignRestController {
                 "product_list", products.stream().map(x->{
 
 
+                   Tour tour =  longTourMap.get(x.getId());
+
                     List<Object>  aaa = campaignMap1.get(x.getId()).stream().map(x_->{
                         EnumLongIdResp enumResp_ = new EnumLongIdResp();
                         enumResp_.setId(x_.getId());
@@ -373,15 +479,15 @@ public class TourCampaignRestController {
                     EnumLongIdResp enumResp = new EnumLongIdResp();
                     enumResp.setId(x.getId());
                     enumResp.setText(x.getName());
-                    enumResp.setInfo(Map.of("campaigns",aaa));
-
-
+                    enumResp.setInfo(Map.of("campaigns",aaa,"line_inf",tour.getLine_info()));
                     return enumResp;
                 }).collect(toList())));
+
+
         entityModel.add(linkTo(methodOn(SearchRestController.class).searchCampaign(null,null,null)).withRel("searchCampaigns"));
 
         entityModel.add(linkTo(methodOn(DocumentRestController.class).createDocuments(null)).withRel("importCRV"));
-        entityModel.add(linkTo(methodOn(TourCampaignRestController.class).createTourBooking(null)).withRel("createTourBooking"));
+        entityModel.add(linkTo(methodOn(TourCampaignRestController.class).createTourBooking(null,null)).withRel("createTourBooking"));
       //  Link link = new Link(FileStorageServiceImpl.url("templete_import_traveler.xlsx"),"getTemplete_import_traveler");
      //   Link link =  linkTo(FileUploadController.class).slash(""+"templete_import_traveler.xlsx").withRel("getTemplete_import_traveler");
 
@@ -403,13 +509,20 @@ public class TourCampaignRestController {
 
 
 
+
+
+
+
+
+
     @Operation(summary = "2、下单购买")
     @PostMapping(value = "/tour_bookings", produces = "application/json")
-    public ResponseEntity createTourBooking(@RequestBody @Valid TourBookingPojo pojo) {
+    public ResponseEntity createTourBooking(@RequestBody @Valid TourBookingPojo pojo,final HttpServletRequest request) {
         Authentication authentication =  authenticationFacade.getAuthentication();
 
         UserVo user = authenticationFacade.getUserVo(authentication);
 
+        String ip = HttpUtils.getRequestIP(request);
 
         Optional<Product> optionalProduct = productRepository.findById(pojo.getProductId());
 
@@ -496,18 +609,23 @@ public class TourCampaignRestController {
 
 
 
-
+        Session session = new Session();
+        session.setIp(ip);
 
 
         Triplet<TourBooking,Product, ProductSubVo> booking = tourCampaignService.book(
                 product,
                 campaigns,
                 guide,
-                pojo,travelerVoList,user.getSupplier());
+                pojo,travelerVoList,user.getSupplier(),session);
 
         TourBooking tourBooking = booking.getValue0();
 
-        List<Document> documents = fileStorageService.saveFromTempDocumentList(tourBooking.getId(),docTypeWithTempDocPairList);
+
+        workflowOrderService.旅行社新建(new Date(),tourBooking);
+
+
+        List<Document> documents = fileStorageService.saveFromTempDocumentCode(tourBooking.getId(),docTypeWithTempDocPairList);
 
 
             ReservationTourResp resp = ReservationTourResp.toResp(Quartet.with(booking.getValue0(),booking.getValue1(),booking.getValue2(),Collections.EMPTY_LIST));
@@ -517,6 +635,30 @@ public class TourCampaignRestController {
 
 
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -538,7 +680,7 @@ public class TourCampaignRestController {
 
             TourBooking reservation = optionalReservation.get();
 
-            if(!reservation.getStatus().equals(EnumTourBookingStatus_.Draft)){
+            if(!reservation.getStatus().equals(EnumTourBookingStatus.Draft)){
                 throw new Booking_not_pendingException(reservation.getId(),TourBooking.class.getSimpleName(),"订单非等待提交状态，不得提交"+reservation.getStatus());
             }
             Traveler booking = tourCampaignService.addTraveler(optionalReservation.get(),transferPojo);
@@ -814,7 +956,7 @@ public class TourCampaignRestController {
 
 
 
-                List<Document> documents = fileStorageService.saveFromTempDocumentList(RESERVATOIN_ID,docTypeWithTempDocPairList);
+                List<Document> documents = fileStorageService.saveFromTempDocumentCode(RESERVATOIN_ID,docTypeWithTempDocPairList);
                 return ResponseEntity.ok(MessageFileResp.fromDocuments(documents.stream().map(x->{
                     return Pair.with(FileStorageServiceImpl.url(x.getFileName()),x);
                 }).collect(toList())));
@@ -917,7 +1059,7 @@ public class TourCampaignRestController {
 
         applyForApprovalService.create(EnumRequestType.tour_approve,tourBooking,user);
 
-        tourBooking.setStatus(EnumTourBookingStatus_.Pending);
+        tourBooking.setStatus(EnumTourBookingStatus.Pending);
         tourBooking = tourBookingRepository.save(tourBooking);
 
         return ResponseEntity.ok(tourBooking);
@@ -952,12 +1094,12 @@ public class TourCampaignRestController {
 
         applyForApprovalService.create(EnumRequestType.tour_approve,tourBooking,user);
         if(reviewReq.getType().equals(EnumRequestApproveReject.Approve)){
-            tourBooking.setStatus(EnumTourBookingStatus_.AwaitingBill_photo_image);
+            tourBooking.setStatus(EnumTourBookingStatus.AwaitingBill_photo_image);
             tourBooking = tourBookingRepository.save(tourBooking);
 
         }
         if(reviewReq.getType().equals(EnumRequestApproveReject.Reject)){
-            tourBooking.setStatus(EnumTourBookingStatus_.Draft);
+            tourBooking.setStatus(EnumTourBookingStatus.Draft);
             tourBooking = tourBookingRepository.save(tourBooking);
 
         }
@@ -983,7 +1125,7 @@ public class TourCampaignRestController {
         TourBooking tourBooking = optionalReservation.get();
 
 
-        if(!tourBooking.getStatus().equals(EnumTourBookingStatus_.AwaitingBill_photo_image)){
+        if(!tourBooking.getStatus().equals(EnumTourBookingStatus.AwaitingBill_photo_image)){
             throw new Booking_not_pendingException(tourBooking.getId(),Reservation.class.getSimpleName(),"订单非等待草稿状态，不得提交"+tourBooking.getStatus());
         }
 
@@ -996,7 +1138,7 @@ public class TourCampaignRestController {
 
         applyForApprovalService.addReviews(EnumRequestType.tour_approve,tourBooking.getCode(),reviewReq);
 
-        tourBooking.setStatus(EnumTourBookingStatus_.AwaitingBill_photo_image);
+        tourBooking.setStatus(EnumTourBookingStatus.AwaitingBill_photo_image);
         tourBooking = tourBookingRepository.save(tourBooking);
 
         return ResponseEntity.ok(tourBooking);
@@ -1016,7 +1158,7 @@ public class TourCampaignRestController {
         }
 
         TourBooking tourBooking = optionalReservation.get();
-        if(!tourBooking.getStatus().equals(EnumTourBookingStatus_.AwaitingBill_photo_image)){
+        if(!tourBooking.getStatus().equals(EnumTourBookingStatus.AwaitingBill_photo_image)){
             throw new Booking_not_pendingException(tourBooking.getId(),Reservation.class.getSimpleName(),"订单非等待草稿状态，不得提交"+tourBooking.getStatus());
         }
 
@@ -1025,11 +1167,11 @@ public class TourCampaignRestController {
 
 
         if(reviewReq.getType().equals(EnumRequestApproveReject.Approve)){
-            tourBooking.setStatus(EnumTourBookingStatus_.AwaitingFundAppropriation);
+            tourBooking.setStatus(EnumTourBookingStatus.AwaitingFundAppropriation);
             tourBooking = tourBookingRepository.save(tourBooking);
         }
         if(reviewReq.getType().equals(EnumRequestApproveReject.Reject)){
-            tourBooking.setStatus(EnumTourBookingStatus_.AwaitingBill_photo_image);
+            tourBooking.setStatus(EnumTourBookingStatus.AwaitingBill_photo_image);
             tourBooking = tourBookingRepository.save(tourBooking);
         }
 
@@ -1057,7 +1199,7 @@ public class TourCampaignRestController {
 
 
         applyForApprovalService.addReviews(EnumRequestType.tour_approve,tourBooking.getCode(),reviewReq);
-        tourBooking.setStatus(EnumTourBookingStatus_.Fulfillment);
+        tourBooking.setStatus(EnumTourBookingStatus.Fulfillment);
         tourBooking = tourBookingRepository.save(tourBooking);
 
         return ResponseEntity.ok(tourBooking);
@@ -1287,5 +1429,13 @@ public class TourCampaignRestController {
         }
 
     }*/
+
+
+
+
+
+
+
+
 
 }

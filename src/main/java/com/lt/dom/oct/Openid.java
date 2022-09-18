@@ -2,10 +2,7 @@ package com.lt.dom.oct;
 
 import com.lt.dom.otcenum.EnumAssetType;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -31,7 +28,9 @@ public class Openid {
     private EnumAssetType type;
 
     @NotNull
-    private String code;//	string	The ID of the user
+    
+@Column(unique=true)
+private String code;//	string	The ID of the user
     @NotNull
     private String openid;
     @NotEmpty

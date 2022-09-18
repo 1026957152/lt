@@ -26,7 +26,9 @@ public class GuideResp {
     private String rean_name;
     private String id_card;
     private String phone;
-    private String code;
+    
+@Column(unique=true) 
+private String code;
 
 
     public static Page<EntityModel<EnumLongIdResp>> pageMapToListEnumSimple(Page<Guide> campaignPageable, Map<Long, User> longUserMap) {

@@ -1,6 +1,6 @@
 package com.lt.dom.oct;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+
 import com.lt.dom.otcenum.EnumCapabilities;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.data.annotation.CreatedDate;
@@ -15,10 +15,14 @@ import java.util.List;
 import java.util.Set;
 
 
-@Entity
-@EntityListeners(AuditingEntityListener.class)
 
-public class User {
+//
+@Entity
+public class User extends Base{
+
+
+
+
 
     @Version
     private Integer version;
@@ -34,12 +38,11 @@ public class User {
         this.version = version;
     }
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
 
-    private String code;//	string	The ID of the user
+
+    
+@Column(unique=true)
+private String code;//	string	The ID of the user
     private String password;//	string	The ID of the user
     boolean isAccountNonExpired;
 
@@ -51,13 +54,7 @@ public class User {
         this.password = password;
     }
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public String getCode() {
         return code;

@@ -16,6 +16,7 @@ import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class PublicationResp {
     private String campaign;
     private String campaignCode;
     private String customer;
-    private LocalDate published_at;
+    private LocalDateTime published_at;
     private VoucherResp voucher;
     private boolean paied;
     private long charge;
@@ -191,11 +192,11 @@ public class PublicationResp {
         return customer;
     }
 
-    public void setPublished_at(LocalDate published_at) {
+    public void setPublished_at(LocalDateTime published_at) {
         this.published_at = published_at;
     }
 
-    public LocalDate getPublished_at() {
+    public LocalDateTime getPublished_at() {
         return published_at;
     }
 

@@ -7,7 +7,7 @@ public class Error401Exception extends RuntimeException {
 
     private Enumfailures error;
     private String message;
-
+    private String detail;
 
     public Error401Exception(Enumfailures object, String message) {
 
@@ -16,6 +16,21 @@ public class Error401Exception extends RuntimeException {
 
     }
 
+    public String getDetail() {
+        return detail;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
+    }
+
+    public Error401Exception(Enumfailures object, String message, String detail) {
+
+        this.error = object;
+        this.message = message;
+        this.detail = detail;
+
+    }
     public Enumfailures getError() {
         return error;
     }

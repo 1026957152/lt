@@ -192,14 +192,24 @@ public class RealNameAuthenticationServiceImpl {
 
     }
 
+
+
+    public User setupData(User user,String real_name, String id_card) {
+        user = setRealname(user,real_name,id_card);
+
+        return user;
+
+
+    }
+
     public Pair<User,Openid> postWxRealnameAuths(Openid openid, RealnameAuthsReq realnameAuthsReq) {
 
 
         Optional<User> optionalUser = userRepository.findByPhone(realnameAuthsReq.getPhone());
 
-        if(optionalUser.isPresent()){ // 如果手机号存在 且
+        if(optionalUser.isPresent()){ // TODO 如果手机号存在
             User user = optionalUser.get();
-            if(!optionalUser.get().isRealNameVerified()){
+            if(!optionalUser.get().isRealNameVerified()){ //TODO 但未实名
                 user = setRealname(user,realnameAuthsReq.getReal_name(),realnameAuthsReq.getId_card());
             }
             openid.setLink(true);

@@ -27,7 +27,9 @@ public class RedemptionEntryResp {
     private String campaign_name;
     private String voucher_code;
     private LocalDateTime redeem_at;
-    private int redeemed_quantity;
+    private Long redeemed_quantity;
+    private String holder_real_name;
+    private String holder_name;
 
     public String getHolder() {
         return holder;
@@ -81,12 +83,108 @@ public class RedemptionEntryResp {
         return redeem_at;
     }
 
-    public void setRedeemed_quantity(int redeemed_quantity) {
+    public void setRedeemed_quantity(Long redeemed_quantity) {
         this.redeemed_quantity = redeemed_quantity;
     }
 
-    public int getRedeemed_quantity() {
+    public Long getRedeemed_quantity() {
         return redeemed_quantity;
+    }
+
+    public void setHolder_id(String holder_id) {
+        this.holder_id = holder_id;
+    }
+
+    public String getHolder_id() {
+        return holder_id;
+    }
+
+    public void setHolder_phone(String holder_phone) {
+        this.holder_phone = holder_phone;
+    }
+
+    public String getHolder_phone() {
+        return holder_phone;
+    }
+
+    public void setHolder_real_name(String holder_real_name) {
+        this.holder_real_name = holder_real_name;
+    }
+
+    public String getHolder_real_name() {
+        return holder_real_name;
+    }
+
+    public void setRedeemer_code(String redeemer_code) {
+        this.redeemer_code = redeemer_code;
+    }
+
+    public String getRedeemer_code() {
+        return redeemer_code;
+    }
+
+    public void setRedeemer_name(String redeemer_name) {
+        this.redeemer_name = redeemer_name;
+    }
+
+    public String getRedeemer_name() {
+        return redeemer_name;
+    }
+
+    public void setRedeemer_employee_code(String redeemer_employee_code) {
+        this.redeemer_employee_code = redeemer_employee_code;
+    }
+
+    public String getRedeemer_employee_code() {
+        return redeemer_employee_code;
+    }
+
+    public void setRedeemer_employee_id(String redeemer_employee_id) {
+        this.redeemer_employee_id = redeemer_employee_id;
+    }
+
+    public String getRedeemer_employee_id() {
+        return redeemer_employee_id;
+    }
+
+    public void setRedeemer_employee_name(String redeemer_employee_name) {
+        this.redeemer_employee_name = redeemer_employee_name;
+    }
+
+    public String getRedeemer_employee_name() {
+        return redeemer_employee_name;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setPublished_at(LocalDateTime published_at) {
+        this.published_at = published_at;
+    }
+
+    public LocalDateTime getPublished_at() {
+        return published_at;
+    }
+
+    public void setRedeemed_at(LocalDateTime redeemed_at) {
+        this.redeemed_at = redeemed_at;
+    }
+
+    public LocalDateTime getRedeemed_at() {
+        return redeemed_at;
+    }
+
+    public void setHolder_name(String holder_name) {
+        this.holder_name = holder_name;
+    }
+
+    public String getHolder_name() {
+        return holder_name;
     }
 
     public static enum RedemptionStatus {
@@ -119,8 +217,8 @@ public class RedemptionEntryResp {
     public String code="核销编号";// 核销编号
    // public String campaign_name; //券活动名称
    // public String voucher_code;// 券编号
-    public String published_at="领券时间";//  领券时间
-    public String redeemed_at="核销时间"; // 核销时间
+    public LocalDateTime published_at;//  领券时间
+    public LocalDateTime redeemed_at; // 核销时间
  //   public String  redeemed_quantity;// 核销数量
  //   public String  redeemed_amount;// 核销金额
 }

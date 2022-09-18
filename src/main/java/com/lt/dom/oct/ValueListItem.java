@@ -2,6 +2,7 @@ package com.lt.dom.oct;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -69,5 +70,10 @@ public class ValueListItem {
 
     public void setMetadata(String metadata) {
         this.metadata = metadata;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
     }
 }

@@ -31,7 +31,11 @@ public class RequestResp {
     private MerchantsSettledReqResp merchantsSettledReq;
     private String status_text;
     private LocalDateTime applied_at;
-    private String code;
+    
+@Column(unique=true) 
+private String code;
+    private ReviewResp reject_review;
+    private MerchantsSettledReq origin_merchantsSettledReqResp;
 
     public static RequestResp from(Request request, List<Reviewer> reviewers) {
         RequestResp requestResp = new RequestResp();
@@ -44,12 +48,14 @@ public class RequestResp {
         requestResp.setApplied_at(request.getApplied_at());
         requestResp.setType_text(request.getType().toString());
 
+/*
         // requestResp.setAdditional_info(request.getAdditional_info());
        if(request.getType().equals(EnumRequestType.Merchants_settled)){
            Gson gson = new Gson();
            MerchantsSettledReq max = gson.fromJson(request.getAdditional_info(), MerchantsSettledReq.class);
            requestResp.setMerchantsSettledReq(MerchantsSettledReqResp.from(max, new HashedMap()));
         }
+*/
 
         requestResp.setReviewers(reviewers.stream().map(x->{
             ReviewerResp reviewer = new ReviewerResp();
@@ -85,6 +91,21 @@ public class RequestResp {
         }
 
 
+        return requestResp;
+    }
+
+    public static RequestResp fromWithMearchantSettled(Request request, List<Reviewer> reviewers, MerchantsSettledReqResp merchantsSettledReqResp1) {
+
+        RequestResp requestResp = from(request,reviewers);
+        requestResp.setMerchantsSettledReq(merchantsSettledReqResp1);
+        return requestResp;
+    }
+
+    public static RequestResp fromWithTour_approve(Request request, List<Reviewer> reviewers, EntityModel entityModel1) {
+        RequestResp requestResp = from(request,reviewers);
+
+        requestResp.setTour_booking(entityModel1);
+        requestResp.setType_text(request.getType().toString());
         return requestResp;
     }
 
@@ -169,6 +190,22 @@ public class RequestResp {
 
     public String getCode() {
         return code;
+    }
+
+    public void setReject_review(ReviewResp reject_review) {
+        this.reject_review = reject_review;
+    }
+
+    public ReviewResp getReject_review() {
+        return reject_review;
+    }
+
+    public void setOrigin_merchantsSettledReqResp(MerchantsSettledReq origin_merchantsSettledReqResp) {
+        this.origin_merchantsSettledReqResp = origin_merchantsSettledReqResp;
+    }
+
+    public MerchantsSettledReq getOrigin_merchantsSettledReqResp() {
+        return origin_merchantsSettledReqResp;
     }
 
     public static class ReviewerResp {

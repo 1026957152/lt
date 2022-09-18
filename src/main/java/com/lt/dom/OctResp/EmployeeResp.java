@@ -38,7 +38,9 @@ public class EmployeeResp {
 
     private String note;
 
-    private String code;
+    
+
+private String code;
     private List<RoleResp> roles;
     private String real_name;
     private String status_text;

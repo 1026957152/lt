@@ -1,12 +1,11 @@
 package com.lt.dom.OctResp;
 
-import com.github.binarywang.wxpay.bean.businesscircle.PaidResult;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcenum.EnumCampaignToTourBookingStatus;
 import com.lt.dom.otcenum.EnumPaymentOption;
 import com.lt.dom.otcenum.EnumProductType;
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
+import com.lt.dom.otcenum.EnumTourBookingStatus;
 import com.lt.dom.vo.FlowButtonVo;
-import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.javatuples.Quintet;
 import org.javatuples.Triplet;
@@ -27,7 +26,8 @@ public class TourbookingTourResp{
     List<TravelerResp> travelers;
 
 
-    private String code;
+
+private String code;
     private EnumProductType productType;
     private String productCode;
     private String note;
@@ -42,6 +42,7 @@ public class TourbookingTourResp{
     private String tour_Code;
     private List<ReviewResp> reviews;
     private FlowButtonVo flowButton;
+    private List campaigns;
 
     public static TourbookingTourResp toResp(TourBooking booking, List<Traveler> travelers, List<Document> documents) {
 
@@ -74,13 +75,13 @@ public class TourbookingTourResp{
 
 
 
-    private EnumTourBookingStatus_ status;
+    private EnumTourBookingStatus status;
 
-    public EnumTourBookingStatus_ getStatus() {
+    public EnumTourBookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(EnumTourBookingStatus_ status) {
+    public void setStatus(EnumTourBookingStatus status) {
         this.status = status;
     }
     /*    status	The order's current status:
@@ -146,9 +147,10 @@ public class TourbookingTourResp{
 
 
 
-    public static TourbookingTourResp toResp(Pair<TourBooking,List<CampaignAssignToTourBookingResp>> pair) {
+    public static TourbookingTourResp toRespSearch(Triplet<TourBooking,List<CampaignAssignToTourBookingResp>,List<Traveler>> pair) {
         TourBooking booking = pair.getValue0();
         List<CampaignAssignToTourBookingResp> campaignAssignToTourBookings = pair.getValue1();
+        List<Traveler> travelerList = pair.getValue2();
 
         TourbookingTourResp tourbookingTourResp = new TourbookingTourResp();
 
@@ -172,6 +174,9 @@ public class TourbookingTourResp{
         tourbookingTourResp.setTour_starts_at(booking.getAdditional_info_tour_starts_at());
         tourbookingTourResp.setTour_ends_at(booking.getAdditional_info_tour_ends_at());
         tourbookingTourResp.setCampaign_count(campaignAssignToTourBookings.size());
+        tourbookingTourResp.setTraveler_count(travelerList.size());
+        tourbookingTourResp.setRedeemed_campaign_count(campaignAssignToTourBookings.stream().filter(e->e.getStatus().equals(EnumCampaignToTourBookingStatus.AlreadyRedeemed)).count());
+
 
         //reservationResp.setNote(tour.getTour_name_long());
         return tourbookingTourResp;
@@ -320,7 +325,7 @@ public class TourbookingTourResp{
 
     private String tour_title = "测试团名";//团名称： title;
     private String tour_code = "测试团号";//团号： code;
-    private int customer_count= 12;//游客数量： customer_count;
+    private int traveler_count;//游客数量： customer_count;
     private LocalDateTime tour_starts_at;//线路开始：starts_at;
     private LocalDateTime tour_ends_at;//线路结束：ends_at;
     private String tour_line_info = "测试线路信息";//线路信息：  line_info;
@@ -328,7 +333,7 @@ public class TourbookingTourResp{
     private String guide_phone= "测试导游电话";//导游电话：guide_phone
     private String guide_id= "测试导游身份证";//导游身份证：guide_id
   //  private int campaign_count= 5;//优惠券类别数量：campaign_count
-    private int redeemed_campaign_count= 1;//已核销券类别：redeemed_campaign_count
+    private long redeemed_campaign_count;//已核销券类别：redeemed_campaign_count
 
     public int getCampaign_count() {
         return campaign_count;
@@ -354,13 +359,6 @@ public class TourbookingTourResp{
         this.tour_code = tour_code;
     }
 
-    public int getCustomer_count() {
-        return customer_count;
-    }
-
-    public void setCustomer_count(int customer_count) {
-        this.customer_count = customer_count;
-    }
 
     public LocalDateTime getTour_starts_at() {
         return tour_starts_at;
@@ -410,11 +408,11 @@ public class TourbookingTourResp{
         this.guide_id = guide_id;
     }
 
-    public int getRedeemed_campaign_count() {
+    public long getRedeemed_campaign_count() {
         return redeemed_campaign_count;
     }
 
-    public void setRedeemed_campaign_count(int redeemed_campaign_count) {
+    public void setRedeemed_campaign_count(long redeemed_campaign_count) {
         this.redeemed_campaign_count = redeemed_campaign_count;
     }
 
@@ -448,5 +446,13 @@ public class TourbookingTourResp{
 
     public FlowButtonVo getFlowButton() {
         return flowButton;
+    }
+
+    public void setCampaigns(List campaigns) {
+        this.campaigns = campaigns;
+    }
+
+    public List getCampaigns() {
+        return campaigns;
     }
 }

@@ -6,9 +6,10 @@ plugins {
 
 }
 
+targetCompatibility = JavaVersion.VERSION_16
 group = 'com.lt'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
+sourceCompatibility = "16"
 
 repositories {
     mavenCentral()
@@ -81,6 +82,30 @@ dependencies {
     implementation 'com.github.ua-parser:uap-java:1.5.3'
     implementation 'org.hibernate:hibernate-jpamodelgen'  //:5.3.7.Final
   // annotationProcessor('org.hibernate:hibernate-jpamodelgen')
+    implementation group: 'org.jxls', name: 'jxls-poi', version: '2.12.0'
+
+    implementation 'org.jxls:jxls:2.12.0'
+    implementation group: 'org.mapstruct', name: 'mapstruct', version: '1.5.2.Final'
+
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.5.2.Final"
+    implementation 'org.springframework.statemachine:spring-statemachine-core:3.2.0'
+
+    implementation group: 'org.camunda.community', name: 'camunda-engine-rest-client-openapi-springboot', version: '7.17.4'
+    implementation group: 'org.camunda.bpm', name: 'camunda-external-task-client', version: '7.17.0'
+    implementation group: 'org.camunda.bpm.springboot', name: 'camunda-bpm-spring-boot-starter-external-task-client', version: '7.17.0'
+
+   // implementation 'com.alipay.sdk:alipay-sdk-java:4.16.2.ALL'
+    implementation group: 'com.alipay.sdk', name: 'alipay-sdk-java', version: '4.33.26.ALL'
+
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.amqp:spring-rabbit-test'
+    testImplementation 'org.springframework.amqp:spring-boot-starter-data-redis'
+
+    implementation 'commons-io:commons-io:2.11.0'
+    //   implementation group: 'org.springframework.statemachine', name: 'spring-statemachine-data-jpa' //, version: '3.2.0'
+ //implementation group: 'org.springframework.statemachine', name: 'spring-statemachine-autoconfigure' //, version: '3.2.0'
+
 }
 
 

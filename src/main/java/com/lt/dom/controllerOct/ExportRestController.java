@@ -1,19 +1,15 @@
 package com.lt.dom.controllerOct;
 
+import com.lt.dom.OctResp.EnumResp;
 import com.lt.dom.OctResp.ExportResp;
-import com.lt.dom.OctResp.ValueListResp;
 import com.lt.dom.oct.Export;
-import com.lt.dom.oct.Product;
-import com.lt.dom.oct.Reservation;
-import com.lt.dom.otcReq.BookingPojo;
 import com.lt.dom.otcReq.ExportReq;
 import com.lt.dom.otcenum.EnumExportVoucher;
 import com.lt.dom.repository.ExportRepository;
 import com.lt.dom.repository.ProductRepository;
-import com.lt.dom.repository.VoucherRepository;
 import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.ExportServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import com.lt.dom.serviceOtc.JxlsServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,14 +19,15 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/oct")
@@ -48,8 +45,30 @@ public class ExportRestController {
     @Autowired
     private AvailabilityServiceImpl availabilityService;
 
+
+
+    @GetMapping(value = "/exports/Page_getExportList", produces = "application/json")
+    public EntityModel<Map<String,Object>> Page_getExportList() {
+
+        EntityModel entityModel = EntityModel.of(Map.of("type_list", Arrays.stream(EnumExportVoucher.values()).map(x->{
+
+                    EnumResp enumResp = new EnumResp();
+
+                    enumResp.setId(x.name());
+                    enumResp.setText(x.toString());
+                    return enumResp;
+                }).collect(Collectors.toList())
+        ));
+
+        entityModel.add(linkTo(methodOn(ExportRestController.class).getExportList(null,null)).withRel("upload_bussiness_license_url"));
+        return entityModel;
+    }
+
+
+
+
     @GetMapping(value = "/exports", produces = "application/json")
-    public ResponseEntity<PagedModel> pageExports(Pageable pageable, PagedResourcesAssembler<ExportResp> assembler) {
+    public ResponseEntity<PagedModel> getExportList(Pageable pageable, PagedResourcesAssembler<ExportResp> assembler) {
 
         Page<Export> validatorOptional = exportRepository.findAll(pageable);
 
@@ -86,21 +105,34 @@ public class ExportRestController {
     @PostMapping(value = "/exports/{Type}", produces = "application/json")
     public ResponseEntity<ExportResp> createExport(@PathVariable(value = "Type", required = false)  EnumExportVoucher type, @RequestBody ExportReq pojo) {
 
+        System.out.println("================"+ pojo.toString());
+
+        pojo.getParameters();
+
+
         Export export = exportService.createExport(type,pojo);
 
         return ResponseEntity.ok(ExportResp.from(export));
 
 
 
-/*        System.out.println("抛出异常");
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));*/
-
-
     }
 
 
 
+
+    @Operation(summary = "2、下单购买")
+    @PostMapping(value = "/exports_j/{name}", produces = "application/json")
+    public ResponseEntity<Void> exports_j(@PathVariable(value = "name") String name) {
+
+        try {
+            JxlsServiceImpl.getAvailability(name);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.ok().build();
+
+    }
 
 
 

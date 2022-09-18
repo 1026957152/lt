@@ -27,7 +27,21 @@ public enum EnumDocumentType {
     license("license"),
     liability_insurance("liability_insurance"),
 
+    license_for_opening_bank_account("license_for_opening_bank_account"),
 
+
+    attraction_photos("license_for_opening_bank_account"),
+    product_photos("license_for_opening_bank_account"),
+
+    attraction_thumb("license_for_opening_bank_account"),
+    product_thumb("license_for_opening_bank_account"),
+
+    attraction_video("attraction_video"),
+
+    index_carousel("index_carousel"),
+
+
+    featured_photo("featured_photo"),
     ;
 
 

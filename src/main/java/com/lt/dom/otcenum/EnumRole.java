@@ -26,8 +26,9 @@ public enum EnumRole {
     ROLE_TRAVEL_AGENCY("barcode"),
     ROLE_VOUCHER_REDEEMER(" Voucher Redeemer"),
 
-
-
+    ROLE_HEAD_OFFICE(" Voucher Redeemer"),
+    ROLE_BRANCH(""),
+    ROLE_BANK_STAFF(""),
     ;
 
 

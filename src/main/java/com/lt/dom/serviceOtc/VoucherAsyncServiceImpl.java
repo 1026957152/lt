@@ -11,9 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 @Service
 public class VoucherAsyncServiceImpl {
@@ -36,11 +38,18 @@ public class VoucherAsyncServiceImpl {
     private AssetServiceImpl assetService;
 
     @Async
+    @Transactional
     public void 异步新建(CodeConfig config, Campaign campaign) {
 
 
+        Optional<Campaign> campaign1 = campaignRepository.findById(campaign.getId());
+
+        System.out.println(campaign.getId() + "异步执行了，找到了？"+campaign1.isPresent()+" 看一看 他的 code 啊"+campaign.getCode());
         Campaign finalCampaign = campaign;
-        List<Voucher> vouchers = IntStream.range(0,campaign.getVoucher_count()).boxed().map(x->{
+
+
+
+        List<Voucher> vouchers = LongStream.range(0,campaign.getVoucher_count()).boxed().map(x->{
             Voucher voucher = new Voucher();
             String no = VoucherCodes.generate(config);
             System.out.println("Execute method asynchronously. "
@@ -97,10 +106,16 @@ public class VoucherAsyncServiceImpl {
         assets = assetRepository.saveAll(assets);
 
 
-        System.out.println("Execute method asynchronously. "
+
+
+
+        //Optional<Campaign> optional = campaignRepository.findById(campaign.getId());
+
+
+        System.out.println(finalCampaign.getCode()+ finalCampaign.getName()+"我这里异步存储一下 Execute method asynchronously. "
                 + Thread.currentThread().getName());
         campaign.setVouchers_generation_status(EnumCampaignCreationStatus.DONE);
-        campaign = campaignRepository.save(campaign);
+        campaign = campaignRepository.save(finalCampaign);
     }
 
 

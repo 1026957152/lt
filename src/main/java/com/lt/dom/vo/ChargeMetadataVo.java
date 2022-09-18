@@ -7,7 +7,7 @@ public class ChargeMetadataVo {
     private long campaign;
     private String campaign_code;
     private long volume_up_voucher;
-    private long voucher;
+        private Long voucher;
     private long payer;
     private long booking;
 
@@ -36,11 +36,11 @@ public class ChargeMetadataVo {
         return volume_up_voucher;
     }
 
-    public void setVoucher(long voucher) {
+    public void setVoucher(Long voucher) {
         this.voucher = voucher;
     }
 
-    public long getVoucher() {
+    public Long getVoucher() {
         return voucher;
     }
 

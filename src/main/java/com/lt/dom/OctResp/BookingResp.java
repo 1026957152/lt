@@ -2,22 +2,20 @@ package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcenum.EnumBookingOjbectType;
-import com.lt.dom.otcenum.EnumTourBookingStatus;
-import com.lt.dom.otcenum.EnumPaymentOption;
-import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.requestvo.BookingTypeTowhoVo;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
-import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BookingResp extends RepresentationModel<BookingResp> {
+public class BookingResp  {
 
 
 
@@ -38,13 +36,20 @@ public class BookingResp extends RepresentationModel<BookingResp> {
 
 
     List<RoyaltyRule> royaltyRules;
-    private String code;
+    
+
+private String code;
     private EnumProductType productType;
     private String productCode;
     private String note;
     private List<DocumentResp> documents;
     private EntityModel<AssetResp> asset;
     private int traveler_number;
+    private List<EntityModel<PaymentMethodResp>> paymentMethods;
+    private EnumBookingType type;
+    private String type_text;
+    private EnumValidateWay validate_way;
+    private EnumValidationStatus validationStatus;
 
     public static BookingResp toResp(Reservation booking, List<Traveler> travelers, List<Document> documents) {
 
@@ -123,13 +128,13 @@ public class BookingResp extends RepresentationModel<BookingResp> {
 
 
 
-    private EnumTourBookingStatus status;
+    private EnumBookingStatus status;
 
-    public EnumTourBookingStatus getStatus() {
+    public EnumBookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(EnumTourBookingStatus status) {
+    public void setStatus(EnumBookingStatus status) {
         this.status = status;
     }
     /*    status	The order's current status:
@@ -262,9 +267,10 @@ public class BookingResp extends RepresentationModel<BookingResp> {
         if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Product)) {
             Reservation booking = pair.getValue0();
             Product product = pair.getValue1().getProduct();
-            Tour tour = pair.getValue1().getTour();
-            BookingResp reservationResp = new BookingResp();
 
+            BookingResp reservationResp = new BookingResp();
+            reservationResp.setValidate_way(booking.getSetValidate_way());
+            reservationResp.setValidationStatus(booking.getValidationStatus());
             reservationResp.setAmount(booking.getAmount());
             reservationResp.setCode(booking.getCode());
             reservationResp.setStatus(booking.getStatus());
@@ -274,7 +280,9 @@ public class BookingResp extends RepresentationModel<BookingResp> {
 
             reservationResp.setProductType(booking.getProductType());
             reservationResp.setProductCode(product.getCode());
-            //   reservationResp.setNote(tour.getTour_name());
+            reservationResp.setType(booking.getType());
+            reservationResp.setType_text(booking.getType().toString());
+             reservationResp.setNote(booking.getNote());
             //reservationResp.setNote(tour.getTour_name_long());
             return reservationResp;
         }
@@ -325,7 +333,7 @@ public class BookingResp extends RepresentationModel<BookingResp> {
     }
     public static BookingResp toResp(Quartet<Reservation,BookingTypeTowhoVo,List<Traveler>,List<Document>> pair) {
 
-        BookingResp resp = toResp(Quartet.with(pair.getValue0(),pair.getValue1(),pair.getValue2(),pair.getValue3()));
+        BookingResp resp = toResp(Triplet.with(pair.getValue0(),pair.getValue1(),pair.getValue2()));
         List<Document> travelers = pair.getValue3();
         DocumentResp.Listfrom(travelers);
         resp.setDocuments(DocumentResp.Listfrom(travelers));
@@ -374,5 +382,54 @@ public class BookingResp extends RepresentationModel<BookingResp> {
 
     public int getTraveler_number() {
         return traveler_number;
+    }
+
+
+
+    public void setPaymentMethods(List<EntityModel<PaymentMethodResp>> paymentMethods) {
+        this.paymentMethods = paymentMethods;
+    }
+
+    public List<EntityModel<PaymentMethodResp>> getPaymentMethods() {
+        return paymentMethods;
+    }
+
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
+
+    public void setType(EnumBookingType type) {
+        this.type = type;
+    }
+
+    public EnumBookingType getType() {
+        return type;
+    }
+
+    public void setType_text(String type_text) {
+        this.type_text = type_text;
+    }
+
+    public String getType_text() {
+        return type_text;
+    }
+
+    public void setValidate_way(EnumValidateWay validate_way) {
+        this.validate_way = validate_way;
+    }
+
+    public EnumValidateWay getValidate_way() {
+        return validate_way;
+    }
+
+    public void setValidationStatus(EnumValidationStatus validationStatus) {
+
+        this.validationStatus = validationStatus;
+    }
+
+    public EnumValidationStatus getValidationStatus() {
+        return validationStatus;
     }
 }

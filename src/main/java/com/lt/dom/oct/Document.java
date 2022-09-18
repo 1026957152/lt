@@ -19,9 +19,11 @@ public class Document {
     private EnumDocumentType type;
 
     @NotEmpty
-    private String code;
+    
+@Column(unique=true) 
+private String code;
 
-    @NotNull
+
     private long raletiveId;
     @NotNull
     private LocalDateTime created_at;
@@ -37,6 +39,14 @@ public class Document {
     private long size;
     private String mimeType; //MIME type
     private boolean image;
+    private String reference;
+    private String tempDocumentCode;
+
+
+    @Column(name = "index_")
+    private Integer index;
+    private String desc;
+    private boolean visiable;
 
     public long getSize() {
         return size;
@@ -132,5 +142,46 @@ public class Document {
 
     public boolean getImage() {
         return image;
+    }
+
+    public void setReference(String reference) {
+
+        this.reference = reference;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public void setTempDocumentCode(String tempDocumentCode) {
+        this.tempDocumentCode = tempDocumentCode;
+    }
+
+    public String getTempDocumentCode() {
+        return tempDocumentCode;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
+    }
+
+    public Integer getIndex() {
+        return index;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setVisiable(boolean visiable) {
+        this.visiable = visiable;
+    }
+
+    public boolean getVisiable() {
+        return visiable;
     }
 }

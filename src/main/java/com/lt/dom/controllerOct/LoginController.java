@@ -18,6 +18,7 @@ import com.lt.dom.repository.*;
 
 import com.lt.dom.serviceOtc.IUserService;
 import com.lt.dom.serviceOtc.UserServiceImpl;
+import com.lt.dom.serviceOtc.UserVoServiceImpl;
 import com.lt.dom.vo.IdentityVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -77,7 +78,7 @@ public class LoginController {
     JwtUtils jwtUtils;
 
     @Autowired
-    UserServiceImpl userService;
+    UserVoServiceImpl userService;
 
     @Autowired
     private MessageSource messages;
@@ -202,15 +203,7 @@ public class LoginController {
 
             System.out.println("这里了   的地方士大夫撒旦 "+ user);
             authsResp.setInfo(userService.getBigUser(user));
-            List<Request> requestList = requestRepository.findByOwner(user.getId());
-            Optional<Request> optionalRequest = requestList.stream().filter(x->x
-                    .getType().equals(EnumRequestType.Merchants_settled) & x.getStatus().equals(EnumRequestStatus.Pending)).findAny();
-            if(optionalRequest.isPresent()){
-                authsResp.setStatus(-1);
 
-            }else{
-                authsResp.setStatus(0);
-            }
 
             authsResp.setToken(jwt);
             System.out.println("这里了   的顶顶顶顶顶顶顶夫撒旦 "+ user);

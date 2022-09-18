@@ -1,17 +1,11 @@
 package com.lt.dom.OctResp;
 
 import com.lt.dom.oct.*;
-import com.lt.dom.otcenum.EnumPaymentOption;
-import com.lt.dom.otcenum.EnumProductType;
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
-import org.javatuples.Quartet;
-import org.javatuples.Quintet;
-import org.javatuples.Triplet;
+import com.lt.dom.otcenum.EnumTourBookingStatus;
 import org.springframework.hateoas.EntityModel;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 public class TourbookingGuideResp {
@@ -19,7 +13,8 @@ public class TourbookingGuideResp {
 
 
     List<TravelerResp> travelers;
-    private String code;
+
+private String code;
     private String note;
     private EntityModel<AssetResp> asset;
     private String status_text;
@@ -31,16 +26,16 @@ public class TourbookingGuideResp {
 
 
 
-    private EnumTourBookingStatus_ status;
+    private EnumTourBookingStatus status;
     private int traveler_count;
     private List<EntityModel> campaigns;
     private LocalDateTime create_at;
 
-    public EnumTourBookingStatus_ getStatus() {
+    public EnumTourBookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(EnumTourBookingStatus_ status) {
+    public void setStatus(EnumTourBookingStatus status) {
         this.status = status;
     }
 

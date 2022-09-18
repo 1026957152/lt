@@ -101,8 +101,8 @@ public enum Enumfailures {
 
 
 
-    Need_real_name("需要实名人认证");
-
+    Need_real_name("需要实名人认证"),
+    bad_request("需要实名人认证");
 
     // 401	40	Missing credentials: e.g. missing Authorization header, missing token, missing Bearer prefix…	Verify Authorization header is present, with valid Bearer token
 //401	41	Invalid credentials: e.g. invalid client_id and/or client_secret, pending or revoked client_id…	Check your app’s credentials on the ‘Application details’ page of our developer portal. You may have renewed your credentials

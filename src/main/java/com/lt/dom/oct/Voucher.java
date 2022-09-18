@@ -24,7 +24,9 @@ public class Voucher {
   //  @JsonProperty("id")
     private long id;
 
-    private String code;
+    
+@Column(unique=true) 
+private String code;
     private long campaign;
     private long relateId;
     private boolean published;
@@ -193,33 +195,33 @@ public class Voucher {
 
 
 
-    private int quantity;// (integer, required) - Default: null. How many times a voucher can be redeemed. A null value means unlimited.
+    private Long quantity;// (integer, required) - Default: null. How many times a voucher can be redeemed. A null value means unlimited.
 
-    private int redeemed_quantity;// (integer, required) - How many times a voucher has already been redeemed.
+    private Long redeemed_quantity;// (integer, required) - How many times a voucher has already been redeemed.
 
-    private int redeemed_amount;// (integer) - Total Amount redeemed by the voucher. Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 balance is written as 10000.
+    private Integer redeemed_amount;// (integer) - Total Amount redeemed by the voucher. Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 balance is written as 10000.
 
-    public int getQuantity() {
+    public Long getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(Long quantity) {
         this.quantity = quantity;
     }
 
-    public int getRedeemed_quantity() {
+    public Long getRedeemed_quantity() {
         return redeemed_quantity;
     }
 
-    public void setRedeemed_quantity(int redeemed_quantity) {
+    public void setRedeemed_quantity(Long redeemed_quantity) {
         this.redeemed_quantity = redeemed_quantity;
     }
 
-    public int getRedeemed_amount() {
+    public Integer getRedeemed_amount() {
         return redeemed_amount;
     }
 
-    public void setRedeemed_amount(int redeemed_amount) {
+    public void setRedeemed_amount(Integer redeemed_amount) {
         this.redeemed_amount = redeemed_amount;
     }
 

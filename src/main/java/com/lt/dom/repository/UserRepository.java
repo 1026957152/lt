@@ -28,4 +28,6 @@ public interface UserRepository extends JpaRepository<User
     User findByEmail(String email);
 
     Optional<User> findByOpenidAndOpenidLink(String email, boolean b);
+
+    Optional<User> findByCode(String credential);
 }

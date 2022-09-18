@@ -46,7 +46,9 @@ public class Employee {
     private String phone;
     private String email;
     private String note;
-    private String code;
+    
+@Column(unique=true) 
+private String code;
 
 
     public String getFirstName() {

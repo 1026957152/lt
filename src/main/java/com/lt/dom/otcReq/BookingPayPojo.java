@@ -1,6 +1,7 @@
 package com.lt.dom.otcReq;
 
 import com.alipay.api.internal.mapping.AlipayFieldMethod;
+import com.lt.dom.otcenum.EnumPayChannel;
 import com.lt.dom.otcenum.EnumPaymentOption;
 
 import java.util.List;
@@ -9,6 +10,17 @@ public class BookingPayPojo {
 
     private List<VoucherPojo> voucherPojoList;
     private List<EnumPaymentOption> paymentOptions;
+
+
+    private EnumPayChannel type;
+
+    public EnumPayChannel getType() {
+        return type;
+    }
+
+    public void setType(EnumPayChannel type) {
+        this.type = type;
+    }
 
     public List<EnumPaymentOption> getPaymentOptions() {
         return paymentOptions;

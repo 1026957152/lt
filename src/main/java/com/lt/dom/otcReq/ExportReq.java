@@ -3,6 +3,7 @@ package com.lt.dom.otcReq;
 import com.lt.dom.OctResp.ExportResp;
 import com.lt.dom.oct.Export;
 import com.lt.dom.otcenum.EnumExportVoucher;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,7 +20,9 @@ public class ExportReq {
     @NotNull
     private EnumExportVoucher exported_object;
     private Parameters parameters;
-    private String code;
+    
+
+private String code;
 
 
 
@@ -69,5 +72,10 @@ public class ExportReq {
         }
     }
 
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
 
 }

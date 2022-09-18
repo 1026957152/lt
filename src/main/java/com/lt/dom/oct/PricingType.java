@@ -24,7 +24,56 @@ public class PricingType {
     private int max;
     private String unit; // per or total
     private int price;
+    private int original; //The original price for this product which will be the same or higher than the sale amount. Use this to show a discount has been applied e.g. $10 $8.50
+    private int retail; //The sale price you should charge your customers.
+    private int net;  //The wholesale rate the supplier will charge you for this sale.
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public int getOriginal() {
+        return original;
+    }
+
+    public void setOriginal(int original) {
+        this.original = original;
+    }
+
+    public int getRetail() {
+        return retail;
+    }
+
+    public void setRetail(int retail) {
+        this.retail = retail;
+    }
+
+    public int getNet() {
+        return net;
+    }
+
+    public void setNet(int net) {
+        this.net = net;
+    }
+
+    public Long getMin_booking_size() {
+        return min_booking_size;
+    }
+
+    public void setMin_booking_size(Long min_booking_size) {
+        this.min_booking_size = min_booking_size;
+    }
+
     private String lable;
+    private String streamSeq;
+
+
+    private Long min_booking_size;
+
 
     public long getId() {
         return id;
@@ -96,5 +145,13 @@ public class PricingType {
 
     public long getProductId() {
         return productId;
+    }
+
+    public void setStreamSeq(String streamSeq) {
+        this.streamSeq = streamSeq;
+    }
+
+    public String getStreamSeq() {
+        return streamSeq;
     }
 }

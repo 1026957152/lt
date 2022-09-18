@@ -27,7 +27,9 @@ public class CampaignAssignToTourBooking {
     @NotNull
     private String booking_code;
     @NotNull
-    private String code;
+    
+
+private String code;
 
     @NotNull
     private EnumCampaignToTourBookingStatus status;

@@ -12,27 +12,29 @@ public class Redemption {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
-    private int quantity;
-    private int redeemed_quantity;
+    private Long quantity;
+    private Long redeemed_quantity;
     private long campaign_id;
     private long validatorSupplier;
     private long voucher_Id;
     private LocalDateTime created_at;
-    private String code;
+    
+@Column(unique=true) 
+private String code;
 
-    public int getQuantity() {
+    public Long getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(Long quantity) {
         this.quantity = quantity;
     }
 
-    public int getRedeemed_quantity() {
+    public Long getRedeemed_quantity() {
         return redeemed_quantity;
     }
 
-    public void setRedeemed_quantity(int redeemed_quantity) {
+    public void setRedeemed_quantity(Long redeemed_quantity) {
         this.redeemed_quantity = redeemed_quantity;
     }
 

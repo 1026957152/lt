@@ -1,35 +1,54 @@
 package com.lt.dom.otcReq;
 
 
-import com.lt.dom.otcenum.EnumBussinessType;
-import com.lt.dom.otcenum.EnumSupplierType;
-import org.junit.experimental.theories.internal.EnumSupplier;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.lt.dom.OctResp.MerchantsSettledReqResp;
+import com.lt.dom.oct.TempDocument;
+import com.lt.dom.otcenum.*;
+import com.lt.dom.serviceOtc.FileStorageServiceImpl;
+import com.lt.dom.vo.UserMachentSettedValidatVo;
+
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
+import java.util.Map;
 
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MerchantsSettledReq {
     @NotEmpty
     private String supplier_name;
     @NotEmpty
     private String desc;
-    @NotEmpty
+
     private String user_name;
-    @NotEmpty
+
     private String user_password;
-    @NotEmpty
+
     private String user_phone;
-    @NotNull
+
     private EnumSupplierType supplier_type;
+
+    @NotNull
+    private EnumSupplier allowed_supplier;
+
+
+
+    public EnumSupplier getAllowed_supplier() {
+        return allowed_supplier;
+    }
+
+    public void setAllowed_supplier(EnumSupplier allowed_supplier) {
+        this.allowed_supplier = allowed_supplier;
+    }
+
     @Valid
     private Location location;
 
 
-    private EnumBussinessType business_type;
+    private EnumBussinessType business_type = EnumBussinessType.company;
     private String first_name;
     private String last_name;
 
@@ -63,7 +82,15 @@ public class MerchantsSettledReq {
         this.last_name = last_name;
     }
 
+    public UserMachentSettedValidatVo toUserMachentSettedValidatVo() {
+        UserMachentSettedValidatVo userMachentSettedValidatVo = new UserMachentSettedValidatVo();
+        userMachentSettedValidatVo.setUser_name(this.user_name);
+        userMachentSettedValidatVo.setUser_password(this.user_password);
+        userMachentSettedValidatVo.setUser_phone(this.user_phone);
+        return userMachentSettedValidatVo;
+    }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Location {
         @NotNull
         private Float latitude;
@@ -172,8 +199,8 @@ public class MerchantsSettledReq {
     @NotEmpty
     private String bank_name;
   //  @Size(min = 1,max = 10)
-     @NotEmpty
-    private String bussiness_license;
+
+
     @NotNull
     private Boolean term;  // 这个就是机器了啊
 
@@ -270,20 +297,17 @@ public class MerchantsSettledReq {
         this.term = term;
     }
 
-    String business_license_image;
+
     String license_image;
     String liability_insurance_image;
+    @NotEmpty
+    private String bussiness_license;
+    @NotEmpty
+    private String license_for_opening_bank_account;
 
    //TODO @NotEmpty
     String phone; //官方联系电话
 
-    public String getBusiness_license_image() {
-        return business_license_image;
-    }
-
-    public void setBusiness_license_image(String business_license_image) {
-        this.business_license_image = business_license_image;
-    }
 
     public String getLicense_image() {
         return license_image;
@@ -309,6 +333,11 @@ public class MerchantsSettledReq {
         this.phone = phone;
     }
 
+    public String getLicense_for_opening_bank_account() {
+        return license_for_opening_bank_account;
+    }
 
-
+    public void setLicense_for_opening_bank_account(String license_for_opening_bank_account) {
+        this.license_for_opening_bank_account = license_for_opening_bank_account;
+    }
 }

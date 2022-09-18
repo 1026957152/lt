@@ -3,6 +3,8 @@ package com.lt.dom.repository;
 import com.lt.dom.oct.AccessValidator;
 import com.lt.dom.oct.Document;
 import com.lt.dom.otcenum.EnumDocumentType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -19,4 +21,10 @@ public interface DocumentRepository extends JpaRepository<Document
     List<Document> findAllByTypeAndRaletiveId(EnumDocumentType scenario_logo, long id);
 
     List<Document> findAllByTypeInAndRaletiveId(List<EnumDocumentType> scenario_logo, long id);
+
+    List<Document> findAllByTypeAndReference(EnumDocumentType scenario_logo, String reference);
+
+    List<Document> findAllByTypeAndReferenceIn(EnumDocumentType scenario_logo, List<String> reference);
+
+    Page<Document> findAllByTypeAndReference(EnumDocumentType attraction_photos, String code, Pageable pageable);
 }

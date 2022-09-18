@@ -70,7 +70,7 @@ public class ScenarioServiceImpl {
 
     public List<Calendar> listAvailability(Product product) {
 
-        List<BookingRule> bookingRules = bookingRuleRepository.findByProductId(product.getId());
+        List<BookingRule> bookingRules = bookingRuleRepository.findByProduct(product.getId());
         BookingRule bookingRule = bookingRules.get(0);
         List<LocalDate> localDates =null;// getDatesBetweenUsingJava9(bookingRule.getBookings_from(),bookingRule.getBookings_to());
 

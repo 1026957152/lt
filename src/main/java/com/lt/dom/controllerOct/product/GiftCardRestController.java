@@ -1,9 +1,11 @@
 package com.lt.dom.controllerOct.product;
 
 import com.lt.dom.OctResp.ProductResp;
+import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcReq.product.ProductGiftVoucherPojo;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.SupplierRepository;
 import com.lt.dom.serviceOtc.ProductServiceImpl;
 import com.lt.dom.serviceOtc.ValidatorScanServiceImpl;
@@ -50,10 +52,13 @@ public class GiftCardRestController {
     @Operation(summary = "2、创建Product对象")
     @PostMapping(value = "/suppler/{SUPPLIER_ID}/products", produces = "application/json")
     public ResponseEntity<ProductResp> createProduct(@PathVariable long SUPPLIER_ID,@RequestBody ProductGiftVoucherPojo pojo) {
-        Optional<Supplier> validatorOptional = supplierRepository.findById(SUPPLIER_ID);
-        if(validatorOptional.isPresent()){
-            try {
-                Product product=  productService.createProductGiftVoucher(validatorOptional.get(),pojo);
+        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
+        if(supplierOptional.isPresent()) {
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到这个应用场景");
+        }
+        Supplier supplier = supplierOptional.get();
+
+                Product product=  productService.createProductGiftVoucher(supplier,pojo);
 
                 URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                         .path("/{id}")
@@ -62,16 +67,6 @@ public class GiftCardRestController {
                 return ResponseEntity.created(uri)
                         .body(ProductResp.from(Pair.with(product,null)));
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-   
-
-
-        System.out.println("抛出异常");
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
 
 
 

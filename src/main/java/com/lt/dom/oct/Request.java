@@ -23,7 +23,10 @@ public class Request {
     private String additional_info;
     @NotNull
     private LocalDateTime applied_at;
-    private String code;
+    
+@Column(unique=true) 
+private String code;
+    private LocalDateTime updated_at;
 
     public String getAdditional_info() {
         return additional_info;
@@ -134,6 +137,15 @@ public class Request {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public void setUpdated_at(LocalDateTime updated_at) {
+
+        this.updated_at = updated_at;
+    }
+
+    public LocalDateTime getUpdated_at() {
+        return updated_at;
     }
 
 

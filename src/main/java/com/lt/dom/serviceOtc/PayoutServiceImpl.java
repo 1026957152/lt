@@ -11,6 +11,7 @@ import com.lt.dom.oct.Payout;
 import com.lt.dom.otcenum.EnumPayoutMethod;
 import com.lt.dom.otcenum.EnumPayoutStatus;
 import com.lt.dom.otcenum.EnumWxEntPayErrorcode;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.PayoutRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -98,11 +99,11 @@ public class PayoutServiceImpl {
             }
             if(entPayBankResult.getReturnCode().equals("FAIL")){
                 entPayBankResult.getResultCode();
-                throw new PaymentException(payout.getId(),"","");
+                throw new PaymentException(Enumfailures.payment_login_error,"");
             }
 
         } catch (WxPayException e) {
-            throw new PaymentException(payout.getId(),"","");
+            throw new PaymentException(Enumfailures.payment_login_error,"");
         }
 
 

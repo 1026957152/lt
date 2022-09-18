@@ -50,10 +50,10 @@ public class MyUserDetailsService implements UserDetailsService {
 
         IdentityVo identityVo = gson.fromJson(ident,IdentityVo.class);
 
-
+/*
         String email = identityVo.getCredential();
 
-        logger.debug("登录 username:{}",email);
+      logger.debug("登录 username:{}",email);
         System.out.println("空的吗--"+email);
         List<User> list = userRepository.findAll();
         System.out.println("空的吗 多少-"+list.size());
@@ -63,21 +63,24 @@ public class MyUserDetailsService implements UserDetailsService {
         for(User u : list){
             System.out.println("2222"+u.getPhone());
 
-        }
+        }*/
         Optional<User> optionalUser = Optional.empty();
         if(identityVo.getType().equals(EnumIdentityType.phone)){
-           optionalUser = userRepository.findByPhone(email);
+           optionalUser = userRepository.findByPhone(identityVo.getCredential());
 
         }
         if(identityVo.getType().equals(EnumIdentityType.weixin)){
-            optionalUser = userRepository.findByOpenidAndOpenidLink(email,true);
+            optionalUser = userRepository.findByOpenidAndOpenidLink(identityVo.getCredential(),true);
 
         }
+        if(identityVo.getType().equals(EnumIdentityType.user_code)){
+            optionalUser = userRepository.findByCode(identityVo.getCredential());
 
+        }
         if(optionalUser.isEmpty()){
             String s = "微信，和 手机 号 找不到用户"+ identityVo.getType()+" "+identityVo.getCredential();
             System.out.println(s);
-            throw new Error401Exception(Enumfailures.Missing_credentials,s);
+            throw new Error401Exception(Enumfailures.Missing_credentials,"找不到用户",s);
 
         }
         //Optional<User> optionalUser = userRepository.findByUsername(email);

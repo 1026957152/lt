@@ -2,6 +2,8 @@ package com.lt.dom.OctResp;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.otcenum.EnumSupplierType;
 
 import java.util.List;
 
@@ -16,8 +18,16 @@ public class EnumResp {
     private String name;
     private String text;
     private Boolean selected;
-    private List<EnumResp> subitems
+    private List subitems
             ;
+    private EnumSupplierType type;
+
+    public static EnumResp of(EnumProductType type, String toString) {
+        EnumResp enumResp = new EnumResp();
+        enumResp.setText(toString);
+        enumResp.setId(type.name());
+        return enumResp;
+    }
 
     public void setId(String id) {
         this.id = id;
@@ -51,11 +61,19 @@ public class EnumResp {
         return selected;
     }
 
-    public void setSubitems(List<EnumResp> subitems) {
+    public void setSubitems(List subitems) {
         this.subitems = subitems;
     }
 
-    public List<EnumResp> getSubitems() {
+    public List getSubitems() {
         return subitems;
+    }
+
+    public void setType(EnumSupplierType type) {
+        this.type = type;
+    }
+
+    public EnumSupplierType getType() {
+        return type;
     }
 }

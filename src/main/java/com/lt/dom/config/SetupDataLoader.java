@@ -17,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Component
@@ -49,6 +51,8 @@ public class SetupDataLoader implements
     private UserServiceImpl userService;
     @Autowired
     private SupplierServiceImp supplierService;
+    @Autowired
+    private OpenidServiceImpl openidService;
 
 
     @Autowired
@@ -64,6 +68,21 @@ public class SetupDataLoader implements
     private SettingServiceImpl settingService;
     @Autowired
     private PaymentServiceImpl paymentService;
+    @Autowired
+    private GuideServiceImpl guideService;
+
+    @Autowired
+    private ClainQuotaServiceImpl clainQuotaService;
+    @Autowired
+    private PassServiceImpl passService;
+
+
+    @Autowired
+    private ValueListServiceImpl valueListService;
+
+
+    @Autowired
+    private DeviceService deviceService;
 
 
     @Override
@@ -134,9 +153,9 @@ public class SetupDataLoader implements
         user.setPassword(passwordEncoder.encode("test"));
         user.setEmail("test@test.com");
         user.setRoles(new HashSet(Arrays.asList(adminRole)));
-        user.setPhone("1");
+        user.setPhone("13468801683");
         user.setEnabled(true);
-        //user.setCreated_at(LocalDateTime.now());
+        user.setCreated_at(LocalDateTime.now());
         userRepository.save(user);
 
         alreadySetup = true;
@@ -147,26 +166,23 @@ public class SetupDataLoader implements
         ScenarioReq scenarioReq = new ScenarioReq();
         scenarioReq.setName("畅游消费券");
         scenarioReq.setNote("A景区、乡村旅游示范村\\r“十百千”工程文化产业示范基地\\r共计28家");
-        campaignService.createScenario(scenarioReq);
+        Scenario scenario畅游消费券 = campaignService.createScenario(scenarioReq);
 
         scenarioReq = new ScenarioReq();
         scenarioReq.setName("剧院消费券");
         scenarioReq.setNote("剧院,榆林大剧院");
-        campaignService.createScenario(scenarioReq);
+        Scenario scenario剧院消费券 = campaignService.createScenario(scenarioReq);
 
         scenarioReq = new ScenarioReq();
         scenarioReq.setName("旅行消费券");
         scenarioReq.setNote("在榆注册旅行社");
-        campaignService.createScenario(scenarioReq);
+        Scenario scenario旅行消费券 = campaignService.createScenario(scenarioReq);
 
         scenarioReq = new ScenarioReq();
         scenarioReq.setName("清爽消费券");
         scenarioReq.setNote("适用于市县 31 家电影院,1、影院推出300元面值卡，政府补贴60元，\\r客户自付10元，影院匹配30元\\r（对于客人来说等于100当做300花");
-        campaignService.createScenario(scenarioReq);
+        Scenario scenario清爽消费券 = campaignService.createScenario(scenarioReq);
 
-       // Openid openid = new Openid();
-       // openid.setOpenid("odzgk0ZpWx4NpQC4B1Tu1hnTgYwE");
-       // openidRepository.save(openid);
 
 
 
@@ -175,19 +191,46 @@ public class SetupDataLoader implements
         userPojo.setFirst_name("wxlinkUserReq.getFirst_name()");
         userPojo.setLast_name("wxlinkUserReq.getLast_name()");
         userPojo.setUsername("wxlinkUserReq.getUser_name()");
+        userPojo.setRealName("我是一名虚拟的导游");
+        userPojo.setIdCard("612724198409210000");
         userPojo.setPhone("13468801674");
-        userPojo.setPassword("wxlinkUserReq.getUser_password()");
-        userPojo.setRoles(Arrays.asList("ROLE_ADMIN"));
+        userPojo.setPassword("123456");
+        userPojo.setRoles(Arrays.asList(EnumRole.ROLE_ADMIN.name()));
         user = userService.createUser(userPojo,Arrays.asList());
+
+        guideService.beGuide(user);
+
+
+       // passService.setupData(user);
+
 
 
         CompaignPojo compaignPojo = JSONObject.parseObject("{\"name\":\"镇北台\",\"category\":\"畅游消费券\",\"name_long\":\"国家4A级景区\",\"claim_text\":\"免费领券\",\"claim_note\":\"免费领券\",\"clain_limit\":1,\"description\":\"我和我的祖国\",\"scenario\":1,\"campaignType\":\"LOYALTY_PROGRAM\",\"vouchers_count\":2,\"start_date\":\"2021-09-11\",\"active\":true,\"claimable\": true,\"expiry_days\":2,\"expiration_date\":\"2021-09-11\",\"code_config\":{\"charset\": \"0123456789\",\"prefix\":\"\",\"postfix\":\"\",\"pattern\":\"TT-NI-############\",\"category\":\"AMOUNT\"}, \"voucher\":{\"type\":\"DISCOUNT_VOUCHER\",\"category\":\"AMOUNT\",\"amount_off\":\"60\"}}" +
                 "",CompaignPojo.class);
 
-        Optional<Scenario> scenario = scenarioRepository.findById(compaignPojo.getScenario());
+   //     Optional<Scenario> scenario = scenarioRepository.findById(compaignPojo.getScenario());
 
         System.out.println("dddddddddd777773333333333333333333333555555555555577777777777777777777777");
-      //  Campaign campaign = voucherService.createLoyaltyCompaign(compaignPojo,scenario.get());
+
+        Map<EnumSupplierDisplayType,Scenario> typeMap = Map.of(EnumSupplierDisplayType.畅游,scenario畅游消费券,
+                EnumSupplierDisplayType.剧院,scenario剧院消费券,
+                EnumSupplierDisplayType.旅行,scenario旅行消费券,
+                EnumSupplierDisplayType.清爽观影券,scenario清爽消费券);
+
+
+        Arrays.stream(EnumCampaign.values()).forEach(x->{
+            compaignPojo.setName(x.getName());
+            compaignPojo.setDescription(x.getName());
+            compaignPojo.setName_long(x.getName());
+            compaignPojo.setName_long(x.getName());
+            compaignPojo.getVoucher().setAmount_off(x.getAmount());
+            compaignPojo.setScenario(typeMap.get(x.getCategory()).getId());
+
+            compaignPojo.setClaim_note("仅限在榆注册的旅行社，通过电脑PC端后台注册后，提前三天，提交团队信息及线路详情提报审批（每团最多50人），审批通过后上传客户名单及相关保单等信息领取相应票劵。\n" +
+                    "<br>消费者通过微信小程序搜索“清爽榆林消费券”关键字，进入平台，在小程序内点击相应券种，领取对应的产品消费券。\n");
+            campaignService.create(compaignPojo,typeMap.get(x.getCategory()));
+
+        });
 
 
         RealnameAuthsReq realnameAuthsReq = new RealnameAuthsReq();
@@ -215,10 +258,48 @@ public class SetupDataLoader implements
         settingService.setupData();
 
 
-        _景区();
+        AssetAddReq assetAddReq = new AssetAddReq();
+        assetAddReq.setName("根设备");
+        assetAddReq.setFull_name("根设备");
+        deviceService.setupdata(assetAddReq);
+
+        Supplier supplier = _景区();
         _文旅局();
         _旅投超级管理员();
         _旅行社();
+
+
+        ValueListReq valueListReq = JSONObject.parseObject("{\n" +
+                "            \"type\": \"Vendor_groups\",\n" +
+                "                \"name\": \"我的配额\",\n" +
+                "                \"ids\":[1,2,3,4]\n" +
+                "        }",ValueListReq.class);
+        valueListReq.setItem_ids(Arrays.asList(supplier.getId()));
+        valueListService.createValueListWithAdd(valueListReq);
+
+
+
+
+
+       /* EnumClainQuotaType.supplier_list;
+
+
+        quota.setType(EnumClainQuotaType.customer__list);
+
+
+        clainQuotaService.createQuota()*/
+
+
+
+        _榆林信合();
+        _横山支行();
+
+
+        try {
+            JxlsServiceImpl.getAvailability("name");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Transactional
@@ -270,7 +351,10 @@ public class SetupDataLoader implements
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
         supplierService.成为员工(supplier,user);
+        Openid openid = openidService.setupData("oq1Er5Y7M9J4FnM262owaZHihOgQ");
+        openidService.linkUser(openid,user);
 
+        realNameAuthenticationService.setupData(user,"程龙龙","1234567890");
     }
 
     private void _文旅局() {
@@ -295,6 +379,10 @@ public class SetupDataLoader implements
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
         supplierService.成为员工(supplier,user);
+
+
+
+
 
     }
 
@@ -325,7 +413,7 @@ public class SetupDataLoader implements
     }
 
 
-    private void _景区() {
+    private Supplier _景区() {
 
         UserPojo userPojo = new UserPojo();
 
@@ -337,13 +425,80 @@ public class SetupDataLoader implements
 
         SupplierPojoVo supplierPojoVo = new SupplierPojoVo();
         supplierPojoVo.setDesc("红石峡位于榆林市城北3公里处，距离榆林市区仅5公里。红石峡谷长约350米，峡谷东崖高约11.5米，西崖高13米，东西对峙，峭拔雄伟。峡内榆溪河水穿峡而过直达城西。古代驻守榆林的文人墨客甚至武将都喜好到红石峡题刻以抒发边塞豪情壮志，所以红石峡又是长城书法艺术的一大宝库。从题字的内容，可以看出榆林古时“九边重镇”的地位。此外，还可以欣赏到宋元时期的石窟艺术。赶上晴天，就可以一睹“红山夕照”的风采：夕阳之下如同晚霞一般绚丽的红石峡风光。是著名的“榆林八景”之一。");
-        supplierPojoVo.setType(EnumSupplierType.Other);
+        supplierPojoVo.setType(EnumSupplierType.A级景区);
         supplierPojoVo.setBusiness_type(EnumBussinessType.company);
         supplierPojoVo.setLocation("榆林市榆阳区榆阳镇北岳庙村");
         supplierPojoVo.setLocationName("榆林市榆阳区榆阳镇北岳庙村");
         supplierPojoVo.setLat(Float.valueOf(0));
         supplierPojoVo.setLng(Float.valueOf(0));
         supplierPojoVo.setSupplierName("榆林市红石峡生态公园有限责任公司");
+        Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
+
+         supplierService.成为员工(supplier,user);
+        return supplier;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    private void _榆林信合() {
+
+
+
+        UserPojo userPojo = new UserPojo();
+
+        userPojo.setPhone("yb");
+        userPojo.setPassword("123456");
+        userPojo.setRoles(Arrays.asList(EnumRole.ROLE_ADMIN.name(),EnumRole.ROLE_HEAD_OFFICE.name()));
+        User user = userService.createUser(userPojo,Arrays.asList());
+
+
+        SupplierPojoVo supplierPojoVo = new SupplierPojoVo();
+        supplierPojoVo.setDesc("榆林市文化和旅游局是市政府工作部门，为正县级，加挂市文物广电局的牌子。市文化和旅游局贯彻落实党中央、省委、市委关于文化和旅游、文物、广播电视工作的方针政策和决策部署，在履行职责过程中坚持和加强党的集中统一领导");
+        supplierPojoVo.setType(EnumSupplierType.Bank);
+        supplierPojoVo.setBusiness_type(EnumBussinessType.company);
+        supplierPojoVo.setLocation("榆阳区长城中路2号");
+        supplierPojoVo.setLocationName("榆阳区长城中路2号");
+        supplierPojoVo.setLat(Float.valueOf(0));
+        supplierPojoVo.setLng(Float.valueOf(0));
+        supplierPojoVo.setSupplierName("榆林农村商业银行");
+        Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
+
+        supplierService.成为员工(supplier,user);
+
+    }
+
+
+
+    private void _横山支行() {
+
+
+
+        UserPojo userPojo = new UserPojo();
+
+        userPojo.setPhone("hs");
+        userPojo.setPassword("123456");
+        userPojo.setRoles(Arrays.asList(EnumRole.ROLE_BRANCH.name()));
+        User user = userService.createUser(userPojo,Arrays.asList());
+
+
+        SupplierPojoVo supplierPojoVo = new SupplierPojoVo();
+        supplierPojoVo.setDesc("_");
+        supplierPojoVo.setType(EnumSupplierType.Bank);
+        supplierPojoVo.setBusiness_type(EnumBussinessType.company);
+        supplierPojoVo.setLocation("陕西省榆林市横山区横山镇迎宾路北");
+        supplierPojoVo.setLocationName("陕西省榆林市横山区横山镇迎宾路北");
+        supplierPojoVo.setLat(Float.valueOf(0));
+        supplierPojoVo.setLng(Float.valueOf(0));
+        supplierPojoVo.setSupplierName("横山支行");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
         supplierService.成为员工(supplier,user);

@@ -1,12 +1,10 @@
 package com.lt.dom.specification;
 
 
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public class RedeptionQueryfieldsCriteria {
 

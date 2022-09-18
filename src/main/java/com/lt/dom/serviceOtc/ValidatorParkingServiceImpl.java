@@ -23,7 +23,7 @@ public class ValidatorParkingServiceImpl {
 
     }
 
-    public List<Validator> 当前停车设备(ComponentRight componentRight) throws Exception {
+    public List<Validator_> 当前停车设备(ComponentRight componentRight) throws Exception {
 
         AccessValidator accessValidator = null;//componentRight.getAccessValidator();
 /*
@@ -41,7 +41,7 @@ public class ValidatorParkingServiceImpl {
     }
 
 
-    private ComponentVounch 找到当前权益(Validator validator, String license) throws Exception {
+    private ComponentVounch 找到当前权益(Validator_ validator, String license) throws Exception {
 
 
         ValidatorGroup validatorGroup = validator.getValidatorGroup();
@@ -58,7 +58,7 @@ public class ValidatorParkingServiceImpl {
 
     }
 
-    public ComponentVounch 进入(Validator validator, String license) throws Exception {
+    public ComponentVounch 进入(Validator_ validator, String license) throws Exception {
 
         ComponentVounch componentVounch = 找到当前权益(validator, license);
         ParkingStatus parkingStatus = new ParkingStatus();
@@ -68,7 +68,7 @@ public class ValidatorParkingServiceImpl {
         return new ComponentVounch();
     }
 
-    public ComponentVounch 出去(Validator validator, String license) throws Exception {
+    public ComponentVounch 出去(Validator_ validator, String license) throws Exception {
 
         ComponentVounch componentVounch = 找到当前权益(validator, license);
 

@@ -1,13 +1,11 @@
 package com.lt.dom.OctResp;
 
 import com.lt.dom.oct.*;
-import com.lt.dom.otcenum.EnumTourBookingStatus;
 import com.lt.dom.otcenum.EnumPaymentOption;
 import com.lt.dom.otcenum.EnumProductType;
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
+import com.lt.dom.otcenum.EnumTourBookingStatus;
 import com.lt.dom.requestvo.ProductSubVo;
 import org.javatuples.Quartet;
-import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -26,7 +24,8 @@ public class ReservationTourResp extends RepresentationModel<ReservationTourResp
 
 
 
-    private String code;
+
+private String code;
     private EnumProductType productType;
     private String productCode;
     private String note;
@@ -61,13 +60,13 @@ public class ReservationTourResp extends RepresentationModel<ReservationTourResp
 
 
 
-    private EnumTourBookingStatus_ status;
+    private EnumTourBookingStatus status;
 
-    public EnumTourBookingStatus_ getStatus() {
+    public EnumTourBookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(EnumTourBookingStatus_ status) {
+    public void setStatus(EnumTourBookingStatus status) {
         this.status = status;
     }
     /*    status	The order's current status:

@@ -1,5 +1,6 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.controllerOct.RequestFuckRestController;
 import com.lt.dom.controllerOct.SupplierRestController;
@@ -19,6 +20,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SupplierResp  extends RepresentationModel<SupplierResp> {
 
 
@@ -83,6 +86,15 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
         return supplierResp;
     }
 
+    public static SupplierResp simpleFrom(Supplier supplier) {
+        SupplierResp supplierResp = new SupplierResp();
+        supplierResp.setCode(supplier.getCode());
+        supplierResp.setName(supplier.getName());
+        supplierResp.setDesc(supplier.getDesc());
+        supplierResp.setLocation(supplier.getLocationName());
+        return supplierResp;
+    }
+
     public SettleAccount getSettleAccount() {
         return settleAccount;
     }
@@ -91,7 +103,9 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
         this.settleAccount = settleAccount;
     }
 
-    private String code;
+    
+
+private String code;
 
     public String getCode() {
         return code;

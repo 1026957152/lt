@@ -16,7 +16,9 @@ public class TempDocument {
     private long id;
 
 
-    private String code;
+    
+@Column(unique=true) 
+private String code;
 
 
     private LocalDateTime created_at;

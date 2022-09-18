@@ -56,6 +56,7 @@ public class VoucherQuotaRestController {
     }
 
 
+/*
     @Operation(summary = "2、新建配额")
     @PostMapping(value = "/clain_quotas", produces = "application/json")
     public Quota createClainQuota(@RequestBody QuotaReq pojo) {
@@ -70,6 +71,7 @@ public class VoucherQuotaRestController {
         return null;//
 
     }
+*/
 
 
 }

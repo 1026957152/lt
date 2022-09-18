@@ -24,7 +24,9 @@ public class Guide {
     @NotNull
     private String id_card;
     @NotNull
-    private String code;
+    
+@Column(unique=true) 
+private String code;
     @NotNull
     private String phone;
 

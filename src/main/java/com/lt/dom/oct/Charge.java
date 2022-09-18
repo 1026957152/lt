@@ -21,14 +21,17 @@ public class Charge {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
-    private String orderId;
-    private String code;
+    private String payment_code;
+    
+@Column(unique=true) 
+private String code;
     private int application_fee_amount;
 
     @NotNull
     private long payment;
     private long refund;
     private EnumRefundStatus refundStatus;
+    private String prepayId;
 
     public long getId() {
         return id;
@@ -290,12 +293,12 @@ public class Charge {
         this.amount = amount;
     }
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
+    public void setPayment_code(String orderId) {
+        this.payment_code = orderId;
     }
 
-    public String getOrderId() {
-        return orderId;
+    public String getPayment_code() {
+        return payment_code;
     }
 
     public void setCode(String code) {
@@ -339,6 +342,14 @@ public class Charge {
         this.refundStatus = refundStatus;
     }
 
+    public void setPrepayId(String prepayId) {
+        this.prepayId = prepayId;
+    }
+
+    public String getPrepayId() {
+        return prepayId;
+    }
+
     public static class ExtraDTO {
     }
 
@@ -374,14 +385,14 @@ public class Charge {
         this.status = status;
     }
 
-    private long customer;
+    private long payer;
 
-    public long getCustomer() {
-        return customer;
+    public long getPayer() {
+        return payer;
     }
 
-    public void setCustomer(long customer) {
-        this.customer = customer;
+    public void setPayer(long customer) {
+        this.payer = customer;
     }
 /*     "id": "ch_L8qn10mLmr1GS8e5OODmHaL4",
               "object": "charge",

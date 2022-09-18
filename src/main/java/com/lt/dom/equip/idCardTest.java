@@ -30,6 +30,7 @@ public class idCardTest {
 
 
 	CLibrary sdtapi = null;//
+
 	public void createScenario(ScenarioReq scenarioReq) {
 		CLibrary sdtapi = (CLibrary)
 				Native.loadLibrary((Platform.isWindows() ? this.dllConfig.getDllPath_idcard() : "c"),
@@ -50,10 +51,14 @@ public class idCardTest {
 			byte expireend[] = new byte[9];
 			int ret=0;
 
-		idCardTest idCardTest = new idCardTest();
+	//	idCardTest idCardTest = new idCardTest();
 
-		CLibrary sdtapi = idCardTest.sdtapi;//.dllConfig.getDllPath_idcard();
+	//	CLibrary sdtapi = idCardTest.sdtapi;//.dllConfig.getDllPath_idcard();
 
+		//CLibrary sdtapi = idCardTest.dllConfig;
+		CLibrary sdtapi = (CLibrary)
+				Native.loadLibrary("E:\\work\\dom\\lib\\dll\\Sdtapi",
+						CLibrary.class);
 
 			if (sdtapi.InitComm(1001)==1)
 			{

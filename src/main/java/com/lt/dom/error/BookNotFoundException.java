@@ -8,6 +8,12 @@ public class BookNotFoundException extends RuntimeException {
     private long id;
     private Enumfailures error = Enumfailures.resource_not_found;
 
+    public BookNotFoundException(Enumfailures error, String message, String detail) {
+        this.error = error;
+        this.message = message;
+        this.detail = detail;
+    }
+
     public Enumfailures getError() {
         return error;
     }

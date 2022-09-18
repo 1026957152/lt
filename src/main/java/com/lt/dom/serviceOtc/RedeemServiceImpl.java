@@ -1,10 +1,14 @@
 package com.lt.dom.serviceOtc;
 
+import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.notification.event.OnVoucherRedeamedEvent;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
+import com.lt.dom.vo.CodeWithLatLngVo;
+import com.lt.dom.vo.UserVo;
+import com.lt.dom.vo.WrittenOffMerchantVo;
 import org.javatuples.Pair;
 import org.javatuples.Quintet;
 import org.javatuples.Triplet;
@@ -84,7 +88,15 @@ public class RedeemServiceImpl {
 
     @Autowired
     ApplicationEventPublisher eventPublisher;
+    @Autowired
+    CampaignServiceImpl campaignService;
+    @Autowired
+    ClainQuotaServiceImpl clainQuotaService;
 
+
+
+    @Autowired
+    VoucherServiceImpl voucherService;
 
     public ComponentVounch redeemCompo(ComponentVounch componentVounch1){
 
@@ -100,7 +112,7 @@ public class RedeemServiceImpl {
 
         RoyaltySettlement royaltySettlement = new RoyaltySettlement();
         royaltySettlement.setChargeId(charge.getId());
-        royaltySettlement.setReservationId(componentVounch1.getReservationId());
+        royaltySettlement.setReservationId(componentVounch1.getReservation());
         royaltySettlement = royaltySettlementRepository.save(royaltySettlement);
 
         RoyaltyTransaction royaltyTransaction = new RoyaltyTransaction(royaltySettlement.getId(),royaltyRule.getRecipient(),royaltyRule.getAmount());
@@ -116,7 +128,7 @@ public class RedeemServiceImpl {
 
 
 
-    private List<ComponentVounch> 找到当前权益(Validator validator, Voucher voucher) throws Exception {
+    private List<ComponentVounch> 找到当前权益(Validator_ validator, Voucher voucher) throws Exception {
 
 
         ValidatorGroup validatorGroup = validator.getValidatorGroup();
@@ -133,7 +145,7 @@ public class RedeemServiceImpl {
                 .withMatcher("model", ignoreCase());
 
         ComponentVounch probe = new ComponentVounch();
-        probe.setComponentRightId(componentRight.getId());
+        probe.setComponentRight(componentRight.getId());
         probe.setVoucherId(voucher.getId());
 
         Example<ComponentVounch> example = Example.of(probe, modelMatcher);
@@ -207,12 +219,12 @@ public class RedeemServiceImpl {
 
     public Quintet<PublicationEntry,Voucher,PublishTowhoVo,Campaign,Supplier> ValidateVounchor(Voucher voucher, Campaign campaign, Supplier supplier) {
 
-        Optional<PublicationEntry> optionalPublicationEntry = publicationEntryRepository.findByVoucher(voucher.getId());
-
+        List<PublicationEntry> optionalPublicationEntry = publicationEntryRepository.findByVoucher(voucher.getId());
         PublishTowhoVo publishTowhoVo = new PublishTowhoVo();
 
-        if(optionalPublicationEntry.isPresent()){
-            PublicationEntry publicationEntry = optionalPublicationEntry.get();
+        if(optionalPublicationEntry.size() >0){
+            PublicationEntry publicationEntry = optionalPublicationEntry.get(0);
+
             publishTowhoVo.setToWhoTyp(publicationEntry.getToWhoType());
 
             if(publicationEntry.getToWhoType().equals(EnumPublicationObjectType.traveler)){
@@ -243,18 +255,18 @@ public class RedeemServiceImpl {
             }
         }
 
-        return Quintet.with(optionalPublicationEntry.get(),voucher,publishTowhoVo,campaign,supplier);
+        return Quintet.with(optionalPublicationEntry.get(0),voucher,publishTowhoVo,campaign,supplier);
     }
 
 
-    public List<Triplet<RedemptionEntry,Redemption,PublishTowhoVo>> bulkRedeemVounchor(CampaignAssignToTourBooking campaignAssignToTourBooking, TourBooking tourBooking, Campaign campaign, Supplier supplier) {
+    public List<Triplet<RedemptionEntry,Redemption,PublishTowhoVo>> RedeemVounchor(CampaignAssignToTourBooking campaignAssignToTourBooking, TourBooking tourBooking, Campaign campaign, WrittenOffMerchantVo writtenOffMerchantVo, CodeWithLatLngVo codeWithLatLngVo) {
 
         List<Traveler> travelerList = travelerRepository.findAllByBooking(tourBooking.getId());
 
 
       //  List<PublicationEntry> publicationEntryList= publicationEntryRepository.findByToWhoTypeAndToWhoIn(EnumPublicationObjectType.traveler,travelerList.stream().map(x->x.getId()).collect(Collectors.toList()));
 
-        List<PublicationEntry> publicationEntryList= publicationEntryRepository.findByAssociatedTypeAndAssociatedId(EnumAssociatedType.tour_booking,tourBooking.getId());
+        List<PublicationEntry> publicationEntryList= publicationEntryRepository.findByAssociatedTypeAndAssociatedIdAndCampaign(EnumAssociatedType.tour_booking,tourBooking.getId(),campaign.getId());
 
         Redemption redemption = new Redemption();
         List<Redemption> redemptions = redemptionRepository.findByRelatedObjectIdAndRelatedObjectType(tourBooking.getId(),EnumAssociatedType.tour_booking);
@@ -262,7 +274,7 @@ public class RedeemServiceImpl {
 
             redemption.setRelatedObjectId(tourBooking.getId());
             redemption.setRelatedObjectType(EnumAssociatedType.tour_booking);
-            redemption.setQuantity(tourBooking.getTotal_amount());
+            redemption.setQuantity(1l);
             redemption = redemptionRepository.save(redemption);
         }else {
             redemption = redemptions.get(0);
@@ -274,10 +286,15 @@ public class RedeemServiceImpl {
 
         Redemption finalRedemption = redemption;
 
+        List<Voucher> voucherList = voucherRepository
+                .findAllById(publicationEntryList.stream().map(x->x.getVoucher()).collect(Collectors.toList()));
+
+        Map<Long,Voucher> longVoucherMap = voucherList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
 
         List<Triplet<RedemptionEntry,Redemption,PublishTowhoVo>> tripletList =  publicationEntryList.stream().map(x->{
 
-            Optional<Voucher> voucherOptional = voucherRepository.findById(x.getVoucher());
+            Voucher voucher = longVoucherMap.get(x.getVoucher());
+
             PublishTowhoVo publishTowhoVo = new PublishTowhoVo();
             publishTowhoVo.setToWhoTyp(x.getToWhoType());
             if(x.getToWhoType().equals(EnumPublicationObjectType.traveler)){
@@ -297,10 +314,20 @@ public class RedeemServiceImpl {
                 publishTowhoVo.setUser(user.get());
                 publishTowhoVo.setToWho(user.get().getId());
             }
-            Triplet<RedemptionEntry,Redemption,PublishTowhoVo> triplet =createRedemptions(voucherOptional.get(),campaign,new Supplier(), finalRedemption,publishTowhoVo);
+
+            Triplet<RedemptionEntry,Redemption,PublishTowhoVo> triplet =createRedemptions(x, voucher,campaign,writtenOffMerchantVo, finalRedemption,publishTowhoVo,codeWithLatLngVo);
             return triplet;
         }).collect(Collectors.toList());
 
+
+        List<RedemptionEntry> redemptionEntryList = redemptionEntryRepository.saveAll(tripletList.stream().map(e->e.getValue0()).collect(Collectors.toList()));
+
+
+
+        voucherList = voucherRepository.saveAll(voucherList.stream().map(e->{
+            e.setActive(false);
+            return e;
+        }).collect(Collectors.toList()));
 
 
 
@@ -310,6 +337,25 @@ public class RedeemServiceImpl {
 
         campaignAssignToTourBookingRepository.save(campaignAssignToTourBooking);
 
+
+
+
+
+
+
+        campaign.setTotal_redeemed(tripletList.stream().count()+campaign.getTotal_redeemed());
+        campaign.setTotal_succeeded(tripletList.stream().count()+campaign.getTotal_succeeded());
+        campaignService.updateSummary(campaign,EnumEvents.bulk_redemption$succeeded);
+
+
+
+        voucherList.stream().forEach(x->{
+            eventPublisher.publishEvent(new OnVoucherRedeamedEvent(new User(),x,
+                    null, EnumEvents.bulk_redemption$succeeded));
+        });
+
+
+
         return tripletList;
     }
 
@@ -318,9 +364,9 @@ public class RedeemServiceImpl {
 
 
 
-    public Triplet<RedemptionEntry,Redemption,PublishTowhoVo> bulkRedeemVounchor(Voucher voucher, Campaign campaign,  Supplier supplier) {
+    public Triplet<RedemptionEntry,Redemption,PublishTowhoVo> RedeemVounchor(Voucher voucher, Campaign campaign, WrittenOffMerchantVo writtenOffMerchantVo, CodeWithLatLngVo codeWithLatLngVo) {
 
-        Optional<Validator> optionalValidator = Optional.empty();
+        Optional<Validator_> optionalValidator = Optional.empty();
    /*     if(pojo.getType().equals(EnumValidatorType.特定的人员)){
             Validator user = new Validator();
             user.setType(pojo.getType());
@@ -344,15 +390,17 @@ public class RedeemServiceImpl {
 
 
 
-        Optional<PublicationEntry> optionalPublicationEntry = publicationEntryRepository.findByVoucher(voucher.getId());
+        List<PublicationEntry> publicationEntryList = publicationEntryRepository.findByVoucher(voucher.getId());
 
 
         PublishTowhoVo publishTowhoVo = new PublishTowhoVo();
 
         String holder = "";
-        if(optionalPublicationEntry.isPresent()){
+        if(publicationEntryList.size() == 0) {
 
-            PublicationEntry publicationEntry = optionalPublicationEntry.get();
+            throw new BookNotFoundException(Enumfailures.voucher_disabled,"找不到 该券的发布信息 publicationEntry");
+        }
+            PublicationEntry publicationEntry = publicationEntryList.get(0);
             publishTowhoVo.setToWhoTyp(publicationEntry.getToWhoType());
 
 
@@ -375,7 +423,7 @@ public class RedeemServiceImpl {
                 publishTowhoVo.setToWho(user.get().getId());
                 holder = user.get().getRealName();
             }
-        }
+
 
 
         if(optionalValidator.isPresent()){
@@ -419,53 +467,47 @@ public class RedeemServiceImpl {
         }
 
 
-        RedemptionEntry entry = new RedemptionEntry();
-        entry.setCode(idGenService.redemptionEntryCode());
-        entry.setRelatedObjectType(publishTowhoVo.getToWhoTyp());
-        entry.setRelatedObjectId(publishTowhoVo.getToWho());
-        entry.setHolder(holder);
-        entry.setRedemption(redemption.getId());
-        entry.setVoucher(voucher.getId());
-        entry.setResult(RedemptionEntry.RedemptionStatus.SUCCESS);
+        Triplet<RedemptionEntry,Redemption,PublishTowhoVo> triplet =createRedemptions(publicationEntry,voucher,campaign,writtenOffMerchantVo, redemption,publishTowhoVo,codeWithLatLngVo);
 
-        entry.setRedeemed_amount(voucher.getRedeemed_amount());
-        entry.setRedeemed_quantity(voucher.getRedeemed_quantity());
-        entry.setCampaign_name(campaign.getName());
-        entry.setVoucherCode(voucher.getCode());
-        entry.setRedeem_at(LocalDateTime.now());
-        entry.setCampaign(campaign.getId());
-        entry.setSupplier(supplier.getId());
+        RedemptionEntry redemptionEntry = triplet.getValue0();
+        redemptionEntry = redemptionEntryRepository.save(redemptionEntry);
 
-        entry = redemptionEntryRepository.save(entry);
+
 
 
         voucher.setActive(false);
-        voucherRepository.save(voucher);
+        voucher.setStatus(EnumVoucherStatus.Redeemed);
+        voucherService.update(voucher,EnumEvents.redemption$succeeded);
 
-        summaryService.redemptionSummary(entry,campaign,supplier);
+
+        summaryService.redemptionSummary(redemptionEntry,campaign,writtenOffMerchantVo);
+
+        clainQuotaService.writenOff(writtenOffMerchantVo.getSupplier(),campaign);
+
+
+        campaign.setTotal_redeemed(campaign.getTotal_redeemed()+1);
+        campaign.setTotal_succeeded(campaign.getTotal_redeemed()+1);
+        campaignService.updateSummary(campaign,EnumEvents.redemption$succeeded);
 
 
         eventPublisher.publishEvent(new OnVoucherRedeamedEvent(new User(),
-                null, null));
+                null, EnumEvents.redemption$succeeded));
 
 
-
-
-
-        return Triplet.with(entry,redemption,publishTowhoVo);
+        return Triplet.with(redemptionEntry,redemption,publishTowhoVo);
     }
 
 
 
 
-    public int bulkRedeemVounchor(long id, EnumAssociatedType booking, List<Pair<Traveler, Voucher>> vouchers) {
+    public int RedeemVounchor(long id, EnumAssociatedType booking, List<Pair<Traveler, Voucher>> vouchers) {
 
         Redemption redemption = new Redemption();
 
         redemption.setRelatedObjectId(id);
         redemption.setRelatedObjectType(booking);
         redemption.setCreated_at(LocalDateTime.now());
-        redemption.setQuantity(vouchers.size());
+        redemption.setQuantity(Integer.valueOf(vouchers.size()).longValue());
         redemption.setValidatorSupplier(1);
         redemption = redemptionRepository.save(redemption);
 
@@ -485,9 +527,9 @@ public class RedeemServiceImpl {
             entry.setRedemption(finalRedemption.getId());
             entry.setBulk(true);
             entry.setVoucher(voucher.getId());
-            entry.setVoucherCode(voucher.getCode());
+            entry.setVoucher_code(voucher.getCode());
             entry.setPublished_at(LocalDateTime.now());
-            entry.setRedeem_at(LocalDateTime.now());
+            entry.setRedeemed_at(LocalDateTime.now());
             entry.setCreatedAt(LocalDateTime.now());
             entry.setResult(RedemptionEntry.RedemptionStatus.SUCCESS);
             entry.setRelatedObjectId(traveler.getId());
@@ -529,31 +571,84 @@ public class RedeemServiceImpl {
 
 
 
-    public Triplet<RedemptionEntry,Redemption,PublishTowhoVo> createRedemptions(Voucher voucher, Campaign campaign,  Supplier supplier,Redemption redemption,PublishTowhoVo publishTowhoVo) {
+    public Triplet<RedemptionEntry,Redemption,PublishTowhoVo> createRedemptions(PublicationEntry publicationEntry, Voucher voucher, Campaign campaign, WrittenOffMerchantVo writtenOffMerchantVo, Redemption redemption, PublishTowhoVo publishTowhoVo, CodeWithLatLngVo codeWithLatLngVo) {
+
+
+        Supplier supplier = writtenOffMerchantVo.getSupplier();
+        UserVo userVo = writtenOffMerchantVo.getUser();
 
 
         RedemptionEntry entry = new RedemptionEntry();
         entry.setCode(idGenService.redemptionEntryCode());
         entry.setRelatedObjectType(publishTowhoVo.getToWhoTyp());
         entry.setRelatedObjectId(publishTowhoVo.getToWho());
-       // entry.setHolder(holder);
+
+        entry.setCreatedAt(LocalDateTime.now());
+        entry.setPublished_at(publicationEntry.getPublished_at());
+
+
+
         entry.setRedemption(redemption.getId());
         entry.setVoucher(voucher.getId());
         entry.setResult(RedemptionEntry.RedemptionStatus.SUCCESS);
 
         entry.setRedeemed_amount(voucher.getRedeemed_amount());
         entry.setRedeemed_quantity(voucher.getRedeemed_quantity());
-        entry.setCampaign_name(campaign.getName());
-        entry.setVoucherCode(voucher.getCode());
-        entry.setRedeem_at(LocalDateTime.now());
+        entry.setVoucher_code(voucher.getCode());
+        entry.setRedeemed_at(LocalDateTime.now());
         entry.setCampaign(campaign.getId());
         entry.setSupplier(supplier.getId());
 
-        entry = redemptionEntryRepository.save(entry);
 
 
-        voucher.setActive(false);
-        voucherRepository.save(voucher);
+
+
+
+
+
+
+
+
+
+        entry.setCustomer_latitude(codeWithLatLngVo.getCt());
+        entry.setCustomer_longitude(codeWithLatLngVo.getCg());
+        entry.setMerchant_latitude(codeWithLatLngVo.getSt());
+        entry.setMerchant_longitude(codeWithLatLngVo.getSg());
+        entry.setMerchant_name(writtenOffMerchantVo.getSupplier().getName());
+        entry.setMerchant_code(writtenOffMerchantVo.getSupplier().getCode());
+        entry.setSupplier(writtenOffMerchantVo.getSupplier().getId());
+
+
+
+
+
+
+        entry.setCampaign(campaign.getId());
+        entry.setCampaign_code(campaign.getCode());
+        entry.setCampaign_name(campaign.getName());
+
+
+        entry.setWritten_off_staff_name(writtenOffMerchantVo.getUser().getReal_name());
+        entry.setWritten_off_staff_phone(writtenOffMerchantVo.getUser().getPhone());
+        entry.setWritten_off_staff_id(writtenOffMerchantVo.getUser().getId_card());
+
+
+        if(publishTowhoVo.getToWhoTyp().equals(EnumPublicationObjectType.traveler)){
+            Traveler traveler = publishTowhoVo.getTraveler();
+            entry.setHolder_real_name(traveler.getName());
+            entry.setHolder_id_card(traveler.getIdNo());
+            entry.setHolder_phone(traveler.getTel_home());
+        }
+        if(publishTowhoVo.getToWhoTyp().equals(EnumPublicationObjectType.customer)){
+            User user = publishTowhoVo.getUser();
+            entry.setHolder_real_name(user.getRealName());
+            entry.setHolder_id_card(user.getIdCard());
+            entry.setHolder_phone(user.getPhone());
+        }
+
+
+
+
 
         return Triplet.with(entry,redemption,publishTowhoVo);
     }

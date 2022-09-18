@@ -24,7 +24,9 @@ public class Export {
 
     private String parameters_order;
     private String parameters_fields;
-    private String code;
+    
+@Column(unique=true) 
+private String code;
     private LocalDateTime done_at;
 
     public EnumExportVoucher getExported_object() {

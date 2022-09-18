@@ -1,6 +1,7 @@
 package com.lt.dom.oct;
 
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Version;
@@ -13,7 +14,9 @@ public class Attribute {
     private long id;
 
 
-    private String code;
+    
+@Column(unique=true)
+private String code;
     private String name;
     private String description;
     private long objectId;

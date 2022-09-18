@@ -8,6 +8,7 @@ import org.javatuples.Pair;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
 
+import javax.persistence.Column;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +26,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class MessageFileResp  {
 
 
-    private String code;
+    
+@Column(unique=true)
+private String code;
     private String fileName;
     private String originalFilename;
     private LocalDateTime created_at;

@@ -30,6 +30,9 @@ public class Tour {
     //If there are multiple start times per day or the start time varies by day then the value will be "MULTI"
     private String end_time;//	End time for the Tour/Hotel.
     private long product;
+    private String line_info;
+    private long days;
+    private String hotels;
 
     public long getId() {
         return id;
@@ -101,5 +104,29 @@ public class Tour {
 
     public long getProduct() {
         return product;
+    }
+
+    public void setLine_info(String line_info) {
+        this.line_info = line_info;
+    }
+
+    public String getLine_info() {
+        return line_info;
+    }
+
+    public void setDays(long days) {
+        this.days = days;
+    }
+
+    public long getDays() {
+        return days;
+    }
+
+    public void setHotels(String hotels) {
+        this.hotels = hotels;
+    }
+
+    public String getHotels() {
+        return hotels;
     }
 }

@@ -50,22 +50,30 @@ public class TourBookingPojo {
         @NotNull(message = "日线游需要填写名字")
         private String title;//
         @NotNull(message = "日线游需要编号")
-        private String code;//
-        private String customer_count;//
+        
+
+private String code;//
+
+        @NotNull(message = "需要填写游客数量")
+        private String traveler_count;//
+        @NotNull(message = "需要填写车牌号")
+        private String license;//
+
+
         @NotNull
-        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+       // @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         // @JSONField(format = "yyyy-MM-dd HH:mm:ss")
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-     //   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+      //  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDateTime starts_at;//
         @NotNull
       //  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        // @JSONField(format = "yyyy-MM-dd HH:mm:ss")
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        // @JSONField(format = "yyyy-MM-dd HH:        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)mm:ss")
+       // @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDateTime ends_at;//
-        @NotNull(message = "需要添加线路信息")
         private String line_info;//
+
 
 
 
@@ -142,12 +150,20 @@ public class TourBookingPojo {
             this.code = code;
         }
 
-        public String getCustomer_count() {
-            return customer_count;
+        public String getTraveler_count() {
+            return traveler_count;
         }
 
-        public void setCustomer_count(String customer_count) {
-            this.customer_count = customer_count;
+        public void setTraveler_count(String traveler_count) {
+            this.traveler_count = traveler_count;
+        }
+
+        public String getLicense() {
+            return license;
+        }
+
+        public void setLicense(String license) {
+            this.license = license;
         }
 
         public LocalDateTime getStarts_at() {

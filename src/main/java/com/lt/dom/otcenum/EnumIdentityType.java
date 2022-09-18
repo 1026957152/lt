@@ -6,6 +6,7 @@ public enum EnumIdentityType {
     email("Facial Recognition"),
     identity_card("identity_card"),
 
+    user_code("user_code"),
 
     ;
 

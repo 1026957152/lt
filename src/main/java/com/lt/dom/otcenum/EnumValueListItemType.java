@@ -11,6 +11,8 @@ public enum EnumValueListItemType {
     string("string"),
     case_sensitive_string("case_sensitive_string"),
     customer_id("customer_id"),
+    supplier_id("supplier_id"),
+
     ;
 
 

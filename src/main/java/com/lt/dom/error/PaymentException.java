@@ -1,22 +1,25 @@
 package com.lt.dom.error;
 
+import com.lt.dom.otcenum.Enumfailures;
+
 @SuppressWarnings("serial")
 public class PaymentException extends RuntimeException {
-    private long id;
-    private String object;
+    private Enumfailures error;
+
+    private String message;
     private String detail;
-    public PaymentException(long id, String object,String detail) {
-        this.id = id;
-        this.object = object;
-        this.detail = detail;
+
+    public PaymentException( Enumfailures error,String message) {
+        this.message = message;
+        this.error = error;
+    }
+    @Override
+    public String getMessage() {
+        return message;
     }
 
-    public String getObject() {
-        return object;
-    }
-
-    public void setObject(String object) {
-        this.object = object;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public String getDetail() {
@@ -27,12 +30,11 @@ public class PaymentException extends RuntimeException {
         this.detail = detail;
     }
 
-    public long getId() {
-        return id;
+    public Enumfailures getError() {
+        return error;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setError(Enumfailures error) {
+        this.error = error;
     }
-
 }

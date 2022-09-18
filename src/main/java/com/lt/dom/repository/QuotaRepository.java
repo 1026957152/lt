@@ -1,6 +1,7 @@
 package com.lt.dom.repository;
 
 import com.lt.dom.oct.Quota;
+import com.lt.dom.otcenum.EnumQuotaClaimOrRedeem;
 import com.lt.dom.otcenum.EnumQuotaType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,4 +23,6 @@ public interface QuotaRepository extends JpaRepository<Quota
 
 
     List<Quota> findAllByTypeAndScenarioIn(EnumQuotaType scenario, Set<Long> scenarioIds);
+
+    List<Quota> findByCompaignAndClaimRedeem(long id, EnumQuotaClaimOrRedeem claimOrRedeem);
 }

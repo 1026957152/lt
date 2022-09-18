@@ -11,8 +11,8 @@ public class ClainQuotaStatisticsResp {
 
 
 
-    private int totalCount;
-    private int totalAmount;
+    private Long totalCount;
+    private Long totalAmount;
     private int allocatedQuotaCount;
     private long allocatedVoucherCount;
     private long unAllocatedVoucherCount;
@@ -63,19 +63,19 @@ public class ClainQuotaStatisticsResp {
         }
     }
 
-    public void setTotalCount(int totalCount) {
+    public void setTotalCount(Long totalCount) {
         this.totalCount = totalCount;
     }
 
-    public int getTotalCount() {
+    public Long getTotalCount() {
         return totalCount;
     }
 
-    public void setTotalAmount(int totalAmount) {
+    public void setTotalAmount(Long totalAmount) {
         this.totalAmount = totalAmount;
     }
 
-    public int getTotalAmount() {
+    public Long getTotalAmount() {
         return totalAmount;
     }
 

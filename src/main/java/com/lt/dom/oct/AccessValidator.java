@@ -17,7 +17,7 @@ public class AccessValidator {
 
 
     @Transient
-    List<Validator> validators; //
+    List<Validator_> validators; //
     private long validatorId;
 
 
@@ -53,11 +53,11 @@ public class AccessValidator {
         this.extend = extend;
     }
 
-    public List<Validator> getValidators() {
+    public List<Validator_> getValidators() {
         return validators;
     }
 
-    public void setValidators(List<Validator> validators) {
+    public void setValidators(List<Validator_> validators) {
         this.validators = validators;
     }
 

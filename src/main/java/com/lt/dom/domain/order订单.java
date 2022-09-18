@@ -15,7 +15,9 @@ public class order订单 {
     @com.fasterxml.jackson.annotation.JsonProperty("extend_type")
     private String extendType;
     @com.fasterxml.jackson.annotation.JsonProperty("code")
-    private String code;
+    
+
+private String code;
     @com.fasterxml.jackson.annotation.JsonProperty("codes")
     private String codes;
     @com.fasterxml.jackson.annotation.JsonProperty("qrcode")

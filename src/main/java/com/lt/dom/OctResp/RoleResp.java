@@ -6,6 +6,7 @@ import com.lt.dom.oct.Privilege;
 import com.lt.dom.oct.Role;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.EnumRole;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.hateoas.CollectionModel;
 
 import javax.persistence.*;
@@ -15,9 +16,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RoleResp {
 
-    private String name;
+
 
     public RoleResp() {
     }
@@ -31,9 +33,7 @@ public class RoleResp {
     private String text;
     private String id;
 
-    public RoleResp(String name) {
-        this.name = name;
-    }
+
 
     public static CollectionModel<RoleResp> from(List<Role> validatorOptional) {
         return CollectionModel.of(fromWithoutModel(validatorOptional));
@@ -48,7 +48,7 @@ public class RoleResp {
         return roleResp;
     }
     public static RoleResp from(Role x) {
-        RoleResp roleResp = new RoleResp(x.getName());
+        RoleResp roleResp = new RoleResp();
         roleResp.setEnabled(x.isEnabled());
         roleResp.setId(x.getName());
         roleResp.setText(EnumRole.valueOf(x.getName()).toString());
@@ -71,22 +71,11 @@ public class RoleResp {
         }).collect(Collectors.toList());
     }
 
-
     @Override
     public String toString() {
-        return this.name;
+        return ReflectionToStringBuilder.toString(this);
     }
 
-
-
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
 /*    public List<NameAllowedPair> getAuthorizedViewsAndActions() {
         return authorizedViewsAndActions;

@@ -1,12 +1,11 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.otcenum.EnumTourBookingStatus;
-import com.lt.dom.otcenum.EnumPaymentOption;
-import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.otcenum.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -20,9 +19,65 @@ public class Reservation {
     @JsonProperty("id")
     private long id;
     private EnumProductType productType;
-    private String code;
-    private long campaign;
+    
+@Column(unique=true) 
+private String code;
+
     private String additional_info;
+    @NotNull
+    private Long user;
+    private boolean paymentSplit;
+    private String paymentSplitCode;
+    private String paymentMethods_json;
+    private EnumPayChannel paymentMethod;
+    private String note;
+
+    private Integer hold_time_seconds;
+
+
+    private LocalDateTime paied_at;
+
+    private LocalDateTime expiresAt;
+
+    private LocalDateTime confirmedAt;
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public LocalDateTime getConfirmedAt() {
+        return confirmedAt;
+    }
+
+    public void setConfirmedAt(LocalDateTime confirmedAt) {
+        this.confirmedAt = confirmedAt;
+    }
+
+    public Integer getHold_time_seconds() {
+        return hold_time_seconds;
+    }
+
+    public void setHold_time_seconds(Integer hold_time_seconds) {
+        this.hold_time_seconds = hold_time_seconds;
+    }
+
+    @NotNull
+    private EnumFulfillmentType followupPaid;
+    private EnumValidateWay setValidate_way;
+    private EnumValidationStatus validationStatus;
+
+
+    private Boolean asap;
+
+
+    private long deliveryDetails;
+    private long pickupDetails;
+    private long dineInDetails;
+
 
     public long getId() {
         return id;
@@ -37,7 +92,18 @@ public class Reservation {
 
 
 
-  //  List<Customer> customers;
+    @NotNull
+    EnumBookingType type;
+
+    public EnumBookingType getType() {
+        return type;
+    }
+
+    public void setType(EnumBookingType type) {
+        this.type = type;
+    }
+
+    //  List<Customer> customers;
   @Transient
     Product product ;
 
@@ -71,6 +137,8 @@ public class Reservation {
 
     @Transient
     private Voucher voucher;
+
+
     @Transient
     List<BookAnswer> answers;
     private Long productId;
@@ -88,13 +156,13 @@ public class Reservation {
 
 
     @NotNull
-    private EnumTourBookingStatus status;
+    private EnumBookingStatus status;
 
-    public EnumTourBookingStatus getStatus() {
+    public EnumBookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(EnumTourBookingStatus status) {
+    public void setStatus(EnumBookingStatus status) {
         this.status = status;
     }
     /*    status	The order's current status:
@@ -208,24 +276,18 @@ public class Reservation {
         return code;
     }
 
-    public long getCampaign() {
-        return campaign;
+
+
+    private long supplier;
+
+    public long getSupplier() {
+        return supplier;
     }
 
-
-    private long redeemer;
-
-    public long getRedeemer() {
-        return redeemer;
+    public void setSupplier(long supplier) {
+        this.supplier = supplier;
     }
 
-    public void setRedeemer(long redeemer) {
-        this.redeemer = redeemer;
-    }
-
-    public void setCampaign(long campaign) {
-        this.campaign = campaign;
-    }
 
     public void setAdditional_info(String additional_info) {
         this.additional_info = additional_info;
@@ -233,5 +295,86 @@ public class Reservation {
 
     public String getAdditional_info() {
         return additional_info;
+    }
+
+    public void setUser(Long user) {
+        this.user = user;
+    }
+
+    public Long getUser() {
+        return user;
+    }
+
+    public void setPaied_at(LocalDateTime paied_at) {
+        this.paied_at = paied_at;
+    }
+
+    public LocalDateTime getPaied_at() {
+        return paied_at;
+    }
+
+    public void setPaymentSplit(boolean paymentSplit) {
+        this.paymentSplit = paymentSplit;
+    }
+
+    public boolean getPaymentSplit() {
+        return paymentSplit;
+    }
+
+    public void setPaymentSplitCode(String paymentSplitCode) {
+
+        this.paymentSplitCode = paymentSplitCode;
+    }
+
+    public String getPaymentSplitCode() {
+        return paymentSplitCode;
+    }
+
+    public void setPaymentMethods_json(String paymentMethods_json) {
+        this.paymentMethods_json = paymentMethods_json;
+    }
+
+    public String getPaymentMethods_json() {
+        return paymentMethods_json;
+    }
+
+    public void setPaymentMethod(EnumPayChannel paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public EnumPayChannel getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public void setFollowupPaid(EnumFulfillmentType followupPaid) {
+        this.followupPaid = followupPaid;
+    }
+
+    public EnumFulfillmentType getFollowupPaid() {
+        return followupPaid;
+    }
+
+    public void setSetValidate_way(EnumValidateWay setValidate_way) {
+        this.setValidate_way = setValidate_way;
+    }
+
+    public EnumValidateWay getSetValidate_way() {
+        return setValidate_way;
+    }
+
+    public void setValidationStatus(EnumValidationStatus validationStatus) {
+        this.validationStatus = validationStatus;
+    }
+
+    public EnumValidationStatus getValidationStatus() {
+        return validationStatus;
     }
 }

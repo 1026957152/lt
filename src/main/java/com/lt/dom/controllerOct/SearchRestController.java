@@ -6,13 +6,7 @@ import com.lt.dom.otcReq.BookingDocumentIdsResp;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.AssetServiceImpl;
-import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import com.lt.dom.specification.*;
-import io.swagger.v3.oas.annotations.Operation;
-import org.javatuples.Pair;
-import org.javatuples.Quartet;
-import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -21,10 +15,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -101,7 +93,9 @@ public class SearchRestController {
 
 
     @GetMapping(value = "/campaigns/search", produces = "application/json")
-    public ResponseEntity<PagedModel> searchCampaign(@RequestParam(value = "search") String search, Pageable pageable, PagedResourcesAssembler<EnumLongIdResp> assembler) {
+    public ResponseEntity<PagedModel> searchCampaign(@RequestParam(value = "search") String search,
+                                                     @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable,
+                                                     PagedResourcesAssembler<EnumLongIdResp> assembler) {
 
         System.out.println("=================:" + search.toString() + "");
         CampaignSpecification spec =
@@ -162,7 +156,9 @@ public class SearchRestController {
 
 
     @GetMapping(value = "/redemptions/search", produces = "application/json")
-    public ResponseEntity<PagedModel> searchRedemptions(@RequestBody @Valid RedeptionQueryfieldsCriteria search, Pageable pageable, PagedResourcesAssembler<RedemptionEntryResp> assembler) {
+    public ResponseEntity<PagedModel> searchRedemptions(@RequestBody @Valid RedeptionQueryfieldsCriteria search,
+                                                        @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable,
+                                                        PagedResourcesAssembler<RedemptionEntryResp> assembler) {
 
         System.out.println("=================:" + search.toString() + "");
         RedemptionSpecification spec =
@@ -178,7 +174,9 @@ public class SearchRestController {
 
 
     @GetMapping(value = "/guides/search", produces = "application/json")
-    public ResponseEntity<PagedModel> searchGuide(@RequestParam(value = "search") String search, Pageable pageable, PagedResourcesAssembler<EntityModel<EnumLongIdResp>> assembler) {
+    public ResponseEntity<PagedModel> searchGuide(@RequestParam(value = "search") String search,
+                                                  @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable,
+                                                  PagedResourcesAssembler<EntityModel<EnumLongIdResp>> assembler) {
 
         System.out.println("=================:" + search.toString() + "");
         GuideSpecification spec =
@@ -196,7 +194,9 @@ public class SearchRestController {
 
 
     @GetMapping(value = "/user_guide/search", produces = "application/json")
-    public ResponseEntity<PagedModel> searchUserForGuide(SearchQuery searchQuery, Pageable pageable, PagedResourcesAssembler<EntityModel<UserResp>> assembler) {
+    public ResponseEntity<PagedModel> searchUserForGuide(SearchQuery searchQuery,
+                                                         @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable,
+                                                         PagedResourcesAssembler<EntityModel<UserResp>> assembler) {
 
         String search = searchQuery.getSearch();
         System.out.println("=================:" + search.toString() + "");
@@ -270,7 +270,7 @@ public class SearchRestController {
 
 
 
-        // System.out.println("=================:" + search.toString() + "");
+      System.out.println("=================:" + searchQuery + "");
         System.out.println("=================:" + pageable.toString() + "");
         //Page<Supplier> campaignPageable = supplierRepository.findAll(where(null == null? null:hasAuthor(null)).and(search == null? null:titleContains(search)),pageable);
         Page<Supplier> campaignPageable = supplierRepository.findAll(spec,pageable);
@@ -340,7 +340,7 @@ public class SearchRestController {
                     enumResp.setText(x.toString());
                     return enumResp;
                 }).collect(Collectors.toList()),*/
-                "status_list", Arrays.stream(EnumTourBookingStatus_.values()).map(x->{
+                "status_list", Arrays.stream(EnumTourBookingStatus.values()).map(x->{
 
                     EnumResp enumResp = new EnumResp();
                     enumResp.setId(x.name());
@@ -354,7 +354,7 @@ public class SearchRestController {
 
     @GetMapping(value = "/tour_bookings/search", produces = "application/json")
     public ResponseEntity<PagedModel> searchTourBooking(TourBookingQueryfieldsCriteria searchQuery,
-                                                        @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC, value = 5) final Pageable pageable,
+                                                        @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) final Pageable pageable,
                                                         PagedResourcesAssembler<EntityModel<TourbookingTourResp>> assembler) {
 
         System.out.println("=================:" + searchQuery.toString() + "");
@@ -381,6 +381,9 @@ public class SearchRestController {
                 })));
 
 
+        List<Traveler> travelers = travelerRepository.findAllByBookingIn(tourBookingPage.stream().map(x->x.getId()).collect(Collectors.toSet()));
+
+        Map<Long, List<Traveler>>  longListMap = travelers.stream().collect(Collectors.groupingBy(e->e.getBooking()));
         //toResp
         Page<EntityModel<TourbookingTourResp>> page =  tourBookingPage.map(x->{
 
@@ -389,9 +392,9 @@ public class SearchRestController {
   /*              List<Traveler> travelers = travelerRepository.findAllByBooking(x.getId());
                 List<Document> documents = documentRepository.findAllByRaletiveId(x.getId());
 */
+                List<Traveler> travelerList = longListMap.get(x.getId());
 
-
-                TourbookingTourResp resp = TourbookingTourResp.toResp(Pair.with(x,campaignListMapt.get(x.getId())));
+                TourbookingTourResp resp = TourbookingTourResp.toRespSearch(Triplet.with(x,campaignListMapt.get(x.getId()),travelerList));
 
               //  resp.setDocumentGroups(DocumentResp.groupfrom(documents));
 

@@ -5,14 +5,13 @@ import com.lt.dom.OctResp.*;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.MerchantsSettledReq;
+import com.lt.dom.otcReq.RequestEditReq;
 import com.lt.dom.otcReq.RequestReq;
 import com.lt.dom.otcReq.ReviewReq;
 import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.otcenum.EnumRequestType;
 import com.lt.dom.repository.*;
-import com.lt.dom.serviceOtc.ApplyForApprovalServiceImpl;
-import com.lt.dom.serviceOtc.AuthenticationFacade;
-import com.lt.dom.serviceOtc.FileStorageServiceImpl;
+import com.lt.dom.serviceOtc.*;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +60,10 @@ public class RequestFuckRestController {
 
     @Autowired
     private FileStorageServiceImpl fileStorageService;
+
+    @Autowired
+    private MarchertSettledServiceImpl marchertSettledService;
+
 
 
     @GetMapping(value = "/requests/{REQUEST_ID}/approvers", produces = "application/json")
@@ -140,8 +143,30 @@ public class RequestFuckRestController {
         List<Reviewer> reviewers = reviewerRepository.findAllByRequest(request.getId());
 
 
-        RequestResp requestResp = RequestResp.from(request, reviewers);
-        EntityModel entityModel = EntityModel.of(requestResp);
+
+
+
+        RequestResp requestResp = null;//
+        if(request.getType().equals(EnumRequestType.Merchants_settled)){
+
+
+            MerchantsSettledReq merchantsSettledReq = MerchantsSettledReqResp.fromJsonString(request.getAdditional_info());
+
+            Map<EnumDocumentType,TempDocument> enumDocumentTypeTempDocumentMap = fileStorageService.loadTempDocument(Arrays.asList(
+                    Pair.with(EnumDocumentType.business_license,merchantsSettledReq.getBussiness_license()),
+                    Pair.with(EnumDocumentType.license,merchantsSettledReq.getLicense_image()),
+                    Pair.with(EnumDocumentType.liability_insurance,merchantsSettledReq.getLiability_insurance_image()),
+                    Pair.with(EnumDocumentType.license_for_opening_bank_account,merchantsSettledReq.getLicense_for_opening_bank_account())
+            ));
+
+            Gson gson = new Gson();
+            MerchantsSettledReq max = gson.fromJson(request.getAdditional_info(), MerchantsSettledReq.class);
+            MerchantsSettledReqResp merchantsSettledReqResp1 = MerchantsSettledReqResp.from(max, enumDocumentTypeTempDocumentMap);
+            requestResp = RequestResp.fromWithMearchantSettled(request,reviewers,merchantsSettledReqResp1);
+
+
+        }
+
 
 
         if(request.getType().equals(EnumRequestType.tour_approve)){
@@ -151,37 +176,17 @@ public class RequestFuckRestController {
 
             EntityModel entityModel1 = EntityModel.of(tourBooking);
             entityModel1.add(linkTo(methodOn(TourCampaignRestController.class).getReservation(tourBooking.getId())).withSelfRel());
-            requestResp.setTour_booking(entityModel1);
-            requestResp.setType_text(request.getType().toString());
+
+            requestResp = RequestResp.fromWithTour_approve(request,reviewers,entityModel1);
 
 
         }
 
-        if(request.getType().equals(EnumRequestType.Merchants_settled)){
 
-
-
-
-            MerchantsSettledReqResp merchantsSettledReqResp = MerchantsSettledReqResp.fromJsonString(request.getAdditional_info());
-
-
-            Map<EnumDocumentType,TempDocument> enumDocumentTypeTempDocumentMap = fileStorageService.loadTempDocument(Arrays.asList(
-                    Pair.with(EnumDocumentType.business_license,merchantsSettledReqResp.getBussiness_license()),
-                    Pair.with(EnumDocumentType.license,merchantsSettledReqResp.getLicense_image()),
-                    Pair.with(EnumDocumentType.liability_insurance,merchantsSettledReqResp.getLiability_insurance_image())
-
-                    ));
-
-            Gson gson = new Gson();
-            MerchantsSettledReq max = gson.fromJson(request.getAdditional_info(), MerchantsSettledReq.class);
-            MerchantsSettledReqResp merchantsSettledReqResp1 = MerchantsSettledReqResp.from(max, enumDocumentTypeTempDocumentMap);
-           requestResp.setMerchantsSettledReq(merchantsSettledReqResp1);
-        }
-
+        EntityModel entityModel = EntityModel.of(requestResp);
         List<Review> review__s = reviewRepository.findAllByRequest(request.getId());
 
         requestResp.setReviews(review__s.stream().map(x->{
-
             return ReviewResp.from(x);
         }).collect(Collectors.toList()));
 
@@ -223,6 +228,37 @@ public class RequestFuckRestController {
         Request settleAccount = applyForApprovalService.apply(optionalSupplier.get(),pojo);
 
         return settleAccount;
+
+
+
+    }
+
+
+
+    @Operation(summary = "1、申请")
+    @PutMapping(value = "/requests/{REQUEST_ID}", produces = "application/json")
+    public Request editRequest(@PathVariable long REQUEST_ID, @RequestBody @Valid RequestEditReq pojo) {
+
+
+        System.out.println("==========="+ pojo.toString());
+        Authentication authentication = authenticationFacade.getAuthentication();
+
+        Optional<Request> optionalRequest = requestRepository.findById(REQUEST_ID);
+
+        if(optionalRequest.isEmpty()) {
+            throw new BookNotFoundException(REQUEST_ID,"找不到请求"+ EnumRequestType.Merchants_settled.name());
+        }
+        Request request = optionalRequest.get();
+
+        MerchantsSettledReq merchantsSettledReq = pojo.getMerchantsSettledReq();
+        merchantsSettledReq = marchertSettledService.validat(merchantsSettledReq);
+
+
+        request = applyForApprovalService.edit(EnumRequestType.Merchants_settled,request,merchantsSettledReq);
+
+
+
+        return request;
 
 
 
@@ -316,7 +352,10 @@ public class RequestFuckRestController {
 
 
 
+
+
         return assembler.toModel(validatorOptional.map(x->{
+
 
 
             EntityModel entityModel = EntityModel.of(RequestResp.from(x,reviewerMap.getOrDefault(x.getId(), Arrays.asList())));

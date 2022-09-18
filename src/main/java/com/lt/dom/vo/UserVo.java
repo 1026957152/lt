@@ -1,16 +1,13 @@
 package com.lt.dom.vo;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.lt.dom.OctResp.AssetResp;
-import com.lt.dom.OctResp.BalanceResp;
 import com.lt.dom.OctResp.RoleResp;
 import com.lt.dom.oct.Openid;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.EnumBussinessType;
 import com.lt.dom.otcenum.EnumSupplierType;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.javatuples.Pair;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
@@ -25,7 +22,7 @@ public class UserVo extends RepresentationModel<UserVo> {
 
     private String last_name;//	string	The user’s last name
     private String username;//	string	The user’s username*
-    private String mobile;//	string	The user’s phone number
+    private String phone;//	string	The user’s phone number
     private String user_code;
     private EnumSupplierType supplier_type;
     private String supplier_name;
@@ -42,6 +39,7 @@ public class UserVo extends RepresentationModel<UserVo> {
     private boolean real_name_verified;
     private boolean tour_guide;
     private boolean phone_Verifid;
+    private Long user_id;
 
 
     public  void setHired(boolean hired) {
@@ -77,16 +75,18 @@ public class UserVo extends RepresentationModel<UserVo> {
     }
 
 
-    public String getMobile() {
-        return mobile;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public static UserVo from(User user) {
         UserVo userResp = new UserVo();
+
+        userResp.setUser_id(user.getId());
 
 
 
@@ -102,7 +102,7 @@ public class UserVo extends RepresentationModel<UserVo> {
         userResp.setNick_name(user.getNick_name());
 
         userResp.setPhone_Verifid(user.isPhoneVerifid());
-        userResp.setMobile(user.getPhone());
+        userResp.setPhone(user.getPhone());
         userResp.setUser_code(user.getCode());
         userResp.setRoles_(user.getRoles().stream().map(x->{
             return RoleResp.simplefrom(x);
@@ -135,6 +135,8 @@ public class UserVo extends RepresentationModel<UserVo> {
         Openid openid = pair.getValue1();
         User user = pair.getValue0();
         UserVo openidResp = new UserVo();
+        openidResp.setUser_id(user.getId());
+
 
         openidResp.setNick_name(openid.getOpenid_name());
         openidResp.setGender(openid.getOpenid_gender());
@@ -153,7 +155,7 @@ public class UserVo extends RepresentationModel<UserVo> {
         }
         openidResp.setReal_name(user.getRealName());
         openidResp.setPhone_Verifid(user.isPhoneVerifid());
-        openidResp.setMobile(user.getPhone());
+        openidResp.setPhone(user.getPhone());
         openidResp.setUser_code(user.getCode());
         openidResp.setRoles_(user.getRoles().stream().map(x->{
             return RoleResp.from(x);
@@ -320,4 +322,15 @@ public class UserVo extends RepresentationModel<UserVo> {
     }
 
 
+    public Long getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(Long user_id) {
+        this.user_id = user_id;
+    }
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
 }

@@ -2,6 +2,7 @@ package com.lt.dom.specification;
 
 import com.lt.dom.otcenum.EnumSupplierStatus;
 import com.lt.dom.otcenum.EnumSupplierType;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.web.bind.annotation.RequestParam;
 
 public class SupplierSearchQuery {
@@ -32,5 +33,10 @@ public class SupplierSearchQuery {
 
     public void setSearch(String search) {
         this.search = search;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
     }
 }

@@ -45,7 +45,7 @@ public class WriteoffEquipServiceImpl {
 
 
 
-    public List<Validator> listAvailability(Voucher voucher,    String type) {
+    public List<Validator_> listAvailability(Voucher voucher, String type) {
 
 
         if(voucher.getType().equals(EnumVoucherType.RIGHT_VOUCHER)){
@@ -54,7 +54,7 @@ public class WriteoffEquipServiceImpl {
             ComponentVounch componentVounch = voucher.getComponentVounch();
 
 
-            Optional<ComponentRight> componentRight = componentRightRepository.findById(componentVounch.getComponentRightId());
+            Optional<ComponentRight> componentRight = componentRightRepository.findById(componentVounch.getComponentRight());
 
             return componentRight.get().getAccessValidators().stream()
                     .filter(x->x.getExtend().equals("type")).map(x->x.getValidators())
@@ -77,7 +77,7 @@ public class WriteoffEquipServiceImpl {
 
 
 
-    private boolean valid(Voucher voucher,    Validator validator) {
+    private boolean valid(Voucher voucher,    Validator_ validator) {
 
 
         if(voucher.getType().equals(EnumVoucherType.RIGHT_VOUCHER)){
@@ -86,7 +86,7 @@ public class WriteoffEquipServiceImpl {
             ComponentVounch componentVounch = voucher.getComponentVounch();
 
 
-            Optional<ComponentRight> componentRight = componentRightRepository.findById(componentVounch.getComponentRightId());
+            Optional<ComponentRight> componentRight = componentRightRepository.findById(componentVounch.getComponentRight());
 
             return componentRight.get().getAccessValidators().stream()
                     .map(x->x.getValidators())
@@ -106,7 +106,7 @@ public class WriteoffEquipServiceImpl {
 
 
 
-    public RedemptionEntry writeOff(Validator validator,Voucher voucher) {
+    public RedemptionEntry writeOff(Validator_ validator, Voucher voucher) {
 
         if(valid(voucher,validator)){
             RedemptionEntry redemptionEntry = new RedemptionEntry();
@@ -123,7 +123,7 @@ public class WriteoffEquipServiceImpl {
 
 
 
-    public RedemptionEntry writeOff_GIFT_VOUCHER(Validator validator,Voucher voucher,int amount) {
+    public RedemptionEntry writeOff_GIFT_VOUCHER(Validator_ validator, Voucher voucher, int amount) {
 
         if(!writeOff_Check(voucher)){
             throw new RuntimeException();
@@ -166,7 +166,7 @@ public class WriteoffEquipServiceImpl {
 
 
 
-    public void 人脸识别(Validator validator,String 身份证) {
+    public void 人脸识别(Validator_ validator, String 身份证) {
 
 
         Optional<User> optionalUser = userRepository.findById(1l); //身份证号码
@@ -201,7 +201,7 @@ public class WriteoffEquipServiceImpl {
 
 
 
-    public void 券二维码(Validator validator,String code) {
+    public void 券二维码(Validator_ validator, String code) {
 
 
         Asset asset_e = new Asset();
@@ -228,7 +228,7 @@ public class WriteoffEquipServiceImpl {
 
 
 
-    public void 文旅码(Validator validator,String code) {
+    public void 文旅码(Validator_ validator, String code) {
 
 
         Optional<User> optionalUser = userRepository.findById(1l); //身份证号码
@@ -264,7 +264,7 @@ public class WriteoffEquipServiceImpl {
 
 
 
-    public void 车牌(Validator validator,String license) {
+    public void 车牌(Validator_ validator, String license) {
 
 
 

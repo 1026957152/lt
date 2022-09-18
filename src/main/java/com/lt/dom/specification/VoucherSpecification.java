@@ -3,7 +3,6 @@ package com.lt.dom.specification;
 import com.lt.dom.oct.RedemptionEntry;
 import com.lt.dom.oct.RedemptionEntry_;
 import com.lt.dom.oct.Voucher;
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
 import com.lt.dom.otcenum.EnumVoucherRedemptionStatus;
 import com.lt.dom.otcenum.EnumVoucherStatus;
 import org.springframework.data.jpa.domain.Specification;

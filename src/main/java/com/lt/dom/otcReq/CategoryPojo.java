@@ -15,7 +15,9 @@ public class CategoryPojo {
     @NotNull
     private String name;//	The staff entered "pinned note" on the booking
     @NotNull
-    private String code;//	The staff entered note form the "workflow" tab on the booking
+    
+
+private String code;//	The staff entered note form the "workflow" tab on the booking
     @NotNull
     private String category;
 

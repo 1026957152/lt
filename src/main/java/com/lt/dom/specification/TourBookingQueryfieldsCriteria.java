@@ -1,7 +1,7 @@
 package com.lt.dom.specification;
 
 
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
+import com.lt.dom.otcenum.EnumTourBookingStatus;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -16,7 +16,9 @@ public class TourBookingQueryfieldsCriteria {
     private boolean reviewing;
 
     private String title;//
-    private String code;//
+    
+
+private String code;//
     private String customer_count;//
     private String starts_at;//
     private String ends_at;//
@@ -73,13 +75,13 @@ public class TourBookingQueryfieldsCriteria {
         this.created_to = created_to;
     }
 
-    private List<EnumTourBookingStatus_> statuses;
+    private List<EnumTourBookingStatus> statuses;
 
-    public List<EnumTourBookingStatus_> getStatuses() {
+    public List<EnumTourBookingStatus> getStatuses() {
         return statuses;
     }
 
-    public void setStatuses(List<EnumTourBookingStatus_> statuses) {
+    public void setStatuses(List<EnumTourBookingStatus> statuses) {
         this.statuses = statuses;
     }
 

@@ -13,7 +13,9 @@ public class OpenidResp extends RepresentationModel<OpenidResp> {
 
 
     private String openid;
-    private String code;
+    
+
+private String code;
     private String name;
     private Integer gender;
     private String image;

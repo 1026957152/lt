@@ -4,19 +4,18 @@ package com.lt.dom.serviceOtc;
 import com.github.wxpay.sdk.WXPay;
 import com.github.wxpay.sdk.WXPayUtil;
 import com.google.gson.Gson;
-import com.lt.dom.controllerOct.MyConfig;
-import com.lt.dom.controllerOct.PrepayResp;
+import com.lt.dom.controllerOct.*;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.Campaign_inactiveException;
 import com.lt.dom.notification.event.OnChargePaidCompleteEvent;
 import com.lt.dom.notification.event.OnRefundCompleteEvent;
 import com.lt.dom.notification.event.OnRefundCreatedEvent;
-import com.lt.dom.notification.event.OnRegistrationCompleteEvent;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
 import com.lt.dom.vo.ChargeMetadataVo;
+import com.lt.dom.vo.UserVo;
 import com.lt.dom.vo.VoucherPublicationPaymentVo;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
@@ -27,6 +26,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Service
 public class PaymentServiceImpl {
@@ -60,14 +61,26 @@ public class PaymentServiceImpl {
 
     @Autowired
     private BalanceRepository balanceRepository;
-
+    @Autowired
+    private BalanceServiceImpl balanceService;
     @Autowired
     private ApplicationFeeServiceImpl applicationFeeService;
     @Autowired
     private PublicationServiceImpl publicationService;
+    @Autowired
+    private ComponentRightServiceImpl componentRightService;
+    @Autowired
+    private RoyaltyRuleRepository royaltyRuleRepository;
+
+    @Autowired
+    private SplitRepository splitRepository;
+
+    @Autowired
+    private ComponentRightResolveServiceImpl componentRightResolveService;
 
 
-    public Map createRefund(String ip, String code, Reservation reservation, long totalproce, String openid, User user, String metadata) {
+
+    public Map createCharge(String ip, String code, Reservation reservation, long totalproce, String openid, UserVo userVo, String metadata) {
 
 
 
@@ -149,12 +162,12 @@ public class PaymentServiceImpl {
             charge.setAmount(Double.valueOf(totalproce).intValue());
 
             charge.setLivemode(false);
-            charge.setOrderId(code);
+            charge.setPayment_code(code);
 
             charge.setCreated(LocalDateTime.now());
 
             charge.setBody(body);
-            charge.setCustomer(user.getId());
+            charge.setPayer(userVo.getUser_id());
             charge.setCurrency(currency);
             charge.setCode(chargeCode);
             charge.setStatus(EnumChargeStatus.pending);
@@ -164,7 +177,7 @@ public class PaymentServiceImpl {
             chargeRepository.save(charge);
 
 
-            reservation.setStatus(EnumTourBookingStatus.Pending);
+            reservation.setStatus(EnumBookingStatus.Pending);
             reservationRepository.save(reservation);
 
             return map;
@@ -189,12 +202,7 @@ public class PaymentServiceImpl {
     }
 
 
-    public Balance AppBalance() {
-        Optional<Balance> balanceOptional = balanceRepository.findByType(EnumUserType.app);
 
-        return balanceOptional.get();
-
-    }
 
     public void setupData() {
         Balance balance = new Balance();
@@ -219,21 +227,16 @@ public class PaymentServiceImpl {
         return balanceOptional.get();
 
     }
-    public Balance updateBalance(Balance balance, int net) {
 
-            balance.setAvailable_amount(net+balance.getAvailable_amount());
 
-            return balanceRepository.save(balance);
-        }
-
-    public void paidChage(Charge charge, Payment payment) {
+    public void paidChage(Charge charge, Payment payment,Reservation reservation) {
 
 
 
         List<Integer> fees = applicationFeeService.getFees();
 
 
-        Balance appBalance = AppBalance();
+        Balance appBalance = balanceService.AppBalance();
 
 
         //Balance balance = balance(payment.getRecipient(),EnumUserType.business);
@@ -311,7 +314,7 @@ public class PaymentServiceImpl {
         balanceTransaction.setNet(balanceTransaction.getAmount()- balanceTransaction.getFee());
         balanceTransaction = transactionRepository.save(balanceTransaction);
 
-        updateBalance(appBalance,balanceTransaction.getNet());
+        balanceService.updateBalance(appBalance,balanceTransaction.getNet());
 
 
 
@@ -320,47 +323,54 @@ public class PaymentServiceImpl {
         Gson gson = new Gson();
         ChargeMetadataVo chargeMetadataVo = gson.fromJson(charge.getMetadata(),ChargeMetadataVo.class);
 
+        if(chargeMetadataVo.getVoucher()!= null){
 
-        Optional<Campaign> validatorOptional = campaignRepository.findById(chargeMetadataVo.getCampaign());
-        if(validatorOptional.isEmpty()) {
-            System.out.println("找不到消费活动");
-            throw new BookNotFoundException(1,Campaign.class.getSimpleName());
+            Optional<Campaign> validatorOptional = campaignRepository.findById(chargeMetadataVo.getCampaign());
+            if(validatorOptional.isEmpty()) {
+                System.out.println("找不到消费活动");
+                throw new BookNotFoundException(1,Campaign.class.getSimpleName());
+            }
+            Campaign campaign = validatorOptional.get();
+            if(!validatorOptional.get().isActive()) {
+                throw new Campaign_inactiveException(campaign.getId(),Campaign.class.getSimpleName(),"活动未开放");
+            }
+
+
+
+
+            PublishTowhoVo publishTowhoVo = new PublishTowhoVo();
+            Optional<User> objectUser = userRepository.findById(charge.getPayer());
+            publishTowhoVo.setToWhoTyp(EnumPublicationObjectType.customer);
+            publishTowhoVo.setUser(objectUser.get());
+            publishTowhoVo.setToWho(publishTowhoVo.getUser().getId());
+
+            VoucherPublicationPaymentVo voucherPublicationPaymentVo = new VoucherPublicationPaymentVo();
+
+            voucherPublicationPaymentVo.setFree(false);
+            voucherPublicationPaymentVo.setPaied(true);
+            voucherPublicationPaymentVo.setCharge(charge);
+            Session session = new Session();
+            Quartet<PublicationEntry, Voucher,Campaign, PublishTowhoVo> voucherPair =
+                    publicationService.CreatePublication(campaign,null,session,publishTowhoVo,voucherPublicationPaymentVo);
+
+
+
+
+            Voucher voucher = voucherPair.getValue1();
+            chargeMetadataVo.setVoucher(voucher.getId());
+
+
         }
-        Campaign campaign = validatorOptional.get();
-        if(!validatorOptional.get().isActive()) {
-            throw new Campaign_inactiveException(campaign.getId(),Campaign.class.getSimpleName(),"活动未开放");
-        }
-
-
-
-
-        PublishTowhoVo publishTowhoVo = new PublishTowhoVo();
-        Optional<User> objectUser = userRepository.findById(charge.getCustomer());
-        publishTowhoVo.setToWhoTyp(EnumPublicationObjectType.customer);
-        publishTowhoVo.setUser(objectUser.get());
-        publishTowhoVo.setToWho(publishTowhoVo.getUser().getId());
-
-        VoucherPublicationPaymentVo voucherPublicationPaymentVo = new VoucherPublicationPaymentVo();
-
-        voucherPublicationPaymentVo.setFree(false);
-        voucherPublicationPaymentVo.setPaied(true);
-        voucherPublicationPaymentVo.setCharge(charge);
-        Session session = new Session();
-        Quartet<PublicationEntry, Voucher,Campaign, PublishTowhoVo> voucherPair =
-                publicationService.CreatePublication(campaign,null,session,publishTowhoVo,voucherPublicationPaymentVo);
-
-
-
-
-        Voucher voucher = voucherPair.getValue1();
-        chargeMetadataVo.setVoucher(voucher.getId());
-
 
         charge.setMetadata(gson.toJson(chargeMetadataVo));
         charge.setTransactionNo(balanceTransaction.getCode());
         charge = chargeRepository.save(charge);
 
 
+
+        reservation.setStatus(EnumBookingStatus.Submitted_Confirmed);
+        reservation.setPaied_at(LocalDateTime.now());
+        reservationRepository.save(reservation);
 /*
 
         BalanceTransaction balanceTransaction_tax = new BalanceTransaction();
@@ -402,8 +412,13 @@ public class PaymentServiceImpl {
 
 */
 
+
+
+        componentRightResolveService.resolve(reservation,reservation.getFollowupPaid());
+
+       // componentRightService.createComponentRight()
         eventPublisher.publishEvent(new OnChargePaidCompleteEvent(new User(),
-                null, EnumEvents.charge$pending));
+                null, EnumEvents.charge$succeeded));
         }
 
 
@@ -423,7 +438,7 @@ public class PaymentServiceImpl {
        // Balance balance = balance(payment.getRecipient(),EnumUserType.business);
 
 
-        Balance balance = AppBalance();
+        Balance balance = balanceService.AppBalance();
 
         charge.setRefunded(true);
 
@@ -444,13 +459,13 @@ public class PaymentServiceImpl {
         balanceTransaction.setNet(-refund.getAmount());
         balanceTransaction.setPosted_at(LocalDateTime.now());
         balanceTransaction = transactionRepository.save(balanceTransaction);
-        updateBalance(balance,balanceTransaction.getNet());
+        balanceService.updateBalance(balance,balanceTransaction.getNet());
 
 
 
         Optional<Reservation> optionalReservation = reservationRepository.findById(charge.getBooking());
         Reservation reservation =optionalReservation.get();
-        reservation.setStatus(EnumTourBookingStatus.Refunded);
+        reservation.setStatus(EnumBookingStatus.Refunded);
         reservationRepository.save(reservation);
 
 
@@ -504,7 +519,7 @@ public class PaymentServiceImpl {
     }
 
 
-    public Refund createRefund(String refundCode, Charge charge,Reservation reservation) {
+    public Refund createCharge(String refundCode, Charge charge, Reservation reservation) {
 
         Refund refund = new Refund();
         refund.setCode(refundCode);
@@ -517,7 +532,7 @@ public class PaymentServiceImpl {
         refund =  refundRepository.save(refund);
 
 
-        reservation.setStatus(EnumTourBookingStatus.RefundInProgress);
+        reservation.setStatus(EnumBookingStatus.RefundInProgress);
         reservationRepository.save(reservation);
 
         charge.setRefund(refund.getId());
@@ -537,21 +552,50 @@ public class PaymentServiceImpl {
 
 
 
-    public Payment createPayment(int amount, long id, String code) {
-        Payment payment = new Payment();
-        payment.setAmount(amount);
-        payment.setBalance(amount);
-        payment.setDate(LocalDateTime.now());
-        payment.setVoided(false);
-        payment.setCustomer(id);
+    public Payment createPayment(String enumPayChannels , int amount, UserVo userVo, Reservation reservation) {
+        Optional<Payment> optionalPayment = paymentRepository.findByReference(reservation.getCode());
 
-        payment.setReference(code);
-        payment.setPayment_method(EnumPaymentOption.alipay);
-        payment.setStatus(EnumPaymentStatus.Initialized);
-        payment.setCode(idGenService.paymentNo());
-        payment.setPayment_flow(EnumPaymentFlow.one_step);
-        payment = paymentRepository.save(payment);
+        if(optionalPayment.isEmpty()){
+            Payment payment = new Payment();
+            payment.setAmount(amount);
+            payment.setBalance(amount);
+            payment.setDate(LocalDateTime.now());
+            payment.setVoided(false);
+            payment.setCustomer(userVo.getUser_id());
+
+            payment.setReference(reservation.getCode());
+            Gson gson = new Gson();
+
+            payment.setPayment_method_json(enumPayChannels);
+            payment.setStatus(EnumPaymentStatus.Initialized);
+            payment.setCode(idGenService.paymentNo());
+            payment.setPayment_flow(EnumPaymentFlow.one_step);
+            payment.setSplit(reservation.getPaymentSplit());
+            payment = paymentRepository.save(payment);
+
+
+            if(reservation.getPaymentSplit()){
+
+                List<RoyaltyRule> royaltyRules = royaltyRuleRepository.findAllBySplitCode(reservation.getPaymentSplitCode());
+
+                Payment finalPayment = payment;
+                List<Splits> splitsList = royaltyRules.stream().map(e->{
+                    Splits splits = new Splits();
+                    splits.setType(EnumSpliteType.percentage);
+                    splits.setShares(e.getPercent());
+                    splits.setBearer_type(EnumSplitBearerType.account);
+                    splits.setPayment(finalPayment.getId());
+                    return splits;
+                }).collect(Collectors.toList());
+
+                splitRepository.saveAll(splitsList);
+            }
+            return payment;
+        }
+        Payment payment = optionalPayment.get();
+
         return payment;
+
     }
 
 

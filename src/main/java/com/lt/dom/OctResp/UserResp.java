@@ -6,6 +6,7 @@ import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.EnumBussinessType;
 import com.lt.dom.otcenum.EnumSupplierType;
+import com.lt.dom.otcenum.EnumSupplierVerifiedStatus;
 import com.lt.dom.vo.GuideSummaryVo;
 import org.javatuples.Pair;
 import org.springframework.hateoas.EntityModel;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-//@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResp extends RepresentationModel<UserResp> {
 
     private  boolean hired;
@@ -64,6 +65,7 @@ public class UserResp extends RepresentationModel<UserResp> {
     private boolean phone_Verifid;
     private String token;
     private EntityModel<GuideSummaryVo> tour;
+    private EnumSupplierVerifiedStatus merchant_settled_status;
 
 
 /*    nick_name 昵称：
@@ -459,5 +461,13 @@ public class UserResp extends RepresentationModel<UserResp> {
 
     public EntityModel<GuideSummaryVo> getTour() {
         return tour;
+    }
+
+    public void setMerchant_settled_status(EnumSupplierVerifiedStatus merchant_settled_status) {
+        this.merchant_settled_status = merchant_settled_status;
+    }
+
+    public EnumSupplierVerifiedStatus getMerchant_settled_status() {
+        return merchant_settled_status;
     }
 }

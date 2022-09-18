@@ -40,6 +40,8 @@ public class AssetServiceImpl {
     }
 
 
+
+
     public Asset newQr(Supplier supplier) {
 
         Asset asset = new Asset();
@@ -95,6 +97,16 @@ public class AssetServiceImpl {
 
         return Arrays.asList(assets.get());
     }
+    public EntityModel<AssetResp> getQrEntityModel(String code) {
+        Optional<Asset> assets = assetRepository.findByTypeAndIdId(EnumAssetType.qr,code);
+        if(assets.isPresent()){
+            return AssetResp.from(assets.get());
+        }else{
+            return null;
+        }
+
+    }
+
     public Optional<Asset> getQrOptional(String code) {
         Optional<Asset> assets = assetRepository.findByTypeAndIdId(EnumAssetType.qr,code);
 

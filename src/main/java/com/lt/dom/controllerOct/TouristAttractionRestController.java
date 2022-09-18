@@ -41,42 +41,4 @@ public class TouristAttractionRestController {
     @Autowired
     private TouristAttractionRepository touristAttractionRepository;
 
-
-
-    @PostMapping(value = "tourist_attractions/{TOURIST_ATTRACTION_ID}/attractions", produces = "application/json")
-    public Attraction addAttraction(@PathVariable long TOURIST_ATTRACTION_ID) {
-
-        Optional<TouristAttraction> attractionOptional = touristAttractionRepository.findById(TOURIST_ATTRACTION_ID);
-        if(attractionOptional.isPresent()){
-            try {
-                return touristAttractionService.addAttraction(attractionOptional.get());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        System.out.println("抛出异常");
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
-
-
-
-    }
-
-
-
-    @GetMapping(value = "tourist_attractions/{TOURIST_ATTRACTION_ID}/attractions", produces = "application/json")
-    public CollectionModel<Attraction> listAttraction(@PathVariable long TOURIST_ATTRACTION_ID, Pageable pageable) {
-
-        List<Attraction> attractionOptional = attractionRepository.findByTouristAttractionId(TOURIST_ATTRACTION_ID);
-
-/*        System.out.println("抛出异常");
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));*/
-
-        Link link = linkTo(TouristAttractionRestController.class).withSelfRel();
-        CollectionModel<Attraction> result = CollectionModel.of(attractionOptional, link);
-        return result;
-
-    }
-
 }

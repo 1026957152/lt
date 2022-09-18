@@ -1,7 +1,9 @@
 package com.lt.dom.oct;
 
 public class TaxPolicy {
-    private String code;
+    
+
+private String code;
     private String amount;
     private int DecimalPlaces;
 

@@ -1,6 +1,10 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.OctResp.EnumLongIdResp;
 import com.lt.dom.otcenum.*;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -9,6 +13,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -19,6 +25,7 @@ public class Campaign {
 
     @LastModifiedDate
     LocalDateTime updated_at ;
+    private long total_unpublished;
 
     public LocalDateTime getCreated_at() {
         return created_at;
@@ -47,16 +54,29 @@ public class Campaign {
    // @GeneratedValue//(strategy = GenerationType.AUTO)
     @Id
     private long id;
-
+    @Column(unique=true)
+    private String code;
     private EnumCompaignType campaignType;
 
+ /*   @Generated(GenerationTime.INSERT)
+    @Column(name = "internal_id", columnDefinition = "serial", updatable = false)*/
+    private long seq;
+
+    public long getSeq() {
+        return seq;
+    }
+
+    public void setSeq(long seq) {
+        this.seq = seq;
+    }
 
     private String name;
 
     @NotNull
     private long scenario;
     private String category;
-    private String code;
+    
+
     private boolean claimable;
     private String claim_note;
     private String claim_text;
@@ -65,8 +85,10 @@ public class Campaign {
 
     @Column(name = "limit_")
     private int limit;
-    private boolean pay;
-    private int payAmount;
+
+    @NotNull
+    private Boolean pay;
+    private Integer payAmount;
     private String name_long;
 
     public int getLimit() {
@@ -114,10 +136,12 @@ public class Campaign {
         this.expiry_days = expiry_days;
     }
 
-    private int vouchers_count;
+    private Long vouchers_count;
     private EnumCampaignCreationStatus vouchers_generation_status; //IN_PROGRESS, DONE, ERROR
     private String description;
-    private boolean active;
+
+    @NotNull
+    private Boolean active;
 
 
     public long getId() {
@@ -161,11 +185,11 @@ public class Campaign {
     }
 
 
-    public int getVoucher_count() {
+    public Long getVoucher_count() {
         return vouchers_count;
     }
 
-    public void setVouchers_count(int vouchers_count) {
+    public void setVouchers_count(Long vouchers_count) {
         this.vouchers_count = vouchers_count;
     }
 
@@ -186,11 +210,11 @@ public class Campaign {
         this.description = description;
     }
 
-    public boolean isActive() {
+    public Boolean isActive() {
         return active;
     }
 
-    public void setActive(boolean active) {
+    public void setActive(Boolean active) {
         this.active = active;
     }
 
@@ -421,19 +445,19 @@ public class Campaign {
         return status;
     }
 
-    public void setPay(boolean pay) {
+    public void setPay(Boolean pay) {
         this.pay = pay;
     }
 
-    public boolean getPay() {
+    public Boolean getPay() {
         return pay;
     }
 
-    public void setPayAmount(int payAmount) {
+    public void setPayAmount(Integer payAmount) {
         this.payAmount = payAmount;
     }
 
-    public int getPayAmount() {
+    public Integer getPayAmount() {
         return payAmount;
     }
 
@@ -443,5 +467,27 @@ public class Campaign {
 
     public void setName_long(String name_long) {
         this.name_long = name_long;
+    }
+
+    public long getTotal_unpublished() {
+        return total_unpublished;
+    }
+
+    public void setTotal_unpublished(long total_unpublished) {
+        this.total_unpublished = total_unpublished;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
+
+    public static List<EnumLongIdResp> EnumList(List<Campaign> componentRightList) {
+        return  componentRightList.stream().map(x->{
+            EnumLongIdResp enumResp = new EnumLongIdResp();
+            enumResp.setId(x.getId());
+            enumResp.setText(x.getName());
+            return enumResp;
+        }).collect(Collectors.toList());
     }
 }

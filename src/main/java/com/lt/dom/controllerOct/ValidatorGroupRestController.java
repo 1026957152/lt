@@ -1,7 +1,7 @@
 package com.lt.dom.controllerOct;
 
 import com.lt.dom.oct.ComponentRight;
-import com.lt.dom.oct.Validator;
+import com.lt.dom.oct.Validator_;
 import com.lt.dom.oct.ValidatorGroup;
 import com.lt.dom.repository.ValidatorRepository;
 import com.lt.dom.serviceOtc.IdGenServiceImpl;
@@ -67,8 +67,8 @@ public class ValidatorGroupRestController {
 
     @Operation(summary = "3、添加核销成员")
     @PostMapping(value = "/oct/validator_groups/{VALIDATOR_GROUP_ID}/validators", produces = "application/json")
-    public Validator addValidator(@PathVariable int SUPPLIER_ID, ValidatorGroup validatorGroup) {
-        Validator componentRight = new Validator();
+    public Validator_ addValidator(@PathVariable int SUPPLIER_ID, ValidatorGroup validatorGroup) {
+        Validator_ componentRight = new Validator_();
         return componentRight;
     }
 
@@ -77,7 +77,7 @@ public class ValidatorGroupRestController {
     @GetMapping(value = "validator_groups/{VALIDATOR_GROUP_ID}/component_rights", produces = "application/json")
     public List<ComponentRight> listComponentRight(@PathVariable long VALIDATOR_GROUP_ID) {
 
-        Optional<Validator> validatorOptional = validatorRepository.findById(VALIDATOR_GROUP_ID);
+        Optional<Validator_> validatorOptional = validatorRepository.findById(VALIDATOR_GROUP_ID);
         if(validatorOptional.isPresent()){
             try {
                 return validatorScanService.找出当前验证者管理的权益(validatorOptional.get());
@@ -94,7 +94,7 @@ public class ValidatorGroupRestController {
     @GetMapping(value = "validator_groups/{VALIDATOR_GROUP_ID}/validators", produces = "application/json")
     public List<ComponentRight> listValidator(@PathVariable long VALIDATOR_GROUP_ID) {
 
-        Optional<Validator> validatorOptional = validatorRepository.findById(VALIDATOR_GROUP_ID);
+        Optional<Validator_> validatorOptional = validatorRepository.findById(VALIDATOR_GROUP_ID);
         if(validatorOptional.isPresent()){
             try {
                 return validatorScanService.找出当前验证者管理的权益(validatorOptional.get());

@@ -2,7 +2,6 @@ package com.lt.dom.specification;
 
 
 import com.lt.dom.otcenum.EnumTourBookingStatus;
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -22,13 +21,13 @@ public class UserQueryfieldsCriteria {
 
     private Boolean real_name_verified;//		phone:"+19999999999"	string
 
-    private List<EnumTourBookingStatus_> statuses;
+    private List<EnumTourBookingStatus> statuses;
 
-    public List<EnumTourBookingStatus_> getStatuses() {
+    public List<EnumTourBookingStatus> getStatuses() {
         return statuses;
     }
 
-    public void setStatuses(List<EnumTourBookingStatus_> statuses) {
+    public void setStatuses(List<EnumTourBookingStatus> statuses) {
         this.statuses = statuses;
     }
 

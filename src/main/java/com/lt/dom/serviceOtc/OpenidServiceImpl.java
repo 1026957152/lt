@@ -1,27 +1,64 @@
 package com.lt.dom.serviceOtc;
 
 
+import com.google.gson.Gson;
+import com.lt.dom.JwtUtils;
+import com.lt.dom.OctResp.UserWithTokenResp;
+import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.Missing_documentException;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.MerchantsSettledReq;
+import com.lt.dom.otcReq.SettleAccountPojo;
+import com.lt.dom.otcReq.SupplierPojo;
+import com.lt.dom.otcReq.UserPojo;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.BookingRuleRepository;
 import com.lt.dom.repository.OpenidRepository;
+import com.lt.dom.repository.TempDocumentRepository;
 import com.lt.dom.repository.UserRepository;
+import com.lt.dom.vo.SupplierPojoVo;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.validation.Valid;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.Calendar;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.nonNull;
 
 @Service
 public class OpenidServiceImpl {
 
 
     @Autowired
-    private OpenidRepository openidRepository;
+    private SettleAccountServiceImpl settleAccountService;
+
+    @Autowired
+    private UserServiceImpl userService;
+
+
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private SupplierServiceImp supplierServiceImp;
+
+    @Autowired
+    JwtUtils jwtUtils;
+
+    @Autowired
+    private TempDocumentRepository tempDocumentRepository;
+
+
+    @Autowired
+    private OpenidRepository openidRepository;
 
 
     @Autowired
@@ -57,6 +94,13 @@ public class OpenidServiceImpl {
         userRepository.save(user);
 
         return openidRepository.save(openid);
+
+    }
+
+
+    public Openid setupData(String openid) {
+
+        return create(openid,"程龙龙",1,"");
 
     }
 }

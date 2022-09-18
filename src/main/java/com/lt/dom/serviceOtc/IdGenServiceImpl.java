@@ -55,7 +55,15 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
+    CodeConfig assetDeviceConfig = new CodeConfig(6,null,null,null,"asset_#################");
+    public String assetDeviceCode(){
 
+        String no = VoucherCodes.generate(assetDeviceConfig);
+
+        return no;
+
+
+    }
     CodeConfig openidConfig = new CodeConfig(20,null,null,null,"ope_##########################################");
     public String openidNo(){
 
@@ -113,7 +121,7 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
     }
 
-    CodeConfig redemptionEntryConfig = new CodeConfig(20,null,null,null,"r_###############################");
+    CodeConfig redemptionEntryConfig = new CodeConfig(20,null,null,null,"r_#####################");
     public String redemptionEntryCode(){
 
         String no = VoucherCodes.generate(redemptionEntryConfig);
@@ -131,6 +139,16 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
         return no;
 
     }
+
+    CodeConfig quotaConfig = new CodeConfig(20,null,null,null,"quota_###################");
+    public String quotaNo(){
+
+        String no = VoucherCodes.generate(quotaConfig);
+
+        return no;
+
+
+    }
     CodeConfig payConfig = new CodeConfig(20,null,null,null,"pay_###################");
     public String paymentNo(){
 
@@ -140,6 +158,26 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
+
+    CodeConfig attractionConfig = new CodeConfig(20,null,null,null,"attr_###################");
+    public String attractionCode(){
+
+        String no = VoucherCodes.generate(attractionConfig);
+
+        return no;
+
+
+    }
+    CodeConfig requestCreditfig = new CodeConfig(20,null,null,null,"cre_###################");
+    public String requestCreditNo(){
+
+        String no = VoucherCodes.generate(requestCreditfig);
+
+        return no;
+
+
+    }
+
     CodeConfig importConfig = new CodeConfig(20,null,null,null,"imp_###############################");
     public String importNo(){
 
@@ -153,6 +191,16 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
     public String userNo(){
 
         String no = VoucherCodes.generate(userConfig);
+
+        return no;
+
+
+    }
+
+    CodeConfig passfig = new CodeConfig(20,null,null,null,"pas_###########################");
+    public String passCode(){
+
+        String no = VoucherCodes.generate(passfig);
 
         return no;
 
@@ -231,6 +279,16 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
         return no;
 
     }
+
+    CodeConfig componentRightConfig = new CodeConfig(6,null,null,null,"cpr_##########");
+
+    public String componentRightCode() {
+        String no = VoucherCodes.generate(componentRightConfig);
+
+        return no;
+
+    }
+
 
 
 /*

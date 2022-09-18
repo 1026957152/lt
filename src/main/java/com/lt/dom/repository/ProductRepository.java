@@ -3,6 +3,7 @@ package com.lt.dom.repository;
 import com.lt.dom.oct.ComponentRight;
 import com.lt.dom.oct.Product;
 import com.lt.dom.oct.ValidatorGroup;
+import com.lt.dom.otcenum.EnumProductType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +15,13 @@ public interface ProductRepository extends JpaRepository<Product
 
 
     Page<Product> findBySupplierId(long id, Pageable pageable);
+
+    Page<Product> findAllByTypeAndTypeTo(EnumProductType attraction, long id, Pageable pageable);
+
+    List<Product> findAllByTypeAndTypeTo(EnumProductType attraction, long id);
+
+    List<Product> findBySupplierId(long id);
+
+    List<Product> findAllByCodeIn(List<String> collect);
+
 }

@@ -21,7 +21,9 @@ public class ScenarioResp {
 
     private String image;
     private String name;
-    private String code;
+    
+
+private String code;
     private List<EntityModel<CampaignResp>> campaigns;
     private String image_small;
     private long campaign_count;

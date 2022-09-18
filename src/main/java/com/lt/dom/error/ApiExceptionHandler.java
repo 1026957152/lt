@@ -1,5 +1,6 @@
 package com.lt.dom.error;
 
+import com.github.binarywang.wxpay.exception.WxPayException;
 import com.lt.dom.otcenum.EnumRedemptionfailures;
 import com.lt.dom.otcenum.Enumfailures;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MultipartException;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Locale;
 
 @RestControllerAdvice
@@ -36,6 +38,18 @@ public class ApiExceptionHandler {
 
 
 
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(ConstraintViolationException ex, WebRequest request){
+
+        ex.printStackTrace();
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.BAD_REQUEST,Enumfailures.bad_request.name(),
+                        ex.getMessage(),ex.getLocalizedMessage());
+        return new ResponseEntity<>(response, response.getCode());
+    }
+
+
     @ExceptionHandler(Error403Exception.class)
     public ResponseEntity<ApiErrorResponse> handleAuthenticationException(Error403Exception ex, WebRequest request){
 
@@ -53,7 +67,7 @@ public class ApiExceptionHandler {
 
         ApiErrorResponse response =
                 new ApiErrorResponse(HttpStatus.UNAUTHORIZED,ex.getError().name(),
-                        ex.getMessage(),s);
+                        ex.getMessage(),ex.getDetail());
         return new ResponseEntity<>(response, response.getCode());
     }
 
@@ -234,8 +248,8 @@ public class ApiExceptionHandler {
             PaymentException ex, WebRequest request) {
 
         ApiErrorResponse response =
-                new ApiErrorResponse(HttpStatus.BAD_REQUEST, Enumfailures.invalid_payload.name(),
-                        ex.getObject(),ex.getDetail());
+                new ApiErrorResponse(HttpStatus.BAD_REQUEST, ex.getError().name(),
+                        ex.getMessage(),ex.getDetail());
         return new ResponseEntity<>(response, response.getCode());
 
     }

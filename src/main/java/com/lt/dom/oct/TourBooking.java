@@ -1,21 +1,22 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.otcenum.EnumTourBookingStatus;
 import com.lt.dom.otcenum.EnumPaymentOption;
 import com.lt.dom.otcenum.EnumProductType;
-import com.lt.dom.otcenum.EnumTourBookingStatus_;
+import com.lt.dom.otcenum.EnumTourBookingStatus;
+import com.lt.dom.state.ApplicationReviewStates;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 
 @Entity
 public class TourBooking {
 
+    private final Date when
+            ;
     @Version
     private Integer version;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,11 +24,25 @@ public class TourBooking {
     @JsonProperty("id")
     private long id;
     private EnumProductType productType;
-    private String code;
+    
+@Column(unique=true) 
+private String code;
    // private long campaign;
 
-    @NotNull
+    //@NotNull
     private Long owner;
+    private ApplicationReviewStates test_Status;
+
+    public TourBooking(Date when, ApplicationReviewStates peerReview) {
+        this.test_Status = peerReview;
+        this.when = when;
+    }
+
+    public TourBooking() {
+
+        this.when = new Date();
+
+    }
 
     public Long getOwner() {
         return owner;
@@ -42,18 +57,21 @@ public class TourBooking {
 
     private LocalDateTime created_at;
 
-    @NotNull
+    //@NotNull
     private String additional_info_guide_name;
-    @NotNull
+    //@NotNull
     private String additional_info_guide_id;
-    @NotNull
+    //@NotNull
     private String additional_info_guide_phone;
-    @NotNull
+    //@NotNull
     private String additional_info_tour_line_info;
-    @NotNull
+    //@NotNull
     private String additional_info_tour_title;
-    @NotNull
+    //@NotNull
     private String additional_info_tour_code;
+    
+    
+    
     private LocalDateTime additional_info_tour_starts_at;
     private LocalDateTime additional_info_tour_ends_at;
     private String note;
@@ -133,13 +151,13 @@ public class TourBooking {
 
 
 
-    private EnumTourBookingStatus_ status;
+    private EnumTourBookingStatus status;
 
-    public EnumTourBookingStatus_ getStatus() {
+    public EnumTourBookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(EnumTourBookingStatus_ status) {
+    public void setStatus(EnumTourBookingStatus status) {
         this.status = status;
     }
     /*    status	The order's current status:
@@ -358,5 +376,13 @@ public class TourBooking {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public void setTest_Status(ApplicationReviewStates test_status) {
+        this.test_Status = test_status;
+    }
+
+    public ApplicationReviewStates getTest_Status() {
+        return test_Status;
     }
 }

@@ -99,6 +99,7 @@ public class RedeemRestController {
 
     }
 
+/*
 
     //TODO 这里有点问题
     @PostMapping(value = "/vouchers/{VOUNCHOR_ID}/redemption", produces = "application/json")
@@ -108,10 +109,12 @@ public class RedeemRestController {
 
      //   userDetails.getAuthorities().
         Optional<Voucher> voucher = voucherRepository.findById(VOUNCHOR_ID);
+*/
 /*
         if(userDetails.getAuthorities().contains("")){
 
-        }*/
+        }*//*
+
 
         if(voucher.isPresent()){
 
@@ -142,6 +145,7 @@ public class RedeemRestController {
 
 
     }
+*/
 
 
 

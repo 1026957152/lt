@@ -1,11 +1,14 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.otcenum.EnumPayChannel;
 import com.lt.dom.otcenum.EnumPaymentFlow;
 import com.lt.dom.otcenum.EnumPaymentOption;
 import com.lt.dom.otcenum.EnumPaymentStatus;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
 public class Payment {
     @Version
@@ -13,7 +16,9 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;//	integer	The payment’s unique ID
-    private String code;//	string	Object type, payment
+    
+@Column(unique=true) 
+private String code;//	string	Object type, payment
 
     private String object;//	string	Object type, payment
     private long customer;//	integer	Associated Customer, if any
@@ -34,9 +39,14 @@ public class Payment {
     private LocalDateTime created_at;//	timestamp	Timestamp when created
     private LocalDateTime updated_at;//	timestamp	Timestamp when updated
     private long recipient;
-    private EnumPaymentOption payment_method;
+
+    private String payment_method_json;
+
+    @Transient
+    private List<EnumPayChannel> payment_method;
     private EnumPaymentStatus status;
     private EnumPaymentFlow payment_flow;
+    private boolean split;
 
     public String getCode() {
         return code;
@@ -206,13 +216,28 @@ public class Payment {
         return recipient;
     }
 
-    public void setPayment_method(EnumPaymentOption payment_method) {
-
-        this.payment_method = payment_method;
+    public Integer getVersion() {
+        return version;
     }
 
-    public EnumPaymentOption getPayment_method() {
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public String getPayment_method_json() {
+        return payment_method_json;
+    }
+
+    public void setPayment_method_json(String payment_method_json) {
+        this.payment_method_json = payment_method_json;
+    }
+
+    public List<EnumPayChannel> getPayment_method() {
         return payment_method;
+    }
+
+    public void setPayment_method(List<EnumPayChannel> payment_method) {
+        this.payment_method = payment_method;
     }
 
     public void setStatus(EnumPaymentStatus status) {
@@ -229,5 +254,13 @@ public class Payment {
 
     public EnumPaymentFlow getPayment_flow() {
         return payment_flow;
+    }
+
+    public void setSplit(boolean split) {
+        this.split = split;
+    }
+
+    public boolean getSplit() {
+        return split;
     }
 }

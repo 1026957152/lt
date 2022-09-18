@@ -1,9 +1,10 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.otcenum.EnumProductComponentSource;
+import com.lt.dom.otcenum.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 
@@ -12,15 +13,38 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
     @Version
     private Integer version;
 
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @JsonProperty("id")
     private long id;
 
     private long royaltyRuleId;
     private int royaltyRuleCount;
-    private EnumProductComponentSource supplier;
+    @NotNull
+    private EnumProductComponentSource source;
+
+    @NotNull
+    private EnumValidateWay validate_way;
+
+    public EnumProductComponentSource getSource() {
+        return source;
+    }
+
+    public void setSource(EnumProductComponentSource source) {
+        this.source = source;
+    }
+
+    @NotNull
+    private Long supplier;
     private long recipient;
+
+    @NotNull
+    private EnumDuration duration;
+    private int royaltyPercent;
+    private long priceingType;
+
+
+
 
     public long getId() {
         return id;
@@ -41,7 +65,7 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
         return productId;
     }
 
-    public void setProductId(long productId) {
+    public void setProduct(long productId) {
         this.productId = productId;
     }
 
@@ -49,7 +73,7 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
         return componentRightId;
     }
 
-    public void setComponentRightId(long componentRightId) {
+    public void setComponentRight(long componentRightId) {
         this.componentRightId = componentRightId;
     }
 
@@ -57,7 +81,7 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
         return supplierId;
     }
 
-    public void setSupplierId(long supplierId) {
+    public void setSupplier(long supplierId) {
         this.supplierId = supplierId;
     }
 
@@ -130,13 +154,14 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
 
 
 
-    private int unit_off;
+    @NotNull
+    private Long unit_off;
 
-    public int getUnit_off() {
+    public Long getUnit_off() {
         return unit_off;
     }
 
-    public void setUnit_off(int unit_off) {
+    public void setUnit_off(Long unit_off) {
         this.unit_off = unit_off;
     }
 
@@ -149,11 +174,11 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
         return royaltyRuleCount;
     }
 
-    public void setSupplier(EnumProductComponentSource supplier) {
+    public void setSupplier(Long supplier) {
         this.supplier = supplier;
     }
 
-    public EnumProductComponentSource getSupplier() {
+    public Long getSupplier() {
         return supplier;
     }
 
@@ -163,5 +188,38 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
 
     public long getRecipient() {
         return recipient;
+    }
+
+    public void setDuration(EnumDuration duration) {
+        this.duration = duration;
+    }
+
+    public EnumDuration getDuration() {
+        return duration;
+    }
+
+    public void setRoyaltyPercent(int royaltyPercent) {
+        this.royaltyPercent = royaltyPercent;
+    }
+
+    public int getRoyaltyPercent() {
+        return royaltyPercent;
+    }
+
+    public void setPriceingType(long priceingType) {
+        this.priceingType = priceingType;
+    }
+
+    public long getPriceingType() {
+        return priceingType;
+    }
+
+
+    public void setValidate_way(EnumValidateWay validate_way) {
+        this.validate_way = validate_way;
+    }
+
+    public EnumValidateWay getValidate_way() {
+        return validate_way;
     }
 }

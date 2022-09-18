@@ -1,6 +1,21 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.otcenum.EnumProductType;
+
+import javax.persistence.*;
+
+@Entity
 public class BookingProduct {
+    @Version
+    private Integer version;
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    // @GeneratedValue//(strategy = GenerationType.AUTO)
+    @Id
+    private long id;
+    @Column(unique=true)
+    private String code;
 
 
     private int cost;//	The unit cost of the product as a decimal.
@@ -28,6 +43,12 @@ public class BookingProduct {
     private int quantity;//          - quantity (integer) - A positive integer representing the number of instances of item that are included in this order line.
     private int price;//          - price (integer) - A positive integer representing the cost of an item.
     private int amount;//  - amount (integer) - quantity * price (you should provide it to retrieve discount_amount for a particular order item if the discount is applied only to this item learn more
+    private EnumProductType productType;
+    private long product;
+    private long supplier;
+    private String paymentMethods_json;
+    private boolean paymentSplit;
+    private String paymentSplitCode;
 
     public String getProduct_id() {
         return product_id;
@@ -67,5 +88,55 @@ public class BookingProduct {
 
     public void setAmount(int amount) {
         this.amount = amount;
+    }
+
+    public void setProductType(EnumProductType productType) {
+        this.productType = productType;
+    }
+
+    public EnumProductType getProductType() {
+        return productType;
+    }
+
+
+
+    public void setSupplier(long supplier) {
+        this.supplier = supplier;
+    }
+
+    public long getSupplier() {
+        return supplier;
+    }
+
+    public void setPaymentMethods_json(String paymentMethods_json) {
+        this.paymentMethods_json = paymentMethods_json;
+    }
+
+    public String getPaymentMethods_json() {
+        return paymentMethods_json;
+    }
+
+    public void setPaymentSplit(boolean paymentSplit) {
+        this.paymentSplit = paymentSplit;
+    }
+
+    public boolean getPaymentSplit() {
+        return paymentSplit;
+    }
+
+    public void setPaymentSplitCode(String paymentSplitCode) {
+        this.paymentSplitCode = paymentSplitCode;
+    }
+
+    public String getPaymentSplitCode() {
+        return paymentSplitCode;
+    }
+
+    public void setProduct(long product) {
+        this.product = product;
+    }
+
+    public long getProduct() {
+        return product;
     }
 }

@@ -2,7 +2,7 @@ package com.lt.dom.serviceOtc;
 
 import com.lt.dom.oct.User;
 import com.lt.dom.oct.VerificationToken;
-import com.lt.dom.oct.VerificationTokenRepository;
+import com.lt.dom.repository.VerificationTokenRepository;
 import com.lt.dom.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

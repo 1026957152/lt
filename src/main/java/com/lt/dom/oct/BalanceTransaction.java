@@ -24,7 +24,11 @@ public class BalanceTransaction {  //余额结算
     private int net;
     private String sourceId;
     private long source;
-    private String code;
+    
+
+
+@Column(unique=true) 
+private String code;
     private String flowType_text;
     private String status_text;
 

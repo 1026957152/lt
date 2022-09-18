@@ -6,6 +6,7 @@ import com.lt.dom.oct.Refund;
 import com.lt.dom.otcenum.EnumChargeStatus;
 import com.lt.dom.otcenum.EnumPayChannel;
 
+import javax.persistence.Column;
 import javax.persistence.Transient;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -19,7 +20,9 @@ public class ChargeResp {
 
 
     private String orderId;
-    private String code;
+    
+@Column(unique=true)
+private String code;
 
 
     private LocalDateTime created;
@@ -54,7 +57,7 @@ public class ChargeResp {
         chargeResp.setChannel(x.getChannel());
         chargeResp.setLivemode(x.getLivemode());
 
-        chargeResp.setCustomer(x.getCustomer());
+        chargeResp.setCustomer(x.getPayer());
         chargeResp.setBody(x.getBody());
         chargeResp.setTransactionNo(x.getTransactionNo());
         chargeResp.setTransactionNo(x.getTransactionNo());
