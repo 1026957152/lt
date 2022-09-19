@@ -21,7 +21,7 @@ public class BookingPojo {
     private String important_note;//	The staff entered "pinned note" on the booking
     private String workflow_note;//	The staff entered note form the "workflow" tab on the booking
     private Long campaign;
-    private EnumBookingOjbectType type;
+    private EnumBookingOjbectType type = EnumBookingOjbectType.Product;
 
 
     @NotNull
@@ -226,16 +226,17 @@ private String code;//
 
 
 
-    private long productId;
+    @Valid
+    @Size(min = 1)
+    private List<ProductReq> products;
 
-    public long getProductId() {
-        return productId;
+    public List<ProductReq> getProducts() {
+        return products;
     }
 
-    public void setProductId(long productId) {
-        this.productId = productId;
+    public void setProducts(List<ProductReq> products) {
+        this.products = products;
     }
-
 
     private List<Long> discounts;
 
@@ -321,4 +322,30 @@ private String code;//
         }
     }
 
+
+
+
+    public static class ProductReq {
+
+        @NotNull
+        private Long id;
+        @NotNull
+        private Integer quantity;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public Integer getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(Integer quantity) {
+            this.quantity = quantity;
+        }
+    }
 }

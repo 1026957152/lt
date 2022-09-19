@@ -8,6 +8,7 @@ import com.lt.dom.vo.ByItem;
 import com.lt.dom.vo.ByPerson;
 import com.lt.dom.vo.Fixed;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -65,6 +66,8 @@ public class ProductPojo {
         this.validate_way = validate_way;
     }
 
+    @Valid
+    @Size(min=1)
     private List<Royalty> royalties;
 
     public List<Royalty> getRoyalties() {
@@ -455,9 +458,12 @@ public class ProductPojo {
 
     public static class Royalty {
 
-        private long component_right;
+        @NotNull
+        private Long component_right;
         private int amount;
         private int percent;
+
+        @NotNull
         private EnumValidateWay validate_way = EnumValidateWay.none;
 
         public EnumValidateWay getValidate_way() {
@@ -468,7 +474,7 @@ public class ProductPojo {
             this.validate_way = validate_way;
         }
 
-        public long getComponent_right() {
+        public Long getComponent_right() {
             return component_right;
         }
 

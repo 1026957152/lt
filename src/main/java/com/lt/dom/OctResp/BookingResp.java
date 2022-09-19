@@ -260,6 +260,58 @@ private String code;
 
 
 
+    public static BookingResp toResp_LIST(Pair<Reservation, List<BookingTypeTowhoVo>> pair) {
+
+        List<BookingTypeTowhoVo> bookingTypeTowhoVolIST = pair.getValue1();
+        BookingTypeTowhoVo bookingTypeTowhoVo = bookingTypeTowhoVolIST.get(0);
+
+        if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Product)) {
+            Reservation booking = pair.getValue0();
+            Product product = bookingTypeTowhoVo.getProduct();
+
+            BookingResp reservationResp = new BookingResp();
+            reservationResp.setValidate_way(booking.getSetValidate_way());
+            reservationResp.setValidationStatus(booking.getValidationStatus());
+            reservationResp.setAmount(booking.getAmount());
+            reservationResp.setCode(booking.getCode());
+            reservationResp.setStatus(booking.getStatus());
+
+            reservationResp.setTotal_amount(booking.getTotal_amount());
+            reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
+
+            reservationResp.setProductType(booking.getProductType());
+            reservationResp.setProductCode(product.getCode());
+            reservationResp.setType(booking.getType());
+            reservationResp.setType_text(booking.getType().toString());
+            reservationResp.setNote(booking.getNote());
+            //reservationResp.setNote(tour.getTour_name_long());
+            return reservationResp;
+        }
+        if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Voucher)) {
+            Reservation booking = pair.getValue0();
+            Campaign campaign = bookingTypeTowhoVo.getCampaign();
+
+            BookingResp reservationResp = new BookingResp();
+
+            reservationResp.setAmount(booking.getAmount());
+            reservationResp.setCode(booking.getCode());
+            reservationResp.setStatus(booking.getStatus());
+
+            reservationResp.setTotal_amount(booking.getTotal_amount());
+            reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
+
+            reservationResp.setProductType(booking.getProductType());
+/*            reservationResp.setProductCode(product.getCode());
+            reservationResp.setNote(tour.getTour_name());*/
+            //reservationResp.setNote(tour.getTour_name_long());
+            return reservationResp;
+        }
+
+        return null;
+    }
+
+
+
     public static BookingResp toResp(Pair<Reservation, BookingTypeTowhoVo> pair) {
 
         BookingTypeTowhoVo bookingTypeTowhoVo = pair.getValue1();

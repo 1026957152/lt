@@ -9,6 +9,7 @@ public enum EnumValidationStatus {
 
     ValidationSucceeded("NFC tap"), //   Validation succeeded.
     None("NFC tap"),
+    Unknow("Unknow"),
 
     ;
 

@@ -12,6 +12,10 @@ public enum EnumFulfillmentType {
     DELIVERY("Universal"),
     DINE_IN("Universal"),
 
+
+
+    Unknow("Unknow"),
+
     ;
 
 

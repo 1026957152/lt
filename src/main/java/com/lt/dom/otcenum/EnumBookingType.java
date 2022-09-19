@@ -10,7 +10,10 @@ public enum EnumBookingType {
     // The order's current status:
     Free(""),
 
-    Standard("");
+    Standard(""),
+    Unknow(""),
+
+    ;
 
 
 

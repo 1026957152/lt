@@ -283,10 +283,10 @@ public class BookingRestController {
 
         UserVo userVo = authenticationFacade.getUserVo(authentication);
 
-        BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
-        bookingTypeTowhoVo.setToWhoTyp(pojo.getType());
+/*        BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
+        bookingTypeTowhoVo.setToWhoTyp(pojo.getType());*/
 
-        if(pojo.getType().equals(EnumBookingOjbectType.Voucher)){
+/*        if(pojo.getType().equals(EnumBookingOjbectType.Voucher)){
             Optional<Campaign> optionalCampaign = campaignRepository.findById(pojo.getProductId());
             if(optionalCampaign.isEmpty()) {
                 throw new BookNotFoundException(pojo.getProductId(),"找不到产品");
@@ -296,22 +296,37 @@ public class BookingRestController {
                 throw new BookNotFoundException(pojo.getProductId(),"改券不属于支付类型");
             }
             bookingTypeTowhoVo.setCampaign(optionalCampaign.get());
-        }
-        if(pojo.getType().equals(EnumBookingOjbectType.Product)){
-            Optional<Product> optionalProduct = productRepository.findById(pojo.getProductId());
+        }*/
+/*        if(pojo.getType().equals(EnumBookingOjbectType.Product)){
             if(optionalProduct.isEmpty()) {
                 throw new BookNotFoundException(pojo.getProductId(),"找不到产品");
             }
             bookingTypeTowhoVo.setProduct(optionalProduct.get());
         }
+        */
 
-        Pair<Reservation, BookingTypeTowhoVo> booking = bookingService.booking(bookingTypeTowhoVo,pojo,userVo);
+        List<Product> productList = productRepository.findAllByIdIn(pojo.getProducts().stream().map(e->e.getId()).collect(Collectors.toList()));
+
+        Map<Long, Product> longProductMap = productList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
+        List<BookingTypeTowhoVo> list =  pojo.getProducts().stream().map(e->{
+
+            Product product = longProductMap.get(e.getId());
+
+            BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
+            bookingTypeTowhoVo.setToWhoTyp(EnumBookingOjbectType.Product);
+            bookingTypeTowhoVo.setProduct(product);
+            bookingTypeTowhoVo.setCount(e.getQuantity().longValue());
+
+            return bookingTypeTowhoVo;
+        }).collect(Collectors.toList());
+
+        Pair<Reservation, List<BookingTypeTowhoVo> > booking = bookingService.booking(list,pojo,userVo);
 
         Reservation reservation = booking.getValue0();
 
 
 
-        BookingResp resp = BookingResp.toResp(booking);
+        BookingResp resp = BookingResp.toResp_LIST(booking);
 
 
 
@@ -545,8 +560,9 @@ public class BookingRestController {
 
         UserVo userVo = authenticationFacade.getUserVo(authentication);
 
-        BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
-        bookingTypeTowhoVo.setToWhoTyp(pojo.getType());
+/*
+    //    BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo()
+        //  bookingTypeTowhoVo.setToWhoTyp(pojo.getType());*/
 
 
 
@@ -559,14 +575,35 @@ public class BookingRestController {
         Product product = validatorOptional.get();
 
 
-        bookingTypeTowhoVo.setProduct(product);
+     //   bookingTypeTowhoVo.setProduct(product);
 
 
-        Pair<Reservation, BookingTypeTowhoVo> booking = bookingService.booking(bookingTypeTowhoVo,pojo,userVo);
+
+        List<Product> productList = productRepository.findAllByIdIn(pojo.getProducts().stream().map(e->e.getId()).collect(Collectors.toList()));
+
+        Map<Long, Product> longProductMap = productList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
+        List<BookingTypeTowhoVo> list =  pojo.getProducts().stream().map(e->{
+
+            Product product = longProductMap.get(e.getId());
+
+            BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
+            bookingTypeTowhoVo.setToWhoTyp(EnumBookingOjbectType.Product);
+            bookingTypeTowhoVo.setProduct(product);
+            bookingTypeTowhoVo.setCount(e.getQuantity().longValue());
+
+            return bookingTypeTowhoVo;
+        }).collect(Collectors.toList());
+
+        Pair<Reservation, List<BookingTypeTowhoVo> > booking = bookingService.booking(list,pojo,userVo);
 
         Reservation reservation = booking.getValue0();
 
-        BookingResp resp = BookingResp.toResp(booking);
+
+        Pair<Reservation, List<BookingTypeTowhoVo>> reservationBookingTypeTowhoVoPair = bookingService.booking(list,pojo,userVo);
+
+        Reservation reservation_after = booking.getValue0();
+
+        BookingResp resp = BookingResp.toResp_LIST(reservationBookingTypeTowhoVoPair);
 
 
         if(EnumBookingType.Free.equals(reservation.getType())){

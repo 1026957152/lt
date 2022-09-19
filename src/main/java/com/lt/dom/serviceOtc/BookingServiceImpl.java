@@ -20,6 +20,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -75,8 +76,6 @@ public class BookingServiceImpl {
     InchargeBookingRepository inchargeBookingRepository;
 
 
-
-
     public Pair<Reservation,BookingTypeTowhoVo> booking(BookingTypeTowhoVo bookingTypeTowhoVo, BookingPojo pojo, UserVo userVo) {
 
 
@@ -92,8 +91,8 @@ public class BookingServiceImpl {
             Reservation reservation = new Reservation();
             reservation.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
             reservation.setCode(idGenService.bookingNo());
-           // reservation.setItems_discount_amount(va);
-           // reservation.setTotal_discount_amount(va);
+            // reservation.setItems_discount_amount(va);
+            // reservation.setTotal_discount_amount(va);
 
             if(product.getValidate_way().equals(EnumValidateWay.offline_manual)){
                 reservation.setValidationStatus(EnumValidationStatus.NewAwaitingValidation);
@@ -109,9 +108,9 @@ public class BookingServiceImpl {
             reservation.setSupplier(product.getSupplierId());
 
             if(product.getType().equals(EnumProductType.Pass)){
-                reservation.setFollowupPaid(EnumFulfillmentType.Create_pass);;
+                reservation.setFollowupPaid(EnumFulfillmentType.Create_pass);
             }else{
-                reservation.setFollowupPaid(EnumFulfillmentType.Universal);;
+                reservation.setFollowupPaid(EnumFulfillmentType.Universal);
 
             }
 
@@ -194,6 +193,130 @@ public class BookingServiceImpl {
 
     }
 
+    public Pair<Reservation,List<BookingTypeTowhoVo> > booking(List<BookingTypeTowhoVo> bookingTypeTowhoVoList, BookingPojo pojo, UserVo userVo) {
+
+
+
+
+        List<BookingProduct> bookingProductList =  bookingTypeTowhoVoList.stream().map(e->{
+            Product product = e.getProduct();
+            BookingProduct bookingProduct = new BookingProduct();
+            bookingProduct.setAmount(1);
+            bookingProduct.setPrice(1);
+
+
+            bookingProduct.setProductType(product.getType());
+            bookingProduct.setProduct(product.getId());
+            bookingProduct.setSupplier(product.getSupplierId());
+            bookingProduct.setPaymentMethods_json(product.getPaymentMethods_json());
+            //   bookingProduct.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
+            if(product.getType().equals(EnumProductType.Pass)){
+                bookingProduct.setPaymentSplit(true);
+                bookingProduct.setPaymentSplitCode(product.getCode());
+            }
+
+
+
+
+
+  /*         Optional<PricingType> pricingTypeOptional = pricingTypeRepository.findById(pojo.getPricingType());
+
+           if(pricingTypeOptional.isEmpty()){
+               throw new BookNotFoundException(Enumfailures.not_found,"价格不能为空");
+           }
+           PricingType pricingType = pricingTypeOptional.get();
+*/
+
+
+            bookingProduct.setQuantity(e.getCount().intValue());
+
+            return bookingProduct;
+        }).collect(Collectors.toList());
+
+        bookingProductRepository.saveAll(bookingProductList);
+
+
+        Reservation reservation = new Reservation();
+            reservation.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
+            reservation.setCode(idGenService.bookingNo());
+           // reservation.setItems_discount_amount(va);
+           // reservation.setTotal_discount_amount(va);
+
+
+                reservation.setValidationStatus(EnumValidationStatus.Unknow);
+
+/*            reservation.setSetValidate_way(product.getValidate_way());
+
+            reservation.setProductType(product.getType());
+            reservation.setProductId(product.getId());
+            reservation.setSupplier(product.getSupplierId());*/
+
+/*            if(product.getType().equals(EnumProductType.Pass)){
+                reservation.setFollowupPaid(EnumFulfillmentType.Create_pass);
+            }else{
+                reservation.setFollowupPaid(EnumFulfillmentType.Universal);
+
+            }*/
+        reservation.setFollowupPaid(EnumFulfillmentType.Unknow);
+
+
+
+          //  reservation.setPaymentMethods_json(product.getPaymentMethods_json());
+        reservation.setPaymentMethods_json(new Gson().toJson(Arrays.asList(EnumPayChannel.wx)));
+
+/*            EnumPayChannel[] enumPayChannels =   new Gson().fromJson(product.getPaymentMethods_json(),EnumPayChannel[].class);
+            if(Arrays.asList(enumPayChannels).contains(EnumPayChannel.free)){
+                reservation.setType(EnumBookingType.Free);
+            }else{
+                reservation.setType(EnumBookingType.Standard);
+            }*/
+        reservation.setType(EnumBookingType.Unknow);
+
+   /*
+            if(product.getType().equals(EnumProductType.Pass)){
+                reservation.setPaymentSplit(true);
+                reservation.setPaymentSplitCode(product.getCode());
+            }
+*/
+
+
+            Optional<PricingType> pricingTypeOptional = pricingTypeRepository.findById(pojo.getPricingType());
+
+            if(pricingTypeOptional.isEmpty()){
+                throw new BookNotFoundException(Enumfailures.not_found,"价格不能为空");
+            }
+            PricingType pricingType = pricingTypeOptional.get();
+
+            Integer total  =  pricingType.getPrice()*pojo.getCount().intValue();
+
+/*            List<PricingType> pricingTypes = getForProduct(product);
+
+            Map<EnumProductPricingTypeByPerson,Integer> enumProductPricingTypeByPersonIntegerMap = pricingTypes.stream().filter(x->x.getType().equals(EnumProductPricingType.ByPerson)).collect(Collectors.toMap(x->x.getBy(),x->x.getPrice()));
+
+            Integer total  = pojo.getTravelers().stream().mapToInt(x->{
+
+                Integer price = enumProductPricingTypeByPersonIntegerMap.get(x.getBy());
+
+                return price== null? 0: price;
+            }).sum();*/
+
+            reservation.setAmount(total);
+            //  reservation.setTotal_amount(reservation.getAmount()-reservation.getTotal_discount_amount());
+
+            reservation.setStatus(EnumBookingStatus.Draft);
+            if(userVo != null){
+                reservation.setUser(userVo.getUser_id());
+            }
+
+            reservation = reservationRepository.save(reservation);
+
+
+            return Pair.with(reservation,bookingTypeTowhoVoList);
+
+
+
+    }
+
 
 
 
@@ -255,13 +378,13 @@ public class BookingServiceImpl {
 
 
 
-            List<Traveler> travelerList = addBulkTraveler(reservation, Arrays.asList(pojo.getTraveler()));
+            List<Traveler> travelerList = addBulkTraveler(reservation, Collections.singletonList(pojo.getTraveler()));
 
 
             if(travelerList.size() > 0 ){
                 reservation.setUser(travelerList.get(0).getId());
             }else{
-                reservation.setUser(1l);
+                reservation.setUser(1L);
             }
 
 

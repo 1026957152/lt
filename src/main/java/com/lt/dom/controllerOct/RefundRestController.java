@@ -5,6 +5,7 @@ import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.Refund;
 import com.lt.dom.otcReq.BookingPojo;
 import com.lt.dom.otcenum.EnumRefundStatus;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.ChargeRepository;
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.RefundRepository;
@@ -47,8 +48,9 @@ public class RefundRestController {
 
         Optional<Refund> optionalProduct = refundRepository.findById(REFUND_ID);
 
+
         if(optionalProduct.isEmpty()) {
-            throw new BookNotFoundException(pojo.getProductId(),"找不到产品");
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到产品");
 
         }
         Refund refund = optionalProduct.get();

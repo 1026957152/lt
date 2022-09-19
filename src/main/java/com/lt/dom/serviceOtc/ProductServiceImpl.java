@@ -139,6 +139,14 @@ public class ProductServiceImpl {
 
             if(pojo.getRoyalties() != null){
 
+                if(pojo.getRoyalties().stream()
+                        .filter(e->e.getValidate_way().equals(EnumValidateWay.offline_manual))
+                        .findAny().isPresent()){
+                    product.setValidate_way(EnumValidateWay.offline_manual);
+                }else{
+                    product.setValidate_way(EnumValidateWay.none);
+
+                }
 
                 componentRightService.assingtoProduct(product,pojo.getRoyalties());
 
