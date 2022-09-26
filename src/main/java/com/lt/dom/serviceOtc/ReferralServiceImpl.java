@@ -1,5 +1,6 @@
 package com.lt.dom.serviceOtc;
 
+import com.google.gson.Gson;
 import com.lt.dom.controllerOct.PassengerRestController;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ReferralPojo;
@@ -12,6 +13,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -76,12 +78,14 @@ public class ReferralServiceImpl {
         }
 
     }
-    public Referral create(UserVo user, EnumReferralType fill_up_passager_info, ReferralPojo pojo) {
+    public Referral create(UserVo user, EnumReferralType fill_up_passager_info, String message, ReferralPojo pojo) {
         List<Referral> referrals = referralRepository.findByUserAndType(user.getUser_id(),fill_up_passager_info);
         Referral referral =null;
+        pojo.setMeta_data(new Gson().toJson(Map.of("message",message)));
 
         if(referrals.isEmpty()){
             referral =  create(user.getUser_id(),fill_up_passager_info,pojo);
+
         }else{
             referral =  referrals.get(0);
         }

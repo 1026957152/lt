@@ -1,6 +1,7 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.OctResp.EnumLongIdResp;
 import com.lt.dom.otcenum.*;
 import org.hibernate.validator.constraints.Length;
 
@@ -9,6 +10,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+
 //https://bokun.dev/booking-api-restful/vU6sCfxwYdJWd1QAcLt12i/introduction-to-the-data-model-of-products/mGtiogVmyzywvDaZFK29b5
 @Entity
 public class Product {
@@ -29,6 +32,21 @@ public class Product {
 
     private EnumBookingTypes types = EnumBookingTypes.PASS;
 
+    @NotNull
+    private Boolean free;
+    private Boolean package_;
+
+
+    public static List List(List<Product> componentRightMap) {
+        return componentRightMap.stream().map(x->{
+
+            EnumLongIdResp enumResp = new EnumLongIdResp();
+            enumResp.setId(x.getId());
+
+            enumResp.setText(x.getName()+"_"+x.getCode());
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
     public EnumAvailabilityType getAvailability_type() {
         return availability_type;
     }
@@ -39,7 +57,7 @@ public class Product {
 
     private long scheduling;  //时间选择。
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
 
     @Size(min = 1,max = 50,message = "名称长度必须为1到10")
@@ -355,5 +373,21 @@ private String code;
 
     public Integer getShipping_rate() {
         return shipping_rate;
+    }
+
+    public void setFree(Boolean free) {
+        this.free = free;
+    }
+
+    public Boolean getFree() {
+        return free;
+    }
+
+    public void setPackage_(Boolean package_) {
+        this.package_ = package_;
+    }
+
+    public Boolean getPackage_() {
+        return package_;
     }
 }

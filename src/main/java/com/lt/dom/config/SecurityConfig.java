@@ -2,6 +2,7 @@ package com.lt.dom.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,8 +25,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +53,8 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 */
+
+
 
 
     @Autowired
@@ -73,6 +81,9 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationTokenProvider);
         // We don't need CSRF for this example
         httpSecurity.csrf().disable()
+              //  .and()
+                .cors().configurationSource(corsConfigurationSource())
+                .and()
                 // don't authenticate this particular request
                 .authorizeHttpRequests().antMatchers("/authenticate","/oct/login").permitAll()
                 // all other requests need to be authenticated
@@ -159,6 +170,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().antMatchers("/oct/login",
+                "/xh/v1/back-center/login",
                 "/oct/openid/merchants_settled/*",
           //      "/openid/merchants_settled/page",
                 "/oct/openid/merchants_settled",
@@ -166,6 +178,7 @@ public class SecurityConfig {
              //   "/oct/*/*",
                 "/oct/qr_notify",
                "/oct/**",
+                "/xh/**",
                 "/oct/campaigns/list",
                 "/oct/campaigns",
                 "/files/**",
@@ -203,4 +216,36 @@ public class SecurityConfig {
         filter.setAllowSessionCreation(true);
         return filter;
     }*/
+
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList(
+                "list of domains here"
+                )
+        );
+        configuration.setAllowedMethods(Arrays.asList("DELETE", "GET", "POST", "PATCH", "PUT", "OPTIONS"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(
+                Arrays.asList(
+                        "Access-Control-Allow-Headers",
+                        "Access-Control-Allow-Origin",
+                        "Access-Control-Request-Method",
+                        "Access-Control-Request-Headers",
+                        "Origin", "Cache-Control",
+                        "Content-Type",
+                        "Authorization"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+    @Bean
+    public FilterRegistrationBean crosFilterRegistration(){
+        FilterRegistrationBean registrationBean = new FilterRegistrationBean(new CORSFilter());
+        registrationBean.setName("CORS Filter");
+        registrationBean.addUrlPatterns("/*");
+        registrationBean.setOrder(1);
+        return registrationBean;
+    }
 }

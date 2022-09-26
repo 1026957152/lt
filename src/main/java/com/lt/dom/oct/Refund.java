@@ -23,7 +23,7 @@ public class Refund {
 
     private int amount;
     
-@Column(unique=true)
+//##@Column(unique=true)
 private String code;
     private String charge_Code;
 

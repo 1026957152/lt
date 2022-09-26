@@ -1,8 +1,6 @@
 package com.lt.dom.oct;
 
-import com.lt.dom.otcenum.EnumAllocationMethod;
-import com.lt.dom.otcenum.EnumRoyaltyRuleCategory;
-import com.lt.dom.otcenum.EnumWhenSettle;
+import com.lt.dom.otcenum.*;
 
 import javax.persistence.*;
 
@@ -22,6 +20,18 @@ public class RoyaltyRule {
     private long sourceId;
     private String sourceType;
     private String splitCode;
+    private long settle_account;
+    private long component;
+    private Long supplier;
+    private int royaltyPercent;
+
+    private EnumRoyaltyCollection_method collection_method;
+    private EnumBillRecurringInterval billRecurringInterval = EnumBillRecurringInterval.day;
+    private EnumbillingScheme billingScheme = EnumbillingScheme.per_unit;
+
+    private Long billing_unit_amount;
+
+
 
     public long getSourceId() {
         return sourceId;
@@ -47,7 +57,7 @@ public class RoyaltyRule {
         this.id = id;
     }
 
-    private String royalty_mode;
+    private EnumRoyaltyRuleCategory royalty_mode;
     private String refund_mode;
     private EnumAllocationMethod allocation_mode;
 
@@ -151,6 +161,54 @@ public class RoyaltyRule {
 
     public String getSplitCode() {
         return splitCode;
+    }
+
+    public void setRoyalty_mode(EnumRoyaltyRuleCategory royalty_mode) {
+        this.royalty_mode = royalty_mode;
+    }
+
+    public EnumRoyaltyRuleCategory getRoyalty_mode() {
+        return royalty_mode;
+    }
+
+    public void setSettle_account(long settle_account) {
+        this.settle_account = settle_account;
+    }
+
+    public long getSettle_account() {
+        return settle_account;
+    }
+
+    public void setComponent(long component) {
+        this.component = component;
+    }
+
+    public long getComponent() {
+        return component;
+    }
+
+    public void setSupplier(Long supplier) {
+        this.supplier = supplier;
+    }
+
+    public Long getSupplier() {
+        return supplier;
+    }
+
+    public void setRoyaltyPercent(int royaltyPercent) {
+        this.royaltyPercent = royaltyPercent;
+    }
+
+    public int getRoyaltyPercent() {
+        return royaltyPercent;
+    }
+
+    public void setCollection_method(EnumRoyaltyCollection_method collection_method) {
+        this.collection_method = collection_method;
+    }
+
+    public EnumRoyaltyCollection_method getCollection_method() {
+        return collection_method;
     }
 
     /*      "royalty_mode": "rate",

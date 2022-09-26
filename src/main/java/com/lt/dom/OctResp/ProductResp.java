@@ -37,6 +37,10 @@ public class ProductResp {
     private boolean shippable;
     private String traveller_term;
     private String booking_note;
+    private long id;
+    private String short_desc;
+    private String short_name;
+    private List<Long> component_rights;
 
     public static ProductResp dayTourFrom(Product product, Tour tour, List<Campaign> campaignAssignToTourProducts) {
 
@@ -76,6 +80,13 @@ public class ProductResp {
 
 
 
+    public static ProductResp from(Product e, PricingType pricingType_default) {
+
+        ProductResp productResp = ProductResp.from(e,Arrays.asList(pricingType_default));
+
+
+        return productResp;
+    }
 
 
     public static ProductResp from(Product e, List<PricingType> pricingTypeList) {
@@ -91,7 +102,28 @@ public class ProductResp {
         productResp.setDefault_price(PricingTypeResp.from(pricingType));
         return productResp;
     }
+    public static ProductResp Richfrom(Product e, List<PricingType> pricingTypeList) {
 
+        ProductResp productResp = ProductResp.from(e);
+
+      productResp.setPriceTypes(pricingTypeList.stream().map(ee->{
+            return EntityModel.of(PricingTypeResp.from(ee));
+        }).collect(Collectors.toList()));
+
+
+        return productResp;
+    }
+    public static ProductResp Passfrom(Product e, List<PricingType> pricingTypeList) {
+
+        ProductResp productResp = ProductResp.Simplefrom(e);
+
+        productResp.setPriceTypes(pricingTypeList.stream().map(ee->{
+            return EntityModel.of(PricingTypeResp.from(ee));
+        }).collect(Collectors.toList()));
+
+
+        return productResp;
+    }
 
     public ProductTourResp getTour() {
         return tour;
@@ -103,7 +135,7 @@ public class ProductResp {
 
     private String supplier;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private String supplierCode;
     private String name;
@@ -195,22 +227,33 @@ private String code;
 
     public static ProductResp from(Product product) {
 
+        ProductResp resp = ProductResp.Simplefrom(product);
+        resp.setPaymentOptionList(EnumPayChannel.from(Arrays.stream((new Gson()).fromJson(product.getPaymentMethods_json(), EnumPayChannel[].class)).collect(Collectors.toList())));
+        resp.setName_long(product.getName_long());
+        resp.setShippable(product.getShippable());
+        resp.setTags((new Gson()).fromJson(product.getTags_json(),List.class));
+        resp.setStatus_text(product.getStatus().toString());
+        resp.setStatus(product.getStatus());
+        resp.setId(product.getId());
+
+
+        return resp;
+    }
+
+
+    public static ProductResp Simplefrom(Product product) {
+
 
         ProductResp resp = new ProductResp();
-
-        resp.setPaymentOptionList(EnumPayChannel.from(Arrays.stream((new Gson()).fromJson(product.getPaymentMethods_json(), EnumPayChannel[].class)).collect(Collectors.toList())));
+        resp.setShort_desc(product.getName_long());
+        resp.setShort_name(product.getName());
         resp.setType(product.getType());
         resp.setType_text(product.getType().toString());
         resp.setCode(product.getCode());
-
         resp.setName(product.getName());
-        resp.setName_long(product.getName_long());
-        resp.setStatus(product.getStatus());
-        resp.setStatus_text(product.getStatus().toString());
-        resp.setShippable(product.getShippable());
 
 
-        resp.setTags((new Gson()).fromJson(product.getTags_json(),List.class));
+
 
 
         return resp;
@@ -350,6 +393,38 @@ private String code;
 
     public String getBooking_note() {
         return booking_note;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setShort_desc(String short_desc) {
+        this.short_desc = short_desc;
+    }
+
+    public String getShort_desc() {
+        return short_desc;
+    }
+
+    public void setShort_name(String short_name) {
+        this.short_name = short_name;
+    }
+
+    public String getShort_name() {
+        return short_name;
+    }
+
+    public void setComponent_rights(List<Long> component_rights) {
+        this.component_rights = component_rights;
+    }
+
+    public List<Long> getComponent_rights() {
+        return component_rights;
     }
 
 

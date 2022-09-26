@@ -17,7 +17,7 @@ public class Payment {
     @Id
     private long id;//	integer	The payment’s unique ID
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;//	string	Object type, payment
 
     private String object;//	string	Object type, payment
@@ -47,6 +47,7 @@ private String code;//	string	Object type, payment
     private EnumPaymentStatus status;
     private EnumPaymentFlow payment_flow;
     private boolean split;
+    private LocalDateTime expireTime;
 
     public String getCode() {
         return code;
@@ -262,5 +263,14 @@ private String code;//	string	Object type, payment
 
     public boolean getSplit() {
         return split;
+    }
+
+    public void setExpireTime(LocalDateTime expireTime) {
+
+        this.expireTime = expireTime;
+    }
+
+    public LocalDateTime getExpireTime() {
+        return expireTime;
     }
 }

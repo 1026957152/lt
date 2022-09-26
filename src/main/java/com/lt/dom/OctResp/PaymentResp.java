@@ -1,44 +1,66 @@
 package com.lt.dom.OctResp;
 
+import cn.hutool.core.io.unit.DataUnit;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.Payment;
+import com.lt.dom.otcenum.EnumPaymentStatus;
+import com.lt.dom.util.DateUtils;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
+import java.util.List;
 
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentResp  extends RepresentationModel<PaymentResp> {
 
 
     private String object;//	string	Object type, payment
-    private long customer;//	integer	Associated Customer, if any
+    private Long customer;//	Integereger	Associated Customer, if any
     private LocalDateTime date;//	timestamp	Payment date
     private String currency;//	string	3-letter ISO code
-    private int amount;//	number	Payment amount
-    private int balance;//	number	Unapplied amount remaining
-    private boolean matched;//	boolean	When true there is a CashMatch suggestion
-    private boolean voided;//	boolean	Indicates that the payment was voided
+    private Integer amount;//	number	Payment amount
+    private Integer balance;//	number	Unapplied amount remaining
+    private Boolean matched;//	Boolean	When true there is a CashMatch suggestion
+    private Boolean voided;//	Boolean	Indicates that the payment was voided
     private String method;//	string	Payment instrument used
     private String  ach_sender_id;//	string	ACH PPD ID
     private String reference;//	string	Reference number, i.e. check #
     private String  source;//	string	Source of the payment
-    private String notes;//	string	Internal notes
+    private String notes;//	string	Integerernal notes
     private String  charge;//	object	Charge object included for processed payments
     private String applied_to;//	array	List of Payment Applications
     private String  pdf_url;//	string	URL where receipt PDF can be downloaded
     private LocalDateTime created_at;//	timestamp	Timestamp when created
     private LocalDateTime updated_at;//	timestamp	Timestamp when updated
+    private List<EntityModel<PaymentMethodResp>> methods;
+    private BookingResp booking;
+    private String status_text;
+    private EnumPaymentStatus status;
+    private LocalDateTime expireTime;
+    private String time_remaining;
+    private long seconds_remaining;
 
     public static PaymentResp from(Payment payment) {
 
         PaymentResp paymentResp = new PaymentResp();
-        paymentResp.setCustomer(payment.getCustomer());
-        paymentResp.setBalance(payment.getBalance());
+      //  paymentResp.setCustomer(payment.getCustomer());
+     //   paymentResp.setBalance(payment.getBalance());
         paymentResp.setCreated_at(payment.getCreated_at());
         paymentResp.setAmount(payment.getAmount());
+        paymentResp.setStatus(payment.getStatus());
+        paymentResp.setExpire_time(payment.getExpireTime());
+
+        Instant instant = payment.getExpireTime().toInstant(ZoneOffset.UTC);
+        Date date = Date.from(instant);
+        paymentResp.setTime_remaining(DateUtils.fromDeadline(date));
+        paymentResp.setSeconds_remaining(DateUtils.secondfromDeadline(date));
+
+        paymentResp.setStatus_text(payment.getStatus().toString());
         return paymentResp;
     }
 
@@ -52,11 +74,11 @@ public class PaymentResp  extends RepresentationModel<PaymentResp> {
         this.object = object;
     }
 
-    public long getCustomer() {
+    public Long getCustomer() {
         return customer;
     }
 
-    public void setCustomer(long customer) {
+    public void setCustomer(Long customer) {
         this.customer = customer;
     }
 
@@ -76,35 +98,35 @@ public class PaymentResp  extends RepresentationModel<PaymentResp> {
         this.currency = currency;
     }
 
-    public int getAmount() {
+    public Integer getAmount() {
         return amount;
     }
 
-    public void setAmount(int amount) {
+    public void setAmount(Integer amount) {
         this.amount = amount;
     }
 
-    public int getBalance() {
+    public Integer getBalance() {
         return balance;
     }
 
-    public void setBalance(int balance) {
+    public void setBalance(Integer balance) {
         this.balance = balance;
     }
 
-    public boolean isMatched() {
+    public Boolean isMatched() {
         return matched;
     }
 
-    public void setMatched(boolean matched) {
+    public void setMatched(Boolean matched) {
         this.matched = matched;
     }
 
-    public boolean isVoided() {
+    public Boolean isVoided() {
         return voided;
     }
 
-    public void setVoided(boolean voided) {
+    public void setVoided(Boolean voided) {
         this.voided = voided;
     }
 
@@ -186,5 +208,61 @@ public class PaymentResp  extends RepresentationModel<PaymentResp> {
 
     public void setUpdated_at(LocalDateTime updated_at) {
         this.updated_at = updated_at;
+    }
+
+    public void setMethods(List<EntityModel<PaymentMethodResp>> methods) {
+        this.methods = methods;
+    }
+
+    public List<EntityModel<PaymentMethodResp>> getMethods() {
+        return methods;
+    }
+
+    public void setBooking(BookingResp booking) {
+        this.booking = booking;
+    }
+
+    public BookingResp getBooking() {
+        return booking;
+    }
+
+    public void setStatus_text(String status_text) {
+        this.status_text = status_text;
+    }
+
+    public String getStatus_text() {
+        return status_text;
+    }
+
+    public void setStatus(EnumPaymentStatus status) {
+        this.status = status;
+    }
+
+    public EnumPaymentStatus getStatus() {
+        return status;
+    }
+
+    public void setExpire_time(LocalDateTime expireTime) {
+        this.expireTime = expireTime;
+    }
+
+    public LocalDateTime getExpireTime() {
+        return expireTime;
+    }
+
+    public void setTime_remaining(String time_remaining) {
+        this.time_remaining = time_remaining;
+    }
+
+    public String getTime_remaining() {
+        return time_remaining;
+    }
+
+    public void setSeconds_remaining(long seconds_remaining) {
+        this.seconds_remaining = seconds_remaining;
+    }
+
+    public long getSeconds_remaining() {
+        return seconds_remaining;
     }
 }

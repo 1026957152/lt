@@ -67,5 +67,16 @@ public class ZxingBarcodeGenerator {
         return result;
     }
 
+    public static String base64_png_src(String barcodeText)  {
+
+        try {
+            return "data:image/png;base64,"+ ZxingBarcodeGenerator.base64_png(barcodeText);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("故障粗偶我");
+        }
+    }
+
+
 
 }

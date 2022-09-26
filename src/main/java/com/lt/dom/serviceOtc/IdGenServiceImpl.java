@@ -289,7 +289,13 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
     }
 
+    CodeConfig componentVoucherConfig = new CodeConfig(6,null,null,null,"cov_#####################");
 
+    public String componentVouncherCode() {
+        return VoucherCodes.generate(componentVoucherConfig);
+
+
+    }
 
 /*
     @Resource(name = "Redislockserviceimpl") private Redislockservice Redislockservice;

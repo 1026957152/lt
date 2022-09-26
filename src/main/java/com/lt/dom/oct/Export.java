@@ -25,7 +25,7 @@ public class Export {
     private String parameters_order;
     private String parameters_fields;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private LocalDateTime done_at;
 

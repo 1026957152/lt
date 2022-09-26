@@ -32,7 +32,7 @@ public class RequestResp {
     private String status_text;
     private LocalDateTime applied_at;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private ReviewResp reject_review;
     private MerchantsSettledReq origin_merchantsSettledReqResp;

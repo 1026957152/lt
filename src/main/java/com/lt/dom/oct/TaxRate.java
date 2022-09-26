@@ -6,7 +6,7 @@ import javax.persistence.Column;
 
 public class TaxRate {
     
-@Column(unique=true)
+//##@Column(unique=true)
 private String code;
     private String display_name;
     private int DecimalPlaces;

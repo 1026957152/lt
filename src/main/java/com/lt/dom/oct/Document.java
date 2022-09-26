@@ -20,7 +20,7 @@ public class Document {
 
     @NotEmpty
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
 
 
@@ -45,6 +45,7 @@ private String code;
 
     @Column(name = "index_")
     private Integer index;
+    @Column(name = "desc_")
     private String desc;
     private boolean visiable;
 

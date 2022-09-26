@@ -21,7 +21,7 @@ public class ValueListResp {
 
     private String metadata;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private EnumValueListType type;
 

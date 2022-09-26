@@ -8,6 +8,8 @@ import com.lt.dom.otcReq.ComponentRightPojo;
 import com.lt.dom.otcReq.ProductPojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -38,9 +40,22 @@ public class ComponentRightServiceImpl {
     @Autowired
     private RoyaltyRuleRepository royaltyRuleRepository;
 
+    @Autowired
+    private BalanceServiceImpl balanceService;
 
     @Autowired
-    private ProductRepository productRepository;
+    private RedemptionServiceImpl redemptionService;
+
+    @Autowired
+    private BillServiceImpl billService;
+
+
+    @Autowired
+    private RoyaltyServiceImp royaltyServiceImp;
+
+    @Autowired
+    private BookingProductRepository bookingProductRepository;
+
 
 
     public ComponentRight createComponentRight(Supplier supplier, ComponentRightPojo pojo) {
@@ -126,6 +141,7 @@ public class ComponentRightServiceImpl {
         List<ComponentVounch> componentVounchList = componentRightList.stream().map(e->{
             ComponentVounch componentVounch = new ComponentVounch();
             componentVounch.setComponentRight(e.getComponentRightId());
+            componentVounch.setCode(idGenService.componentVouncherCode());
             componentVounch.setComponent(e.getId());
 
             if(id != null){
@@ -154,16 +170,13 @@ public class ComponentRightServiceImpl {
 
     public List<ComponentVounch> createComponentVounch(Reservation reservation, User user) {
 
+        List<BookingProductFuck> bookingProductFuckList = bookingProductRepository.findAllByBooking(reservation.getId());
 
-        Optional<Product> productOptional = productRepository.findById(reservation.getProductId());
 
-        Product product = productOptional.get();
-
-        product.getType().equals(EnumProductType.Attraction);
 
      //   Attraction attraction = attractionRepository.findBy()
 
-        List<Component> componentRightList = componentRepository.findAllByProductId(reservation.getProductId());
+        List<Component> componentRightList = componentRepository.findAllByProductIn(bookingProductFuckList.stream().map(e->e.getProduct()).collect(Collectors.toList()));
 
 
 
@@ -174,9 +187,17 @@ public class ComponentRightServiceImpl {
     }
 
 
-    public void redeem(List<ComponentVounch> optionalPass) {
+    public void redeem(List<Pair<User,ComponentVounch>> optionalPass) {
 
-        List<ComponentVounch> componentVounchList = optionalPass.stream().map(e-> {
+        List<Component> componentList = componentRepository.findAllById(optionalPass.stream().map(e->e.getValue1().getComponent()).collect(Collectors.toList()));
+
+        Map<Long, Component> longComponentMap = componentList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
+
+
+
+        List<Triplet<ComponentVounch,Component,Integer>> componentVounchList = optionalPass.stream().map(pair-> {
+            Component component = longComponentMap.get(pair.getValue1().getComponent());
+            ComponentVounch e= pair.getValue1();
             if(e.getDuration().equals(EnumDuration.once)){
                 e.setStatus(EnumComponentVoucherStatus.AlreadyRedeemed);
 
@@ -191,12 +212,21 @@ public class ComponentRightServiceImpl {
                 }
 
             }
-            return e;
+
+
+            return Triplet.with(e,component,1);
 
         }).collect(Collectors.toList());
 
 
-        componentVounchRepository.saveAll(componentVounchList);
+        componentVounchRepository.saveAll(componentVounchList.stream().map(e->e.getValue0()).collect(Collectors.toList()));
+
+        redemptionService.RedeemVounchor(optionalPass);
+
+        billService.billUpdate(componentVounchList);
+
+      //  royaltyServiceImp.getReferral();
+
     }
 
 
@@ -225,6 +255,13 @@ public class ComponentRightServiceImpl {
             component.setComponentRight(x.getId());
             component.setProduct(product.getId());
             component.setSupplier(x.getSupplier());
+            component.setRoyalty_mode(x.getRoyalty_mode());
+            component.setRoyaltyPercent(x.getValue());
+            component.setRoyaltyAmount(x.getValue());
+
+
+            component.setRoyaltyAmount(x.getValue());
+            component.setCollection_method(royalty.getCollection_method());
 
             component.setValidate_way(royalty.getValidate_way());
 
@@ -237,6 +274,7 @@ public class ComponentRightServiceImpl {
 
             component.setRoyaltyPercent(royalty.getPercent());
 
+
             return component;
         }).collect(Collectors.toList());
 
@@ -244,11 +282,26 @@ public class ComponentRightServiceImpl {
 
 
         royaltyRuleRepository.saveAll(list.stream().map(e->{
+
+            Balance balance = balanceService.balance(e.getSupplier(),EnumUserType.business);
+
             RoyaltyRule royaltyRule = new RoyaltyRule();
             royaltyRule.setPercent(e.getRoyaltyPercent());
-            royaltyRule.setComponentRight(e.getId());
+            royaltyRule.setComponentRight(e.getComponentRightId());
+            royaltyRule.setComponent(e.getId());
             royaltyRule.setProductId(product.getId());
             royaltyRule.setSplitCode(product.getCode());
+            royaltyRule.setRoyalty_mode(e.getRoyalty_mode());
+            royaltyRule.setAmount(e.getRoyaltyAmount());
+            royaltyRule.setSettle_account(balance.getId());
+            royaltyRule.setSupplier(e.getSupplier());
+            royaltyRule.setRoyaltyPercent(e.getRoyaltyPercent());
+            royaltyRule.setCollection_method(e.getCollection_method());
+
+
+
+
+
             return royaltyRule;
         }).collect(Collectors.toList()));
 

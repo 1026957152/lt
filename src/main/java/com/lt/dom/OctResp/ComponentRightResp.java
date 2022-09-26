@@ -1,5 +1,6 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumComponentStatus;
 import com.lt.dom.otcenum.EnumDuration;
@@ -7,7 +8,7 @@ import com.lt.dom.otcenum.EnumProductComponentSource;
 
 import java.util.List;
 
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ComponentRightResp {
     private EnumComponentStatus status;
     private String status_text;
@@ -29,9 +30,6 @@ public class ComponentRightResp {
         componentRightResp.setQuantity(componentRight.getQuantity());
         componentRightResp.setDuration_text(componentRight.getDuration().toString());
         componentRightResp.setId(componentRight.getId());
-
-
-
 
 
         return componentRightResp;
@@ -60,6 +58,7 @@ public class ComponentRightResp {
         componentRightResp.setOrigin(origin);
         return componentRightResp;
     }   // 这个是 下单的时候， 从 product 中生成 的
+
 
     public String getText() {
         return text;
@@ -101,6 +100,7 @@ public class ComponentRightResp {
         private String text;
         private List<EnumResp> validatorWays;
         private EnumProductComponentSource origin;
+        private List<EnumResp> royalty_modes;
 
         public void setId(long id) {
             this.id = id;
@@ -132,6 +132,14 @@ public class ComponentRightResp {
 
         public EnumProductComponentSource getOrigin() {
             return origin;
+        }
+
+        public void setRoyalty_modes(List<EnumResp> royalty_modes) {
+            this.royalty_modes = royalty_modes;
+        }
+
+        public List<EnumResp> getRoyalty_modes() {
+            return royalty_modes;
         }
     }
 

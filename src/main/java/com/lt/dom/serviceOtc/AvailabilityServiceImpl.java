@@ -261,8 +261,8 @@ public class AvailabilityServiceImpl {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
             AvailabilityVO availabilityVO = new AvailabilityVO();
 
-            availabilityVO.setBooking_at(formatter.format(l));
-            availabilityVO.setBooking_at_text(availabilityVO.getBooking_at());
+            availabilityVO.setBooking_at(l);
+            availabilityVO.setBooking_at_text(formatter.format(l));
 
             if(e == 0){
                 availabilityVO.setBooking_at_text("明天");

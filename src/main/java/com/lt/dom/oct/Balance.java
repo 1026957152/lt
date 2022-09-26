@@ -15,7 +15,7 @@ public class Balance {
     @Id
     private long id;
 
-    @Column(unique=true)
+    //##@Column(unique=true)
     private String code;
 
     private boolean available;

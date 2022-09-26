@@ -14,7 +14,7 @@ public enum EnumDeviceCommand {
     private String name;//	String	Instruction name
     private String desc;//	String	Description
     
-@Column(unique=true)
+//##@Column(unique=true)
 private String code;//	String	Instruction
     private EnumValueType type;//	String	Instruction type
     private String values;//	String	The input parameter range of the instruction

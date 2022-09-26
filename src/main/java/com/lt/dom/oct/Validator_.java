@@ -15,7 +15,7 @@ public class Validator_ {  // 这个就是机器了啊
     @Id
     @JsonProperty("id")
     private long id;
-    private long userId;
+    private Long user;
 
     private long device;
     private long role;
@@ -38,12 +38,12 @@ public class Validator_ {  // 这个就是机器了啊
         this.type = type;
     }
 
-    public long getUserId() {
-        return userId;
+    public long getUser() {
+        return user;
     }
 
-    public void setUserId(long userId) {
-        this.userId = userId;
+    public void setUser(long userId) {
+        this.user = userId;
     }
     private String name;
 

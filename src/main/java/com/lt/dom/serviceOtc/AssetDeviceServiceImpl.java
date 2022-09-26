@@ -57,7 +57,7 @@ public class AssetDeviceServiceImpl {
 
     // 这张门票 只有一项权益， 只能玩一次。
     // TODO   _门票，消费券，权益，一卡通。
-    public DeviceScanValidatorVo 扫设备(List<Long> triplet来自设备,
+    public DeviceScanValidatorVo 扫设备(User user, List<Long> triplet来自设备,
                                      List<ComponentVounch> componentRights来自user) {
 
 
@@ -79,7 +79,9 @@ public class AssetDeviceServiceImpl {
 
           //  ComponentVounch pass = componentVounchList.get();
 
-            componentRightService.redeem(componentVounchList);
+            componentRightService.redeem(componentVounchList.stream().map(e->{
+                return Pair.with(user,e);
+            }).collect(Collectors.toList()));
 
 /*          if(pass.getType() == 一卡通){
 

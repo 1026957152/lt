@@ -1,7 +1,6 @@
 package com.lt.dom.serviceOtc;
 
 import com.google.gson.Gson;
-import com.lt.dom.OctResp.ChargeResp;
 import com.lt.dom.RealNameAuthentication.PhoneAuth;
 import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
 import com.lt.dom.error.BookNotFoundException;
@@ -18,11 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -94,23 +91,23 @@ public class BookingServiceImpl {
             // reservation.setItems_discount_amount(va);
             // reservation.setTotal_discount_amount(va);
 
-            if(product.getValidate_way().equals(EnumValidateWay.offline_manual)){
+    /*        if(product.getValidate_way().equals(EnumValidateWay.offline_manual)){
                 reservation.setValidationStatus(EnumValidationStatus.NewAwaitingValidation);
-            }else{
+            }else{*/
                 reservation.setValidationStatus(EnumValidationStatus.None);
 
-            }
+     //       }
 
-            reservation.setSetValidate_way(product.getValidate_way());
+          //  reservation.setSetValidate_way(product.getValidate_way());
 
             reservation.setProductType(product.getType());
             reservation.setProductId(product.getId());
             reservation.setSupplier(product.getSupplierId());
 
             if(product.getType().equals(EnumProductType.Pass)){
-                reservation.setFollowupPaid(EnumFulfillmentType.Create_pass);
+                reservation.setFulfillment_behavior(EnumFulfillment_behavior.Create_pass);
             }else{
-                reservation.setFollowupPaid(EnumFulfillmentType.Universal);
+                reservation.setFulfillment_behavior(EnumFulfillment_behavior.Universal);
 
             }
 
@@ -132,7 +129,7 @@ public class BookingServiceImpl {
 
 
 
-            Optional<PricingType> pricingTypeOptional = pricingTypeRepository.findById(pojo.getPricingType());
+            Optional<PricingType> pricingTypeOptional = pricingTypeRepository.findById(product.getDefault_price());
 
             if(pricingTypeOptional.isEmpty()){
                 throw new BookNotFoundException(Enumfailures.not_found,"价格不能为空");
@@ -156,6 +153,7 @@ public class BookingServiceImpl {
             //  reservation.setTotal_amount(reservation.getAmount()-reservation.getTotal_discount_amount());
 
             reservation.setStatus(EnumBookingStatus.Draft);
+            reservation.setCreated_at(LocalDateTime.now());
             if(userVo != null){
                 reservation.setUser(userVo.getUser_id());
             }
@@ -193,50 +191,18 @@ public class BookingServiceImpl {
 
     }
 
-    public Pair<Reservation,List<BookingTypeTowhoVo> > booking(List<BookingTypeTowhoVo> bookingTypeTowhoVoList, BookingPojo pojo, UserVo userVo) {
+
+    @Transactional
+    public Pair<Reservation,List<BookingProductFuck> > booking(List<BookingTypeTowhoVo> bookingTypeTowhoVoList, BookingPojo pojo, UserVo userVo) {
 
 
 
 
-        List<BookingProduct> bookingProductList =  bookingTypeTowhoVoList.stream().map(e->{
-            Product product = e.getProduct();
-            BookingProduct bookingProduct = new BookingProduct();
-            bookingProduct.setAmount(1);
-            bookingProduct.setPrice(1);
-
-
-            bookingProduct.setProductType(product.getType());
-            bookingProduct.setProduct(product.getId());
-            bookingProduct.setSupplier(product.getSupplierId());
-            bookingProduct.setPaymentMethods_json(product.getPaymentMethods_json());
-            //   bookingProduct.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
-            if(product.getType().equals(EnumProductType.Pass)){
-                bookingProduct.setPaymentSplit(true);
-                bookingProduct.setPaymentSplitCode(product.getCode());
-            }
-
-
-
-
-
-  /*         Optional<PricingType> pricingTypeOptional = pricingTypeRepository.findById(pojo.getPricingType());
-
-           if(pricingTypeOptional.isEmpty()){
-               throw new BookNotFoundException(Enumfailures.not_found,"价格不能为空");
-           }
-           PricingType pricingType = pricingTypeOptional.get();
-*/
-
-
-            bookingProduct.setQuantity(e.getCount().intValue());
-
-            return bookingProduct;
-        }).collect(Collectors.toList());
-
-        bookingProductRepository.saveAll(bookingProductList);
 
 
         Reservation reservation = new Reservation();
+
+
             reservation.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
             reservation.setCode(idGenService.bookingNo());
            // reservation.setItems_discount_amount(va);
@@ -257,12 +223,11 @@ public class BookingServiceImpl {
                 reservation.setFollowupPaid(EnumFulfillmentType.Universal);
 
             }*/
-        reservation.setFollowupPaid(EnumFulfillmentType.Unknow);
+        reservation.setFulfillment_behavior(EnumFulfillment_behavior.Universal);
 
 
 
           //  reservation.setPaymentMethods_json(product.getPaymentMethods_json());
-        reservation.setPaymentMethods_json(new Gson().toJson(Arrays.asList(EnumPayChannel.wx)));
 
 /*            EnumPayChannel[] enumPayChannels =   new Gson().fromJson(product.getPaymentMethods_json(),EnumPayChannel[].class);
             if(Arrays.asList(enumPayChannels).contains(EnumPayChannel.free)){
@@ -280,14 +245,14 @@ public class BookingServiceImpl {
 */
 
 
-            Optional<PricingType> pricingTypeOptional = pricingTypeRepository.findById(pojo.getPricingType());
+/*            Optional<PricingType> pricingTypeOptional = pricingTypeRepository.findById(pojo.getPricingType());
 
             if(pricingTypeOptional.isEmpty()){
                 throw new BookNotFoundException(Enumfailures.not_found,"价格不能为空");
             }
             PricingType pricingType = pricingTypeOptional.get();
 
-            Integer total  =  pricingType.getPrice()*pojo.getCount().intValue();
+            Integer total  =  pricingType.getPrice()*pojo.getCount().intValue();*/
 
 /*            List<PricingType> pricingTypes = getForProduct(product);
 
@@ -300,18 +265,120 @@ public class BookingServiceImpl {
                 return price== null? 0: price;
             }).sum();*/
 
-            reservation.setAmount(total);
+
             //  reservation.setTotal_amount(reservation.getAmount()-reservation.getTotal_discount_amount());
 
-            reservation.setStatus(EnumBookingStatus.Draft);
+
             if(userVo != null){
                 reservation.setUser(userVo.getUser_id());
             }
 
+
+            reservation.setCreated_at(LocalDateTime.now());
+        reservation.setSetValidate_way(EnumValidateWay.none);
+
+        reservation.setStatus(EnumBookingStatus.Draft); // 这里纯粹是 考虑 不要为空，实际可能是 free
             reservation = reservationRepository.save(reservation);
 
 
-            return Pair.with(reservation,bookingTypeTowhoVoList);
+        Reservation finalReservation = reservation;
+        List<BookingProductFuck> bookingProductFuckList =  bookingTypeTowhoVoList.stream().map(e->{
+            if(!e.getSkus().isEmpty()){
+                Product product = e.getProduct();
+
+                return e.getSkus().stream().map(ee->{
+                    BookingProductFuck bookingProductFuck = new BookingProductFuck();
+
+                    bookingProductFuck.setQuantity(ee.getQuantity().intValue());
+                    bookingProductFuck.setPrice(ee.getId().getRetail());
+                    bookingProductFuck.setAmount(bookingProductFuck.getQuantity()*bookingProductFuck.getPrice());
+
+                    bookingProductFuck.setBooking(finalReservation.getId());
+                    bookingProductFuck.setProductType(product.getType());
+                    bookingProductFuck.setProduct(product.getId());
+                    bookingProductFuck.setSupplier(product.getSupplierId());
+                    bookingProductFuck.setPaymentMethods_json(product.getPaymentMethods_json());
+                    if(product.getType().equals(EnumProductType.Pass)){
+                        bookingProductFuck.setPaymentSplit(true);
+                        bookingProductFuck.setPaymentSplitCode(product.getCode());
+                    }
+                    return bookingProductFuck;
+
+                }).collect(Collectors.toList());
+
+
+            }else{
+                Product product = e.getProduct();
+                BookingProductFuck bookingProductFuck = new BookingProductFuck();
+
+
+
+                Optional<PricingType> pricingTypeOptional = pricingTypeRepository.findById(product.getDefault_price());
+
+                if(pricingTypeOptional.isEmpty()){
+                    throw new BookNotFoundException(Enumfailures.not_found,"价格不能为空");
+                }
+                PricingType pricingType = pricingTypeOptional.get();
+
+                bookingProductFuck.setBooking(finalReservation.getId());
+                bookingProductFuck.setProductType(product.getType());
+                bookingProductFuck.setProduct(product.getId());
+                bookingProductFuck.setSupplier(product.getSupplierId());
+                bookingProductFuck.setPaymentMethods_json(product.getPaymentMethods_json());
+                //   bookingProduct.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
+                if(product.getType().equals(EnumProductType.Pass)){
+                    bookingProductFuck.setPaymentSplit(true);
+                    bookingProductFuck.setPaymentSplitCode(product.getCode());
+                }
+
+                bookingProductFuck.setQuantity(e.getQuantity().intValue());
+                bookingProductFuck.setPrice(pricingType.getRetail());
+                bookingProductFuck.setAmount(pricingType.getRetail()*e.getQuantity().intValue());
+
+                bookingProductFuck.setQuantity(e.getQuantity().intValue());
+                return Arrays.asList(bookingProductFuck);
+            }
+
+        }).flatMap(List::stream).collect(Collectors.toList());
+
+        bookingProductFuckList = bookingProductRepository.saveAll(bookingProductFuckList);
+        reservation.setAmount(bookingProductFuckList.stream().mapToInt(e->e.getAmount()).sum());
+
+
+
+
+
+        if(bookingTypeTowhoVoList.stream().filter(e->!e.getProduct().getFree()).findAny().isEmpty()){
+            reservation.setType(EnumBookingType.Free);
+            reservation.setStatus(EnumBookingStatus.Draft);
+        }else{
+            reservation.setType(EnumBookingType.Standard);
+            reservation.setStatus(EnumBookingStatus.Draft);
+         //   reservation.setPaymentMethods_json(new Gson().toJson(Arrays.asList(EnumPayChannel.wx)));
+            Set<EnumPayChannel> enumPayChannelList = bookingTypeTowhoVoList.stream().map(e->{
+                return Arrays.asList(new Gson().fromJson(e.getProduct().getPaymentMethods_json(),EnumPayChannel[].class));
+            }).flatMap(List::stream).collect(Collectors.toSet());
+
+            reservation.setPaymentMethods_json(new Gson().toJson(enumPayChannelList));
+
+        }
+
+
+
+        reservation.setCreated_at(LocalDateTime.now());
+        reservation = reservationRepository.save(reservation);
+
+        List<PhoneAuth> travelerReqs = pojo.getTravelers().stream().map(x->{
+            PhoneAuth auth = new PhoneAuth();
+            auth.setIdCardName(x.getName());
+            auth.setIdCardNo(x.getId_card());
+            auth.setPhoneNo(x.getPhone());
+            return auth;
+        }).collect(Collectors.toList());
+
+        List<Traveler> travelerList = addBulkTraveler(reservation,travelerReqs );
+
+            return Pair.with(reservation,bookingProductFuckList);
 
 
 
@@ -326,21 +393,21 @@ public class BookingServiceImpl {
 
 
 
-       List<BookingProduct> bookingProductList =  bookingTypeTowhoVo.stream().map(e->{
+       List<BookingProductFuck> bookingProductFuckList =  bookingTypeTowhoVo.stream().map(e->{
             Product product = e.getProduct();
-            BookingProduct bookingProduct = new BookingProduct();
-            bookingProduct.setAmount(1);
-            bookingProduct.setPrice(1);
+            BookingProductFuck bookingProductFuck = new BookingProductFuck();
+            bookingProductFuck.setAmount(1);
+            bookingProductFuck.setPrice(1);
 
 
-           bookingProduct.setProductType(product.getType());
-           bookingProduct.setProduct(product.getId());
-           bookingProduct.setSupplier(product.getSupplierId());
-           bookingProduct.setPaymentMethods_json(product.getPaymentMethods_json());
+           bookingProductFuck.setProductType(product.getType());
+           bookingProductFuck.setProduct(product.getId());
+           bookingProductFuck.setSupplier(product.getSupplierId());
+           bookingProductFuck.setPaymentMethods_json(product.getPaymentMethods_json());
         //   bookingProduct.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
            if(product.getType().equals(EnumProductType.Pass)){
-               bookingProduct.setPaymentSplit(true);
-               bookingProduct.setPaymentSplitCode(product.getCode());
+               bookingProductFuck.setPaymentSplit(true);
+               bookingProductFuck.setPaymentSplitCode(product.getCode());
            }
 
 
@@ -356,12 +423,12 @@ public class BookingServiceImpl {
 */
 
 
-           bookingProduct.setQuantity(e.getCount().intValue());
+           bookingProductFuck.setQuantity(e.getQuantity().intValue());
 
-           return bookingProduct;
+           return bookingProductFuck;
         }).collect(Collectors.toList());
 
-        bookingProductRepository.saveAll(bookingProductList);
+        bookingProductRepository.saveAll(bookingProductFuckList);
 
 
 
@@ -377,8 +444,15 @@ public class BookingServiceImpl {
             reservation.setStatus(EnumBookingStatus.Draft);
 
 
+        List<PhoneAuth> travelerReqs = Collections.singletonList(pojo.getTraveler()).stream().map(x->{
+            PhoneAuth auth = new PhoneAuth();
+            auth.setIdCardName(x.getName());
+            auth.setIdCardNo(x.getId());
+            auth.setPhoneNo(x.getTel_home());
+            return auth;
+        }).collect(Collectors.toList());
 
-            List<Traveler> travelerList = addBulkTraveler(reservation, Collections.singletonList(pojo.getTraveler()));
+            List<Traveler> travelerList = addBulkTraveler(reservation,travelerReqs );
 
 
             if(travelerList.size() > 0 ){
@@ -438,40 +512,11 @@ public class BookingServiceImpl {
 
 
 
-    public ChargeResp pay(Reservation reservation, BookingPayPojo transferPojo) {
 
-        List<Voucher> vouchers = transferPojo.getVoucherPojoList().stream().map(x->new Voucher()).collect(Collectors.toList());
-
+    public List<Traveler> addBulkTraveler(Reservation booking,  List<PhoneAuth> travelerReqs) {
 
 
-
-        //int va = redeemService.redeemVounchor(vouchers);  //销和这些券
-
-        reservation.setStatus(EnumBookingStatus.Submitted_Confirmed);
-        reservation = reservationRepository.save(reservation);
-
-
-        Reservation finalReservation = reservation;
-        List<Charge> charges = transferPojo.getPaymentOptions().stream().map(x->{
-            Charge charge = new Charge();
-            charge.setAmount(finalReservation.getTotal_amount());
-            charge.setPaid(false);
-            charge.setBooking(finalReservation.getId());
-           // charge.setChannel(x);
-            return charge;
-        }).collect(Collectors.toList());
-
-        charges =  chargeRepository.saveAll(charges);
-
-        return new ChargeResp();
-
-    }
-
-
-
-    public List<Traveler> addBulkTraveler(Reservation booking, List<WindowsTicketBookingPojo.TravelerReq> transferPojo) {
-
-
+/*
         List<PhoneAuth> travelerReqs = transferPojo.stream().map(x->{
             PhoneAuth auth = new PhoneAuth();
             auth.setIdCardName(x.getName());
@@ -479,6 +524,7 @@ public class BookingServiceImpl {
             auth.setPhoneNo(x.getTel_home());
             return auth;
         }).collect(Collectors.toList());
+*/
 
 
         Pair<List<PhoneAuth>, List<PhoneAuth>> phoneAuthPhoneAuthPair = realNameAuthenticationService.bulkCheckRealname(travelerReqs);

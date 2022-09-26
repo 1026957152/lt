@@ -14,6 +14,8 @@ public class Session {
     @Id
     private long id;
 
+
+    @Column(name = "to_")
     private EnumSessionFor to;//
 
     private long toWho;//

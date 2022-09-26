@@ -1,6 +1,6 @@
 package com.lt.dom.otcenum;
 
-public enum EnumFulfillmentType {
+public enum EnumFulfillment_behavior {
     Create_pass("Create_pass"),
     Universal("Universal"),
 
@@ -10,6 +10,8 @@ public enum EnumFulfillmentType {
     UNSPECIFIED_FULFILLMENT_TYPE("Universal"),
     PICKUP("Universal"),
     DELIVERY("Universal"),
+
+
     DINE_IN("Universal"),
 
 
@@ -19,7 +21,7 @@ public enum EnumFulfillmentType {
     ;
 
 
-    EnumFulfillmentType(String barcode) {
+    EnumFulfillment_behavior(String barcode) {
 
     }
 }

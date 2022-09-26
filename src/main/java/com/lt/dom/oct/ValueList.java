@@ -2,12 +2,16 @@ package com.lt.dom.oct;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.OctResp.EnumLongIdResp;
 import com.lt.dom.otcenum.EnumLogicalType;
 import com.lt.dom.otcenum.EnumValueListItemType;
 import com.lt.dom.otcenum.EnumValueListType;
+import com.lt.dom.otcenum.EnumValueType;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 public class ValueList {
@@ -27,12 +31,26 @@ public class ValueList {
 
     private String metadata;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private EnumValueListType type;
 
     private EnumLogicalType logical_type;
     private String type_text;
+    private EnumValueType item_value_type;
+    private LocalDateTime update_at;
+
+
+    public static List List(List<ValueList> componentRightMap) {
+        return componentRightMap.stream().map(x->{
+
+            EnumLongIdResp enumResp = new EnumLongIdResp();
+            enumResp.setId(x.getId());
+
+            enumResp.setText(x.getName()+"_"+x.getCode());
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
 
     public Integer getVersion() {
         return version;
@@ -128,5 +146,21 @@ private String code;
 
     public String getType_text() {
         return type_text;
+    }
+
+    public void setItem_value_type(EnumValueType item_value_type) {
+        this.item_value_type = item_value_type;
+    }
+
+    public EnumValueType getItem_value_type() {
+        return item_value_type;
+    }
+
+    public LocalDateTime getUpdate_at() {
+        return update_at;
+    }
+
+    public void setUpdate_at(LocalDateTime update_at) {
+        this.update_at = update_at;
     }
 }

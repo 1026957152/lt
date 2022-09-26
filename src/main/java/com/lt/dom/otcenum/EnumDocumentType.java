@@ -42,6 +42,10 @@ public enum EnumDocumentType {
 
 
     featured_photo("featured_photo"),
+    default_photo("featured_photo"),
+
+    home_page_feature_logo("home_page_feature_logo"),
+
     ;
 
 

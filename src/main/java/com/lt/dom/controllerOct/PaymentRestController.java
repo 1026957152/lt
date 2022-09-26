@@ -6,6 +6,7 @@ import com.github.wxpay.sdk.WXPay;
 import com.github.wxpay.sdk.WXPayUtil;
 
 
+import com.google.gson.Gson;
 import com.lt.dom.config.WxPayConfig;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
@@ -17,6 +18,8 @@ import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
 import com.lt.dom.util.HttpUtils;
+import com.lt.dom.vo.ChargeMetadataVo;
+import com.lt.dom.vo.UserVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -74,6 +78,13 @@ public class PaymentRestController {
     @Autowired
     private ReservationRepository reservationRepository;
 
+    @Autowired
+    private OpenidRepository openidRepository;
+
+    @Autowired
+    private AuthenticationFacade authenticationFacade;
+
+
 
     @GetMapping(value = "/payments", produces = "application/json")
     public ResponseEntity<PagedModel> listCampaigns(Pageable pageable, PagedResourcesAssembler<EntityModel<Payment>> assembler) {
@@ -117,124 +128,39 @@ public class PaymentRestController {
 
         Payment payment = optionalReservation.get();
 
-        try {
-            String orderId =  payment.getCode();
-            // double totalAmount = 0.01;
-            int totalAmount = payment.getAmount();
-            // 微信的支付单位是分所以要转换一些单位
-            long  totalproce =Long.parseUnsignedLong(totalAmount*100+"");
 
+        Authentication authentication = authenticationFacade.getAuthentication();
 
-            MyConfig wxPayConfig = new MyConfig();
+        UserVo userVo = authenticationFacade.getUserVo(authentication);
 
-            WXPay wxpay = new WXPay(wxPayConfig);
+        Optional<Openid> optional = openidRepository.findByUserIdAndLink(userVo.getUser_id(),true);
 
-            Map<String, String> data = new HashMap<String, String>();
-            data.put("body", "腾讯充值中心-QQ会员充值");
-            data.put("out_trade_no", payment.getCode());//"2016090910595900000012"
-            data.put("device_info", "");
-            data.put("fee_type", "CNY");
-            data.put("total_fee", totalproce+"");
-            data.put("spbill_create_ip", "123.12.12.123");
-            data.put("notify_url", "http://www.example.com/wxpay/notify");
-            data.put("trade_type", "JSAPI");  // 此处指定为扫码支付
-            data.put("product_id", "12");
-            data.put("openid", "oq1Er5Y7M9J4FnM262owaZHihOgQ");
-            try {
-                Map<String, String> resp = wxpay.unifiedOrder(data);
-                System.out.println(resp);
-                return resp;
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-/*
-            //String.valueOf(Float.parseFloat(totalAmount+"") * 100);
-            WxConfigUtil configUtil = new WxConfigUtil(wxPayConfig.getCertPath(),wxPayConfig.getAppId(),wxPayConfig.getMchId(),wxPayConfig.getKey());
-            WXPay wxPay = new WXPay(configUtil);
-            Map<String, String> data = new HashMap<>();
-            data.put("body","fuckyou");
-            // 查询获得订单id
-            data.put("appid", wxPayConfig.getAppId()); // 服务商的APPID
-            System.out.println("================appid:"+ wxPayConfig.getAppId());
-            data.put("mch_id", wxPayConfig.getMchId()); // 商户号
-            System.out.println("================mch_id:"+ wxPayConfig.getMchId());
-            data.put("out_trade_no", "orderId"); // 商品订单号
-            System.out.println("================out_trade_no:"+ "orderId");
-            data.put("total_fee", "1");//totalproce+"");  // 总金额
-            System.out.println("================total_fee:"+ "1");
-            data.put("notify_url", wxPayConfig.getTENPAY_ORDER_CALLBACK());// 回调地址
-            System.out.println("================notify_url:"+ wxPayConfig.getTENPAY_ORDER_CALLBACK());
-            data.put("spbill_create_ip", "127.0.0.1");// spbillCreateIp);// 终端IP
-            System.out.println("================spbill_create_ip:"+ "127.0.0.1");
-            data.put("openid", "oq1Er5Y7M9J4FnM262owaZHihOgQ");
-            System.out.println("================openid:"+ "oq1Er5Y7M9J4FnM262owaZHihOgQ");
-            data.put("trade_type", wxPayConfig.getTRADE_TYPE_APP());// 交易类型
-            System.out.println("================trade_type:"+ wxPayConfig.getTRADE_TYPE_APP());
-            // 这里根据具体业务，查询出不同的子商户号，从而实现不同商户收款。这里只有一个，写在配置文件中
-         //   data.put("sub_mch_id", wxPayConfig.getSubMchId()); // 子商户号
-            String ge = WXPayUtil.generateNonceStr();
-            data.put("nonce_str","6e4d9d9338664f86ab3b2735efff1eda");// 随机字符串
-            System.out.println("================nonce_str:"+ ge);
-            InetAddress inetAddress = InetAddress.getLocalHost();// 用户端ip
-            String spbillCreateIp= inetAddress== null? "": inetAddress.getHostAddress();
-
-
-            String sign= WXPayUtil.generateSignature(data, wxPayConfig.getKey(), WXPayConstants.SignType.MD5);	// 生成第一次签名
-            data.put("sign", sign);
-            System.out.println("================sign:"+ sign);
-
-            // 使用官方API请求预付订单
-            Map<String, String> response = wxPay.unifiedOrder(data);
-            String returnCode = response.get("return_code");    // 获取返回码
-            Map<String, String> param = new LinkedHashMap<>();
-            // 判断返回状态码是否成功
-            if (returnCode.equals("SUCCESS")) {
-                // 成功后接受微信返回的参数
-                String resultCode = response.get("result_code");
-                param.put("appid", response.get("sub_appid"));// 子商户应用id
-                param.put("partnerid", response.get("sub_mch_id"));// 子商户号
-                param.put("package", wxPayConfig.getPackageValue());
-                param.put("noncestr", WXPayUtil.generateNonceStr());// 随机字符串
-                param.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));     // 时间戳
-                if (resultCode.equals("SUCCESS")) {
-                    System.out.println("============="+response.toString());
-                    param.put("prepayid", response.get("prepay_id"));// 预支付交易会话 ID
-                    String retutnSign = WXPayUtil.generateSignature(param, wxPayConfig.getKey(), WXPayConstants.SignType.MD5);	// 第二次签名
-                    param.put("sign", retutnSign);
-                    String str1 = WXPayUtil.mapToXml(param);
-                    param.put("packages", wxPayConfig.getPackageValue());
-
-                    Charge charge = new Charge();
-                    charge.setChannel(EnumPayChannel.wx);
-                    charge.setPaid(false);
-                    charge.setApp(wxPayConfig.getAppId());
-                    charge.setClientIp(ip);
-                    charge.setAmount(Double.valueOf(totalAmount).intValue());
-                    charge.setOrderNo(payment.getId());
-                    charge.setLivemode(false);
-                    charge.setOrderId(orderId);
-
-                    charge.setCreated(LocalDateTime.now());
-                    charge = paymentService.createCharge(charge);
-
-
-                    return param;
-                } else {
-                    throw new PaymentException(PAYMENT_ID,"支付第二次签名请求失败","支付第二次签名请求失败");
-                }
-            } else {
-
-                System.out.println("============="+response.toString());
-                throw new PaymentException(PAYMENT_ID,"支付第一次签名请求失败","支付第一次签名请求失败");
-            }*/
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new PaymentException(Enumfailures.payment_login_error,e.getMessage());
+        if(optional.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"未找到产品");
         }
 
-        return null;
+
+        Optional<Reservation> reservationOptional = reservationRepository.findByCode(payment.getReference());
+
+
+        if(reservationOptional.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到支付相关的订单");
+        }
+        Reservation reservation = reservationOptional.get();
+
+        ChargeMetadataVo chargeMetadataVo = new ChargeMetadataVo();
+      //  chargeMetadataVo.setCampaign(campaign.getId());
+     //   chargeMetadataVo.setCampaign_code(campaign.getCode());
+     //   chargeMetadataVo.setVolume_up_voucher(voucher.getId());
+        chargeMetadataVo.setPayer(userVo.getUser_id());
+       // chargeMetadataVo.setBooking(reservation.getId());
+        String metadata = new Gson().toJson(chargeMetadataVo);
+        Map  charge = paymentService.createCharge(ip,payment.getCode(),reservation.getId(),payment.getAmount(),optional.get().getOpenid(),userVo,metadata);
+
+
+
+
+        return charge;
     }
 
 

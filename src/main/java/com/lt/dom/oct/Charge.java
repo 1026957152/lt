@@ -23,7 +23,7 @@ public class Charge {
     private long id;
     private String payment_code;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private int application_fee_amount;
 

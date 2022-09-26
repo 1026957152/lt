@@ -5,6 +5,7 @@ import com.lt.dom.otcenum.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -20,11 +21,21 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
 
     private long royaltyRuleId;
     private int royaltyRuleCount;
+
+
+    private EnumCompoentGroupingType groupingType = EnumCompoentGroupingType.single;
+
+
+
     @NotNull
     private EnumProductComponentSource source;
 
     @NotNull
     private EnumValidateWay validate_way;
+    private int royaltyAmount;
+    private EnumRoyaltyRuleCategory royalty_mode;
+    private EnumRoyaltyCollection_method collection_method;
+    private long subscription;
 
     public EnumProductComponentSource getSource() {
         return source;
@@ -44,13 +55,62 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
     private long priceingType;
 
 
+    private Boolean active = true;
 
+
+
+    private EnumBillRecurringInterval billRecurringInterval = EnumBillRecurringInterval.day;
+    private Integer billRecurringInterval_count;
+
+    public Integer getBillRecurringInterval_count() {
+        return billRecurringInterval_count;
+    }
+
+    public void setBillRecurringInterval_count(Integer billRecurringInterval_count) {
+        this.billRecurringInterval_count = billRecurringInterval_count;
+    }
+
+    private EnumbillingScheme billingScheme = EnumbillingScheme.per_unit;
+    private Long billing_unit_amount = 0l;
+    private LocalDateTime billing_cycle_anchor;
+
+    private String end_behavior;
+
+    public LocalDateTime getBilling_cycle_anchor() {
+        return billing_cycle_anchor;
+    }
+
+    public void setBilling_cycle_anchor(LocalDateTime billing_cycle_anchor) {
+        this.billing_cycle_anchor = billing_cycle_anchor;
+    }
+
+    public EnumBillRecurringInterval getBillRecurringInterval() {
+        return billRecurringInterval;
+    }
+
+    public void setBillRecurringInterval(EnumBillRecurringInterval billRecurringInterval) {
+        this.billRecurringInterval = billRecurringInterval;
+    }
+
+    public EnumbillingScheme getBillingScheme() {
+        return billingScheme;
+    }
+
+    public void setBillingScheme(EnumbillingScheme billingScheme) {
+        this.billingScheme = billingScheme;
+    }
+
+    public Long getBilling_unit_amount() {
+        return billing_unit_amount;
+    }
+
+    public void setBilling_unit_amount(Long billing_unit_amount) {
+        this.billing_unit_amount = billing_unit_amount;
+    }
 
     public long getId() {
         return id;
     }
-
-
 
 
     @Transient
@@ -58,15 +118,15 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
 
     private long supplierId;
 
-    private long productId;
+    private long product;
     private long componentRightId;
 
-    public long getProductId() {
-        return productId;
+    public long getProduct() {
+        return product;
     }
 
     public void setProduct(long productId) {
-        this.productId = productId;
+        this.product = productId;
     }
 
     public long getComponentRightId() {
@@ -221,5 +281,37 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
 
     public EnumValidateWay getValidate_way() {
         return validate_way;
+    }
+
+    public int getRoyaltyAmount() {
+        return royaltyAmount;
+    }
+
+    public void setRoyaltyAmount(int royaltyAmount) {
+        this.royaltyAmount = royaltyAmount;
+    }
+
+    public EnumRoyaltyRuleCategory getRoyalty_mode() {
+        return royalty_mode;
+    }
+
+    public void setRoyalty_mode(EnumRoyaltyRuleCategory royalty_mode) {
+        this.royalty_mode = royalty_mode;
+    }
+
+    public EnumRoyaltyCollection_method getCollection_method() {
+        return collection_method;
+    }
+
+    public void setCollection_method(EnumRoyaltyCollection_method collection_method) {
+        this.collection_method = collection_method;
+    }
+
+    public void setSubscription(long subscription) {
+        this.subscription = subscription;
+    }
+
+    public long getSubscription() {
+        return subscription;
     }
 }

@@ -17,7 +17,7 @@ public class PaymentMethod {
     @Id
     private long id;//	integer	The payment’s unique ID
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;//	string	Object type, payment
     private EnumPaymentOption payment_method;
     private long customer;//	integer	Associated Customer, if any

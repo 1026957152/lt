@@ -21,7 +21,7 @@ public class ChargeResp {
 
     private String orderId;
     
-@Column(unique=true)
+//##@Column(unique=true)
 private String code;
 
 

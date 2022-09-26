@@ -12,7 +12,7 @@ public class RoyaltyTransaction {
     private EnumRoyaltyTransactionStatus status;
 
     @Id
-    private String id;
+    private Long id;
     private String object = "royalty_transaction";
     private String amount;
     private String settle_account;

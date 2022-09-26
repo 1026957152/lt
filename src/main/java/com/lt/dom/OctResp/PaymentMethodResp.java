@@ -1,28 +1,32 @@
 package com.lt.dom.OctResp;
 
 import com.lt.dom.otcenum.EnumPayChannel;
-import com.lt.dom.otcenum.EnumPaymentOption;
-
-import javax.persistence.*;
 
 public class PaymentMethodResp {
 
 
-    private String name;
-
+    private String id;
+    private String text;
     public static PaymentMethodResp of(EnumPayChannel e) {
         PaymentMethodResp resp = new PaymentMethodResp();
-
-        resp.setName(e.name());
+        resp.setText(e.toString());
+        resp.setId(e.name());
         return resp;
     }
 
-
-    public void setName(String name) {
-        this.name = name;
+    public String getText() {
+        return text;
     }
 
-    public String getName() {
-        return name;
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
     }
 }

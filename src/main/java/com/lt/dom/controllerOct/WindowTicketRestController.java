@@ -354,7 +354,7 @@ public class WindowTicketRestController {
             BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
             bookingTypeTowhoVo.setToWhoTyp(EnumBookingOjbectType.Product);
             bookingTypeTowhoVo.setProduct(product);
-            bookingTypeTowhoVo.setCount(e.getCount());
+            bookingTypeTowhoVo.setQuantity(e.getCount());
 
             return bookingTypeTowhoVo;
         }).collect(Collectors.toList());

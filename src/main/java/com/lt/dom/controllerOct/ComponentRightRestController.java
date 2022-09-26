@@ -247,6 +247,28 @@ public class ComponentRightRestController {
         return entityModel;
     }
 
+
+
+
+
+
+
+
+    @GetMapping(value = "/component_vouchers/{COMPONENT_VOUCHER_ID}", produces = "application/json")
+    public EntityModel getComponentVoucher(@PathVariable long COMPONENT_VOUCHER_ID) {
+
+        Optional<ComponentVounch> optionalComponentRight = componentVounchRepository.findById(COMPONENT_VOUCHER_ID);
+        if(optionalComponentRight.isEmpty()) {
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到权益");
+        }
+        ComponentVounch componentRight = optionalComponentRight.get();
+
+
+        ComponentVounchResp componentRightResp = ComponentVounchResp.from(componentRight);
+        EntityModel entityModel = EntityModel.of(componentRightResp);
+
+        return entityModel;
+    }
 /*
     @Operation(summary = "1、为权益 增加分润")
     @PostMapping(value = "/componet_rights/{COMPONENT_RIGHTS_ID}/royaltyRules", produces = "application/json")
@@ -387,7 +409,7 @@ public class ComponentRightRestController {
                         }).collect(Collectors.toList()));
 
                         enumResp.setSelectedItems(validatorS.stream().map(v->{
-                            return v.getUserId();
+                            return v.getUser();
                         }).collect(Collectors.toList()));
                     }
 

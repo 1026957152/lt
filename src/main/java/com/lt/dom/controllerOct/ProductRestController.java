@@ -6,10 +6,7 @@ import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
-import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
-import com.lt.dom.serviceOtc.FileStorageServiceImpl;
-import com.lt.dom.serviceOtc.ProductServiceImpl;
-import com.lt.dom.serviceOtc.ValidateServiceImpl;
+import com.lt.dom.serviceOtc.*;
 import com.lt.dom.vo.AvailabilityVO;
 import com.lt.dom.vo.BookingRuleVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,6 +58,8 @@ public class ProductRestController {
     @Autowired
     private FileStorageServiceImpl fileStorageService;
 
+    @Autowired
+    private ValueListServiceImpl valueListService;
 
 
     @Autowired
@@ -87,6 +86,13 @@ public class ProductRestController {
     @Autowired
     private RoyaltyRuleRepository royaltyRuleRepository;
 
+    @Autowired
+    private ValueListRepository valueListRepository;
+
+    @Autowired
+    private ValueListItemRepository valueListItemRepository;
+
+
 
     @Operation(summary = "1、查询Product对象列表")
     @GetMapping(value = "/products/{PRODUCT_ID}/Page_editProduct", produces = "application/json")
@@ -101,7 +107,7 @@ public class ProductRestController {
         Product product = validatorOptional.get();
 
 
-        List<Component> componentRightPage= componentRepository.findAllByProductId(product.getId());
+        List<Component> componentRightPage= componentRepository.findAllByProduct(product.getId());
 
 
         ProductEditResp productResp = null;
@@ -251,7 +257,7 @@ public class ProductRestController {
         Product product = validatorOptional.get();
 
 
-        List<Component> componentRightPage= componentRepository.findAllByProductId(product.getId());
+        List<Component> componentRightPage= componentRepository.findAllByProduct(product.getId());
 
 
         ProductResp productResp = null;
@@ -372,10 +378,10 @@ public class ProductRestController {
         Product product = productOptional.get();
 
 
-       Page<Component> components= componentRepository.findAllByProductId(product.getId(),pageable);
+       Page<Component> components= componentRepository.findAllByProduct(product.getId(),pageable);
 
 
-        List<ComponentRight> componentRights= componentRightRepository.findAllById(components.stream().map(e->e.getProductId()).collect(Collectors.toList()));
+        List<ComponentRight> componentRights= componentRightRepository.findAllById(components.stream().map(e->e.getProduct()).collect(Collectors.toList()));
 
         Map<Long,ComponentRight> componentRightMap = componentRights.stream().collect(Collectors.toMap(e->e.getId(),e->e));
 
@@ -387,7 +393,7 @@ public class ProductRestController {
             EntityModel entityModel= EntityModel.of(ComponentResp.from(x,componentRight));
 
          //   entityModel.add(linkTo(methodOn(ComponentRightRestController.class).delete(x.getId())).withRel("delete"));
-            entityModel.add(linkTo(methodOn(ComponentRightRestController.class).getComponentRighte(x.getProductId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(ComponentRightRestController.class).getComponentRighte(x.getProduct())).withSelfRel());
 
 
             return entityModel;
@@ -574,21 +580,65 @@ public class ProductRestController {
 
 
 
+        List<ValueList> valueLists = valueListRepository.findAllByType(EnumValueListType.city_pass_right_recommendation);
+
+
+
+        List<ValueListItem> valueListItemList = valueListItemRepository
+                .findAllByValueListIn(valueLists.stream().map(e->e.getId()).collect(Collectors.toList()));
+
+        Map<Long,List<ValueListItem>>  longListMap  =     valueListItemList.stream().collect(Collectors.groupingBy(e->e.getValueList()));
+
+
+
+
+
+        List<EnumLongIdResp> city_pass_right_list = valueLists.stream().map(e->{
+
+            List<Long> ids = longListMap.getOrDefault(e.getId(),Arrays.asList()).stream().map(ee->Long.valueOf(ee.getValue()).longValue()).collect(Collectors.toList());
+
+            List<ComponentRight> componentRightMap =componentRightRepository.findAllById(ids);
+            EnumLongIdResp enumResp_sup = new EnumLongIdResp();
+            enumResp_sup.setId(e.getId());
+            enumResp_sup.setText(e.getName()+"_"+e.getCode());
+
+            enumResp_sup.setSubitems(
+            ComponentRight.List(componentRightMap,supplier,royaltyRuleListMap));
+/*            enumResp_sup.setSubitems(componentRightMap.stream().map(ee->{
+                EnumLongIdResp enumResp_sup_sub = new EnumLongIdResp();
+                enumResp_sup_sub.setId(ee.getId());
+                enumResp_sup_sub.setText(ee.getName()+"_"+ee.getCode());
+                return enumResp_sup_sub;
+            }).collect(Collectors.toList()));*/
+            return enumResp_sup;
+        }).collect(Collectors.toList());
+
+
+
         EnumResp enumResp = EnumResp.of(type,type.toString());
 
         EntityModel entityModel = EntityModel.of(Map.of(
+                "city_pass_right_list",city_pass_right_list,
                 "type",enumResp,
                 "attraction_list", AttractionResp.EnumList(attractionList),
                 "range_type_list",EnumAvailabilityRangetype.from(),
+                "availability_type_list",EnumAvailabilityType.EnumList(),
 
                 "component_right_list",ComponentRight.List(componentRightList,supplier,royaltyRuleListMap),
-                "daytour_days_list", EnumDaytourDays.from(),
+              //  "daytour_days_list", EnumDaytourDays.from(),
+                "identity_document_type_list",Arrays.asList(EnumResp.of("身份证","身份证")),
                 "product_type_list",EnumProductType.from(productService.getSupportProductType()),
                 "price_type_list", EnumProductPricingType.from(),
-                "campaign_list", Campaign.EnumList(campaignList),
+                //"campaign_list", Campaign.EnumList(campaignList),
                 "payment_method_list",   EnumPayChannel.from(Arrays.asList(EnumPayChannel.wx,EnumPayChannel.balance))));
 
-        entityModel.add(linkTo(methodOn(ProductRestController.class).createProduct_for_attraction(supplier.getId(),null)).withRel("create"));
+        if(type.equals(EnumProductType.Pass)){
+            entityModel.add(linkTo(methodOn(ProductRestController.class).createProduct(supplier.getId(),null)).withRel("create"));
+
+        }else{
+            entityModel.add(linkTo(methodOn(ProductRestController.class).createProduct_for_attraction(supplier.getId(),null)).withRel("create"));
+
+        }
         entityModel.add(linkTo(methodOn(ProductRestController.class).getComponentRightList(supplier.getId(),null,null)).withRel("getComponentRightList"));
 
         // 基本信息价格权益支付与退款订票规则
@@ -681,10 +731,19 @@ public class ProductRestController {
             }
 
 
-            Pair<Product,Supplier> product=  productService.createProduct(supplier,pojo,campaignList);
+            Pair<Product,Supplier> productSupplierPair=  productService.createProduct(supplier,pojo,campaignList);
+
+            Product product = productSupplierPair.getValue0();
+
+            ValueListItemReq valueListItemReq = new ValueListItemReq();
+            valueListItemReq.setValue(product.getId()+"");
+
+            valueListService.addItmeByListName(EnumValueListDefault.High_Quality_Product_recommendation,valueListItemReq);
+
+
             URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                     .path("/{id}")
-                    .buildAndExpand(product.getValue0().getId())
+                    .buildAndExpand(product.getId())
                     .toUri();
             return ResponseEntity.created(uri)
                     .body(ProductResp.from(product));
@@ -783,6 +842,13 @@ public class ProductRestController {
 
         Pair<Product,Supplier> productSupplierPair=  productService.createProduct(supplier,pojo,Arrays.asList());
         Product product = productSupplierPair.getValue0();
+
+
+
+        ValueListItemReq valueListItemReq = new ValueListItemReq();
+        valueListItemReq.setValue(product.getId()+"");
+        valueListService.addItmeByListName(EnumValueListDefault.city_pass_right_recommendation,valueListItemReq);
+
 
         List<TempDocument> tempDocuments = tempDocumentRepository.findAllByCodeIn(pojo.getImages().stream().map(e->e.getImage()).distinct().collect(Collectors.toList()));
 

@@ -3,6 +3,9 @@ package com.lt.dom.serviceOtc;
 
 import com.lt.dom.OctResp.*;
 import com.lt.dom.controllerOct.*;
+import com.lt.dom.controllerOct.Axh.XhEmployeeRestController;
+import com.lt.dom.controllerOct.Axh.XhSupplierRestController;
+import com.lt.dom.controllerOct.Axh.XhController;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
@@ -42,7 +45,7 @@ public class UserVoServiceImpl {
     private PaymentServiceImpl paymentService;
 
     @Autowired
-    private RoleRepository roleRepository;
+    private BalanceServiceImpl balanceService;
 
     @Autowired
     private UserRepository userRepository;
@@ -58,6 +61,11 @@ public class UserVoServiceImpl {
     private AssetServiceImpl assetService;
 
     @Autowired
+    private FeatureServiceImpl featureService;
+
+
+
+    @Autowired
     private ApplyForApprovalServiceImpl requestService;
 
     public EntityModel getBigUser(User user) {
@@ -66,6 +74,8 @@ public class UserVoServiceImpl {
         Optional<Openid> optionalOpenid = openidRepository.findByUserIdAndLink(user.getId(),true);
         UserResp userResp = null;
         if(optionalOpenid.isPresent()){
+
+
             userResp = UserResp.userWithOpenidLink(Pair.with(user,optionalOpenid.get()));
         }else{
             userResp = UserResp.from(user);
@@ -112,7 +122,7 @@ public class UserVoServiceImpl {
             Supplier supplier = optionalSupplier.get();
 
 
-            Balance balance = paymentService.balance(supplier.getId(), EnumUserType.business);
+            Balance balance = balanceService.balance(supplier.getId(), EnumUserType.business);
 
 
 
@@ -162,6 +172,10 @@ public class UserVoServiceImpl {
 
             supplierRespEntityModel.add(linkTo(methodOn(WindowTicketRestController.class).getCasher(supplier.getId())).withRel("getCashier"));
 
+            supplierRespEntityModel.add(linkTo(methodOn(XhEmployeeRestController.class).getEmployerList(employee.getSuplierId(),null,null)).withRel("xh_getEmployerList"));
+            supplierRespEntityModel.add(linkTo(methodOn(XhSupplierRestController.class).createEmployee(employee.getSuplierId(),null)).withRel("xh_createEmployer"));
+            supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).page_addEmployee(employee.getSuplierId())).withRel("Page_createEmployee"));
+
 
             userResp.setSupplier(supplierRespEntityModel);
 
@@ -187,13 +201,11 @@ public class UserVoServiceImpl {
             entityModel.add(linkTo(methodOn(TourCampaignRestController.class).Page_createTourBooking()).withRel("Page_createTourBooking"));
             entityModel.add(linkTo(methodOn(TourCampaignRestController.class).createTourBooking(null,null)).withRel("createTourBooking"));
             entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(employee.getSuplierId(),null)).withRel("getEmployeeList"));
-            entityModel.add(linkTo(methodOn(SupplierRestController.class).page_addEmployee(employee.getSuplierId())).withRel("Page_createEmployee"));
             entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(employee.getSuplierId(),null)).withRel("createEmployee"));
 
             entityModel.add(linkTo(methodOn(RequestFuckRestController.class).getRequestList(employee.getSuplierId(),null,null)).withRel("getRequestList"));
             entityModel.add(linkTo(methodOn(SettingRestController.class).Page_getSettingList()).withRel("Page_getSettingList"));
             entityModel.add(linkTo(methodOn(RequestFuckRestController.class).page_getRequestList(employee.getSuplierId())).withRel("Page_getRequestList"));
-
 
 
 
@@ -252,6 +264,30 @@ public class UserVoServiceImpl {
 
         entityModel.add(linkTo(methodOn(ComponentRightRestController.class).getComponentVouncherList(user.getId(),null,null)).withRel("getComponentVoucherList"));
 
+  //      entityModel.add(linkTo(methodOn(ComponentRightRestController.class).getComponentVouncherList(user.getId(),null,null)).withRel("getComponentVoucherList"));
+
+
+
+
+
+        entityModel.add(linkTo(methodOn(XhSupplierRestController.class).createSupplier(null)).withRel("xh_createSupplier"));
+        entityModel.add(linkTo(methodOn(XhSupplierRestController.class).pageSupplier(null,null)).withRel("xh_getSupplierList"));
+
+
+
+
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).page_addEmployee()).withRel("Page_createEmployee"));
+
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployeeList(null,null)).withRel("xh_getEmployerList"));
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).createEmployee(null)).withRel("xh_createEmployer"));
+
+            entityModel.add(linkTo(methodOn(XhController.class).getAllRequest(null,null)).withRel("xh_getPushRequestList"));
+     entityModel.add(linkTo(methodOn(XhController.class).getPull(null,null)).withRel("xh_getYxdRequestList"));
+
+
+
+
+
 
         Optional<Guide> optionalGuide = guideRepository.findByUserId(user.getId());
         if(optionalGuide.isPresent()){
@@ -266,6 +302,10 @@ public class UserVoServiceImpl {
         }else{
             userResp.setTour_guide(false);
         }
+
+
+        userResp.setLayout(featureService.meFill());;
+
 
         return entityModel;
 

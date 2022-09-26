@@ -22,7 +22,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -68,7 +67,7 @@ public class SupplierRestController {
     private UserRepository userRepository;
 
     @Autowired
-    private RequestRepository requestRepository;
+    private BalanceServiceImpl balanceService;
 
     @Autowired
     private ApplyForApprovalServiceImpl applyForApprovalService;
@@ -109,7 +108,7 @@ public class SupplierRestController {
 
         Supplier supplier = supplierOptional.get();
 
-        Balance balance = paymentService.balance(supplier.getId(), EnumUserType.business);
+        Balance balance = balanceService.balance(supplier.getId(), EnumUserType.business);
 
         List<Asset> assets = assetRepository.findAllBySource(supplier.getId());
 
@@ -221,7 +220,7 @@ public class SupplierRestController {
                 .withMatcher("model", ignoreCase());
 
         Supplier probe = new Supplier();
-        probe.setName(pojo.getSupplierName());
+        probe.setName(pojo.getName());
         Example<Supplier> example = Example.of(probe, modelMatcher);
             Optional<Supplier> optionalSupplier = supplierRepository.findOne(example);
 
@@ -247,7 +246,7 @@ public class SupplierRestController {
             }else{
 
                 System.out.println("商户名称 已经存在");
-                throw new ExistException(Enumfailures.general_exists_error,pojo.getSupplierName()+" 商户名称 已经存在");
+                throw new ExistException(Enumfailures.general_exists_error,pojo.getName()+" 商户名称 已经存在");
 
             }
 
@@ -338,9 +337,7 @@ public class SupplierRestController {
                     }).collect(Collectors.toList())/*,
                     "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"))*/));
 
-
             entityModel.add(linkTo(methodOn(SupplierRestController.class).page_addEmployee(supplier.get().getId())).withRel("Page_addEmployees"));
-
             entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.get().getId(),null)).withRel("listEmployees"));
 
             return entityModel;

@@ -1,6 +1,7 @@
 package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.lt.dom.OctResp.layout.LayoutResp;
 import com.lt.dom.oct.Openid;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.User;
@@ -66,6 +67,7 @@ public class UserResp extends RepresentationModel<UserResp> {
     private String token;
     private EntityModel<GuideSummaryVo> tour;
     private EnumSupplierVerifiedStatus merchant_settled_status;
+    private LayoutResp layout;
 
 
 /*    nick_name 昵称：
@@ -239,7 +241,7 @@ public class UserResp extends RepresentationModel<UserResp> {
     public static UserResp userWithOpenidLink(Pair<User, Openid> pair) {
         Openid openid = pair.getValue1();
         User user = pair.getValue0();
-        UserResp openidResp = new UserResp();
+        UserResp openidResp = UserResp.from(user);
 
         openidResp.setNick_name(openid.getOpenid_name());
         openidResp.setGender(openid.getOpenid_gender());
@@ -248,6 +250,8 @@ public class UserResp extends RepresentationModel<UserResp> {
 
 
 
+
+/*
 
       //  openidResp.setFirst_name(user.getFirst_name());
       //  openidResp.setLast_name(user.getLast_name());
@@ -262,7 +266,8 @@ public class UserResp extends RepresentationModel<UserResp> {
         openidResp.setUser_code(user.getCode());
         openidResp.setRoles_(user.getRoles().stream().map(x->{
             return RoleResp.from(x);
-        }).collect(Collectors.toList()));
+        }).collect(Collectors.toList()));*/
+
         return openidResp;
 
     }
@@ -469,5 +474,13 @@ public class UserResp extends RepresentationModel<UserResp> {
 
     public EnumSupplierVerifiedStatus getMerchant_settled_status() {
         return merchant_settled_status;
+    }
+
+    public void setLayout(LayoutResp layout) {
+        this.layout = layout;
+    }
+
+    public LayoutResp getLayout() {
+        return layout;
     }
 }

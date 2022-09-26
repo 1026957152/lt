@@ -20,7 +20,7 @@ public class Reservation {
     private long id;
     private EnumProductType productType;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
 
     private String additional_info;
@@ -39,7 +39,14 @@ private String code;
 
     private LocalDateTime expiresAt;
 
+
+
     private LocalDateTime confirmedAt;
+    private LocalDateTime cancelled_at;
+
+
+    @NotNull
+    private LocalDateTime created_at;
 
     public LocalDateTime getExpiresAt() {
         return expiresAt;
@@ -66,7 +73,10 @@ private String code;
     }
 
     @NotNull
-    private EnumFulfillmentType followupPaid;
+    private EnumFulfillment_behavior fulfillment_behavior;
+
+
+    @NotNull
     private EnumValidateWay setValidate_way;
     private EnumValidationStatus validationStatus;
 
@@ -187,15 +197,15 @@ private String code;
 
 
     @Transient
-    List<BookingProduct> products;
+    List<BookingProductFuck> products;
     @Transient
     List<BookingPayment> payments;
 
-    public List<BookingProduct> getProducts() {
+    public List<BookingProductFuck> getProducts() {
         return products;
     }
 
-    public void setProducts(List<BookingProduct> products) {
+    public void setProducts(List<BookingProductFuck> products) {
         this.products = products;
     }
 
@@ -354,12 +364,12 @@ private String code;
         this.note = note;
     }
 
-    public void setFollowupPaid(EnumFulfillmentType followupPaid) {
-        this.followupPaid = followupPaid;
+    public void setFulfillment_behavior(EnumFulfillment_behavior followupPaid) {
+        this.fulfillment_behavior = followupPaid;
     }
 
-    public EnumFulfillmentType getFollowupPaid() {
-        return followupPaid;
+    public EnumFulfillment_behavior getFulfillment_behavior() {
+        return fulfillment_behavior;
     }
 
     public void setSetValidate_way(EnumValidateWay setValidate_way) {
@@ -376,5 +386,13 @@ private String code;
 
     public EnumValidationStatus getValidationStatus() {
         return validationStatus;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
     }
 }

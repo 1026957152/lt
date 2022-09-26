@@ -13,7 +13,7 @@ public class BalanceTransfer {  //余额结算
     @Id
     private long id; // 用户余额转账对象 ID，由Ping++ 生成。
 
-    @Column(unique=true)
+    //##@Column(unique=true)
     private String code;
 
 /*    object

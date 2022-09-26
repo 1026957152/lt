@@ -89,6 +89,9 @@ public class ProductServiceImpl {
         Product product = new Product();
 
        // product.setN(pojo.getName());
+
+        product.setPackage_(pojo.getPackage_());
+        product.setFree(pojo.getFree());
         product.setType(pojo.getType());
         product.setCode(idGenService.productNo());
         product.setSupplierId(supplier.getId());
@@ -114,6 +117,21 @@ public class ProductServiceImpl {
         product.setTags_json((new Gson()).toJson(Arrays.asList(EnumProductTag.支持一卡通,EnumProductTag.支持一卡通)));
 
         product.setPaymentMethods_json((new Gson()).toJson(pojo.getPayment_methods()));
+
+
+        if(pojo.getRoyalties().stream()
+                .filter(e->e.getValidate_way().equals(EnumValidateWay.offline_manual))
+                .findAny().isPresent()){
+
+
+
+            product.setValidate_way(EnumValidateWay.offline_manual);
+        }else{
+            product.setValidate_way(EnumValidateWay.none);
+
+        }
+
+
         product = productRepository.save(product);
 
 
@@ -288,9 +306,7 @@ public class ProductServiceImpl {
                     component.setComponentRight(com.getId());
                     component.setPriceingType(pricingType.getId());
                     component.setSupplier(com.getSupplier());
-
                     //  component.setRoyaltyPercent(royalty.getPercent());
-
                     return component;
                 }).collect(Collectors.toList());
 
@@ -301,9 +317,9 @@ public class ProductServiceImpl {
 
         }
 
+//EnumValueListType.High_Quality_Product_recommendation
 
         if(pojo.getPrice() != null){
-
 
             PricingType pricingType = priceService.getPriceType(product,pojo.getPrice());
             pricingType = pricingTypeRepository.save(pricingType);
@@ -372,6 +388,8 @@ public class ProductServiceImpl {
         product.setTags_json((new Gson()).toJson(Arrays.asList(EnumProductTag.支持一卡通,EnumProductTag.支持一卡通)));
 
         product.setPaymentMethods_json((new Gson()).toJson(pojo.getPayment_methods()));
+        product.setAvailability_type(pojo.getAvailability_type());
+        product.setFree(pojo.getFree());
         product = productRepository.save(product);
 
 
@@ -391,12 +409,17 @@ public class ProductServiceImpl {
 
             List<PricingType> pricingTypes = priceService.getPriceType(product,pojo.getPrices());
             List<PricingType> priceTypeList = pricingTypeRepository.saveAll(pricingTypes);
+            product.setDefault_price(priceTypeList.get(0).getId());
+            product = productRepository.save(product);
         }
 
 
         if(pojo.getPrice() != null){
             PricingType pricingType = priceService.getPriceType(product,pojo.getPrice());
             pricingType = pricingTypeRepository.save(pricingType);
+            product.setDefault_price(pricingType.getId());
+            product = productRepository.save(product);
+
         }
 
 
@@ -542,7 +565,7 @@ public class ProductServiceImpl {
     public RoyaltyRule addRoyaltyRuleToComponentRight(ComponentRight componentRight, RoyaltyRulePojo pojo) throws Exception {
 
 
-        Optional<Component> component = componentRepository.findByProductIdAndComponentRightId(componentRight.getId(),componentRight.getId());
+        Optional<Component> component = componentRepository.findByProductAndComponentRightId(componentRight.getId(),componentRight.getId());
 
         if( component.isPresent()){
 
@@ -551,7 +574,7 @@ public class ProductServiceImpl {
             royaltyRule.setRecipient(pojo.getRecipient());
             royaltyRule.setComponentId(component.get().getId());
             royaltyRule.setComponentRight(component.get().getComponentRightId());
-            royaltyRule.setProductId(component.get().getProductId());
+            royaltyRule.setProductId(component.get().getProduct());
             royaltyRule.setWhenSettle(EnumWhenSettle.payed);
             royaltyRule.setCategory(pojo.getCategory());
             royaltyRule.setAmount(pojo.getAmount());

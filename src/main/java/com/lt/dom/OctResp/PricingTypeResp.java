@@ -26,13 +26,19 @@ public class PricingTypeResp {
     private int original;
     private int retail;
     private int net;
+    private String name;
 
+/*
     public static PricingTypeResp from(PricingType e) {
         PricingTypeResp pricingTypeResp = new PricingTypeResp();
+
+
 
         pricingTypeResp.setType(e.getType());
         pricingTypeResp.setType_Text(e.getType().toString());
         pricingTypeResp.setLable(e.getLable());
+
+
         pricingTypeResp.setOriginal(e.getPrice());
         pricingTypeResp.setRetail(e.getPrice());
         pricingTypeResp.setNet(e.getPrice());
@@ -53,6 +59,44 @@ public class PricingTypeResp {
             pricingTypeResp.setMin(e.getMin());
             pricingTypeResp.setMax(e.getMax());
         }
+        pricingTypeResp.setName(pricingTypeResp.getBy_text());
+
+        return pricingTypeResp;
+    }*/
+
+
+    public static PricingTypeResp from(PricingType e) {
+        PricingTypeResp pricingTypeResp = new PricingTypeResp();
+
+
+
+        pricingTypeResp.setType(e.getType());
+        pricingTypeResp.setType(e.getType());
+        pricingTypeResp.setType_Text(e.getType().toString());
+        pricingTypeResp.setLable(e.getLable());
+        pricingTypeResp.setOriginal(e.getPrice());
+        pricingTypeResp.setRetail(e.getPrice());
+        pricingTypeResp.setNet(e.getPrice());
+
+
+        if(e.getType().equals(EnumProductPricingType.ByPerson)){
+            pricingTypeResp.setPrice(e.getPrice());
+            pricingTypeResp.setBy(e.getBy());
+            pricingTypeResp.setBy_text(e.getBy().toString());
+        }
+        if(e.getType().equals(EnumProductPricingType.ByItem)){
+            pricingTypeResp.setUnit(e.getUnit());
+        }
+        if(e.getType().equals(EnumProductPricingType.Fixed)){
+            pricingTypeResp.setPrice(e.getPrice());
+        }
+
+        if(e.getType().equals(EnumProductPricingType.ByDay) || e.getType().equals(EnumProductPricingType.ByHour) || e.getType().equals(EnumProductPricingType.ByMinute)  ){
+            pricingTypeResp.setMin(e.getMin());
+            pricingTypeResp.setMax(e.getMax());
+        }
+        pricingTypeResp.setName(e.getNick_name());
+       // pricingTypeResp.setName(pricingTypeResp.getBy_text());
         return pricingTypeResp;
     }
 
@@ -159,5 +203,13 @@ public class PricingTypeResp {
 
     public int getNet() {
         return net;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 }

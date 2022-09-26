@@ -33,7 +33,7 @@ public class DocumentResp  {
 
     private String resultUrl;
     
-@Column(unique=true)
+//##@Column(unique=true)
 private String code;
     private String original_filename;
     private EnumDocumentType category;

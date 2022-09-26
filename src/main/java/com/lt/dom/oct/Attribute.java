@@ -15,7 +15,7 @@ public class Attribute {
 
 
     
-@Column(unique=true)
+//##@Column(unique=true)
 private String code;
     private String name;
     private String description;

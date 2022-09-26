@@ -24,6 +24,7 @@ public class Supplier {
 
 
     @Length(max = 2000)
+    @Column(name = "desc_")
     private String desc;
     @NotNull
     private EnumBussinessType business_type;
@@ -65,7 +66,7 @@ public class Supplier {
 
     @NotNull
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
 
     public String getCode() {

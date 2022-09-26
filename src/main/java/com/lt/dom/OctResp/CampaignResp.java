@@ -156,7 +156,7 @@ public class CampaignResp  {
     private List<QuotaReq> claim_quotas;
     private String scenarioCode;
     
-@Column(unique=true)
+//##@Column(unique=true)
 private String code;
     private List<DocumentResp> documents;
     private String imageLogo;

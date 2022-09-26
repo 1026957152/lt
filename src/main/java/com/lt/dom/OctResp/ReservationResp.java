@@ -100,23 +100,23 @@ private String code;
 
     private List<EnumPaymentOption> paymentOptions;
 
-    private int total;//	The order's current total price, included all items, fees, and taxes.
-    private int subtotal;//	The order's current total price of all active items.
-    private boolean paid;//	The order's current value of all active tenders.
-    private int savings;//	The order's current savings value for all active discounts and waived fees.
+    private Integer total;//	The order's current total price, included all items, fees, and taxes.
+    private Integer subtotal;//	The order's current total price of all active items.
+    private Boolean paid;//	The order's current value of all active tenders.
+    private Integer savings;//	The order's current savings value for all active discounts and waived fees.
     private String token;//	A GUID identifier for the Order.
 
 
 
-    List<BookingProduct> products;
+    List<BookingProductFuck> products;
 
     List<BookingPayment> payments;
 
-    public List<BookingProduct> getProducts() {
+    public List<BookingProductFuck> getProducts() {
         return products;
     }
 
-    public void setProducts(List<BookingProduct> products) {
+    public void setProducts(List<BookingProductFuck> products) {
         this.products = products;
     }
 
@@ -135,49 +135,49 @@ private String code;
 
 
 
-    private int amount;
-    //integer	Represents a total amount of order items (sum of item.amount)
+    private Integer amount;
+    //Integereger	Represents a total amount of order items (sum of item.amount)
 
     //Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 is written as 10000.
-    private int  items_discount_amount;//
-    //integer	Represents total amount of the discount applied to order line items
+    private Integer  items_discount_amount;//
+    //Integereger	Represents total amount of the discount applied to order line items
 
     //Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 is written as 10000.
-    private int  total_discount_amount;//
-   // integer	Summarize all discounts applied to the order including discounts applied to particular order line items and discounts applied to the whole cart.
+    private Integer  total_discount_amount;//
+   // Integereger	Summarize all discounts applied to the order including discounts applied to particular order line items and discounts applied to the whole cart.
 
    // Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 is written as 10000.
-    private int  total_amount;//
+    private Integer  total_amount;//
 
-    public int getAmount() {
+    public Integer getAmount() {
         return amount;
     }
 
-    public void setAmount(int amount) {
+    public void setAmount(Integer amount) {
         this.amount = amount;
     }
 
-    public int getItems_discount_amount() {
+    public Integer getItems_discount_amount() {
         return items_discount_amount;
     }
 
-    public void setItems_discount_amount(int items_discount_amount) {
+    public void setItems_discount_amount(Integer items_discount_amount) {
         this.items_discount_amount = items_discount_amount;
     }
 
-    public int getTotal_discount_amount() {
+    public Integer getTotal_discount_amount() {
         return total_discount_amount;
     }
 
-    public void setTotal_discount_amount(int total_discount_amount) {
+    public void setTotal_discount_amount(Integer total_discount_amount) {
         this.total_discount_amount = total_discount_amount;
     }
 
-    public int getTotal_amount() {
+    public Integer getTotal_amount() {
         return total_amount;
     }
 
-    public void setTotal_amount(int total_amount) {
+    public void setTotal_amount(Integer total_amount) {
         this.total_amount = total_amount;
     }
 

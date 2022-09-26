@@ -1,31 +1,47 @@
 package com.lt.dom.controllerOct;
 
+import com.google.gson.Gson;
 import com.lt.dom.OctResp.ComponentVounchResp;
 import com.lt.dom.OctResp.IntoOnecodeResp;
 import com.lt.dom.OctResp.PassResp;
+import com.lt.dom.OctResp.RedemptionResp;
 import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.ExistException;
+import com.lt.dom.error.Voucher_has_no_permistion_redeemException;
+import com.lt.dom.error.voucher_not_publishException;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.OnecodeScanPojo;
 import com.lt.dom.otcReq.PassActivePojo;
 import com.lt.dom.otcReq.PassCreatePojo;
+import com.lt.dom.otcReq.RedemByCryptoCodePojo;
+import com.lt.dom.otcenum.EnumCampaignToTourBookingStatus;
+import com.lt.dom.otcenum.EnumVoucherStatus;
 import com.lt.dom.otcenum.Enumfailures;
-import com.lt.dom.repository.ComponentRightRepository;
-import com.lt.dom.repository.ComponentVounchRepository;
-import com.lt.dom.repository.PassRepository;
-import com.lt.dom.repository.UserRepository;
+import com.lt.dom.repository.*;
+import com.lt.dom.requestvo.PublishTowhoVo;
+import com.lt.dom.serviceOtc.AuthenticationFacade;
 import com.lt.dom.serviceOtc.IntoOnecodeServiceImpl;
 import com.lt.dom.serviceOtc.PassServiceImpl;
+import com.lt.dom.serviceOtc.ValidateServiceImpl;
 import com.lt.dom.thiirdAli.idfaceIdentity.IdfaceIdentityOcrService;
 import com.lt.dom.thiirdAli.idfaceIdentity.IdfaceIdentityVo;
+import com.lt.dom.util.ZxingBarcodeGenerator;
+import com.lt.dom.vo.CodeWithLatLngVo;
+import com.lt.dom.vo.UserVo;
+import com.lt.dom.vo.WrittenOffMerchantVo;
+import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,7 +54,7 @@ public class IntoOnecodeController {
 
 
     @Autowired
-    private PassServiceImpl passService;
+    private AuthenticationFacade authenticationFacade;
 
     @Autowired
     private PassRepository passRepository;
@@ -50,6 +66,12 @@ public class IntoOnecodeController {
     private IntoOnecodeServiceImpl intoOnecodeService;
     @Autowired
     private ComponentVounchRepository componentVounchRepository;
+
+    @Autowired
+    private SupplierRepository supplierRepository;
+
+    @Autowired
+    private ValidateServiceImpl validateService;
 
 /*
 
@@ -75,7 +97,7 @@ public PagedModel getPassList( Pageable pageable, PagedResourcesAssembler<Entity
 
     return assembler.toModel(validatorOptional.map(e->{
         PassResp passResp = PassResp.from(e);
-        EntityModel entityModel = EntityModel.of(e);
+        EntityModel entityModel = EntityModel.of(passResp);
         return entityModel;
     }));
 }
@@ -92,12 +114,37 @@ public PagedModel getPassList( Pageable pageable, PagedResourcesAssembler<Entity
 
         IntoOnecode intoOnecode = intoOnecodeService.getAvailability(validatorOptional.get());
 
-        List<ComponentVounch> componentRightList = componentVounchRepository.findAllByUser(user.getId());
+        List<ComponentVounch> componentVounchList = componentVounchRepository.findAllByUser(user.getId());
         IntoOnecodeResp intoOnecodeResp = IntoOnecodeResp.from(user,intoOnecode);
 
 
-        intoOnecodeResp.setComponentVounch(componentRightList.stream().map(e->{
-            return ComponentVounchResp.from(e);
+
+
+
+
+        List<ComponentRight> componentRights= componentRightRepository.findAllById(componentVounchList.stream().map(e->e.getComponentRight()).collect(Collectors.toList()));
+
+        Map<Long,ComponentRight> componentRightMap = componentRights.stream().collect(Collectors.toMap(e->e.getId(), e->e));
+
+        List<Supplier> supplierList= supplierRepository.findAllById(componentVounchList.stream().map(e->e.getSupplier()).collect(Collectors.toList()));
+        Map<Long,Supplier> longSupplierMap = supplierList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
+
+
+
+
+
+        intoOnecodeResp.setComponentVounch(componentVounchList.stream().map(e->{
+            Supplier supplier = longSupplierMap.get(e.getSupplier());
+            ComponentRight componentRight = componentRightMap.get(e.getComponentRight());
+
+            ComponentVounchResp componentVounchResp = ComponentVounchResp.from(e,componentRight,supplier);
+            componentVounchResp.setCode_base64_src(ZxingBarcodeGenerator.base64_png_src(e.getCode()));
+
+            EntityModel entityModel = EntityModel.of(componentVounchResp);
+            entityModel.add(linkTo(methodOn(ComponentRightRestController.class).getComponentVoucher(e.getId())).withSelfRel());
+
+            return componentVounchResp;
+
         }).collect(Collectors.toList()));
         EntityModel entityModel = EntityModel.of(intoOnecodeResp);
 
@@ -160,6 +207,47 @@ public PagedModel getPassList( Pageable pageable, PagedResourcesAssembler<Entity
 
 
 */
+
+
+
+
+
+
+
+    //TODO 这里有点问题
+    @PostMapping(value = "/onecode/redeam", produces = "application/json")
+    public Object redeemVonchorByCryptoCode(@RequestBody OnecodeScanPojo pojo___) {
+
+
+
+        User user = intoOnecodeService.byCode(pojo___.getCode());
+
+
+
+        Authentication authentication = authenticationFacade.getAuthentication();
+
+        UserVo userOv = authenticationFacade.getUserVo(authentication);
+
+
+
+        Supplier supplier = userOv.getSupplier();
+
+
+
+        List<ComponentVounch> componentVounchList = componentVounchRepository.findAllByUser(user.getId());
+if(componentVounchList.size() ==0){
+    throw new BookNotFoundException(Enumfailures.not_found,"该 用户无可核销得 权益"+user.getPhone());
+
+}
+
+        return validateService.user扫文旅码(userOv,componentVounchList);
+
+
+    }
+
+
+
+
 
 
 }

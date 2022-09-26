@@ -109,15 +109,15 @@ private String code;
 
 
 
-    List<BookingProduct> products;
+    List<BookingProductFuck> products;
 
     List<BookingPayment> payments;
 
-    public List<BookingProduct> getProducts() {
+    public List<BookingProductFuck> getProducts() {
         return products;
     }
 
-    public void setProducts(List<BookingProduct> products) {
+    public void setProducts(List<BookingProductFuck> products) {
         this.products = products;
     }
 

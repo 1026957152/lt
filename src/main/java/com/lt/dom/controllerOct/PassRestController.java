@@ -1,6 +1,5 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.OctResp.GuideInchargeBookingResp;
 import com.lt.dom.OctResp.PassResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
@@ -18,12 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -108,7 +104,7 @@ if(validatorOptional.isEmpty()){
         Product product = productOptional.get();
 
 
-        List<Component> componentRightList = componentRepository.findAllByProductId(product.getId());
+        List<Component> componentRightList = componentRepository.findAllByProduct(product.getId());
 
         List<ComponentVounch> componentVounchList = componentRightService.createComponentVounch(null,componentRightList,user);
 

@@ -8,6 +8,10 @@ import java.util.ResourceBundle;
 
 public enum EnumValueListType {
     Vendor_groups("Vendor_groups"),
+    High_Quality_Product_recommendation("High_Quality_Product_recommendation"),
+    city_pass_right_recommendation("city_pass_right_recommendation"),
+    home_page_attraction_recommendation("home_page_attraction_recommendation"),
+
 
     ;
 

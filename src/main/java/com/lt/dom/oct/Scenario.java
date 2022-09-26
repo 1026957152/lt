@@ -12,7 +12,7 @@ public class Scenario {
     private long id;
     private String name;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
 
     public String getCode() {

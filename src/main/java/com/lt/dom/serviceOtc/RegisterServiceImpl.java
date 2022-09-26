@@ -41,7 +41,7 @@ public class RegisterServiceImpl {
 
 
         Supplier supplier = new Supplier();
-        supplier.setName(pojo.getSupplierName());
+        supplier.setName(pojo.getName());
         supplier.setCode(idGenService.supplierNo());
 
         supplier = supplierRepository.save(supplier);

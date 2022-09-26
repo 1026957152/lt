@@ -3,8 +3,10 @@ package com.lt.dom.serviceOtc;
 
 import com.lt.dom.controllerOct.BarcodesController;
 import com.lt.dom.controllerOct.ComponentRightRestController;
+import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumAssetType;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.BookingRuleRepository;
 import com.lt.dom.repository.IntoOnecodeRepository;
 import com.lt.dom.repository.UserRepository;
@@ -41,7 +43,7 @@ public class IntoOnecodeServiceImpl {
             intoOnecode = new IntoOnecode();
             intoOnecode.setType(EnumAssetType.qr);
             intoOnecode.setIdId(UUID.randomUUID().toString());
-
+            intoOnecode.setUser(user.getId());
             intoOnecode = intoOnecodeRepository.save(intoOnecode);
 
 
@@ -59,7 +61,13 @@ public class IntoOnecodeServiceImpl {
 
         Optional<IntoOnecode> intoOnecodeOptional = intoOnecodeRepository.findByIdId((String)value );
 
-        Optional<User> userOptional = userRepository.findById(intoOnecodeOptional.get().getUser());
+        if(intoOnecodeOptional.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到文旅吗"+ value);
+        }
+
+        IntoOnecode intoOnecode = intoOnecodeOptional.get();
+
+        Optional<User> userOptional = userRepository.findById(intoOnecode.getUser());
         return userOptional.get();
 
     }

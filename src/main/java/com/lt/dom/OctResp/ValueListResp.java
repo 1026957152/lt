@@ -2,6 +2,7 @@ package com.lt.dom.OctResp;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.oct.Product;
 import com.lt.dom.oct.ValueList;
 import com.lt.dom.oct.ValueListItem;
 import com.lt.dom.otcenum.EnumValueListItemType;
@@ -15,6 +16,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class ValueListResp {
@@ -32,6 +34,8 @@ private String code;
     private int number;
     private List<ValueListItem> items;
     private EnumValueListType type;
+    private String type_text;
+    private LocalDateTime update_at;
 
     public static ValueListResp from(ValueList user, List<ValueListItem> valueListItems) {
 
@@ -45,10 +49,13 @@ private String code;
         valueListResp.setCreated_by(user.getCreated_by());
         valueListResp.setNumber(valueListItems.size());
         valueListResp.setType(user.getType());
-
+        valueListResp.setType_text(user.getType().toString());
+        valueListResp.setUpdate_at(user.getUpdate_at());
         valueListResp.setItems(valueListItems);
         return valueListResp;
     }
+
+
 
 
     public String getAlias() {
@@ -129,5 +136,21 @@ private String code;
 
     public EnumValueListType getType() {
         return type;
+    }
+
+    public void setType_text(String type_text) {
+        this.type_text = type_text;
+    }
+
+    public String getType_text() {
+        return type_text;
+    }
+
+    public void setUpdate_at(LocalDateTime update_at) {
+        this.update_at = update_at;
+    }
+
+    public LocalDateTime getUpdate_at() {
+        return update_at;
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.interceptor.RetryInterceptorBuilder;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 
-@Configuration
+//@Configuration
 public class SenderConfig {
 
 /*

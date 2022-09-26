@@ -16,7 +16,7 @@ public class Attraction {
     private long id;
     private long supplier;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private EnumProductStatus status;
 

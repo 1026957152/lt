@@ -1,4 +1,4 @@
-package com.lt.dom.controllerOct;
+package com.lt.dom.controllerOct.pay;
 
 import com.alipay.api.AlipayClient;
 import com.alipay.api.domain.*;

@@ -1,10 +1,15 @@
 package com.lt.dom.OctResp;
 
+import com.lt.dom.OctResp.home.FeatureResp;
+import com.lt.dom.OctResp.home.HomeResp;
 import com.lt.dom.oct.Pass;
 import com.lt.dom.otcenum.EnumCardStatus;
 import com.lt.dom.otcenum.EnumCardType;
 import com.lt.dom.otcenum.EnumPassDorationUnit;
 import com.lt.dom.otcenum.EnumPassShippingStatus;
+import org.javatuples.Pair;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -15,32 +20,11 @@ public class PassResp {
 
 
 
+
     private EnumCardType type ;//digital tickets or PDF tickets
 
     private String code ;//digital tickets or PDF tickets
-    private String status_text;
-    private EnumCardStatus status;
-    private EnumPassShippingStatus shipping_statis;
-    private String type_text;
-
-    public static PassResp from(Pass e) {
-        PassResp passResp = new PassResp();
-        passResp.setCode(e.getCode());
-        passResp.setDuration(e.getDuration());
-        passResp.setUser(e.getUser());
-        passResp.setDurationUnit(e.getDurationUnit());
-        passResp.setMaxActivationDate(e.getMaxActivationDate());
-
-        passResp.setExpiringDate(e.getExpiringDate());
-        passResp.setStatus(e.getStatus());
-        passResp.setStatus_text(e.getStatus().toString());
-        if(e.getType().equals(EnumCardType.physical)){
-            passResp.setShipping_statis(e.getShipping_statis());
-        }
-        passResp.setType(e.getType());
-        passResp.setType_text(e.getType().toString());
-        return passResp;
-    }
+    private Long productId;
 
     public String getCode() {
         return code;
@@ -60,6 +44,7 @@ public class PassResp {
     }
 
 
+    List<Long> rights;
 
     public EnumCardType getType() {
         return type;
@@ -69,93 +54,31 @@ public class PassResp {
         this.type = type;
     }
 
-
-
-
-    private Integer duration ;//digital tickets or PDF tickets
-    private EnumPassDorationUnit durationUnit ;//digital tickets or PDF tickets
-    private LocalDateTime maxActivationDate ;//digital tickets or PDF tickets
-
-    private LocalDateTime expiringDate ;//digital tickets or PDF tickets
-
-    private LocalDateTime emissionDate ;//digital tickets or PDF tickets
-
-
-    public Integer getDuration() {
-        return duration;
+    public List<Long> getRights() {
+        return rights;
     }
 
-    public void setDuration(Integer duration) {
-        this.duration = duration;
+    public void setRights(List<Long> rights) {
+        this.rights = rights;
     }
 
-    public EnumPassDorationUnit getDurationUnit() {
-        return durationUnit;
+    public Long getProductId() {
+        return productId;
     }
 
-    public void setDurationUnit(EnumPassDorationUnit durationUnit) {
-        this.durationUnit = durationUnit;
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
 
-    public LocalDateTime getMaxActivationDate() {
-        return maxActivationDate;
+
+    public static PassResp from(Pass e) {
+
+        PassResp passResp = new PassResp();
+        passResp.setType(e.getType());
+        passResp.setCode(e.getCode());
+
+        return passResp;
     }
 
-    public void setMaxActivationDate(LocalDateTime maxActivationDate) {
-        this.maxActivationDate = maxActivationDate;
-    }
 
-    private Integer balance ;//digital tickets or PDF tickets
-    private Integer remaining ;//digital tickets or PDF tickets
-
-    private boolean is_active ;//digital tickets or PDF tickets
-
-
-    private LocalDateTime deliver_date ;//digital tickets or PDF tickets
-
-
-
-    @Transient
-    List activities;
-
-
-    public void setStatus_text(String status_text) {
-        this.status_text = status_text;
-    }
-
-    public String getStatus_text() {
-        return status_text;
-    }
-
-    public void setStatus(EnumCardStatus status) {
-        this.status = status;
-    }
-
-    public EnumCardStatus getStatus() {
-        return status;
-    }
-
-    public void setExpiringDate(LocalDateTime expiringDate) {
-        this.expiringDate = expiringDate;
-    }
-
-    public LocalDateTime getExpiringDate() {
-        return expiringDate;
-    }
-
-    public void setShipping_statis(EnumPassShippingStatus shipping_statis) {
-        this.shipping_statis = shipping_statis;
-    }
-
-    public EnumPassShippingStatus getShipping_statis() {
-        return shipping_statis;
-    }
-
-    public void setType_text(String type_text) {
-        this.type_text = type_text;
-    }
-
-    public String getType_text() {
-        return type_text;
-    }
 }

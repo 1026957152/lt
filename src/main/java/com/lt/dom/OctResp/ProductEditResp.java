@@ -104,7 +104,7 @@ public class ProductEditResp {
 
     private String supplier;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private String supplierCode;
     private String name;

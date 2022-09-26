@@ -4,17 +4,18 @@ package com.lt.dom.controllerOct;
 
 import com.lt.dom.JwtUtils;
 import com.lt.dom.OctResp.*;
+import com.lt.dom.OctResp.home.HomePassResp;
+import com.lt.dom.OctResp.home.HomeResp;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.IndexPhotosReq;
-import com.lt.dom.otcenum.EnumDocumentType;
-import com.lt.dom.otcenum.EnumKnownfor;
-import com.lt.dom.otcenum.EnumPhotos;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
-import com.lt.dom.serviceOtc.FileStorageService;
+import com.lt.dom.serviceOtc.*;
+import com.lt.dom.vo.GalleryImageVo;
+import com.lt.dom.vo.ImageVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -45,17 +46,29 @@ public class IndexController {
     @Autowired
     private CategoryRepository categoryRepository;
     @Autowired
-    private CampaignRepository campaignRepository;
+    private PolicyNoteShowServiceImpl policyNoteShowService;
     @Autowired
     private ProductRepository productRepository;
     @Autowired
     private FileStorageService fileStorageService;
+    @Autowired
+    private ComponentRepository componentRepository;
 
     @Autowired
     private TempDocumentRepository tempDocumentRepository;
 
     @Autowired
     private SupplierRepository supplierRepository;
+    @Autowired
+    private FeatureServiceImpl featureService;
+    @Autowired
+    private ValueListServiceImpl valueListService;
+    @Autowired
+    private PricingTypeRepository pricingTypeRepository;
+
+
+    @Autowired
+    private PassServiceImpl passService;
 
 
     @Autowired
@@ -75,32 +88,25 @@ public class IndexController {
     public EntityModel<HomeResp> qqLogin(HttpServletRequest request)  {
 
 
+/*
         List<Scenario> scenarios = scenarioRepository.findAll();
 
 
         List<Campaign> campaignList = campaignRepository.findAll();
+*/
 
 
-        List<Product> productList = productRepository.findAll();
+       // List<Product> productList = productRepository.findAll();
         HomeResp homeResp = new HomeResp();
         EntityModel<HomeResp> entityModel = EntityModel.of(homeResp);
 
 
 
-        List<EntityModel<ProductResp>> productRespList = productList.stream().map(e->{
-            ProductResp productResp = ProductResp.from(e);
-            EntityModel<ProductResp> productRespEntityModel = EntityModel.of(productResp);
-            productRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(e.getSupplierId())).withRel("getSupplier"));
 
 
-            productRespEntityModel.add(linkTo(methodOn(ProductRestController.class).getProduct(e.getId())).withSelfRel());
-
-            return productRespEntityModel;
-        }).collect(Collectors.toList());
-
-        homeResp.setProducts(productRespList);
 
 
+        featureService.fill(homeResp);
 
 
 
@@ -110,8 +116,13 @@ public class IndexController {
 
 
 
-        homeResp.setAttractions(attractionList.stream().map(e->{
+        homeResp.setRecommend_attractions(attractionList.stream().map(e->{
 
+
+
+            Pair<Boolean,String> stringPair =    policyNoteShowService.getQr(EnumNoteShowWhereAndWhen.home_page);
+
+           HomeResp.noteShow(homeResp,stringPair);
 
             AttractionResp attractionResp = AttractionResp.from(e,fileStorageService.loadDocument(Arrays.asList(EnumPhotos.thumb),EnumDocumentType.attraction_thumb,e.getCode()));
          //   attractionResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.attraction_photos,e.getCode()));
@@ -139,6 +150,7 @@ public class IndexController {
 
 
 
+/*
 
         Map<Long,List<Campaign>> longListMap =  campaignList.stream().collect(Collectors.groupingBy(e->e.getScenario()));
 
@@ -156,6 +168,43 @@ public class IndexController {
 
         homeResp.setCampaignCategories(categoryCollectionModel);
 
+*/
+
+
+
+        EnumValueListDefault.High_Quality_Product_recommendation.name();
+
+        List<ValueListItem> valueListItems = valueListService.getByName(EnumValueListDefault.High_Quality_Product_recommendation);
+
+
+        List<Product>  productList  = productRepository.findAllById(valueListItems.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList()));
+
+
+        Map<Long, PricingType>  pricingType = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()))
+                .stream().collect(Collectors.toMap(e->e.getId(),e->e));
+
+
+
+        List<EntityModel<ProductResp>> productRespList = productList.stream().map(e->{
+
+            PricingType pricingType_default = pricingType.get(e.getDefault_price());
+            ProductResp productResp = ProductResp.from(e,pricingType_default);
+            productResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.product_photos,e.getCode()));
+            productResp.setThumbnail_image(fileStorageService.loadDocument(EnumDocumentType.product_thumb,e.getCode()));
+
+
+
+            EntityModel<ProductResp> productRespEntityModel = EntityModel.of(productResp);
+            productRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(e.getSupplierId())).withRel("getSupplier"));
+            productRespEntityModel.add(linkTo(methodOn(ProductRestController.class).getProduct(e.getId())).withSelfRel());
+            productRespEntityModel.add(linkTo(methodOn(BookingRestController.class).createBooking(e.getId(),null)).withRel("Page_booking"));
+
+            return productRespEntityModel;
+        }).collect(Collectors.toList());
+
+        homeResp.setRecommend_products(productRespList);
+
+
 
 
 
@@ -164,6 +213,7 @@ public class IndexController {
         entityModel.add(linkTo(methodOn(CampaignRestController.class).listCampaign(1)).withRel("get"));
         entityModel.add(linkTo(methodOn(CampaignRestController.class).listCampaign(1)).withRel("realnameAuth"));
 
+        entityModel.add(linkTo(methodOn(IndexController.class).cityPass(null)).withRel("Page_cityPass"));
 
 
             return entityModel;
@@ -210,6 +260,162 @@ public class IndexController {
 
         return ResponseEntity.ok(documents);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @GetMapping(value = "/index/city_pass" , produces = "application/json")
+    public EntityModel<HomePassResp> cityPass(HttpServletRequest request)  {
+
+
+        HomePassResp homeResp = new HomePassResp();
+        EntityModel<HomePassResp> entityModel = EntityModel.of(homeResp);
+
+
+
+
+
+        EnumValueListDefault.High_Quality_Product_recommendation.name();
+
+
+        List<ValueListItem> valueListItems = valueListService.getByName(EnumValueListDefault.city_pass_right_recommendation);
+
+
+
+        List<ComponentRight>  componentRightList  = passService.fromValueList(valueListItems.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList()));
+
+
+
+        List<EntityModel<ComponentRightResp>> entityModelList = componentRightList.stream().map(e->{
+
+            ComponentRightResp pricingType_default = ComponentRightResp.from(e);
+
+            EntityModel<ComponentRightResp> productRespEntityModel = EntityModel.of(pricingType_default);
+      //      productRespEntityModel.add(linkTo(methodOn(ProductRestController.class).getProduct(e.getId())).withSelfRel());
+    //        productRespEntityModel.add(linkTo(methodOn(BookingRestController.class).createBooking(e.getId(),null)).withRel("Page_booking"));
+
+            return productRespEntityModel;
+        }).collect(Collectors.toList());
+
+        homeResp.setComponent_rights(entityModelList);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        List<Product> productList = productRepository.findAllByType(EnumProductType.Pass);
+        Map<Long, List<PricingType>>  pricingType = pricingTypeRepository.findByProductIdIn(productList.stream().map(e->e.getId()).collect(Collectors.toList()))
+                .stream().collect(Collectors.groupingBy(e->e.getProductId()));
+
+
+
+        List<EntityModel<ProductResp>> productRespList = productList.stream().map(e->{
+
+            List<PricingType> pricingType_default = pricingType.get(e.getId());
+
+
+            ProductResp productResp = ProductResp.Passfrom(e,pricingType_default);
+
+
+            productResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.product_photos,e.getCode()));
+            productResp.setThumbnail_image(fileStorageService.loadDocument(EnumDocumentType.product_thumb,e.getCode()));
+
+
+
+            List<Component> componentList = componentRepository.findAllByProduct(e.getId());;
+
+            productResp.setComponent_rights(componentList.stream().map(right->right.getComponentRightId()).collect(Collectors.toList()));
+
+            EntityModel<ProductResp> productRespEntityModel = EntityModel.of(productResp);
+           // productRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(e.getSupplierId())).withRel("getSupplier"));
+            productRespEntityModel.add(linkTo(methodOn(ProductRestController.class).getProduct(e.getId())).withSelfRel());
+            productRespEntityModel.add(linkTo(methodOn(BookingRestController.class).Page_createBooking(e.getId())).withRel("Page_booking"));
+
+            return productRespEntityModel;
+        }).collect(Collectors.toList());
+
+        homeResp.setRecommend_products(productRespList);
+
+
+
+
+        GalleryImageVo imageVo = new GalleryImageVo();
+        imageVo.setDesc("在镇北台的日子，感受边塞的壮美");
+        imageVo.setImage(fileStorageService.loadDocument(EnumDocumentType.product_thumb,"e.getCode()"));
+        imageVo.setTitle("红石峡结伴一游");
+
+
+        GalleryImageVo imageVo_h = new GalleryImageVo();
+        imageVo_h.setDesc("塞外奇侠");
+        imageVo_h.setImage(fileStorageService.loadDocument(EnumDocumentType.product_thumb,"e.getCode()"));
+        imageVo_h.setTitle("结伴一游");
+
+
+        GalleryImageVo imageVo_2 = new GalleryImageVo();
+        imageVo_2.setDesc("塞外奇侠");
+        imageVo_2.setImage(fileStorageService.loadDocument(EnumDocumentType.product_thumb,"e.getCode()"));
+        imageVo_2.setTitle("结伴一游");
+
+
+        GalleryImageVo imageVo_3 = new GalleryImageVo();
+        imageVo_3.setDesc("塞外奇侠");
+        imageVo_3.setImage(fileStorageService.loadDocument(EnumDocumentType.product_thumb,"e.getCode()"));
+        imageVo_3.setTitle("结伴一游");
+
+
+
+
+        homeResp.setGallery(Arrays.asList(imageVo,imageVo_h,imageVo_3,imageVo_2));
+
+
+
+        homeResp.setCarousel(fileStorageService.loadDocumentsWithCode(EnumDocumentType.index_carousel,EnumDocumentType.index_carousel.name()));
+
+/*
+        entityModel.add(linkTo(methodOn(CampaignRestController.class).listCampaign(1)).withRel("get"));
+        entityModel.add(linkTo(methodOn(CampaignRestController.class).listCampaign(1)).withRel("realnameAuth"));
+*/
+
+
+
+        return entityModel;
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

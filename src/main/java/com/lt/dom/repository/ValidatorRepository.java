@@ -11,7 +11,6 @@ import java.util.List;
 public interface ValidatorRepository extends JpaRepository<Validator_
 			, Long> {
 
-    List<Validator_> findAllByUserId(String username);
 
     List<Validator_> findAllByTypeAndDevice(EnumValidatorType 特定机器, long id);
 
@@ -22,4 +21,6 @@ public interface ValidatorRepository extends JpaRepository<Validator_
     void deleteAllByComponentRightId(long id);
 
     List<Validator_> findAllByComponentRightIdIn(List<Long> collect);
+
+    List<Validator_> findAllByTypeAndUser(EnumValidatorType 特定的人员, Long user_id);
 }

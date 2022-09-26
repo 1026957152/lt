@@ -25,4 +25,6 @@ public interface ProductRepository extends JpaRepository<Product
     List<Product> findAllByCodeIn(List<String> collect);
 
     List<Product> findAllByIdIn(List<Long> collect);
+
+    List<Product> findAllByType(EnumProductType pass);
 }

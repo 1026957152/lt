@@ -29,7 +29,7 @@ public class Openid {
 
     @NotNull
     
-@Column(unique=true)
+//##@Column(unique=true)
 private String code;//	string	The ID of the user
     @NotNull
     private String openid;

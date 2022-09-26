@@ -1,5 +1,6 @@
 package com.lt.dom.controllerOct;
 
+import com.google.gson.Gson;
 import com.lt.dom.OctResp.ReferralResp;
 
 
@@ -24,6 +25,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 import java.sql.Ref;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -73,9 +75,16 @@ public class ReferralRestController {
 
 
         if(referral.getType().equals(EnumReferralType.fill_up_passager_info)){
-            EntityModel entityModel = EntityModel.of(referral);
 
 
+
+
+            Map meta_data = new Gson().fromJson(referral.getMeta_data(), Map.class);
+
+            ReferralResp referralResp = ReferralResp.from(referral);
+
+            referralResp.setMessage((String)meta_data.get("message"));
+            EntityModel entityModel = EntityModel.of(referralResp);
             entityModel.add(linkTo(methodOn(PassengerRestController.class).createPassenger(referral.getUser(),null)).withSelfRel());
 
             return entityModel;

@@ -2,9 +2,12 @@ package com.lt.dom.controllerOct;
 
 import com.lt.dom.OctResp.EnumResp;
 import com.lt.dom.OctResp.ExportResp;
+import com.lt.dom.controllerOct.Axh.XhController;
+import com.lt.dom.oct.Axh.PullFromYxdRequest;
 import com.lt.dom.oct.Export;
 import com.lt.dom.otcReq.ExportReq;
 import com.lt.dom.otcenum.EnumExportVoucher;
+import com.lt.dom.repository.Axh.PullFromYxdRequestRepository;
 import com.lt.dom.repository.ExportRepository;
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
@@ -35,7 +38,7 @@ public class ExportRestController {
 
 
     @Autowired
-    private ProductRepository productRepository;
+    private PullFromYxdRequestRepository pullFromYxdRequestRepository;
 
     @Autowired
     private ExportRepository exportRepository;
@@ -121,8 +124,8 @@ public class ExportRestController {
 
 
 
-    @Operation(summary = "2、下单购买")
-    @PostMapping(value = "/exports_j/{name}", produces = "application/json")
+/*    @Operation(summary = "2、下单购买")
+   // @PostMapping(value = "/exports_j/{name}", produces = "application/json")
     public ResponseEntity<Void> exports_j(@PathVariable(value = "name") String name) {
 
         try {
@@ -132,9 +135,26 @@ public class ExportRestController {
         }
         return ResponseEntity.ok().build();
 
+    }*/
+
+    @GetMapping(value = "/exports_j/{name}", produces = "application/json")
+    public PagedModel exports_j( @PathVariable(value = "name") String name, Pageable pageable, PagedResourcesAssembler<EntityModel<PullFromYxdRequest>> assembler) {
+        // queueSender.send("test message");
+
+
+
+
+        Page<PullFromYxdRequest> userList = pullFromYxdRequestRepository.findAll(pageable);
+
+        return assembler.toModel(userList.map(e->{
+            EntityModel entityModel = EntityModel.of(e);
+
+            entityModel.add(linkTo(methodOn(XhController.class).getPullReque(e.getId())).withSelfRel());
+
+            return entityModel;
+
+        }));
     }
-
-
 
 
 }

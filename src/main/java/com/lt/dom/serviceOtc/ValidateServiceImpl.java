@@ -7,6 +7,8 @@ import com.lt.dom.otcenum.EnumProductType;
 import com.lt.dom.otcenum.EnumValidatorType;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
+import com.lt.dom.vo.DeviceScanValidatorVo;
+import com.lt.dom.vo.UserVo;
 import org.javatuples.Pair;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -34,18 +36,21 @@ public class ValidateServiceImpl {
 
 
     @Autowired
-    private DeviceRepository deviceRepository;
+    private ComponentVounchRepository componentVounchRepository;
 
     @Autowired
     private ValidatorRepository validatorRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private ComponentRightServiceImpl componentRightService;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
-
     @Autowired
+    private UserRepository userRepository;
+
+
+    //@Autowired
     private Queue queue;
 
     public void send(String order) {
@@ -142,4 +147,74 @@ public class ValidateServiceImpl {
         return componentVounchValidatorRecordRepository.saveAll(componentVounchValidatorRecordList);
     }
 
+
+
+    // 这张门票 只有一项权益， 只能玩一次。
+    // TODO   _门票，消费券，权益，一卡通。
+    public DeviceScanValidatorVo user扫文旅码(UserVo user,
+                                          List<ComponentVounch> componentRights来自user) {
+
+
+        List<Validator_> validator_s = validatorRepository.findAllByTypeAndUser(EnumValidatorType.特定的人员,user.getUser_id());
+
+        if(validator_s.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"职工得 核销分配 对象 为空，请添加"+user.getPhone());
+        }
+
+        return 扫设备(user,validator_s,componentRights来自user);
+
+    }
+
+
+        // 这张门票 只有一项权益， 只能玩一次。
+    // TODO   _门票，消费券，权益，一卡通。
+    public DeviceScanValidatorVo 扫设备(UserVo uservO, List<Validator_> validator_s ,
+                                     List<ComponentVounch> componentRights来自user) {
+
+
+        User user =userRepository.findById(uservO.getUser_id()).get();
+        List<Long> triplet来自设备 =
+                validator_s.stream().map(e->e.getComponentRightId()).collect(Collectors.toList());
+
+        List<ComponentVounch> componentVounchList = componentRights来自user.stream()  // TODO 找到了这里的 权限
+                .filter(e->{
+
+                 System.out.println("==========职工可用核销的 所有权益 "+triplet来自设备.toString());
+                    System.out.println("==========用户有权益id"+e.getComponentRight());
+
+
+                    return triplet来自设备.contains(e.getComponentRight());
+                }).collect(Collectors.toList());
+
+
+        if(componentVounchList.size() > 0){
+
+            //  ComponentVounch pass = componentVounchList.get();
+
+            componentRightService.redeem(componentVounchList.stream().map(e->{
+                return Pair.with(user,e);
+            }).collect(Collectors.toList()));
+
+/*          if(pass.getType() == 一卡通){
+
+            }
+
+            if(pass.getType() == 一张门票){
+
+            }*/
+            DeviceScanValidatorVo deviceScanValidatorVo = new DeviceScanValidatorVo();
+            deviceScanValidatorVo.setPass(true);
+/*          deviceScanValidatorVo.setRequire_confirm(false);
+            deviceScanValidatorVo.setType("成人票");
+            deviceScanValidatorVo.setSubType("儿童票");*/
+            return deviceScanValidatorVo;
+            //todO 找到了 一卡通
+        }else{
+            throw new BookNotFoundException(Enumfailures.not_found,"该职工 与该 用户 无核销交际"+user.getPhone());
+
+        }
+
+
+
+    }
 }

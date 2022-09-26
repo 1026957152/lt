@@ -6,7 +6,6 @@ import com.lt.dom.otcenum.EnumProductComponentSource;
 
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 public class ComponentResp{
         private String name;
@@ -22,7 +21,7 @@ public class ComponentResp{
         componentResp.setDuration(x.getDuration());
         componentResp.setDuration_text(x.getDuration().toString());
         componentResp.setName(x.getName());
-        componentResp.setProduct(x.getProductId());
+        componentResp.setProduct(x.getProduct());
         componentResp.setRecipient(x.getRecipient());
         componentResp.setNote(x.getNote());
         componentResp.setPriceingType(x.getPriceingType());

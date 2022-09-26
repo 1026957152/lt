@@ -18,7 +18,7 @@ public class BalanceTransactionResp {  //余额结算
     private String sourceId;
     private long source;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private String flowType_text;
     private String status_text;

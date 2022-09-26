@@ -2,6 +2,7 @@ package com.lt.dom.serviceOtc;
 
 
 import com.lt.dom.oct.*;
+import com.lt.dom.otcenum.EnumFinancialAccountStatus;
 import com.lt.dom.otcenum.EnumUserType;
 import com.lt.dom.repository.BalanceRepository;
 import com.lt.dom.repository.TransactionEntryRepository;
@@ -43,6 +44,23 @@ public class BalanceServiceImpl {
         return balanceOptional.get();
 
     }
+
+    public Balance balance(long user, EnumUserType payment) {
+        Optional<Balance> balanceOptional = balanceRepository.findByUserAndType(user,payment);
+        if(balanceOptional.isEmpty()){
+            Balance balance = new Balance();
+            balance.setUser(user);
+            balance.setType(payment);
+            balance.setAvailable_amount(0);
+            balance.setStatus(EnumFinancialAccountStatus.open);
+            return balanceRepository.save(balance);
+        }
+
+        return balanceOptional.get();
+
+    }
+
+
 
     public Balance updateBalance(Balance balance, int net) {
 

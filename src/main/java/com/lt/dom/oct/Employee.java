@@ -47,7 +47,7 @@ public class Employee {
     private String email;
     private String note;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
 
 

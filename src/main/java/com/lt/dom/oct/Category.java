@@ -13,7 +13,7 @@ public class Category {
     private long id;
     private String category;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private String name;
 

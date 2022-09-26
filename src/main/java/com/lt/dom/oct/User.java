@@ -41,7 +41,7 @@ public class User extends Base{
 
 
     
-@Column(unique=true)
+//##@Column(unique=true)
 private String code;//	string	The ID of the user
     private String password;//	string	The ID of the user
     boolean isAccountNonExpired;

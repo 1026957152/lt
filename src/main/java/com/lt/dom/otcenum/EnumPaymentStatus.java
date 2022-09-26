@@ -30,7 +30,24 @@ public enum EnumPaymentStatus {
     TPA_CANCELED,
     OFFLINE,
     DISPUTE,
-    UNDEFINED;
+    UNDEFINED,
+
+
+
+   // UNDEFINED,
+    COMPLETE,
+    PENDING_CASHIER,
+    REJECTED,
+    READY,
+    CANCELED,
+    REFUNDED,
+ //   PENDING_MERCHANT,
+    WIX_PAY_FAILURE,
+    PENDING_MARK_AS_PAID,
+    //        PENDING_BUYER;
+
+
+;
 
     EnumPaymentStatus(String barcode) {
 

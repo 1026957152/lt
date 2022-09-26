@@ -5,16 +5,14 @@ import com.lt.dom.otcenum.EnumProductType;
 import javax.persistence.*;
 
 @Entity
-public class BookingProduct {
+public class BookingProductFuck {
     @Version
     private Integer version;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
-    // @GeneratedValue//(strategy = GenerationType.AUTO)
     @Id
     private long id;
-    @Column(unique=true)
+    //##@Column(unique=true)
     private String code;
 
 
@@ -31,7 +29,10 @@ public class BookingProduct {
     private long performanceNumber;//	The showtimes performance number (tickets only).
     private long auditorium;//	The auditorium the showtime is in (tickets only).
 
+    @Column(name="row_")
     private int row;//	The row of the currently selected seat (reserved-seating tickets only).
+    @Column(name="column_")
+
     private int column;//	The column of the currently selected seat (reserved-seating tickets only).
     private String seatName;//	The displayable seat name of the currently selected seat (reserved-seating tickets only).
 
@@ -49,6 +50,7 @@ public class BookingProduct {
     private String paymentMethods_json;
     private boolean paymentSplit;
     private String paymentSplitCode;
+    private Long booking;
 
     public String getProduct_id() {
         return product_id;
@@ -138,5 +140,37 @@ public class BookingProduct {
 
     public long getProduct() {
         return product;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setBooking(Long booking) {
+        this.booking = booking;
+    }
+
+    public Long getBooking() {
+        return booking;
     }
 }

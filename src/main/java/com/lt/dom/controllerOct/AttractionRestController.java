@@ -143,6 +143,13 @@ public class AttractionRestController {
         attractionResp.setLocation(locationResp);
 
 
+
+        String link = linkTo(methodOn(AttractionRestController.class).getAttraction(attraction.getId())).withRel("create").getHref();
+
+        String url_with_link = String.format(EnumReferralType.fill_up_passager_info.getUrl(),link);
+
+
+
         return ResponseEntity.ok(entityModel);
 
 

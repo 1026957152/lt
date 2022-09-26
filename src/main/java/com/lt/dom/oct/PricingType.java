@@ -1,10 +1,12 @@
 package com.lt.dom.oct;
 
 
+import com.lt.dom.otcenum.EnumPriceRecurring;
 import com.lt.dom.otcenum.EnumProductPricingType;
 import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class PricingType {
@@ -18,7 +20,17 @@ public class PricingType {
 
     private long productId;
 
+    private Boolean active;
+
+
+    @NotNull
+    private String nick_name; // per or total
+
+
     private EnumProductPricingType type;
+
+
+    @Column(name = "by_")
     private EnumProductPricingTypeByPerson by;
     private int min;
     private int max;
@@ -27,6 +39,17 @@ public class PricingType {
     private int original; //The original price for this product which will be the same or higher than the sale amount. Use this to show a discount has been applied e.g. $10 $8.50
     private int retail; //The sale price you should charge your customers.
     private int net;  //The wholesale rate the supplier will charge you for this sale.
+
+    public String getNick_name() {
+        return nick_name;
+    }
+
+    public void setNick_name(String nick_name) {
+        this.nick_name = nick_name;
+    }
+
+    private EnumPriceRecurring recurring = EnumPriceRecurring.one_time;
+
 
     public Integer getVersion() {
         return version;
@@ -38,6 +61,14 @@ public class PricingType {
 
     public int getOriginal() {
         return original;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 
     public void setOriginal(int original) {

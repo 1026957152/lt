@@ -1,16 +1,14 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.OctResp.EnumLongIdResp;
-import com.lt.dom.OctResp.EnumResp;
+import com.lt.dom.OctResp.*;
 import com.lt.dom.OctResp.ValueListResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.ValueListEditReq;
 import com.lt.dom.otcReq.ValueListItemReq;
 import com.lt.dom.otcReq.ValueListReq;
 import com.lt.dom.otcenum.*;
-import com.lt.dom.repository.SupplierRepository;
-import com.lt.dom.repository.ValueListItemRepository;
-import com.lt.dom.repository.ValueListRepository;
+import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
 import com.lt.dom.serviceOtc.ValueListServiceImpl;
 import com.lt.dom.state.ApplicationReviewEvents;
@@ -24,6 +22,8 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.server.core.EmbeddedWrapper;
+import org.springframework.hateoas.server.core.EmbeddedWrappers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
@@ -61,6 +61,10 @@ public class ValueListRestController {
 
     @Autowired
     private SupplierRepository supplierRepository;
+    @Autowired
+    private ComponentRightRepository componentRightRepository;
+    @Autowired
+    private ProductRepository productRepository;
 
 
     @Autowired
@@ -98,6 +102,31 @@ public class ValueListRestController {
         stateMachine.start();
         return stateMachine;
     }*/
+
+/*
+
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/value_lists",produces = "application/json")
+    public PagedModel<ValueListResp> getValueListList(@PathVariable long VALUE_LIST_ID) {
+
+        Optional<ValueList> optionalValueList = valueListRepository.findAll();
+        if(optionalValueList.isEmpty()){
+            throw new BookNotFoundException(VALUE_LIST_ID,"找不到 Value list");
+        }
+        ValueList valueList = optionalValueList.get();
+        List<ValueListItem> valueListItems = valueListItemRepository.findAllByValueList(valueList.getId());
+
+        ValueListResp valueListResp = ValueListResp.from(valueList,valueListItems);
+
+        EntityModel<ValueListResp> entityModel = EntityModel.of(valueListResp);
+
+
+
+
+        return entityModel;
+    }
+
+*/
+
 
 
 
@@ -206,6 +235,122 @@ public class ValueListRestController {
 
 
 
+
+
+
+    @GetMapping(value = "/value_lists/getValueListByType/{type}",produces = "application/json")
+    public CollectionModel Page_getValueListByType( @PathVariable EnumValueListType type) {
+
+
+
+
+        List<ValueList> valueList = valueListRepository.findAllByType(type);
+
+        if(valueList.isEmpty()){
+
+            EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+            EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(ValueList.class);
+            //Resources<Object> resources = new Resources<>(Arrays.asList(wrapper));
+
+            CollectionModel entityModel  = CollectionModel.of(Arrays.asList(wrapper));
+            entityModel.add(linkTo(methodOn(ValueListRestController.class).Page_createValueList_getItems(type)).withSelfRel());
+
+            return entityModel;
+/*
+
+            if (!page.isEmpty()) {
+                return assembler.toModel(page);
+            } else {
+                // toEmptyModel renders the _embedded field (with an empty array inside)
+                return (PagedModel<EntityModel<T>>) assembler.toEmptyModel(page, TenantSubscriptionResponseDto.class);
+            }
+            EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+            EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(ValueList.class);
+            wrapper.add(linkTo(methodOn(ValueListRestController.class).Page_createValueList_getItems(type)).withSelfRel());
+*/
+
+        }else{
+            CollectionModel entityModel  = CollectionModel.of(ValueList.List(valueList));
+
+            entityModel.add(linkTo(methodOn(ValueListRestController.class).Page_createValueList_getItems(type)).withSelfRel());
+
+            return entityModel;
+        }
+
+
+
+
+
+
+
+    }
+
+
+    @GetMapping(value = "/value_lists/page_createValueList/{type}",produces = "application/json")
+    public CollectionModel Page_createValueList_getItems( @PathVariable EnumValueListType type) {
+
+
+
+
+
+
+        CollectionModel entityModel = null;
+
+        if(type.equals(EnumValueListType.city_pass_right_recommendation)){
+
+
+            List<ComponentRight> componentRightMap =componentRightRepository.findAll();
+
+            entityModel = CollectionModel.of( ComponentRight.List(componentRightMap));
+        }
+
+        if(type.equals(EnumValueListType.Vendor_groups)){
+            List<ValueList> valueList = valueListRepository.findAllByType(EnumValueListType.Vendor_groups);
+
+
+            Set<Long> valueListItemList = valueListItemRepository
+                    .findAllByValueListIn(valueList.stream().map(e->e.getId()).collect(Collectors.toList()))
+                    .stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toSet());
+
+
+            List<Supplier> suppliers = supplierRepository.findAll();
+            List<EnumLongIdResp> sup_enumResps = suppliers.stream().map(supplier->{
+                EnumLongIdResp enumResp_sup = new EnumLongIdResp();
+                enumResp_sup.setId(supplier.getId());
+                enumResp_sup.setText(supplier.getName()+"_"+supplier.getCode());
+                enumResp_sup.setSelected(!valueListItemList.contains(enumResp_sup.getId()));
+                return enumResp_sup;
+            }).collect(Collectors.toList());
+
+            entityModel = CollectionModel.of(sup_enumResps);
+        }
+        if(type.equals(EnumValueListType.High_Quality_Product_recommendation)){
+
+            List<Product> productList = productRepository.findAll();
+
+            if(productList.isEmpty()){
+                EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+                EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(EnumLongIdResp.class);
+                //Resources<Object> resources = new Resources<>(Arrays.asList(wrapper));
+
+                entityModel  = CollectionModel.of(Arrays.asList(wrapper));
+            }else{
+                entityModel = CollectionModel.of(Product.List(productList));
+
+            }
+
+        }
+
+
+
+
+
+        entityModel.add(linkTo(methodOn(ValueListRestController.class).Page_createValueList_getItems(type)).withSelfRel());
+
+        return entityModel;
+    }
+
+
     @GetMapping(value = "/value_lists/page_createValueList",produces = "application/json")
     public EntityModel Page_createValueList() {
      //   stateMachine.sendEvent(ApplicationReviewEvents.APPROVE)
@@ -217,6 +362,8 @@ public class ValueListRestController {
       //  ApplicationReviewStates.REJECTED, stateMachine.getState().getId()
 
       //  ApplicationReviewStates.REJECTED = stateMachine.getState().getId();
+
+
 
 
         List<ValueList> valueList = valueListRepository.findAllByType(EnumValueListType.Vendor_groups);
@@ -236,9 +383,10 @@ public class ValueListRestController {
             return enumResp_sup;
         }).collect(Collectors.toList());
 
+        List<ComponentRight> componentRightMap =componentRightRepository.findAll();
+
 
         EntityModel entityModel = EntityModel.of(Map.of(
-                "item_list", sup_enumResps,
 
                 "value_list_type_list", Arrays.stream(EnumValueListType.values()).map(x->{
 
@@ -247,9 +395,13 @@ public class ValueListRestController {
                     enumResp.setId(x.name());
                     enumResp.setText(x.toString());
 
-                    return enumResp;
+                    EntityModel entityModel_enum = EntityModel.of(enumResp);
+                    entityModel_enum.add(linkTo(methodOn(ValueListRestController.class).Page_createValueList_getItems(x)).withRel("getItemList"));
+
+                    return entityModel_enum;
                 }).collect(Collectors.toList())
         ));
+
         entityModel.add(linkTo(methodOn(ValueListRestController.class).createValueList(null)).withRel("createValueList"));
 
         return entityModel;
@@ -298,6 +450,7 @@ public class ValueListRestController {
 */
         Set<Long> valueListItemList = valueListItems.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toSet());
 
+/*
 
        List<Supplier> supplierList =  supplierRepository.findAll();
 
@@ -315,6 +468,7 @@ public class ValueListRestController {
         }).collect(Collectors.toList());
 
         List<Long> publicationList  = sup_enumResps.stream().filter(x->x.getSelected()).map(x->x.getId()).collect(Collectors.toList());
+*/
 
 
 /*
@@ -334,14 +488,19 @@ public class ValueListRestController {
         EntityModel entityModel = EntityModel.of(Map.of(
 
                 "info", ValueListReq.from(valueList,valueListItems),
-                "item_list",sup_enumResps,
-                "item_selected_index", publicationList,
-                "value_list_type_list", Arrays.asList(EnumValueListType.Vendor_groups).stream().map(x->{
+              //  "item_list",sup_enumResps,
+                "item_selected_index", valueListItemList,
+                "value_list_type_list", Arrays.asList(valueList.getType()).stream().map(x->{
                     EnumResp enumResp = new EnumResp();
 
                     enumResp.setId(x.name());
                     enumResp.setText(x.toString());
-                    return enumResp;
+
+                    EntityModel entityModel_enum = EntityModel.of(enumResp);
+                    entityModel_enum.add(linkTo(methodOn(ValueListRestController.class).Page_createValueList_getItems(x)).withRel("getItemList"));
+
+
+                    return entityModel_enum;
                 }).collect(Collectors.toList())
         ));
         entityModel.add(linkTo(methodOn(ValueListRestController.class).editValueList(valueList.getId(),null)).withRel("editValueList"));
@@ -354,7 +513,7 @@ public class ValueListRestController {
 
 
     @PutMapping(value = "/value_lists/{VALUE_LIST_ID}",produces = "application/json")
-    public EntityModel<ValueListResp> editValueList(@PathVariable long VALUE_LIST_ID,@RequestBody @Valid ValueListReq pojo) {
+    public EntityModel<ValueListResp> editValueList(@PathVariable long VALUE_LIST_ID,@RequestBody @Valid ValueListEditReq pojo) {
 
 
         Optional<ValueList> optionalValueList = valueListRepository.findById(VALUE_LIST_ID);

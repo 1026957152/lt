@@ -15,15 +15,15 @@ import java.util.Random;
 @RequestMapping("/teste")
 public class TesteController {
 
-    @Autowired
+ //   @Autowired
     private QueueSender queueSender;
-    @Autowired
+   // @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    @Autowired
+   // @Autowired
     private ConfirmCallbackService confirmCallbackService;
 
-    @Autowired
+  //  @Autowired
     private ReturnCallbackService returnCallbackService;
 
 

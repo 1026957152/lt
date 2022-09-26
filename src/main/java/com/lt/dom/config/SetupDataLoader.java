@@ -4,6 +4,7 @@ package com.lt.dom.config;
 
 import com.alibaba.fastjson.JSONObject;
 import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
+import com.lt.dom.controllerOct.Axh.XhToYxdService;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
@@ -11,6 +12,7 @@ import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
 import com.lt.dom.vo.SupplierPojoVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,7 +27,10 @@ import java.util.*;
 public class SetupDataLoader implements
         ApplicationListener<ContextRefreshedEvent> {
 
-    boolean alreadySetup = false;
+
+
+    @Value("${setupdata.alreadySetup}")
+    boolean alreadySetup ;
 
     @Autowired
     private UserRepository userRepository;
@@ -76,6 +81,8 @@ public class SetupDataLoader implements
     @Autowired
     private PassServiceImpl passService;
 
+    @Autowired
+    XhToYxdService xhToYxdService;
 
     @Autowired
     private ValueListServiceImpl valueListService;
@@ -293,8 +300,10 @@ public class SetupDataLoader implements
 
         _榆林信合();
         _横山支行();
+        _信易贷账号();
 
 
+        xhToYxdService.setupData();
         try {
             JxlsServiceImpl.getAvailability("name");
         } catch (IOException e) {
@@ -383,8 +392,16 @@ public class SetupDataLoader implements
 
 
 
+        Openid openid = openidService.setupData("oq1Er5RyRMmoSt2KWSS6fhgk3DWY");
+        openidService.linkUser(openid,user);
+
+        realNameAuthenticationService.setupData(user,"龙","1234567ddddd890");
+
+
+        valueListService.setupData(EnumValueListDefault.High_Quality_Product_recommendation);
 
     }
+
 
 
     private void _旅行社() {
@@ -502,6 +519,23 @@ public class SetupDataLoader implements
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
         supplierService.成为员工(supplier,user);
+
+    }
+
+
+
+    private void _信易贷账号() {
+
+
+
+        UserPojo userPojo = new UserPojo();
+
+        userPojo.setPhone("admin111");
+        userPojo.setPassword("admin123");
+        userPojo.setRoles(Arrays.asList(EnumRole.ROLE_BRANCH.name()));
+        User user = userService.createUser(userPojo,Arrays.asList());
+
+
 
     }
 }

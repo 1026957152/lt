@@ -137,13 +137,13 @@ public class PaymentFreeServiceImpl {
 
     public void freePayFree(Reservation reservation, UserVo userVo) {
 
-        reservation.setStatus(EnumBookingStatus.Submitted_Confirmed);
+       reservation.setStatus(EnumBookingStatus.PAID);
 
-        reservation.setPaied_at(LocalDateTime.now());
+     //   reservation.setPaied_at(LocalDateTime.now());
         reservationRepository.save(reservation);
 
 
-        componentRightResolveService.resolve(reservation,reservation.getFollowupPaid());
+        componentRightResolveService.resolve(reservation,reservation.getFulfillment_behavior());
 
 
     }
@@ -328,14 +328,14 @@ public class PaymentFreeServiceImpl {
 
 
 
-        reservation.setStatus(EnumBookingStatus.Submitted_Confirmed);
+        reservation.setStatus(EnumBookingStatus.PAID);
 
         reservation.setPaied_at(LocalDateTime.now());
         reservationRepository.save(reservation);
 
 
 
-        componentRightResolveService.resolve(reservation,reservation.getFollowupPaid());
+        componentRightResolveService.resolve(reservation,reservation.getFulfillment_behavior());
 
 
 

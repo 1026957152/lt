@@ -14,8 +14,8 @@ public class SeatingLayout {
     private int theatreNumber;//	The requested Theatre Number.
 
 
-    private int rows;//	The total count of rows.
-    private int columns;//	The total count of columns.
+    private int rows_;//	The total count of rows.
+    private int columns_;//	The total count of columns.
 
     public long getId() {
         return id;
@@ -33,20 +33,20 @@ public class SeatingLayout {
         this.theatreNumber = theatreNumber;
     }
 
-    public int getRows() {
-        return rows;
+    public int getRows_() {
+        return rows_;
     }
 
-    public void setRows(int rows) {
-        this.rows = rows;
+    public void setRows_(int rows) {
+        this.rows_ = rows;
     }
 
-    public int getColumns() {
-        return columns;
+    public int getColumns_() {
+        return columns_;
     }
 
-    public void setColumns(int columns) {
-        this.columns = columns;
+    public void setColumns_(int columns) {
+        this.columns_ = columns;
     }
 
     public List<Seat> getSeats() {

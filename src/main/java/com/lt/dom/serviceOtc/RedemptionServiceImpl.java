@@ -1,9 +1,12 @@
 package com.lt.dom.serviceOtc;
 
 import com.lt.dom.oct.*;
+import com.lt.dom.otcenum.EnumAssociatedType;
+import com.lt.dom.otcenum.EnumPublicationObjectType;
 import com.lt.dom.otcenum.EnumQuotaType;
 import com.lt.dom.otcenum.EnumVoucherType;
 import com.lt.dom.repository.*;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -12,11 +15,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toMap;
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.ignoreCase;
 
 
@@ -29,7 +35,7 @@ public class RedemptionServiceImpl {
 
 
     @Autowired
-    private CampaignRepository campaignRepository;
+    private IdGenServiceImpl idGenService;
 
     @Autowired
     private RedemptionRepository redemptionRepository;
@@ -267,4 +273,52 @@ public class RedemptionServiceImpl {
     public List<Redemption> rollback(Redemption redemption) {
         return null;
     }
+
+
+
+
+    public void RedeemVounchor(List<Pair<User, ComponentVounch>> vouchers) {
+
+        Redemption redemption = new Redemption();
+
+/*        redemption.setRelatedObjectId(id);
+        redemption.setRelatedObjectType(booking);*/
+        redemption.setCreated_at(LocalDateTime.now());
+        redemption.setQuantity(Integer.valueOf(vouchers.size()).longValue());
+        redemption.setValidatorSupplier(1);
+        redemption = redemptionRepository.save(redemption);
+
+
+       // Map<Long,Pair<Traveler, Voucher>> voucherMap = vouchers.stream().collect(toMap(x->x.getValue1().getId(), x->x));
+
+        Redemption finalRedemption = redemption;
+        List<RedemptionEntry> redemptionEntryList = vouchers.stream().map(x->{
+
+            ComponentVounch voucher = x.getValue1();
+            User traveler = x.getValue0();
+
+            RedemptionEntry entry = new RedemptionEntry();
+            entry.setCode(idGenService.redemptionEntryCode());
+            entry.setRedemption(finalRedemption.getId());
+            entry.setBulk(true);
+            entry.setVoucher(voucher.getId());
+            entry.setVoucher_code(voucher.getCode());
+            entry.setPublished_at(LocalDateTime.now());
+            entry.setRedeemed_at(LocalDateTime.now());
+            entry.setCreatedAt(LocalDateTime.now());
+            entry.setResult(RedemptionEntry.RedemptionStatus.SUCCESS);
+            entry.setRelatedObjectId(traveler.getId());
+            entry.setRelatedObjectType(EnumPublicationObjectType.traveler);
+
+            entry.setSupplier(voucher.getSupplier());
+            return entry;
+        }).collect(Collectors.toList());
+
+        redemptionEntryList = redemptionEntryRepository.saveAll(redemptionEntryList);
+
+    }
+
+
+
+
 }

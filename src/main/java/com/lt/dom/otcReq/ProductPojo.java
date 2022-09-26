@@ -1,5 +1,6 @@
 package com.lt.dom.otcReq;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.OctResp.AttributeResp;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.otcReq.product.ProductGiftVoucherPojo;
@@ -18,9 +19,16 @@ import java.util.List;
 
 public class ProductPojo {
 
+    private Boolean free = false;
+
+
+    @JsonProperty("package")
+    private Boolean package_ = false;
+
 
     @NotEmpty
     @Size(max = 50)
+
     private String name;
     private String source_id;
 
@@ -52,6 +60,22 @@ public class ProductPojo {
 
     public void setBooking_rules(List<BookingRulePojoFuck> booking_rules) {
         this.booking_rules = booking_rules;
+    }
+
+    public Boolean getPackage_() {
+        return package_;
+    }
+
+    public void setPackage_(Boolean package_) {
+        this.package_ = package_;
+    }
+
+    public Boolean getFree() {
+        return free;
+    }
+
+    public void setFree(Boolean free) {
+        this.free = free;
     }
 
     private Boolean is_refund;
@@ -175,7 +199,7 @@ public class ProductPojo {
 
 
     public static class Price {
-
+        private String nick_name;
         @NotNull
         private EnumProductPricingType type;
         @NotNull
@@ -185,6 +209,10 @@ public class ProductPojo {
         private ByPerson byPerson;
         private Fixed fixed;
 
+        private Boolean active = true;
+
+
+        private EnumTaxbehavior tax_behavior ;
 
 
 
@@ -197,6 +225,14 @@ public class ProductPojo {
 
         public void setRights(List<Long> rights) {
             this.rights = rights;
+        }
+
+        public String getNick_name() {
+            return nick_name;
+        }
+
+        public void setNick_name(String nick_name) {
+            this.nick_name = nick_name;
         }
 
         @Override
@@ -465,6 +501,7 @@ public class ProductPojo {
 
         @NotNull
         private EnumValidateWay validate_way = EnumValidateWay.none;
+        private EnumRoyaltyCollection_method collection_method;
 
         public EnumValidateWay getValidate_way() {
             return validate_way;
@@ -488,6 +525,14 @@ public class ProductPojo {
 
         public void setPercent(int percent) {
             this.percent = percent;
+        }
+
+        public EnumRoyaltyCollection_method getCollection_method() {
+            return collection_method;
+        }
+
+        public void setCollection_method(EnumRoyaltyCollection_method collection_method) {
+            this.collection_method = collection_method;
         }
     }
 

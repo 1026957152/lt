@@ -17,7 +17,7 @@ public class TempDocument {
 
 
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
 
 

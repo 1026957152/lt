@@ -54,7 +54,7 @@ public class Campaign {
    // @GeneratedValue//(strategy = GenerationType.AUTO)
     @Id
     private long id;
-    @Column(unique=true)
+    //##@Column(unique=true)
     private String code;
     private EnumCompaignType campaignType;
 
@@ -81,6 +81,8 @@ public class Campaign {
     private String claim_note;
     private String claim_text;
     private int clain_limit;
+
+    @Column(name = "over_")
     private boolean over;
 
     @Column(name = "limit_")

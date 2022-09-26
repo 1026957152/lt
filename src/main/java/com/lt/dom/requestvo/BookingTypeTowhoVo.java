@@ -1,8 +1,14 @@
 package com.lt.dom.requestvo;
 
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.BookingPojo;
 import com.lt.dom.otcenum.EnumBookingOjbectType;
-import com.lt.dom.otcenum.EnumPublicationObjectType;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.List;
 
 public class BookingTypeTowhoVo {
 
@@ -15,7 +21,47 @@ public class BookingTypeTowhoVo {
     private Tour tour;
     private Campaign campaign;
     private Product product;
-    private Long count;
+    private Long quantity;
+
+
+
+
+    @Valid
+    @Size(min=0,max=200)
+    private List<Sku> skus;
+
+    public List<Sku> getSkus() {
+        return skus;
+    }
+
+    public void setSkus(List<Sku> skus) {
+        this.skus = skus;
+    }
+
+    public static class Sku {
+        @NotEmpty
+        private PricingType id;
+        @NotNull
+        private Integer quantity;
+
+        public PricingType getId() {
+            return id;
+        }
+
+        public void setId(PricingType id) {
+            this.id = id;
+        }
+
+        public Integer getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(Integer quantity) {
+            this.quantity = quantity;
+        }
+    }
+
+
 
     public long getToWho() {
         return toWho;
@@ -81,11 +127,11 @@ public class BookingTypeTowhoVo {
         return product;
     }
 
-    public void setCount(Long count) {
-        this.count = count;
+    public void setQuantity(Long quantity) {
+        this.quantity = quantity;
     }
 
-    public Long getCount() {
-        return count;
+    public Long getQuantity() {
+        return quantity;
     }
 }

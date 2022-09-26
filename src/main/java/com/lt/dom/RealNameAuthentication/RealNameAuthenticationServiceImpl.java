@@ -137,7 +137,7 @@ public class RealNameAuthenticationServiceImpl {
                 e.printStackTrace();
             }
 
-            if(c){
+            if(true){
                 real.add(x);
             }else{
                 notReal.add(x);

@@ -1,4 +1,6 @@
-
+MYSQL_HOST: 10.0.0.50
+setupdata:
+  alreadySetup: true
 feign:
   client:
     config:
@@ -10,7 +12,7 @@ queue:
   name: teste
 
 server:
-  port: 8082
+  port: 8080
 
 spring:
   rabbitmq:
@@ -39,17 +41,30 @@ spring:
   h2:
     console.enabled: true
   datasource:
-    url: jdbc:h2:mem:mydb
-    username: sa
-    password: 123
+#    url: jdbc:h2:mem:mydb
+#    username: sa
+#    password: 123
+   # url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/db_example
+    url: jdbc:mysql://10.0.0.50:33306/db_example?createDatabaseIfNotExist=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
+
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+
 
   jpa:
     properties:
       hibernate:
         jdbc.batch_size: 30
         order_inserts: true
-        dialect: org.hibernate.dialect.H2Dialect
+ #       dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.MySQL5Dialect
     show-sql: true
+
+    generate-ddl: true  # 这个
+    hibernate.ddl-auto: update #create-drop
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
 
   mvc:
     static-path-pattern: /oct/files/**
@@ -100,13 +115,15 @@ wxpay:
   query_url: https://api.mch.weixin.qq.com/pay/orderquery
   # package
   package_value: Sign=WXPay
+
+
   # 回调地址
-  tenpay_order_callback: https://39.106.34.220:8080/oct/xxxxxx
+  tenpay_order_callback: http://39.106.34.220:8082/oct/xxxxxx
   # 交易类型
   trade_type_app: JSAPI
   #APP
 
-  refundNotifyUrl: https://39.106.34.220:8080/oct/wechat/pay/refund_notify
+  refundNotifyUrl: http://39.106.34.220:8082/oct/wechat/pay/refund_notify
 
 
 

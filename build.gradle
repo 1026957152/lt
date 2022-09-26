@@ -99,13 +99,15 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.amqp:spring-rabbit-test'
-   // testImplementation 'org.springframework.amqp:spring-boot-starter-data-redis'
+  //  testImplementation 'org.springframework.amqp:spring-rabbit-test'
+    testImplementation 'org.springframework.amqp:spring-boot-starter-data-redis'
 
     implementation 'commons-io:commons-io:2.11.0'
     //   implementation group: 'org.springframework.statemachine', name: 'spring-statemachine-data-jpa' //, version: '3.2.0'
  //implementation group: 'org.springframework.statemachine', name: 'spring-statemachine-autoconfigure' //, version: '3.2.0'
+    implementation 'org.springframework.retry:spring-retry:1.3.3'
 
+    implementation 'mysql:mysql-connector-java'
 }
 
 

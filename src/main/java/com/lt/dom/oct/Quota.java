@@ -35,7 +35,7 @@ public class Quota {
     private EnumQuotaClaimOrRedeem claimRedeem;
     private String name;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private long valueList;
 

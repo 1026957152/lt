@@ -19,7 +19,7 @@ public class RefundResp {
 
 
     private int amount;
-    @Column(unique=true)
+    //##@Column(unique=true)
     private String code;
     private String charge_code;
     private String status_text;

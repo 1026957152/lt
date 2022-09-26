@@ -28,7 +28,12 @@ public class EnumResp {
         enumResp.setId(type.name());
         return enumResp;
     }
-
+    public static EnumResp of(String type, String toString) {
+        EnumResp enumResp = new EnumResp();
+        enumResp.setText(toString);
+        enumResp.setId(type);
+        return enumResp;
+    }
     public void setId(String id) {
         this.id = id;
     }

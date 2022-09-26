@@ -2,19 +2,27 @@ package com.lt.dom.controllerOct;
 
 import com.lt.dom.OctResp.EmployeeResp;
 import com.lt.dom.OctResp.EnumResp;
+import com.lt.dom.OctResp.SupplierResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.EnumRole;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.vo.UserVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -46,7 +54,8 @@ public class EmployeeRestController {
     @Autowired
     private RoleServiceImpl roleService;
 
-
+    @Autowired
+    private IAuthenticationFacade authenticationFacade;
 
     @GetMapping(value = "/employees/{EMPLOYEE_ID}/parameters", produces = "application/json")
     public EntityModel getEmployeeparameters(@PathVariable long EMPLOYEE_ID) {
@@ -80,6 +89,8 @@ public class EmployeeRestController {
 
         return entityModel;
     }
+
+
 
 
     @Operation(summary = "4、成为员工")
@@ -233,5 +244,123 @@ public class EmployeeRestController {
     employeeRepository.delete(employee);
     return ResponseEntity.ok(HttpStatus.NO_CONTENT);
 }
+
+
+
+
+
+
+
+    @Operation(summary = "3、list所有员工")
+    @GetMapping(value = "/employees", produces = "application/json")
+    public PagedModel getEmployeeList(Pageable pageable , PagedResourcesAssembler<EntityModel<EmployeeResp>> assembler) {
+
+
+
+        Page<Employee> employees = employeeRepository.findAll(pageable);
+
+        List<User> users = userRepository.findAllById(employees.stream().map(x->x.getUserId()).collect(Collectors.toList()));
+        Map<Long,User> userMap = users.stream().collect(Collectors.toMap(x->x.getId(),x->x));
+
+        Page<EntityModel<EmployeeResp>> list = employees.map(x->{
+
+            EmployeeResp employeeResp = EmployeeResp.pageElementfrom(Pair.with(x,userMap.get(x.getUserId())));
+            EntityModel<EmployeeResp> employeeRespEntityModel= EntityModel.of(employeeResp);
+            employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(x.getId())).withSelfRel());
+            employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).delete(x.getId())).withRel("delete"));
+            employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).Page_updateEmployee(x.getId())).withRel("Page_update"));
+
+            employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).updateEmployee(x.getId(),null)).withRel("update"));
+            return employeeRespEntityModel;
+        });
+
+
+        return assembler.toModel(list);
+
+    }
+
+
+
+    @Operation(summary = "4、成为员工")
+    @PostMapping(value = "/employees", produces = "application/json")
+    public ResponseEntity<EntityModel<EmployeeResp>> createEmployee(@RequestBody @Valid EmployerPojo employerPojo) {
+
+
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        UserVo userVo = authenticationFacade.getUserVo(authentication);
+
+
+        Optional<Supplier> supplierOptional =supplierRepository.findByCode(employerPojo.getSupplier());
+
+        Supplier supplier = supplierOptional.get();
+
+
+        List<String> enumRoles = roleService.get(supplier).stream().map(x->x.name()).collect(Collectors.toList());
+
+        List<String> hasEnumRoles  = employerPojo.getRoles().stream().filter(x-> enumRoles.contains(x)).collect(Collectors.toList());
+
+        if(hasEnumRoles.isEmpty()){
+            throw new BookNotFoundException("无相关权限"+employerPojo.getRoles(),"");
+        }
+
+
+
+
+
+        Triplet<Supplier,Employee,User> triplet = supplierService.createEmployee(supplier,employerPojo,hasEnumRoles);
+
+        EntityModel entityModel = EntityModel.of( EmployeeResp.sigleElementfrom(triplet));
+
+        Employee employee = triplet.getValue1();
+
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(employee.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployeeparameters(employee.getId())).withRel("getParameters"));
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).delete(employee.getId())).withRel("delete"));
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).updateEmployee(employee.getId(),null)).withRel("update"));
+
+        return ResponseEntity.ok(entityModel);
+
+
+
+
+    }
+
+
+
+
+
+    @GetMapping(value = "/employees/page", produces = "application/json")
+    public EntityModel page_addEmployee() {
+
+
+
+        List<Supplier> supplierList = supplierRepository.findAll();
+
+
+        List<String> enumRoles = Arrays.asList(EnumRole.ROLE_BANK_STAFF).stream().map(e->e.name()).collect(Collectors.toList());
+        List<Role> roles = roleRepository.findAll();
+        EntityModel entityModel =  EntityModel.of( Map.of(
+                "suppliers",supplierList.stream().map(e->{
+
+                    return SupplierResp.from(e);
+
+                }).collect(Collectors.toList()),
+
+                "roles", roles.stream().filter(e->enumRoles.contains(e.getName())).map(x->{
+            EnumResp enumResp = new EnumResp();
+            enumResp.setId(x.getName());
+            //   enumResp.setName(x.getName());
+            enumResp.setText(EnumRole.valueOf(x.getName()).toString());
+            return enumResp;
+        }).collect(Collectors.toList())));
+
+
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).createEmployee(null)).withRel("addEmployees"));
+
+
+        return entityModel;
+    }
+
 
 }

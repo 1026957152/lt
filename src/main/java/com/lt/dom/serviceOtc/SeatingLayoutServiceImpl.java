@@ -89,8 +89,8 @@ public class SeatingLayoutServiceImpl {
     public SeatingLayout createSeatingLayout(Theatre theatre, SeatingLayoutPojo pojo) {
 
         SeatingLayout seatingLayout = new SeatingLayout();
-        seatingLayout.setColumns(pojo.getColumns());
-        seatingLayout.setRows(pojo.getRows());
+        seatingLayout.setColumns_(pojo.getColumns());
+        seatingLayout.setRows_(pojo.getRows());
 
         seatingLayout = seatingLayoutRepository.save(seatingLayout);
         return seatingLayout;

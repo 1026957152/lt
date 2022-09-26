@@ -154,7 +154,7 @@ public class MarchertSettledServiceImpl {
 
         SupplierPojo supplierPojo = new SupplierPojo();
         supplierPojo.setDesc(wxlinkUserReq.getDesc());
-        supplierPojo.setSupplierName(wxlinkUserReq.getSupplier_name());
+        supplierPojo.setName(wxlinkUserReq.getSupplier_name());
 
 
 

@@ -27,7 +27,7 @@ public class MessageFileResp  {
 
 
     
-@Column(unique=true)
+//##@Column(unique=true)
 private String code;
     private String fileName;
     private String originalFilename;

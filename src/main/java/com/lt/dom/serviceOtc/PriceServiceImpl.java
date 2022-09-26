@@ -117,6 +117,7 @@ public class PriceServiceImpl {
                 };
                 break; //可选
                 case ByDay:{
+
                     pricingType.setPrice(x.getByHour().getPrice());
                     pricingType.setMax(x.getByHour().getMax());
                     pricingType.setMin(x.getByHour().getMin());
@@ -125,8 +126,10 @@ public class PriceServiceImpl {
                 default:
 
             }
-
-
+        pricingType.setRetail(pricingType.getPrice());
+        pricingType.setNet(pricingType.getPrice());
+        pricingType.setOriginal(pricingType.getPrice());
+        pricingType.setNick_name(x.getNick_name());
             String seq = UUID.randomUUID().toString();
             pricingType.setStreamSeq(seq);
             return pricingType;

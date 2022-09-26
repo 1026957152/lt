@@ -27,7 +27,7 @@ public class BalanceTransaction {  //余额结算
     
 
 
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private String flowType_text;
     private String status_text;

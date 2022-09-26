@@ -19,11 +19,11 @@ public class RedemptionEntry {
 
     @NotNull
     private int redeemed_amount;
-    @NotNull
-    private Long redeemed_quantity;
 
-    @NotEmpty
+    private Long redeemed_quantity;
     private String campaign_name;
+
+
     @NotNull
     private float customer_latitude;
     @NotNull
@@ -32,11 +32,11 @@ public class RedemptionEntry {
     private float merchant_latitude;
     @NotNull
     private float merchant_longitude;
-    @NotEmpty
+
     private String merchant_name;
-    @NotEmpty
+
     private String merchant_code;
-    @NotEmpty
+
     private String campaign_code;
 
     private String holder_real_name;
@@ -77,7 +77,7 @@ public class RedemptionEntry {
     private boolean rollback;
     @NotNull
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     @NotNull
     private boolean bulk;

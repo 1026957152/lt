@@ -1,10 +1,8 @@
 package com.lt.dom.otcReq;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.lt.dom.OctResp.PublicationEntryResp;
-import com.lt.dom.oct.DayRule;
 import com.lt.dom.otcenum.EnumBookingOjbectType;
 import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -274,12 +272,12 @@ private String code;//
         @NotEmpty
         private String name;///
 
-        private String family_name;///
-        private String given_name;///
+/*        private String family_name;///
+        private String given_name;///*/
         @NotEmpty
-        private String id;
+        private String id_card;
         @NotEmpty
-        private String tel_home;
+        private String phone;
 
         public String getName() {
             return name;
@@ -289,6 +287,7 @@ private String code;//
             this.name = name;
         }
 
+/*
         public String getFamily_name() {
             return family_name;
         }
@@ -304,21 +303,22 @@ private String code;//
         public void setGiven_name(String given_name) {
             this.given_name = given_name;
         }
+*/
 
-        public String getId() {
-            return id;
+        public String getId_card() {
+            return id_card;
         }
 
-        public void setId(String id) {
-            this.id = id;
+        public void setId_card(String id_card) {
+            this.id_card = id_card;
         }
 
-        public String getTel_home() {
-            return tel_home;
+        public String getPhone() {
+            return phone;
         }
 
-        public void setTel_home(String tel_home) {
-            this.tel_home = tel_home;
+        public void setPhone(String phone) {
+            this.phone = phone;
         }
     }
 
@@ -327,16 +327,30 @@ private String code;//
 
     public static class ProductReq {
 
-        @NotNull
-        private Long id;
-        @NotNull
+        @NotEmpty
+        private String id;
+
         private Integer quantity;
 
-        public Long getId() {
+
+
+        @Valid
+        @Size(min=0,max=200)
+        private List<Sku> skus;
+
+        public List<Sku> getSkus() {
+            return skus;
+        }
+
+        public void setSkus(List<Sku> skus) {
+            this.skus = skus;
+        }
+
+        public String getId() {
             return id;
         }
 
-        public void setId(Long id) {
+        public void setId(String id) {
             this.id = id;
         }
 
@@ -347,5 +361,29 @@ private String code;//
         public void setQuantity(Integer quantity) {
             this.quantity = quantity;
         }
-    }
+
+
+        public static class Sku {
+            @NotNull
+            private Long id;
+            @NotNull
+            private Integer quantity;
+
+            public Long getId() {
+                return id;
+            }
+
+            public void setId(Long id) {
+                this.id = id;
+            }
+
+            public Integer getQuantity() {
+                return quantity;
+            }
+
+            public void setQuantity(Integer quantity) {
+                this.quantity = quantity;
+            }
+        }
+        }
 }

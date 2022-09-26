@@ -2,8 +2,13 @@ package com.lt.dom.OctResp;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.springframework.hateoas.server.core.Relation;
+
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Relation(collectionRelation = "items", itemRelation = "item")
+
 public class EnumLongIdResp {
 
 
@@ -14,6 +19,18 @@ public class EnumLongIdResp {
     private String text;
     private Boolean selected;
     private Object info;
+    private List subitems;
+
+
+
+    public void setSubitems(List subitems) {
+        this.subitems = subitems;
+    }
+
+    public List getSubitems() {
+        return subitems;
+    }
+
 
     public long getId() {
         return id;

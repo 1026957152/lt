@@ -5,10 +5,7 @@ import com.lt.dom.OctResp.CardholderResp;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.PassCreatePojo;
 import com.lt.dom.otcenum.*;
-import com.lt.dom.repository.AssetRepository;
-import com.lt.dom.repository.BookingRuleRepository;
-import com.lt.dom.repository.PassRepository;
-import com.lt.dom.repository.UserRepository;
+import com.lt.dom.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +31,10 @@ public class PassServiceImpl {
 
     @Autowired
     private IdGenServiceImpl idGenService;
+
+    @Autowired
+    private ComponentRightRepository componentRightRepository;
+
 
 
     @Autowired
@@ -112,5 +113,15 @@ public class PassServiceImpl {
 
 
         return pass;
+    }
+
+    public List<ComponentRight> fromValueList(List<Long> collect) {
+
+
+
+
+        List<ComponentRight> componentRightList = componentRightRepository.findAllById(collect);
+        return componentRightList;
+
     }
 }

@@ -7,6 +7,7 @@ import com.lt.dom.oct.ValueList;
 import com.lt.dom.oct.ValueListItem;
 import com.lt.dom.otcenum.EnumValueListItemType;
 import com.lt.dom.otcenum.EnumValueListType;
+import com.lt.dom.otcenum.EnumValueType;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -33,6 +34,7 @@ public class ValueListReq {
 
     private List<Long> item_ids;
     private String type_text;
+    private EnumValueType item_value_type;
 
 
     @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
@@ -105,5 +107,13 @@ public class ValueListReq {
 
     public String getType_text() {
         return type_text;
+    }
+
+    public void setItem_value_type(EnumValueType item_value_type) {
+        this.item_value_type = item_value_type;
+    }
+
+    public EnumValueType getItem_value_type() {
+        return item_value_type;
     }
 }

@@ -18,7 +18,7 @@ public class PhotoResp {
     private String url_original;
     private String desc;
     
-@Column(unique=true)
+//##@Column(unique=true)
 private String code;
     private boolean visiable;
 

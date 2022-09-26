@@ -20,7 +20,7 @@ public class VoucherShadow {
     private long id;
 
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private long campaign;
     private long relateId;

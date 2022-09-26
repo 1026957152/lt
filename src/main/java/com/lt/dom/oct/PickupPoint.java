@@ -1,5 +1,6 @@
 package com.lt.dom.oct;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Version;
@@ -30,6 +31,8 @@ public class PickupPoint {
     private String staff_only;//	1/0
       //      0 - All - Can be added by customers, travel agents and staff (Default)
 //1 - Staff only - Can ONLY be added to a booking by staff only (not customers / travel agents)
+
+    @Column(name = "rank_")
     private String rank	;//Numeric - Can be used as an additional ordering value for hotel pickup reports
     private String  viator_name;//	If you configure the hotel name EXACTLY as configured in Viator, TourCMS will map Viator bookings to the correct pickup point
 

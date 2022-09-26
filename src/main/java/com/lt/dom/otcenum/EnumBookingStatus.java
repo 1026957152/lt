@@ -14,8 +14,9 @@ public enum EnumBookingStatus {
 
     Payment_Pending(""),
 
-    Submitted_Confirmed(""),  //CONFIRMED
+   // Submitted_Confirmed(""),  //CONFIRMED
     PAID(""), //  已支付
+    Free(""), //  已支付
 
     EXPIRED(""), //支付超时
 

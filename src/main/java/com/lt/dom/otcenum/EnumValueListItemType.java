@@ -13,6 +13,9 @@ public enum EnumValueListItemType {
     customer_id("customer_id"),
     supplier_id("supplier_id"),
 
+
+    product("product"),
+
     ;
 
 

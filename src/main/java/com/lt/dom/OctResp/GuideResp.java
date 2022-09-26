@@ -27,7 +27,7 @@ public class GuideResp {
     private String id_card;
     private String phone;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
 
 

@@ -3,10 +3,8 @@ package com.lt.dom.oct;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.OctResp.ComponentRightResp;
 import com.lt.dom.OctResp.EnumLongIdResp;
-import com.lt.dom.otcenum.EnumComponentStatus;
-import com.lt.dom.otcenum.EnumDuration;
-import com.lt.dom.otcenum.EnumProductComponentSource;
-import com.lt.dom.otcenum.EnumValidateWay;
+import com.lt.dom.OctResp.EnumResp;
+import com.lt.dom.otcenum.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -35,9 +33,13 @@ public class ComponentRight {   // 这个是 下单的时候， 从 product 中�
     @NotNull
     private Boolean private_;
 
-    @Column(unique=true)
+    //##@Column(unique=true)
 
 private String code;
+
+
+    private EnumRoyaltyRuleCategory royalty_mode = EnumRoyaltyRuleCategory.AMOUNT;
+    private int value;
 
     public static List<EnumLongIdResp> EnumList(List<ComponentRight> componentRightList) {
         return componentRightList.stream().map(x->{
@@ -55,6 +57,7 @@ private String code;
             ComponentRightResp.ComponentRightOption enumResp = new ComponentRightResp.ComponentRightOption();
             enumResp.setId(x.getId());
             enumResp.setValidatorWays(EnumValidateWay.EnumList());
+            enumResp.setRoyalty_modes(EnumRoyaltyRuleCategory.EnumList());
             if(supplier.getId() == x.getSupplier()){
                 enumResp.setOrigin(EnumProductComponentSource.own);
             }else{
@@ -69,6 +72,18 @@ private String code;
             return enumResp;
         }).collect(Collectors.toList());
     }
+
+    public static List List(List<ComponentRight> componentRightMap) {
+        return componentRightMap.stream().map(x->{
+
+            EnumLongIdResp enumResp = new EnumLongIdResp();
+            enumResp.setId(x.getId());
+
+            enumResp.setText(x.getName()+"_"+x.getCode()+"_"+x.getDuration().toString()+"_"+x.getQuantity());
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
+
     public long getId() {
         return id;
     }
@@ -235,5 +250,21 @@ private String code;
 
     public String getCode() {
         return code;
+    }
+
+    public EnumRoyaltyRuleCategory getRoyalty_mode() {
+        return royalty_mode;
+    }
+
+    public void setRoyalty_mode(EnumRoyaltyRuleCategory royalty_mode) {
+        this.royalty_mode = royalty_mode;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
     }
 }

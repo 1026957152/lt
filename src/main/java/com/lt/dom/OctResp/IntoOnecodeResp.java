@@ -52,11 +52,8 @@ public class IntoOnecodeResp {
 
 
         intoOnecodeResp.setCode_note("请出示二维码，核验权益");
-        try {
-            intoOnecodeResp.setCode_base64_src("data:image/png;base64,"+ ZxingBarcodeGenerator.base64_png(intoOnecode.getIdId()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        intoOnecodeResp.setCode_base64_src(ZxingBarcodeGenerator.base64_png_src(intoOnecode.getIdId()));
+
         intoOnecodeResp.setUrl(link);
         return intoOnecodeResp;
     }

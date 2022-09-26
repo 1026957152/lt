@@ -4,7 +4,9 @@ package com.lt.dom.serviceOtc;
 import com.github.wxpay.sdk.WXPay;
 import com.github.wxpay.sdk.WXPayUtil;
 import com.google.gson.Gson;
+import com.lt.dom.OctResp.PaymentMethodResp;
 import com.lt.dom.controllerOct.*;
+import com.lt.dom.controllerOct.pay.AlipayController;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.Campaign_inactiveException;
 import com.lt.dom.notification.event.OnChargePaidCompleteEvent;
@@ -21,6 +23,7 @@ import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,9 +31,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class PaymentServiceImpl {
+
+    @Autowired
+    private com.lt.dom.config.WxPayConfig wxPayConfig;
+
     @Autowired
     private IdGenServiceImpl idGenService;
 
@@ -80,22 +88,22 @@ public class PaymentServiceImpl {
 
 
 
-    public Map createCharge(String ip, String code, Reservation reservation, long totalproce, String openid, UserVo userVo, String metadata) {
+    public Map createCharge(String ip, String code, Long booking_id, long totalproce, String openid, UserVo userVo, String metadata) {
 
 
 
 
 
-        MyConfig wxPayConfig = null;
+        MyConfig myConfig = null;
         try {
-            wxPayConfig = new MyConfig();
+            myConfig = new MyConfig();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         WXPay wxpay = null;
         try {
-            wxpay = new WXPay(wxPayConfig);
+            wxpay = new WXPay(myConfig);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -110,7 +118,7 @@ public class PaymentServiceImpl {
         data.put("fee_type", currency);
         data.put("total_fee", totalproce+"");
         data.put("spbill_create_ip","117.23.108.250");// ip);
-        data.put("notify_url", "http://39.106.34.220:8080/oct/xxxxxx");
+        data.put("notify_url",wxPayConfig.getTENPAY_ORDER_CALLBACK());
         data.put("trade_type", "JSAPI");  // 此处指定为扫码支付
         data.put("product_id", "12");
         data.put("openid", openid);
@@ -129,12 +137,12 @@ public class PaymentServiceImpl {
             Date date=new Date();
             String sec=String.valueOf(date.getTime()/1000);
             Map map = new HashMap();
-            map.put("appId", wxPayConfig.getAppID());// 公众号id
+            map.put("appId", myConfig.getAppID());// 公众号id
             map.put("nonceStr",resp_wx.get("nonce_str"));// 随机字符串
             map.put("timeStamp",sec);
             map.put("package", "prepay_id="+resp_wx.get("prepay_id"));
             map.put("signType", "MD5");
-            String sign = WXPayUtil.generateSignature(map,wxPayConfig.getKey(),wxPayConfig.getSignType());
+            String sign = WXPayUtil.generateSignature(map,myConfig.getKey(),myConfig.getSignType());
             map.put("paySign", sign);
 
 
@@ -157,7 +165,7 @@ public class PaymentServiceImpl {
             Charge charge = new Charge();
             charge.setChannel(EnumPayChannel.wx);
             charge.setPaid(false);
-            charge.setApp(wxPayConfig.getAppID());
+            charge.setApp(myConfig.getAppID());
             charge.setClientIp(ip);
             charge.setAmount(Double.valueOf(totalproce).intValue());
 
@@ -172,13 +180,11 @@ public class PaymentServiceImpl {
             charge.setCode(chargeCode);
             charge.setStatus(EnumChargeStatus.pending);
             charge.setApplication_fee_amount(1);
-            charge.setBooking(reservation.getId());
+            charge.setBooking(booking_id);
             charge.setMetadata(metadata);
             chargeRepository.save(charge);
 
 
-            reservation.setStatus(EnumBookingStatus.Pending);
-            reservationRepository.save(reservation);
 
             return map;
 
@@ -213,20 +219,7 @@ public class PaymentServiceImpl {
 
     }
 
-    public Balance balance(long user, EnumUserType payment) {
-        Optional<Balance> balanceOptional = balanceRepository.findByUserAndType(user,payment);
-        if(balanceOptional.isEmpty()){
-            Balance balance = new Balance();
-            balance.setUser(user);
-            balance.setType(payment);
-            balance.setAvailable_amount(0);
-            balance.setStatus(EnumFinancialAccountStatus.open);
-            return balanceRepository.save(balance);
-        }
 
-        return balanceOptional.get();
-
-    }
 
 
     public void paidChage(Charge charge, Payment payment,Reservation reservation) {
@@ -368,9 +361,12 @@ public class PaymentServiceImpl {
 
 
 
-        reservation.setStatus(EnumBookingStatus.Submitted_Confirmed);
+        reservation.setStatus(EnumBookingStatus.PAID);
         reservation.setPaied_at(LocalDateTime.now());
         reservationRepository.save(reservation);
+
+        payment.setStatus(EnumPaymentStatus.COMPLETE);
+        paymentRepository.save(payment);
 /*
 
         BalanceTransaction balanceTransaction_tax = new BalanceTransaction();
@@ -414,7 +410,7 @@ public class PaymentServiceImpl {
 
 
 
-        componentRightResolveService.resolve(reservation,reservation.getFollowupPaid());
+        componentRightResolveService.resolve(reservation,reservation.getFulfillment_behavior());
 
        // componentRightService.createComponentRight()
         eventPublisher.publishEvent(new OnChargePaidCompleteEvent(new User(),
@@ -569,6 +565,9 @@ public class PaymentServiceImpl {
             payment.setPayment_method_json(enumPayChannels);
             payment.setStatus(EnumPaymentStatus.Initialized);
             payment.setCode(idGenService.paymentNo());
+
+            payment.setExpireTime(LocalDateTime.now().plusMinutes(30));
+
             payment.setPayment_flow(EnumPaymentFlow.one_step);
             payment.setSplit(reservation.getPaymentSplit());
             payment = paymentRepository.save(payment);
@@ -590,6 +589,11 @@ public class PaymentServiceImpl {
 
                 splitRepository.saveAll(splitsList);
             }
+
+
+
+            reservation.setStatus(EnumBookingStatus.Payment_Pending);
+            reservation = reservationRepository.save(reservation);
             return payment;
         }
         Payment payment = optionalPayment.get();
@@ -599,4 +603,42 @@ public class PaymentServiceImpl {
     }
 
 
+    public Optional<Payment>  getByBooking(Reservation reservation) {
+
+        Optional<Payment> optionalPayment = paymentRepository.findByReference(reservation.getCode());
+
+        return optionalPayment;
+
+    }
+
+    public List<EntityModel<PaymentMethodResp>> getPaymentMethods(Payment payment) {
+
+
+        EnumPayChannel[] payChannelList = new Gson().fromJson(payment.getPayment_method_json(),EnumPayChannel[].class);
+
+        List<EntityModel<PaymentMethodResp>>  entityModelList = Arrays.stream(payChannelList).map(e->{
+
+            EntityModel<PaymentMethodResp> entityModel = EntityModel.of(PaymentMethodResp.of(e));
+
+            switch (e){
+                case wx:{
+                    entityModel.add(linkTo(methodOn(PaymentRestController.class).wxPayRequest(payment.getId(),null)).withSelfRel());
+                }
+                break;
+                case alipay:{
+                    entityModel.add(linkTo(methodOn(AlipayController.class).wapPayq_(payment.getId(),null)).withSelfRel());
+                }
+                case balance:{
+                    entityModel.add(linkTo(methodOn(BookingRestController.class).惠民卡支付(payment.getId())).withSelfRel());
+                }
+                break;
+                default:{}
+            }
+
+            return entityModel;
+
+        }).collect(Collectors.toList());
+
+        return entityModelList;
+    }
 }

@@ -14,6 +14,7 @@ import java.util.List;
 
 @Entity
 public class TourBooking {
+    @Column(name = "when_")
 
     private final Date when
             ;
@@ -25,7 +26,7 @@ public class TourBooking {
     private long id;
     private EnumProductType productType;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
    // private long campaign;
 
@@ -182,15 +183,15 @@ private String code;
 
 
     @Transient
-    List<BookingProduct> products;
+    List<BookingProductFuck> products;
     @Transient
     List<BookingPayment> payments;
 
-    public List<BookingProduct> getProducts() {
+    public List<BookingProductFuck> getProducts() {
         return products;
     }
 
-    public void setProducts(List<BookingProduct> products) {
+    public void setProducts(List<BookingProductFuck> products) {
         this.products = products;
     }
 

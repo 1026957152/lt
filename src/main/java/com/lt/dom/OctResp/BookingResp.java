@@ -10,7 +10,9 @@ import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 import org.springframework.hateoas.EntityModel;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -44,12 +46,18 @@ private String code;
     private String note;
     private List<DocumentResp> documents;
     private EntityModel<AssetResp> asset;
-    private int traveler_number;
+    private Integer traveler_number;
     private List<EntityModel<PaymentMethodResp>> paymentMethods;
     private EnumBookingType type;
     private String type_text;
     private EnumValidateWay validate_way;
     private EnumValidationStatus validationStatus;
+    private PaymentResp payment;
+    private Integer quantity;
+    private String status_text;
+    private String paied_at;
+    private LocalDateTime created_at;
+    private EnumFulfillment_behavior fulfillmentType;
 
     public static BookingResp toResp(Reservation booking, List<Traveler> travelers, List<Document> documents) {
 
@@ -95,6 +103,14 @@ private String code;
         //reservationResp.setNote(tour.getTour_name_long());
         return reservationResp;
 
+    }
+
+    public static BookingResp with(BookingResp bookingResp, List<Traveler> travelers) {
+
+        bookingResp.setTraveler_number(travelers.size());
+        bookingResp.setTravelers(TravelerResp.Listfrom(travelers));
+
+        return bookingResp;
     }
 
     public List<RoyaltyRule> getRoyaltyRules() {
@@ -151,23 +167,23 @@ private String code;
 
     private List<EnumPaymentOption> paymentOptions;
 
-    private int total;//	The order's current total price, included all items, fees, and taxes.
-    private int subtotal;//	The order's current total price of all active items.
+    private Integer total;//	The order's current total price, included all items, fees, and taxes.
+    private Integer subtotal;//	The order's current total price of all active items.
     private boolean paid;//	The order's current value of all active tenders.
-    private int savings;//	The order's current savings value for all active discounts and waived fees.
+    private Integer savings;//	The order's current savings value for all active discounts and waived fees.
     private String token;//	A GUID identifier for the Order.
 
 
 
-    List<BookingProduct> products;
+    List<BookingProductFuckResp> products;
 
     List<BookingPayment> payments;
 
-    public List<BookingProduct> getProducts() {
+    public List<BookingProductFuckResp> getProducts() {
         return products;
     }
 
-    public void setProducts(List<BookingProduct> products) {
+    public void setProducts(List<BookingProductFuckResp> products) {
         this.products = products;
     }
 
@@ -186,49 +202,49 @@ private String code;
 
 
 
-    private int amount;
-    //integer	Represents a total amount of order items (sum of item.amount)
+    private Integer amount;
+    //Integereger	Represents a total amount of order items (sum of item.amount)
 
     //Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 is written as 10000.
-    private int  items_discount_amount;//
-    //integer	Represents total amount of the discount applied to order line items
+    private Integer  items_discount_amount;//
+    //Integereger	Represents total amount of the discount applied to order line items
 
     //Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 is written as 10000.
-    private int  total_discount_amount;//
-   // integer	Summarize all discounts applied to the order including discounts applied to particular order line items and discounts applied to the whole cart.
+    private Integer  total_discount_amount;//
+   // Integereger	Summarize all discounts applied to the order including discounts applied to particular order line items and discounts applied to the whole cart.
 
    // Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 is written as 10000.
-    private int  total_amount;//
+    private Integer  total_amount;//
 
-    public int getAmount() {
+    public Integer getAmount() {
         return amount;
     }
 
-    public void setAmount(int amount) {
+    public void setAmount(Integer amount) {
         this.amount = amount;
     }
 
-    public int getItems_discount_amount() {
+    public Integer getItems_discount_amount() {
         return items_discount_amount;
     }
 
-    public void setItems_discount_amount(int items_discount_amount) {
+    public void setItems_discount_amount(Integer items_discount_amount) {
         this.items_discount_amount = items_discount_amount;
     }
 
-    public int getTotal_discount_amount() {
+    public Integer getTotal_discount_amount() {
         return total_discount_amount;
     }
 
-    public void setTotal_discount_amount(int total_discount_amount) {
+    public void setTotal_discount_amount(Integer total_discount_amount) {
         this.total_discount_amount = total_discount_amount;
     }
 
-    public int getTotal_amount() {
+    public Integer getTotal_amount() {
         return total_amount;
     }
 
-    public void setTotal_amount(int total_amount) {
+    public void setTotal_amount(Integer total_amount) {
         this.total_amount = total_amount;
     }
 
@@ -260,34 +276,50 @@ private String code;
 
 
 
-    public static BookingResp toResp_LIST(Pair<Reservation, List<BookingTypeTowhoVo>> pair) {
+    public static BookingResp toResp_LIST(Pair<Reservation, List<BookingProductFuck>> pair) {
 
-        List<BookingTypeTowhoVo> bookingTypeTowhoVolIST = pair.getValue1();
-        BookingTypeTowhoVo bookingTypeTowhoVo = bookingTypeTowhoVolIST.get(0);
+        List<BookingProductFuck> bookingTypeTowhoVolIST = pair.getValue1();
 
-        if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Product)) {
+      //  if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Product)) {
             Reservation booking = pair.getValue0();
-            Product product = bookingTypeTowhoVo.getProduct();
+         //   Product product = bookingTypeTowhoVo.getProduct();
 
             BookingResp reservationResp = new BookingResp();
+
+        reservationResp.setFulfillmentType(booking.getFulfillment_behavior());
+
+
             reservationResp.setValidate_way(booking.getSetValidate_way());
             reservationResp.setValidationStatus(booking.getValidationStatus());
-            reservationResp.setAmount(booking.getAmount());
+           // reservationResp.setAmount(booking.getAmount());
+       // reservationResp.setPaied(booking.getPaied());
+
             reservationResp.setCode(booking.getCode());
             reservationResp.setStatus(booking.getStatus());
+        reservationResp.setStatus_text(booking.getStatus().toString());
 
-            reservationResp.setTotal_amount(booking.getTotal_amount());
-            reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
+            reservationResp.setTotal_amount(bookingTypeTowhoVolIST.stream().mapToInt(e->e.getAmount()).sum());
+           reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
 
             reservationResp.setProductType(booking.getProductType());
-            reservationResp.setProductCode(product.getCode());
+        reservationResp.setCreated_at(booking.getCreated_at());
+        reservationResp.setPaied_at(booking.getPaied_at()!= null? booking.getCreated_at().toString():"");
+
+          //  reservationResp.setProductCode(product.getCode());
+
+            reservationResp.setProducts(bookingTypeTowhoVolIST.stream().map(e->{
+                return BookingProductFuckResp.from(e);
+            }).collect(Collectors.toList()));
+
+
+
             reservationResp.setType(booking.getType());
             reservationResp.setType_text(booking.getType().toString());
             reservationResp.setNote(booking.getNote());
             //reservationResp.setNote(tour.getTour_name_long());
             return reservationResp;
-        }
-        if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Voucher)) {
+    //    }
+   /*     if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Voucher)) {
             Reservation booking = pair.getValue0();
             Campaign campaign = bookingTypeTowhoVo.getCampaign();
 
@@ -301,13 +333,13 @@ private String code;
             reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
 
             reservationResp.setProductType(booking.getProductType());
-/*            reservationResp.setProductCode(product.getCode());
-            reservationResp.setNote(tour.getTour_name());*/
+*//*            reservationResp.setProductCode(product.getCode());
+            reservationResp.setNote(tour.getTour_name());*//*
             //reservationResp.setNote(tour.getTour_name_long());
             return reservationResp;
         }
 
-        return null;
+        return null;*/
     }
 
 
@@ -377,7 +409,20 @@ private String code;
         BookingResp resp = toResp(Triplet.with(pair.getValue0(),pair.getValue1(),pair.getValue2()));
         List<Document> travelers = pair.getValue3();
 
+
+
+
         resp.setDocuments(DocumentResp.Listfrom(travelers));
+        resp.setAsset(AssetResp.from(asset));
+
+
+        return resp;
+    }
+    public static BookingResp with(BookingResp resp ,List<Traveler> travelers,List<Document> documents,Asset asset) {
+
+        resp.setTraveler_number(travelers.size());
+        resp.setTravelers(TravelerResp.Listfrom(travelers));
+        resp.setDocuments(DocumentResp.Listfrom(documents));
         resp.setAsset(AssetResp.from(asset));
 
 
@@ -428,11 +473,11 @@ private String code;
         return asset;
     }
 
-    public void setTraveler_number(int traveler_number) {
+    public void setTraveler_number(Integer traveler_number) {
         this.traveler_number = traveler_number;
     }
 
-    public int getTraveler_number() {
+    public Integer getTraveler_number() {
         return traveler_number;
     }
 
@@ -483,5 +528,54 @@ private String code;
 
     public EnumValidationStatus getValidationStatus() {
         return validationStatus;
+    }
+
+    public void setPayment(PaymentResp payment) {
+        this.payment = payment;
+    }
+
+    public PaymentResp getPayment() {
+        return payment;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setStatus_text(String status_text) {
+
+        this.status_text = status_text;
+    }
+
+    public String getStatus_text() {
+        return status_text;
+    }
+
+    public void setPaied_at(String paied_at) {
+        this.paied_at = paied_at;
+    }
+
+    public String getPaied_at() {
+        return paied_at;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setFulfillmentType(EnumFulfillment_behavior fulfillmentType) {
+        this.fulfillmentType = fulfillmentType;
+    }
+
+    public EnumFulfillment_behavior getFulfillmentType() {
+        return fulfillmentType;
     }
 }

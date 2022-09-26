@@ -40,7 +40,7 @@ public class Payout {
 
     private EnumPayoutMethod method;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
 
     public long getId() {

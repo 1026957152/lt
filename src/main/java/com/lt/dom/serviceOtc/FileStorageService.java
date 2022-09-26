@@ -56,7 +56,7 @@ public interface FileStorageService {
 
     Map<EnumDocumentType, List<String>> loadDocuments(List<EnumDocumentType> scenario_logo, long id);
 
-    PhotoResp loadDocument(String thumbnail_image);
+   // PhotoResp loadDocument(String thumbnail_image);
 
     PhotoResp loadDocument(EnumDocumentType type, String thumbnail_image);
 

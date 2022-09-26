@@ -305,6 +305,8 @@ public class EmpowerRestController {
 
 
               String jwt = jwtUtils.generateJwtToken(0, openid);
+
+
                 UserResp openidResp = UserResp.userWithOpenidLink(Pair.with(optionalUser.get(),openid1));
                 openidResp.setToken(jwt);
 

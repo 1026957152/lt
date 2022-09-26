@@ -24,7 +24,7 @@ public class Request {
     @NotNull
     private LocalDateTime applied_at;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private LocalDateTime updated_at;
 

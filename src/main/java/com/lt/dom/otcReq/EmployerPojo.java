@@ -6,7 +6,18 @@ import java.util.List;
 
 public class EmployerPojo {
 
-   // @NotEmpty
+
+    private String supplier;
+
+    public String getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(String supplier) {
+        this.supplier = supplier;
+    }
+
+    // @NotEmpty
     private String first_name;
  //   @NotEmpty
     private String last_name;

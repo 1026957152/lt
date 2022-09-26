@@ -5,6 +5,7 @@ import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ClainRedeemAssignmentReq;
+import com.lt.dom.otcReq.ValueListEditReq;
 import com.lt.dom.otcReq.ValueListItemReq;
 import com.lt.dom.otcReq.ValueListReq;
 import com.lt.dom.otcenum.*;
@@ -41,6 +42,8 @@ public class ValueListServiceImpl {
 
 
     public ValueList createValueListWithAdd(ValueListReq pojo) {
+
+
         ValueList valueList =createValueList(pojo);
 
         List<ValueListItem> optionalValueListItem = valueListItemRepository.findAllByValueList(valueList.getId());
@@ -71,10 +74,17 @@ public class ValueListServiceImpl {
         valueList.setAlias(pojo.getAlias());
         valueList.setName(pojo.getName());
 
+        valueList.setItem_type(pojo.getItem_type());
         valueList.setType(pojo.getType());
         if(pojo.getType().equals(EnumValueListType.Vendor_groups)){
             valueList.setItem_type(EnumValueListItemType.supplier_id);
             valueList.setLogical_type(EnumLogicalType.exclusion);
+            valueList.setItem_value_type(pojo.getItem_value_type());
+        }
+        if(pojo.getType().equals(EnumValueListType.High_Quality_Product_recommendation)){
+            valueList.setItem_type(EnumValueListItemType.product);
+            valueList.setLogical_type(EnumLogicalType.inclusion);
+            valueList.setItem_value_type(pojo.getItem_value_type());
         }
 
         valueListRepository.save(valueList);
@@ -86,10 +96,10 @@ public class ValueListServiceImpl {
 
         List<ValueListItem>  valueListItems =  aa.stream().map(x->{
             ValueListItem valueListItem = new ValueListItem();
-
+            valueListItem.setValueList(valueList.getId());
             valueListItem.setCreated(LocalDateTime.now());
             valueListItem.setMetadata(x.getMetadata());
-            valueListItem.setValueList(x.getValue_list());
+         //   valueListItem.setValueList(x.getValue_list());
             valueListItem.setValue(x.getValue());
             return valueListItem;
         }).collect(Collectors.toList());
@@ -144,7 +154,7 @@ public class ValueListServiceImpl {
 
     }
 
-    public ValueList edit(ValueList valueList, ValueListReq pojo) {
+    public ValueList edit(ValueList valueList, ValueListEditReq pojo) {
 
         List<ValueListItem> optionalValueListItem = valueListItemRepository.findAllByValueList(valueList.getId());
 
@@ -163,6 +173,68 @@ public class ValueListServiceImpl {
         }).collect(Collectors.toList()));
 
         return valueList;
+
+    }
+
+
+
+
+
+
+
+
+
+    public void setupData(EnumValueListDefault enumValueListDefault) {
+
+
+        ValueListReq valueListReq = new ValueListReq();
+
+        valueListReq.setName(EnumValueListDefault.High_Quality_Product_recommendation.name());
+        valueListReq.setAlias(EnumValueListDefault.High_Quality_Product_recommendation.name());
+        valueListReq.setItem_type(EnumValueListItemType.customer_id);
+        valueListReq.setType(EnumValueListType.High_Quality_Product_recommendation);
+        valueListReq.setItem_value_type(EnumValueType.int_);
+        ValueList valueList = createValueList(valueListReq);
+
+
+
+        valueListReq = new ValueListReq();
+        valueListReq.setName(EnumValueListDefault.city_pass_right_recommendation.name());
+        valueListReq.setAlias(EnumValueListDefault.city_pass_right_recommendation.name());
+        valueListReq.setItem_type(EnumValueListItemType.customer_id);
+        valueListReq.setType(EnumValueListType.city_pass_right_recommendation);
+        valueListReq.setItem_value_type(EnumValueType.int_);
+
+        valueList = createValueList(valueListReq);
+
+
+
+    }
+
+
+    public List<ValueListItem> getByName(EnumValueListDefault high_quality_product_recommendation) {
+
+        Optional<ValueList> valueListItem = valueListRepository.findByName(high_quality_product_recommendation.name());
+      if(valueListItem.isPresent()){
+
+return           valueListItemRepository.findAllByValueList(valueListItem.get().getId());
+
+      }
+      throw new BookNotFoundException(Enumfailures.not_found,"high_quality_product_recommendation"+high_quality_product_recommendation.name());
+    }
+
+
+
+    public List<ValueListItem> addItmeByListName(EnumValueListDefault high_quality_product_recommendation,ValueListItemReq valueListItemReq) {
+
+        Optional<ValueList> valueListOptional = valueListRepository.findByName(high_quality_product_recommendation.name());
+        if(valueListOptional.isEmpty()){
+            throw  new BookNotFoundException(Enumfailures.not_found,"找不到组");
+
+        }
+        ValueList valueList = valueListOptional.get();
+
+        return addValueListItem(valueList,Arrays.asList(valueListItemReq));
 
     }
 }

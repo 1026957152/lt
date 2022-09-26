@@ -138,7 +138,7 @@ public class UserServiceImpl {
         return user;
     }
 
-    User createRoleIfNotFound(User user,List<String> name) {
+    public User createRoleIfNotFound(User user, List<String> name) {
 
         List<Role> role = roleRepository.findByNameIn(name);
         if (role.size()> 0 && role.size() == name.size()) {

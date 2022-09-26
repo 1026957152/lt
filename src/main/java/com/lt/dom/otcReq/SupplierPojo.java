@@ -13,10 +13,10 @@ public class SupplierPojo {
     private String phone;//	string	The user’s last name
 
     @NotNull
-    private String supplierName;// 公司名称	Display name for the suplier
+    private String name;// 公司名称	Display name for the suplier
 
     @NotNull
-    private EnumSupplierType type;//  运营商， 售票者
+    private EnumSupplierType type = EnumSupplierType.Other;//  运营商， 售票者
 
  //   @Pattern(regexp = "^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$")
    // private String location;//  运营商， 售票者
@@ -30,7 +30,7 @@ public class SupplierPojo {
     private String street;
 
     @NotNull
-    private EnumBussinessType business_type;
+    private EnumBussinessType business_type =EnumBussinessType.company;
     private String location;
     private String locationName;
 
@@ -50,12 +50,12 @@ public class SupplierPojo {
         this.phone = phone;
     }
 
-    public String getSupplierName() {
-        return supplierName;
+    public String getName() {
+        return name;
     }
 
-    public void setSupplierName(String supplierName) {
-        this.supplierName = supplierName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getFirstName() {

@@ -1,9 +1,11 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.controllerOct.BarcodesController;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumComponentVoucherStatus;
 import com.lt.dom.otcenum.EnumDuration;
+import com.lt.dom.util.ZxingBarcodeGenerator;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.*;
@@ -12,6 +14,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
+
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ComponentVounchResp {   // 这个是 下单的时候， 从 product 中生成 的
 
 
@@ -22,7 +27,7 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
 
     private Long component;
     private long royaltyRuleId;
-    private String snCode;
+    private String code;
     private long reservationId;
 
 
@@ -39,14 +44,16 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
     private String long_desc;
     private String supplier_code;
     private long remaining;
-    private String code;
+
     private String name;
     private String code_url;
+    private String code_base64_src;
 
     public static ComponentVounchResp from(ComponentVounch e) {
         ComponentVounchResp componentVounchResp = new ComponentVounchResp();
         componentVounchResp.setComponent(e.getComponent());
         componentVounchResp.setComponentRight(e.getComponentRight());
+
         componentVounchResp.setCount(e.getCount());
         componentVounchResp.setStatus(e.getStatus());
         componentVounchResp.setDuration(e.getDuration());
@@ -55,11 +62,11 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
 
         componentVounchResp.setReservationId(e.getReservation());
         componentVounchResp.setRoyaltyRule(e.getRoyaltyRule());
-        componentVounchResp.setSnCode(e.getSnCode());
+        componentVounchResp.setCode(e.getCode());
         componentVounchResp.setRoyaltyRuleId(e.getRoyaltyRuleId());
         componentVounchResp.setVoucherId(e.getVoucherId());
         componentVounchResp.setUser(e.getUser());
-        componentVounchResp.setCode(e.getSnCode());
+        componentVounchResp.setCode(e.getCode());
 
         componentVounchResp.setStatus_text(e.getStatus().toString());
         componentVounchResp.setDuration_text(e.getDuration().toString());
@@ -75,7 +82,7 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
 
         String link = null;
         try {
-            link = linkTo(methodOn(BarcodesController.class).getZxingQRCode(e.getSnCode())).withRel("editProduct").getHref();
+            link = linkTo(methodOn(BarcodesController.class).getZxingQRCode(e.getCode())).withRel("editProduct").getHref();
         } catch (Exception ee) {
             ee.printStackTrace();
         }
@@ -88,6 +95,10 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
         ComponentVounchResp componentVounchResp = ComponentVounchResp.from(e,componentRight);
         componentVounchResp.setSupplier(supplier_.getName());
         componentVounchResp.setSupplier_code(supplier_.getCode());
+
+
+            componentVounchResp.setCode_base64_src(ZxingBarcodeGenerator.base64_png_src(e.getCode()));
+
         return componentVounchResp;
     }
 
@@ -180,13 +191,6 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
         return royaltyRuleId;
     }
 
-    public void setSnCode(String snCode) {
-        this.snCode = snCode;
-    }
-
-    public String getSnCode() {
-        return snCode;
-    }
 
     public void setReservationId(long reservationId) {
         this.reservationId = reservationId;
@@ -295,5 +299,14 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
 
     public String getCode_url() {
         return code_url;
+    }
+
+    public void setCode_base64_src(String code_base64_src) {
+
+        this.code_base64_src = code_base64_src;
+    }
+
+    public String getCode_base64_src() {
+        return code_base64_src;
     }
 }

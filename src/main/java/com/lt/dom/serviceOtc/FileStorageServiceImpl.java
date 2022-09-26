@@ -355,6 +355,13 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     public List<PhotoResp> loadDocumentsWithCode(EnumDocumentType scenario_logo, String reference) {
         List<Document> documents = documentRepository.findAllByTypeAndReference(scenario_logo,reference);
+
+
+        if(documents.isEmpty()){
+
+            return Arrays.asList(FileStorageServiceImpl.url_range_default(Arrays.asList(EnumPhotos.thumb)));
+
+        }
         return documents.stream().map(x->FileStorageServiceImpl.url_rangeWithCode(x)).collect(toList());
 
     }
@@ -456,6 +463,42 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
 
+    public static PhotoResp url_range_default(List<EnumPhotos> enumPhotosList) {
+
+
+
+
+        PhotoResp photoResp = new PhotoResp();
+
+
+        String link =  linkTo(FileUploadController.class).slash("/files/"+"default_logo.jpg").toUriComponentsBuilder().build().toString();
+
+    //    String link = "https://www.baidu.com/img/flexible/logo/pc/result.png";
+        if(enumPhotosList.contains(EnumPhotos.thumb)){
+            photoResp.setUrl_thumbnail(link);
+
+        }
+        if(enumPhotosList.contains(EnumPhotos.large)){
+            photoResp.setUrl_xlarge(link);
+
+        }
+        if(enumPhotosList.contains(EnumPhotos.medium)){
+            photoResp.setUrl_large(link);
+
+        }
+        if(enumPhotosList.contains(EnumPhotos.full)){
+            photoResp.setUrl_original(link);
+            photoResp.setUrl(link);
+
+        }
+
+        return photoResp;
+
+
+
+    }
+
+
     public static PhotoResp url_rangeWithCode(Document document) {
 
         String filename = document.getFileName();
@@ -524,7 +567,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         return m;
     }
 
-
+/*
     @Override
     public PhotoResp loadDocument(String thumbnail_image) {
         if(thumbnail_image != null){
@@ -534,11 +577,11 @@ public class FileStorageServiceImpl implements FileStorageService {
                 return url_range(Arrays.asList(EnumPhotos.thumb),documentOptional.get());
             }
 
-
+            return url_range_default(Arrays.asList(EnumPhotos.thumb));
         }
         return null;
 
-    }
+    }*/
 
     @Override
     public PhotoResp loadDocument(EnumDocumentType type, String reference) {
@@ -558,8 +601,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             return url_range(asList,documentOptional.get(0));
         }
 
-
-        return null;
+        return url_range_default(asList);
     }
 
     @Override
@@ -635,4 +677,24 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
 
+
+
+
+    public Document setupData() {
+
+        String extension = StringUtils.getFilenameExtension("aaa.jpg");
+
+        Document document = new Document();
+        document.setExtension(extension);
+        document.setCode("tempDocument.getCode()");
+        document.setType(EnumDocumentType.default_photo);
+        document.setRaletiveId(-1);
+        String filename = document.getTempDocumentCode()+"."+extension;
+        document.setFileName(filename);
+        document.setCreated_at(LocalDateTime.now());
+        document.setUpdated_at(LocalDateTime.now());
+        document.setSize(100);
+        document.setOriginalFilename("tempDocument.getOriginalFilename()");
+        return documentRepository.save(document);
+    }
 }

@@ -10,6 +10,7 @@ import com.lt.dom.otcReq.SettingReq;
 import com.lt.dom.otcReq.SettingUpdateReq;
 import com.lt.dom.otcenum.EnumRole;
 import com.lt.dom.otcenum.EnumSettings;
+import com.lt.dom.otcenum.EnumValueListType;
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.SettingRepository;
 import com.lt.dom.repository.VoucherRepository;
@@ -20,6 +21,7 @@ import com.lt.dom.vo.SettingVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +61,8 @@ public class SettingRestController {
 
 
 
+
+
         List<Setting> settings = settingRepository.findAll();
         EntityModel entityModel = EntityModel.of(Map.of(
                 "setting",settingService.getSettingVo()
@@ -80,7 +84,7 @@ public class SettingRestController {
         );
 
      //   entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"));
-     //   entityModel.add(linkTo(methodOn(SupplierRestController.class).pageEmployess(supplier.get().getId(),null)).withRel("getPageEmployees"));
+   entityModel.add(linkTo(methodOn(SettingRestController.class).Page_getSettingList()).withSelfRel());
 
         return entityModel;
     }
@@ -110,13 +114,13 @@ public class SettingRestController {
 
     @Operation(summary = "3、更新")
     @PutMapping(value = "/settings", produces = "application/json")
-    public ResponseEntity<EntityModel<SettingVo>> updateSetting( @RequestBody @Valid SettingReq employerPojo) {
+    public ResponseEntity<CollectionModel> updateSetting( @RequestBody @Valid SettingReq employerPojo) {
 
 
 
-        SettingVo setting = settingService.update(employerPojo);
+        List<Setting> setting = settingService.update(employerPojo);
 
-        EntityModel entityModel = EntityModel.of(setting);
+        CollectionModel entityModel = CollectionModel.of(setting);
         return ResponseEntity.ok(entityModel);
 
 

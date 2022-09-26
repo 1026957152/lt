@@ -19,7 +19,7 @@ public class Redemption {
     private long voucher_Id;
     private LocalDateTime created_at;
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
 
     public Long getQuantity() {

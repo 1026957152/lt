@@ -59,7 +59,7 @@ public class AvailabilityVO {
         this.openingHours = openingHours;
     }
 
-    private String booking_at;
+    private LocalDate booking_at;
 
     public void setSpaces_remaining(int spaces_remaining) {
         this.spaces_remaining = spaces_remaining;
@@ -106,12 +106,12 @@ public class AvailabilityVO {
         }
     }
 
-    public void setBooking_at(String booking_at) {
+    public void setBooking_at(LocalDate booking_at) {
 
         this.booking_at = booking_at;
     }
 
-    public String getBooking_at() {
+    public LocalDate getBooking_at() {
         return booking_at;
     }
 

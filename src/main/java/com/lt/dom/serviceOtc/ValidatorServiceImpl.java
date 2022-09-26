@@ -3,7 +3,6 @@ package com.lt.dom.serviceOtc;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ComponentRightValidatorUpdatePojo;
-import com.lt.dom.otcReq.ValidatorPojo;
 import com.lt.dom.otcenum.EnumComponentVoucherStatus;
 import com.lt.dom.otcenum.EnumValidatorType;
 import com.lt.dom.otcenum.Enumfailures;
@@ -44,7 +43,7 @@ public class ValidatorServiceImpl {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    @Autowired
+    //@Autowired
     private Queue queue;
 
     public void send(String order) {
@@ -58,13 +57,14 @@ public class ValidatorServiceImpl {
 
         validatorRepository.deleteAllByComponentRightId(componentRight.getId());
 
-        pojoList.stream().forEach(pojo ->{
+        List<Validator_> validator_list_result = pojoList.stream().map(pojo ->{
 
+            List<Validator_> validator_list = new ArrayList<>();
             if(!Arrays.asList(EnumValidatorType.特定的人员,EnumValidatorType.特定机器).contains(pojo.getType())){
                 throw new BookNotFoundException(Enumfailures.not_found,"找不到 核验类型");
             }
 
-            List<Validator_> validator_list = new ArrayList<>();
+
             if(pojo.getType().equals(EnumValidatorType.特定机器)){
 
                 List<Device> equipmentOptioanl = deviceRepository.findAllById(pojo.getItem_ids());
@@ -101,7 +101,7 @@ public class ValidatorServiceImpl {
 
                 validator_list = validatorRepository.saveAll(equipmentOptioanl.stream().map(e->{
                     Validator_ validator = new Validator_();
-                    validator.setUserId(e.getId());
+                    validator.setUser(e.getId());
                     validator.setType(pojo.getType());
                     validator.setComponentRightId(componentRight.getId());
                     return validator;
@@ -125,9 +125,10 @@ public class ValidatorServiceImpl {
         accessValidatorRepository.saveAll(accessValidators);*/
 
 
-        });
+            return validator_list;
+        }).flatMap(List::stream).collect(Collectors.toList());
 
-        return null;
+        return validator_list_result;
     }
 
 

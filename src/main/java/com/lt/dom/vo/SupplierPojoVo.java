@@ -13,7 +13,7 @@ public class SupplierPojoVo {
     private String supplierName;//
 
     @NotNull
-    private EnumSupplierType type;//  运营商， 售票者
+    private EnumSupplierType type = EnumSupplierType.Bank;//  运营商， 售票者
 
     private String desc;
     private float lat;
@@ -21,7 +21,7 @@ public class SupplierPojoVo {
 
 
     @NotNull
-    private EnumBussinessType business_type;
+    private EnumBussinessType business_type = EnumBussinessType.company;
     private String location;
     private String locationName;
 
@@ -35,7 +35,9 @@ public class SupplierPojoVo {
         supplierPojoVo.setLocationName(supplierPojo.getLocationName());
         supplierPojoVo.setLat(Float.valueOf(supplierPojo.getLat()));
         supplierPojoVo.setLng(Float.valueOf(supplierPojo.getLng()));
-        supplierPojoVo.setSupplierName(supplierPojo.getSupplierName());
+        supplierPojoVo.setSupplierName(supplierPojo.getName());
+        supplierPojoVo.setBusiness_type(supplierPojo.getBusiness_type());
+        supplierPojoVo.setType(supplierPojo.getType());
         return supplierPojoVo;
     }
 

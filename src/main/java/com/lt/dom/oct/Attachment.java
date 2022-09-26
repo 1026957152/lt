@@ -20,7 +20,7 @@ public class Attachment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
-    @Column(unique=true)
+    //##@Column(unique=true)
     private String code;
     private long booking;
 

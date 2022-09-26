@@ -37,7 +37,7 @@ import java.util.Optional;
 public class VoucherResp {
 
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private String campaign;
     private String object = "voucher";

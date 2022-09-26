@@ -388,7 +388,7 @@ public class WeixinPaymentServiceImpl {
 
 
 
-        reservation.setStatus(EnumBookingStatus.Submitted_Confirmed);
+        reservation.setStatus(EnumBookingStatus.PAID);
         reservation.setPaied_at(LocalDateTime.now());
         reservationRepository.save(reservation);
 /*
@@ -434,7 +434,7 @@ public class WeixinPaymentServiceImpl {
 
 
 
-        componentRightResolveService.resolve(reservation,reservation.getFollowupPaid());
+        componentRightResolveService.resolve(reservation,reservation.getFulfillment_behavior());
 
        // componentRightService.createComponentRight()
         eventPublisher.publishEvent(new OnChargePaidCompleteEvent(new User(),

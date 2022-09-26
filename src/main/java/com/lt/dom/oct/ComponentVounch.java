@@ -32,7 +32,7 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
 
     private Long component;
     private long royaltyRuleId;
-    private String snCode;
+    private String code;
     private long reservation;
 
     @NotNull
@@ -135,12 +135,12 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
         return royaltyRuleId;
     }
 
-    public void setSnCode(String snCode) {
-        this.snCode = snCode;
+    public void setCode(String snCode) {
+        this.code = snCode;
     }
 
-    public String getSnCode() {
-        return snCode;
+    public String getCode() {
+        return code;
     }
 
     public void setReservation(long reservationId) {

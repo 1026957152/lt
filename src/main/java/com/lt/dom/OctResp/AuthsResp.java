@@ -88,7 +88,7 @@ public class AuthsResp {
 
 /*
     
-@Column(unique=true) 
+//##@Column(unique=true) 
 private String code;
     private EnumSupplierType supplier_type;
     private String supplier_name;

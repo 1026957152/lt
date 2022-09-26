@@ -288,8 +288,6 @@ public class DeviceService {
        if(commandOptional.isPresent()){
            DeviceSendCommandPojo.Command command = commandOptional.get();
 
-
-
 /*           Optional<AssetDevice> assetDevice = assetDeviceRepository.findById(device.getId());
 
            Optional<AssetAuthorized> optionalAssetAuthorized = assetAuthorizedRepository.findAllByAssetId(assetDevice.get().getId());
@@ -315,7 +313,7 @@ public class DeviceService {
 
 
            System.out.println("=============获得 用户现在的 权益 "+ listListListTriplet.toString());
-           DeviceScanValidatorVo deviceScanValidatorVo = assetDeviceService.扫设备(
+           DeviceScanValidatorVo deviceScanValidatorVo = assetDeviceService.扫设备(user,
                    validator_s.stream().map(e->e.getComponentRightId()).collect(Collectors.toList()),
                    listListListTriplet);
 

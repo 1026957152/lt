@@ -2,7 +2,7 @@ package com.lt.dom.serviceOtc;
 
 
 import com.lt.dom.oct.*;
-import com.lt.dom.otcenum.EnumFulfillmentType;
+import com.lt.dom.otcenum.EnumFulfillment_behavior;
 import com.lt.dom.otcenum.EnumValidateWay;
 import com.lt.dom.otcenum.EnumValidationStatus;
 import com.lt.dom.repository.*;
@@ -36,11 +36,17 @@ public class ComponentRightResolveServiceImpl {
     @Autowired
     private ComponentRightServiceImpl componentRightService;
 
-    public void resolve(Reservation reservation, EnumFulfillmentType followupPaid) {
+    @Autowired
+    private BookingProductRepository bookingProductRepository;
 
-        if(reservation.getSetValidate_way().equals(EnumValidateWay.none)){
+
+
+
+    public void resolve(Reservation reservation, EnumFulfillment_behavior followupPaid) {
+
+      //  if(reservation.getSetValidate_way().equals(EnumValidateWay.none)){
             resolve_(reservation,followupPaid);
-        }
+       // }
 
         if(reservation.getSetValidate_way().equals(EnumValidateWay.offline_manual)){
 
@@ -49,7 +55,10 @@ public class ComponentRightResolveServiceImpl {
 
 
 
-    public void resolve_(Reservation reservation, EnumFulfillmentType followupPaid) {
+    public void resolve_(Reservation reservation, EnumFulfillment_behavior followupPaid) {
+
+
+        System.out.println("-------------看看fulfillment ----------- 不知道是在哪里啊啊啊啊 "+followupPaid);
 
         Optional<User> objectUser = userRepository.findById(reservation.getUser());
 
@@ -57,6 +66,13 @@ public class ComponentRightResolveServiceImpl {
         switch (followupPaid){
 
             case Universal:{
+
+                System.out.println("-------------看看fulfillment --看看一般的完工啊啊啊 "+followupPaid);
+
+
+
+
+
                 List<ComponentVounch> componentVounchList =componentRightService.createComponentVounch(reservation,objectUser.get());
 
 
@@ -72,6 +88,9 @@ public class ComponentRightResolveServiceImpl {
             }
             break;
             case Create_pass:{
+
+                System.out.println("-------------看看fulfillment --新建 主人卡的完工 "+followupPaid);
+
                 List<ComponentVounch> componentVounchList = componentRightService.createComponentVounch(reservation,objectUser.get());
 
                 Map<Long,User> longUserMap = userRepository.findAllById(componentVounchList.stream().map(e->e.getUser()).collect(Collectors.toList()))
@@ -94,12 +113,17 @@ public class ComponentRightResolveServiceImpl {
         assetService.newQr(reservation.getCode(),reservation.getId());
 
 
+
+
+    }
+    public void resolve_with_manual_validate(Reservation reservation, EnumFulfillment_behavior followupPaid) {
+
+        resolve_(reservation,followupPaid);
+
         reservation.setValidationStatus(EnumValidationStatus.ValidationSucceeded);
 
         bookingService.update(reservation);
 
-
     }
-
 
 }

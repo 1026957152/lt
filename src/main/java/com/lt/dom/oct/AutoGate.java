@@ -44,6 +44,9 @@ public class AutoGate {
     public String	Mac_addr;//	设备唯一mac地址
     public String	SN;//	设备唯一序列号
     public String	location;//	位置
+
+    @Column(name = "inout_")
+
     public int   	inout;//	出入 0出口   1入口
     public String	pwd;//	密码 6位数字
     public int   	whitevalue;//	人脸识别阈值 [70,100]
