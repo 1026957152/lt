@@ -128,9 +128,20 @@ public class SubscriptionServiceImpl {
     }
 
 
+    public void create__(List<Subscription> subscription) {
+        LocalDate Bill_Run_Day = LocalDate.now();
+       // LocalDate Bill_Run_Day = LocalDate.now();
+        LocalDate lastOfNextMonth = Bill_Run_Day.with( TemporalAdjusters.lastDayOfMonth() );
+
+        if(Bill_Run_Day ==lastOfNextMonth){
+            List<Subscription> subscriptionList = subscription.stream()
+                    .filter(e->Bill_Run_Day.isAfter(e.getBilling_cycle_anchor().toLocalDate())).collect(Collectors.toList());
+
+        }
 
 
 
+    }
 
 
 

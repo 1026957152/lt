@@ -353,7 +353,7 @@ public class XhToYxdService {
 
 
 
-    @Scheduled(fixedDelay =1000*60*1)
+   // @Scheduled(fixedDelay =1000*60*1)
     // @Scheduled(cron = "${erwin.cron:0/2 * * * * ?}")
     public void cronTaskYmlDemo() {
         PullRequest pullRequest = getXydfinanceproductorderinfo();

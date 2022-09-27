@@ -1,6 +1,6 @@
 MYSQL_HOST: 10.0.0.50
 setupdata:
-  alreadySetup: true
+  alreadySetup: false
 feign:
   client:
     config:
@@ -41,16 +41,16 @@ spring:
   h2:
     console.enabled: true
   datasource:
-#    url: jdbc:h2:mem:mydb
-#    username: sa
-#    password: 123
+    url: jdbc:h2:mem:mydb
+    username: sa
+    password: 123
    # url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/db_example
-    url: jdbc:mysql://10.0.0.50:33306/db_example?createDatabaseIfNotExist=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
-
-    username: root
-    password: 123456
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
+#    url: jdbc:mysql://10.0.0.50:33306/db_example?createDatabaseIfNotExist=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
+#
+#    username: root
+#    password: 123456
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#
 
 
   jpa:
@@ -58,13 +58,13 @@ spring:
       hibernate:
         jdbc.batch_size: 30
         order_inserts: true
- #       dialect: org.hibernate.dialect.H2Dialect
-        dialect: org.hibernate.dialect.MySQL5Dialect
+        dialect: org.hibernate.dialect.H2Dialect
+        #dialect: org.hibernate.dialect.MySQL5Dialect
     show-sql: true
 
-    generate-ddl: true  # 这个
-    hibernate.ddl-auto: update #create-drop
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+#    generate-ddl: true  # 这个
+#    hibernate.ddl-auto: update #create-drop
+#    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
 
   mvc:
     static-path-pattern: /oct/files/**
