@@ -304,11 +304,11 @@ public class SetupDataLoader implements
 
 
         xhToYxdService.setupData();
-        try {
+/*        try {
             JxlsServiceImpl.getAvailability("name");
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     @Transactional
