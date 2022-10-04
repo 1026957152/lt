@@ -40,6 +40,7 @@ private String code;
 
     private EnumRoyaltyRuleCategory royalty_mode = EnumRoyaltyRuleCategory.AMOUNT;
     private int value;
+    private long subscription;
 
     public static List<EnumLongIdResp> EnumList(List<ComponentRight> componentRightList) {
         return componentRightList.stream().map(x->{
@@ -266,5 +267,13 @@ private String code;
 
     public void setValue(int value) {
         this.value = value;
+    }
+
+    public void setSubscription(long subscription) {
+        this.subscription = subscription;
+    }
+
+    public long getSubscription() {
+        return subscription;
     }
 }

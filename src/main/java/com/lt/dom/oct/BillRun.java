@@ -10,7 +10,7 @@ import java.util.List;
 
 
 @Entity
-public class Subscription {   // 这个是 下单的时候， 从 product 中生成 的
+public class BillRun {   // 这个是 下单的时候， 从 product 中生成 的
     @Version
     private Integer version;
 
@@ -39,7 +39,7 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
     private String code;
     private LocalDateTime current_period_end;
     private LocalDateTime current_period_start;
-    private EnumTermSetting termSetting;
+    private EnumBillRecurringInterval repeats;
 
     public EnumProductComponentSource getSource() {
         return source;
@@ -333,12 +333,11 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
         return current_period_start;
     }
 
-    public void setTermSetting(EnumTermSetting termSetting) {
-
-        this.termSetting = termSetting;
+    public void setRepeats(EnumBillRecurringInterval repeats) {
+        this.repeats = repeats;
     }
 
-    public EnumTermSetting getTermSetting() {
-        return termSetting;
+    public EnumBillRecurringInterval getRepeats() {
+        return repeats;
     }
 }

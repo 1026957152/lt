@@ -1,27 +1,26 @@
 package com.lt.dom.serviceOtc;
 
 
-import com.lt.dom.oct.Attraction;
-import com.lt.dom.oct.Component;
-import com.lt.dom.oct.Subscription;
-import com.lt.dom.oct.Supplier;
+import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.AttractionReq;
-import com.lt.dom.otcenum.EnumBillRecurringInterval;
-import com.lt.dom.otcenum.EnumProductStatus;
-import com.lt.dom.otcenum.EnumSubscriptionStatus;
-import com.lt.dom.repository.AttractionRepository;
-import com.lt.dom.repository.ComponentRepository;
-import com.lt.dom.repository.SubscriptionRepository;
+import com.lt.dom.otcReq.SubscriptionResp;
+import com.lt.dom.otcenum.*;
+import com.lt.dom.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.support.PeriodicTrigger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,8 +39,49 @@ public class SubscriptionServiceImpl {
     @Resource
     private ComponentRepository componentRepository;
 
+    @Resource
+    private RatePlanRepository ratePlanRepository;
 
-    public Subscription create(Supplier supplier, AttractionReq pojo) {
+
+    @Resource
+    private ComponentRightRepository componentRightRepository;
+
+    public RatePlan createRateplan(Subscription subscription, ComponentRight component) {
+
+        RatePlan ratePlan = new RatePlan();
+        ratePlan.setBillingPeriods(EnumBillingPeriods.Month);
+        ratePlan.setChargeModel(EnumChargeModel.Perunit);
+        ratePlan.setListPrice(10);
+        ratePlan.setListPriceBase(EnumListPriceBase.BillingPeriod);
+        ratePlanRepository.save(ratePlan);
+        return ratePlan;
+    }
+
+
+
+
+    public RatePlan addComponentRight(Subscription subscription, ComponentRight component) {
+
+        RatePlan ratePlan = new RatePlan();
+        ratePlan.setBillingPeriods(EnumBillingPeriods.Month);
+        ratePlan.setChargeModel(EnumChargeModel.Perunit);
+        ratePlan.setListPrice(10);
+        ratePlan.setListPriceBase(EnumListPriceBase.BillingPeriod);
+        ratePlanRepository.save(ratePlan);
+        return ratePlan;
+    }
+
+
+
+
+
+
+
+
+
+
+
+    public Subscription create(Supplier supplier, SubscriptionResp pojo) {
 
         Subscription attraction = new Subscription();
         attraction.setSupplier(supplier.getId());
@@ -49,6 +89,9 @@ public class SubscriptionServiceImpl {
         attraction.setName(pojo.getName());
         attraction.setCurrent_period_end(LocalDateTime.now());
         attraction.setCurrent_period_start(LocalDateTime.now());
+        attraction.setTermSetting(pojo.getTermSetting());
+
+
        // attraction.set(pojo.getName());
 
         //   attraction.setLongdesc(pojo.getLongdesc());
@@ -62,11 +105,11 @@ public class SubscriptionServiceImpl {
     }
 
 
-    public Component create(Subscription subscription, Component component) {
+    public ComponentRight addComponent(Subscription subscription, ComponentRight component) {
 
 
         component.setSubscription(subscription.getId());
-        component = componentRepository.save(component);
+        component = componentRightRepository.save(component);
 
         return component;
     }
@@ -141,6 +184,10 @@ public class SubscriptionServiceImpl {
 
 
 
+
+
+
+
     }
 
 
@@ -152,14 +199,44 @@ public class SubscriptionServiceImpl {
 
 
 
+    @Autowired
+    private ThreadPoolTaskScheduler taskScheduler;
 
 
 
+    public void start(BillRun billRun) {
+        if(billRun.getStatus().equals(EnumSubscriptionStatus.active)){
+            return;
+        }
+        billRun.setRepeats(EnumBillRecurringInterval.day);
+
+        PeriodicTrigger periodicTrigger
+                = new PeriodicTrigger(15, TimeUnit.DAYS);
+        periodicTrigger.setInitialDelay(Date.from(LocalDateTime.now().plusMinutes(1)
+                .atZone(ZoneId.systemDefault()).toInstant()).getTime());
+        taskScheduler.schedule(
+                new RunnableTask("Periodic Trigger"), periodicTrigger);
+
+        RunnableTask runnableTask = new RunnableTask("Periodic Trigger") ;
+        billRun.setStatus(EnumSubscriptionStatus.active);
 
 
+    }
 
 
+    class RunnableTask implements Runnable {
 
+        private String message;
+
+        public RunnableTask(String message) {
+            this.message = message;
+        }
+
+        @Override
+        public void run() {
+            System.out.println("Runnable Task with " + message + " on thread " + Thread.currentThread().getName());
+        }
+    }
 
 
 /*
