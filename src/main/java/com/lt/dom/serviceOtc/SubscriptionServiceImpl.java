@@ -53,6 +53,7 @@ public class SubscriptionServiceImpl {
         ratePlan.setChargeModel(EnumChargeModel.Perunit);
         ratePlan.setListPrice(10);
         ratePlan.setListPriceBase(EnumListPriceBase.BillingPeriod);
+        ratePlan.setBillCycleDay(1);
         ratePlanRepository.save(ratePlan);
         return ratePlan;
     }
@@ -67,7 +68,12 @@ public class SubscriptionServiceImpl {
         ratePlan.setChargeModel(EnumChargeModel.Perunit);
         ratePlan.setListPrice(10);
         ratePlan.setListPriceBase(EnumListPriceBase.BillingPeriod);
-        ratePlanRepository.save(ratePlan);
+        ratePlan.setBillingDay(EnumBillingDay.SpecificDayOfMonth);
+        ratePlan.setBillCycleDay(1);
+
+        ratePlan = ratePlanRepository.save(ratePlan);
+
+
         return ratePlan;
     }
 
@@ -81,15 +87,20 @@ public class SubscriptionServiceImpl {
 
 
 
-    public Subscription create(Supplier supplier, SubscriptionResp pojo) {
+    public Subscription create(Supplier supplier,RatePlan ratePlan,ComponentRight componentRight, SubscriptionResp pojo) {
 
-        Subscription attraction = new Subscription();
-        attraction.setSupplier(supplier.getId());
-        attraction.setCode(idGenService.attractionCode());
-        attraction.setName(pojo.getName());
-        attraction.setCurrent_period_end(LocalDateTime.now());
-        attraction.setCurrent_period_start(LocalDateTime.now());
-        attraction.setTermSetting(pojo.getTermSetting());
+
+
+        Subscription subscription = new Subscription();
+        subscription.setSupplier(supplier.getId());
+        subscription.setCode(idGenService.attractionCode());
+        subscription.setName(pojo.getName());
+        subscription.setCurrent_period_end(LocalDateTime.now());
+        subscription.setCurrent_period_start(LocalDateTime.now());
+        subscription.setTermSetting(pojo.getTermSetting());
+
+        subscription.setRatePlan(ratePlan.getId());
+        subscription.setComponentRight(componentRight.getId());
 
 
        // attraction.set(pojo.getName());
@@ -97,11 +108,11 @@ public class SubscriptionServiceImpl {
         //   attraction.setLongdesc(pojo.getLongdesc());
       //  attraction.setShortdesc(pojo.getShortdesc());
       //  attraction.setVideo(pojo.getVideo());
-        attraction.setStatus(EnumSubscriptionStatus.draft);
+        subscription.setStatus(EnumSubscriptionStatus.draft);
       //  attraction.setThumbnail_image(pojo.getVideo_url());
-        attraction = subscriptionRepository.save(attraction);
+        subscription = subscriptionRepository.save(subscription);
 
-        return attraction;
+        return subscription;
     }
 
 

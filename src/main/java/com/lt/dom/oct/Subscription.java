@@ -40,6 +40,7 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
     private LocalDateTime current_period_end;
     private LocalDateTime current_period_start;
     private EnumTermSetting termSetting;
+    private long ratePlan;
 
     public EnumProductComponentSource getSource() {
         return source;
@@ -340,5 +341,13 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
 
     public EnumTermSetting getTermSetting() {
         return termSetting;
+    }
+
+    public void setRatePlan(long ratePlan) {
+        this.ratePlan = ratePlan;
+    }
+
+    public long getRatePlan() {
+        return ratePlan;
     }
 }
