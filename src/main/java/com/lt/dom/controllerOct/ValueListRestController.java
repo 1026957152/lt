@@ -147,7 +147,7 @@ public class ValueListRestController {
     public EntityModel<ValueListResp> getValueList(@PathVariable long VALUE_LIST_ID) {
 
         String orderIdKey = Long.toString(VALUE_LIST_ID);
-        StateMachine<ApplicationReviewStates, ApplicationReviewEvents> stateMachine = stateMachineFactory.getStateMachine(orderIdKey);
+        StateMachine<ApplicationReviewStates, ApplicationReviewEvents> stateMachine = null;//stateMachineFactory.getStateMachine(orderIdKey);
 
         stateMachine.startReactively();
 
