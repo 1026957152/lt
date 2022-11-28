@@ -1,24 +1,22 @@
 package com.lt.dom.oct;
 
 
+import com.lt.dom.OctResp.EnumLongIdResp;
 import com.lt.dom.otcenum.EnumPriceRecurring;
 import com.lt.dom.otcenum.EnumProductPricingType;
 import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
+import com.lt.dom.otcenum.EnumProductPricingTypeByPersonGroupType;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
-public class PricingType {
-    @Version
-    private Integer version;
+public class PricingType extends Base {
 
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    private long id;
-
-    private long productId;
+    private Long productId;
 
     private Boolean active;
 
@@ -28,17 +26,37 @@ public class PricingType {
 
 
     private EnumProductPricingType type;
-
-
     @Column(name = "by_")
     private EnumProductPricingTypeByPerson by;
-    private int min;
-    private int max;
-    private String unit; // per or total
-    private int price;
-    private int original; //The original price for this product which will be the same or higher than the sale amount. Use this to show a discount has been applied e.g. $10 $8.50
-    private int retail; //The sale price you should charge your customers.
-    private int net;  //The wholesale rate the supplier will charge you for this sale.
+    private Integer min;
+    private Integer max;
+    private EnumProductPricingTypeByPersonGroupType group_type; // per or total
+
+    private String unit;
+
+    private Integer price;
+    private Integer original; //指导价/建议价 market_price  The original price for this product which will be the same or higher than the sale amount. Use this to show a discount has been applied e.g. $10 $8.50
+    private Integer retail; //original_price  门市价/指导价    The sale price you should charge your customers.
+    private Integer net;  //The wholesale rate the supplier will charge you for this sale.
+    private Integer restriction_MaxAge;
+    private Integer restriction_MinAge;
+    private Integer restriction_MinQuantity;
+    private Integer restriction_MaxQuantity;
+    private Boolean restriction_IdRequired;
+    private Integer restriction_PaxCount;
+    private Integer paxCount;
+
+    public static List List(List<PricingType> componentRightMap) {
+        return componentRightMap.stream().map(x->{
+
+            EnumLongIdResp enumResp = new EnumLongIdResp();
+            enumResp.setId(x.getId());
+
+            enumResp.setText(x.getLable()+"_"+x.getNick_name());
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
+    // private List<String> accompaniedBy;
 
     public String getNick_name() {
         return nick_name;
@@ -51,15 +69,9 @@ public class PricingType {
     private EnumPriceRecurring recurring = EnumPriceRecurring.one_time;
 
 
-    public Integer getVersion() {
-        return version;
-    }
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
 
-    public int getOriginal() {
+    public Integer getOriginal() {
         return original;
     }
 
@@ -71,23 +83,23 @@ public class PricingType {
         this.active = active;
     }
 
-    public void setOriginal(int original) {
+    public void setOriginal(Integer original) {
         this.original = original;
     }
 
-    public int getRetail() {
+    public Integer getRetail() {
         return retail;
     }
 
-    public void setRetail(int retail) {
+    public void setRetail(Integer retail) {
         this.retail = retail;
     }
 
-    public int getNet() {
+    public Integer getNet() {
         return net;
     }
 
-    public void setNet(int net) {
+    public void setNet(Integer net) {
         this.net = net;
     }
 
@@ -106,13 +118,6 @@ public class PricingType {
     private Long min_booking_size;
 
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public EnumProductPricingType getType() {
         return type;
@@ -130,35 +135,35 @@ public class PricingType {
         this.by = by;
     }
 
-    public int getMin() {
+    public Integer getMin() {
         return min;
     }
 
-    public void setMin(int min) {
+    public void setMin(Integer min) {
         this.min = min;
     }
 
-    public int getMax() {
+    public Integer getMax() {
         return max;
     }
 
-    public void setMax(int max) {
+    public void setMax(Integer max) {
         this.max = max;
     }
 
-    public String getUnit() {
-        return unit;
+    public EnumProductPricingTypeByPersonGroupType getGroup_type() {
+        return group_type;
     }
 
-    public void setUnit(String unit) {
-        this.unit = unit;
+    public void setGroup_type(EnumProductPricingTypeByPersonGroupType unit) {
+        this.group_type = unit;
     }
 
-    public int getPrice() {
+    public Integer getPrice() {
         return price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(Integer price) {
         this.price = price;
     }
 
@@ -174,7 +179,7 @@ public class PricingType {
         this.productId = productId;
     }
 
-    public long getProductId() {
+    public Long getProductId() {
         return productId;
     }
 
@@ -185,4 +190,69 @@ public class PricingType {
     public String getStreamSeq() {
         return streamSeq;
     }
+
+    public void setRestriction_MaxAge(Integer restriction_maxAge) {
+        this.restriction_MaxAge = restriction_maxAge;
+    }
+
+    public Integer getRestriction_MaxAge() {
+        return restriction_MaxAge;
+    }
+
+    public void setRestriction_MinAge(Integer restriction_minAge) {
+        this.restriction_MinAge = restriction_minAge;
+    }
+
+    public Integer getRestriction_MinAge() {
+        return restriction_MinAge;
+    }
+
+    public void setRestriction_MinQuantity(Integer restriction_minQuantity) {
+        this.restriction_MinQuantity = restriction_minQuantity;
+    }
+
+    public Integer getRestriction_MinQuantity() {
+        return restriction_MinQuantity;
+    }
+
+    public void setRestriction_MaxQuantity(Integer restriction_maxQuantity) {
+        this.restriction_MaxQuantity = restriction_maxQuantity;
+    }
+
+    public Integer getRestriction_MaxQuantity() {
+        return restriction_MaxQuantity;
+    }
+
+    public void setRestriction_IdRequired(Boolean restriction_idRequired) {
+        this.restriction_IdRequired = restriction_idRequired;
+    }
+
+    public Boolean getRestriction_IdRequired() {
+        return restriction_IdRequired;
+    }
+
+    public void setRestriction_PaxCount(Integer restriction_paxCount) {
+        this.restriction_PaxCount = restriction_paxCount;
+    }
+
+    public Integer getRestriction_PaxCount() {
+        return restriction_PaxCount;
+    }
+
+    public Integer getPaxCount() {
+        return paxCount;
+    }
+
+    public void setPaxCount(Integer paxCount) {
+        this.paxCount = paxCount;
+    }
+
+/*    public List<String> getAccompaniedBy() {
+
+        return accompaniedBy;
+    }
+
+    public void setAccompaniedBy(List<String> accompaniedBy) {
+        this.accompaniedBy = accompaniedBy;
+    }*/
 }

@@ -5,33 +5,27 @@ import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.User_already_be_guideException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.BookingDocumentIdsResp;
-import com.lt.dom.otcReq.PageReq;
 import com.lt.dom.otcReq.RealnameAuthsReq;
 import com.lt.dom.otcReq.UserPojo;
-import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.vo.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
-import org.aspectj.apache.bcel.classfile.Module;
 import org.javatuples.Pair;
-import org.javatuples.Quintet;
-import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.Arrays;
@@ -57,6 +51,12 @@ public class UserRestController {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserAuthorityRepository userAuthorityRepository;
+    @Autowired
+    private PreferenceServiceImpl preferenceService;
+
+
 
     @Autowired
     private GuideServiceImpl guideService;
@@ -77,7 +77,13 @@ public class UserRestController {
     @Autowired
     private OpenidRepository openidRepository;
     @Autowired
+    private FeatureServiceImpl featureService;
+
+    @Autowired
+    private PassServiceImpl passService;
+    @Autowired
     private SupplierRepository supplierRepository;
+
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -120,15 +126,27 @@ public class UserRestController {
         Authentication authentication =  authenticationFacade.getAuthentication();
 
         System.out.println("--------++++++++++"+authentication.toString());
-       // String userphone = null;
+
+        System.out.println("------我看看++++++"+authentication.getPrincipal());
+
+
+        // String userphone = null;
         Optional<User> optionalUser = Optional.empty();
         if (authentication instanceof AnonymousAuthenticationToken) {
 
             Optional<Openid> optional = openidRepository.findByOpenid((String)authentication.getPrincipal());
+            Openid openid = optional.get();
 
-            EntityModel entityModel = EntityModel.of(UserResp.from(optional.get()));
-            entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).postRealnameAuths(null)).withRel("realnameAuth"));
+            UserResp userResp = UserResp.from(optional.get());
+            EntityModel entityModel = EntityModel.of(UserResp.from(openid));
+            entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).individual_only_for_realnameauth(null)).withRel("realnameAuth"));
             entityModel.add(linkTo(methodOn(EmpowerRestController.class).mini_getPhone(null)).withRel("getPhone"));
+            entityModel.add(linkTo(methodOn(LoginController.class).Page_smsLogin(openid.getOpenid())).withRel("Page_phoneLogin"));
+
+
+
+            userResp.setLayout(featureService.meFillWithoutUser());;
+
 
             return ResponseEntity.ok(entityModel);
 
@@ -136,18 +154,33 @@ public class UserRestController {
 
 
         }else{
+
+
             if(authentication.isAuthenticated()){
-                UserDetails user_ = (UserDetails)authentication.getPrincipal();
+                CustomUserDetails user_ = (CustomUserDetails)authentication.getPrincipal();
 
-                optionalUser = userRepository.findByUsername(user_.getUsername());
-                if(optionalUser.isEmpty()){
+             //   Optional<UserAuthority> userAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,user_.getUsername());
 
-                    optionalUser = userRepository.findByPhone(user_.getUsername());
+                optionalUser = userRepository.findById(user_.getUserAuthority().getUser_id());
+
+/*
+                List<User> userList = userRepository.findByOpenid(user_.getUsername());
+
+
+                if(userList.isEmpty()){
+                    optionalUser = userRepository.findByUsername(user_.getUsername());
                     if(optionalUser.isEmpty()){
-                        throw new BookNotFoundException(user_.getUsername(),"找不到用户");
+
+                        optionalUser = userRepository.findByPhone(user_.getUsername());
+                        if(optionalUser.isEmpty()){
+                            throw new BookNotFoundException(user_.getUsername(),"找不到用户");
+                        }
                     }
-                }
-                //userphone = optionalUser.get().getPhone();
+
+                }else {
+                    optionalUser = Optional.of(userList.get(0));
+                }*/
+
             }
         }
 
@@ -173,6 +206,22 @@ public class UserRestController {
 
 
 
+    @GetMapping(value = "/users/notify",produces = "application/json")
+    public ResponseEntity<EntityModel> notifyMe() {
+
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        System.out.println("--------++++++++++"+authentication.toString());
+
+
+
+        EntityModel entityModel = EntityModel.of(Map.of("refresh",true));
+
+        return ResponseEntity.ok(entityModel);
+
+
+    }
+
 /*
                 supplierRespEntityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchorBycode(null,null)).withRel("redeem"));
 
@@ -190,8 +239,10 @@ public class UserRestController {
 */
 
 
-    @GetMapping(value = "/users/{USER_ID}",produces = "application/json")
-    public ResponseEntity<UserResp> get(@PathVariable long  USER_ID) {
+    @GetMapping(value = "/users/{USER_ID}/profile",produces = "application/json")
+    public ResponseEntity<EntityModel> getProfile(@PathVariable long  USER_ID) {
+
+
 
 /*        User user = new User();
         user.setPhone(phone);
@@ -199,23 +250,88 @@ public class UserRestController {
 
         Optional<User> optionalUser = userRepository.findById(USER_ID);
 
-        if(optionalUser.isPresent()){
-            User user = optionalUser.get();
-
-
-            UserResp userResp = UserResp.from(user);
-
-            userResp.add(linkTo(methodOn(UserRestController.class).beGuide(user.getId())).withRel("be_guide_url"));
-            userResp.add(linkTo(methodOn(UserRestController.class).postRealnameAuths(user.getId(),null)).withRel("realname_auths_url"));
-
-            return ResponseEntity.ok(userResp);
-        }else{
+        if(optionalUser.isEmpty()) {
             throw new BookNotFoundException(USER_ID,User.class.getSimpleName());
 
         }
+            User user = optionalUser.get();
+
+
+        UserProfileResp userResp = UserProfileResp.pcFrom(user);
+
+
+        Optional<Employee> employeeOptional = employeeRepository.findByUserIdAndStatus(user.getId(),EnumEmployeeStatus.active);
+
+        Map<String,List<EnumPreferenceSpace>> listMap = Arrays.stream(EnumPreferenceSpace.values()).collect(Collectors.groupingBy(e->e.getRole()));
+        List<EnumPreferenceSpace> work_space_list = Arrays.asList();
+        if(employeeOptional.isPresent()){
+           work_space_list = Arrays.asList(EnumPreferenceSpace.default_,EnumPreferenceSpace.employee);
+        }else{
+            work_space_list = Arrays.asList(EnumPreferenceSpace.default_);
+        }
+
+
+
+        Preference preference = preferenceService.getValue(user,EnumPreference.working_space);
+
+
+        UserProfileResp.PreferenceSpaceEdit profileResp = new UserProfileResp.PreferenceSpaceEdit();
+        profileResp.setParameterList(
+                Map.of(
+                        "work_space_list",EnumPreferenceSpace.list( work_space_list)
+                        ));
+        profileResp.setPreferenceSpace(EnumPreferenceSpace.valueOf(preference.getString_value()));
+
+        EntityModel entityModel_preferenceEdit = EntityModel.of(profileResp);
+        entityModel_preferenceEdit.add(linkTo(methodOn(PreferenceRestController.class).updateEmployee(preference.getId(),null)).withRel("update"));
+
+        userResp.setPreferenceSpaceEdit(entityModel_preferenceEdit);
+
+
+
+
+            Map.of("更换账号","ddddd");
+            EntityModel entityModel = EntityModel.of(userResp);
+          //  entityModel.add(linkTo(methodOn(UserRestController.class).beGuide(user.getId())).withRel("be_guide_url"));
+          //  entityModel.add(linkTo(methodOn(UserRestController.class).postRealnameAuths(user.getId(),null)).withRel("realname_auths_url"));
+            userResp.setLayout(featureService.profileFill(user));
+
+        entityModel.add(linkTo(methodOn(OpenidRestController.class).Page_linkUser(user.getOpenid())).withRel("Page_linkUser"));
+        entityModel.add(linkTo(methodOn(LoginController.class).Page_verification()).withRel("Page_verifyPhone"));
+        entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).Page_realnameAuth()).withRel("Page_realnameAuth"));
+        entityModel.add(linkTo(methodOn(EmpowerRestController.class).wxlogout(user.getOpenid())).withRel("wxlogout"));
+
+
+        return ResponseEntity.ok(entityModel);
+
 
     }
 
+
+    @GetMapping(value = "/supplier/{SUPPLIER_ID}/profile",produces = "application/json")
+    public ResponseEntity<EntityModel> getSupplier(@PathVariable long  SUPPLIER_ID) {
+
+/*        User user = new User();
+        user.setPhone(phone);
+        Example<User> example = Example.of(user);*/
+
+        Optional<Supplier> optionalUser = supplierRepository.findById(SUPPLIER_ID);
+
+        if(optionalUser.isEmpty()) {
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到");
+        }
+        Supplier user = optionalUser.get();
+
+
+        SupplierResp userResp = SupplierResp.from(user);
+
+
+        EntityModel entityModel = EntityModel.of(userResp);
+
+        return ResponseEntity.ok(entityModel);
+
+
+    }
 
 
     @GetMapping(value = "/users/{USER_ID}/balance",produces = "application/json")
@@ -259,7 +375,7 @@ public class UserRestController {
         Optional<User> optionalUser = userRepository.findById(USER_ID);
 
         if(optionalUser.isEmpty()) {
-            throw new BookNotFoundException(USER_ID,User.class.getSimpleName());
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到用户");
 
         }
 
@@ -306,7 +422,13 @@ public class UserRestController {
 
     @Operation(summary = "1、获得订购")
     @GetMapping(value = "/users/{USER_ID}/bookings", produces = "application/json")
-    public PagedModel pageReservation(@PathVariable long USER_ID, Pageable pageable , PagedResourcesAssembler<EntityModel<BookingResp>> assembler) {
+    public PagedModel pageReservation(@PathVariable long USER_ID,
+
+                                      @PageableDefault(sort = {"createdDate",
+                                              "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
+
+
+                                      PagedResourcesAssembler<EntityModel<BookingResp>> assembler) {
 
 
         Optional<User> optionalUser = userRepository.findById(USER_ID);

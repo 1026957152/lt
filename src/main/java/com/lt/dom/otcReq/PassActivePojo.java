@@ -1,5 +1,7 @@
 package com.lt.dom.otcReq;
 
+import com.lt.dom.OctResp.PhotoResp;
+
 import java.util.List;
 
 
@@ -10,6 +12,21 @@ public class PassActivePojo {
 
     private String code ;//digital tickets or PDF tickets
     private String name;
+
+
+    private String cvc;
+    private PhotoResp front;
+    private PhotoResp back;
+
+
+    public String getCvc() {
+        return cvc;
+    }
+
+    public void setCvc(String cvc) {
+        this.cvc = cvc;
+    }
+
     private String id_card;
 
     public String getCode() {
@@ -62,5 +79,21 @@ public class PassActivePojo {
 
     public void setId_card(String id_card) {
         this.id_card = id_card;
+    }
+
+    public PhotoResp getFront() {
+        return front;
+    }
+
+    public void setFront(PhotoResp front) {
+        this.front = front;
+    }
+
+    public PhotoResp getBack() {
+        return back;
+    }
+
+    public void setBack(PhotoResp back) {
+        this.back = back;
     }
 }

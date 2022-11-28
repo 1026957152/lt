@@ -1,25 +1,50 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.otcenum.EnumSmsVerificationType;
+import com.lt.dom.otcenum.EnumVefifyStatus;
+
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 
 @Entity
-public class VerificationToken {
+public class VerificationToken extends Base{
     private static final int EXPIRATION = 60 * 24;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+    @Enumerated(EnumType.STRING)
+    private EnumSmsVerificationType type;
+
     private String token;
-  
-    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
+
+    public EnumSmsVerificationType getType() {
+        return type;
+    }
+
+    public void setType(EnumSmsVerificationType type) {
+        this.type = type;
+    }
+
+/*    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id")
+    */
+    @Transient
     private User user;
     
-    private Date expiryDate;
+    private LocalDateTime expiryDate;
+
+    @Enumerated(EnumType.STRING)
+    private EnumVefifyStatus status;
+    private String userCode;
+
+
+    @NotNull
+    private String uuid;
+
+    @NotNull
+    private String phone;
 
     public VerificationToken(String token, User user) {
         this.token = token;
@@ -41,13 +66,7 @@ public class VerificationToken {
         return EXPIRATION;
     }
 
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getToken() {
         return token;
@@ -65,12 +84,44 @@ public class VerificationToken {
         this.user = user;
     }
 
-    public Date getExpiryDate() {
+    public LocalDateTime getExpiryDate() {
         return expiryDate;
     }
 
-    public void setExpiryDate(Date expiryDate) {
+    public void setExpiryDate(LocalDateTime expiryDate) {
         this.expiryDate = expiryDate;
+    }
+
+    public void setStatus(EnumVefifyStatus status) {
+        this.status = status;
+    }
+
+    public EnumVefifyStatus getStatus() {
+        return status;
+    }
+
+    public void setUserCode(String userCode) {
+        this.userCode = userCode;
+    }
+
+    public String getUserCode() {
+        return userCode;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getPhone() {
+        return phone;
     }
     // standard constructors, getters and setters
 }

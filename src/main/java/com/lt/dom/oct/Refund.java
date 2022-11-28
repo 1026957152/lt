@@ -1,31 +1,70 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.otcenum.EnumRefundReason;
-import com.lt.dom.otcenum.EnumRefundStatus;
+import com.lt.dom.otcenum.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-public class Refund {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
+public class Refund extends Base{
 
+    @Enumerated(EnumType.STRING)
     private EnumRefundReason reason;
+
+    @Enumerated(EnumType.STRING)
     private EnumRefundStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private EnumRefundType refundType;
+
+    @Enumerated(EnumType.STRING)
+    private EnumRefundSourceType sourceType;
+    private Long booking;
+
+
+    @NotNull
+    private Boolean unlinked;
+
+    @NotNull
+    private EnumPlatform platform;
+
+    public EnumRefundSourceType getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(EnumRefundSourceType sourceType) {
+        this.sourceType = sourceType;
+    }
+
+    public EnumRefundType getRefundType() {
+        return refundType;
+    }
+
+    public void setRefundType(EnumRefundType refundType) {
+        this.refundType = refundType;
+    }
 
     private long failure_balance_transaction;
     private LocalDateTime created;
 
+
+    @OneToMany(mappedBy="refund",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    List<RefundLineItem> refundLineItems;
 
     private int amount;
     
 //##@Column(unique=true)
 private String code;
     private String charge_Code;
+    private int refund_fee;
+    private EnumPayChannel channel;
+    private String TransactionId;
+    private String return_msg;
 
     public int getAmount() {
         return amount;
@@ -37,13 +76,8 @@ private String code;
 
     private long charge;
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
+
 
     public EnumRefundReason getReason() {
         return reason;
@@ -100,6 +134,63 @@ private String code;
 
     public String getCharge_Code() {
         return charge_Code;
+    }
+
+    public void setRefund_fee(int refund_fee) {
+
+        this.refund_fee = refund_fee;
+    }
+
+    public int getRefund_fee() {
+        return refund_fee;
+    }
+
+    public void setChannel(EnumPayChannel channel) {
+        this.channel = channel;
+    }
+
+    public EnumPayChannel getChannel() {
+        return channel;
+    }
+
+    public void setTransactionId(String rransactionId) {
+        this.TransactionId = rransactionId;
+    }
+
+    public String getTransactionId() {
+        return TransactionId;
+    }
+
+    public void setReturn_msg(String return_msg) {
+        this.return_msg = return_msg;
+    }
+
+    public String getReturn_msg() {
+        return return_msg;
+    }
+
+    public void setBooking(Long booking) {
+        this.booking = booking;
+    }
+
+    public Long getBooking() {
+        return booking;
+    }
+
+    public Boolean getUnlinked() {
+        return unlinked;
+    }
+
+    public void setUnlinked(Boolean unlinked) {
+        this.unlinked = unlinked;
+    }
+
+    public void setPlatform(EnumPlatform platform) {
+        this.platform = platform;
+    }
+
+    public EnumPlatform getPlatform() {
+        return platform;
     }
 
 /*    "id": "re_y1u944PmfnrTHyvnL0nD0iD1",

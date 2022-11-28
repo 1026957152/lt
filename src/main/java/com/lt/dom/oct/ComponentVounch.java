@@ -1,49 +1,70 @@
 package com.lt.dom.oct;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.otcenum.EnumComponentVoucherStatus;
-import com.lt.dom.otcenum.EnumDuration;
+import com.lt.dom.otcenum.*;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
-public class ComponentVounch {   // 这个是 下单的时候， 从 product 中生成 的
+public class ComponentVounch extends Base{
+    private String reference;   // 这个是 下单的时候， 从 product 中生成 的
 
-    @Version
-    private Integer version;
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
+    @Enumerated(EnumType.STRING)
+    private EnumProductComponentSource source;
+    private Long ratePlan;
+    private Long subscription;
+    private Long unit_off;
 
-    public long getId() {
-        return id;
+    @Enumerated(EnumType.STRING)
+    private EnumRoyaltyRuleCategory royalty_mode;
+
+    @Enumerated(EnumType.STRING)
+    private EnumValidateWay validate_way;
+    private String name;
+    private Long product;
+
+    public Long getBelong() {
+        return belong;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setBelong(Long beLong) {
+        this.belong = beLong;
     }
+
+    public EnumBelongType getBelongType() {
+        return belongType;
+    }
+
+    public void setBelongType(EnumBelongType beLongType) {
+        this.belongType = beLongType;
+    }
+
+
 
     @Transient
     private RoyaltyRule royaltyRule;
 
 
     private Long component;
-    private long royaltyRuleId;
+    private Long royaltyRuleId;
     private String code;
-    private long reservation;
+    private Long reservation;
 
+
+    private Long belong;
+    @Enumerated(EnumType.STRING)
+    private EnumBelongType belongType;
+    @Enumerated(EnumType.STRING)
     @NotNull
     private EnumDuration duration;
 
-    @NotNull
+   // @NotNull
     private Long user;
 
     @NotNull
     private Long supplier;
-    private long pass;
+    private Long pass;
 
     public RoyaltyRule getRoyaltyRule() {
         return royaltyRule;
@@ -54,16 +75,16 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
     }
 
 
-    private long componentRight;
+    private Long componentRight;
 
-    public long getComponentRight() {
+    public Long getComponentRight() {
         return componentRight;
     }
 
-    public void setComponentRight(long componentRightId) {
+    public void setComponentRight(Long componentRightId) {
         this.componentRight = componentRightId;
     }
-
+    @Enumerated(EnumType.STRING)
     @NotNull
     private EnumComponentVoucherStatus status;
 
@@ -78,18 +99,17 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
     private String redeem_voucher_key;
     @Transient
     private Voucher voucher;
-    private long voucherId;
+    private Long voucherId;
 
-    public long getVoucherId() {
+    public Long getVoucherId() {
         return voucherId;
     }
 
-    public void setVoucherId(long voucherId) {
+    public void setVoucherId(Long voucherId) {
         this.voucherId = voucherId;
     }
 
-    @Transient
-    private Product product;
+
 
 
     private String note;
@@ -99,12 +119,23 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
 
     private Integer redeemed_amount;// (integer) - Total Amount redeemed by the voucher. Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 balance is written as 10000.
 
+    @Column(name = "try_")
+    private Long try_;  //一次， 无数次，  五次，
 
 
-    private Long count;  //一次， 无数次，  五次，
+    @Column(name = "limit_")
+    private Long limit;  //一次， 无数次，  五次，
 
-    public Long getCount() {
-        return count;
+    public Long getLimit() {
+        return limit;
+    }
+
+    public Long getTry_() {
+        return try_;
+    }
+
+    public void setTry_(Long try_) {
+        this.try_ = try_;
     }
 
     public Long getRedeemed_quantity() {
@@ -115,8 +146,8 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
         this.redeemed_quantity = redeemed_quantity;
     }
 
-    public void setCount(Long count) {
-        this.count = count;
+    public void setLimit(Long count) {
+        this.limit = count;
     }
 
     public void setComponent(Long componentId) {
@@ -127,11 +158,11 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
         return component;
     }
 
-    public void setRoyaltyRuleId(long royaltyRuleId) {
+    public void setRoyaltyRuleId(Long royaltyRuleId) {
         this.royaltyRuleId = royaltyRuleId;
     }
 
-    public long getRoyaltyRuleId() {
+    public Long getRoyaltyRuleId() {
         return royaltyRuleId;
     }
 
@@ -143,11 +174,11 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
         return code;
     }
 
-    public void setReservation(long reservationId) {
+    public void setReservation(Long reservationId) {
         this.reservation = reservationId;
     }
 
-    public long getReservation() {
+    public Long getReservation() {
         return reservation;
     }
 
@@ -180,11 +211,86 @@ public class ComponentVounch {   // 这个是 下单的时候， 从 product 中
         return ReflectionToStringBuilder.toString(this);
     }
 
-    public void setPass(long pass) {
+    public void setPass(Long pass) {
         this.pass = pass;
     }
 
-    public long getPass() {
+    public Long getPass() {
         return pass;
+    }
+
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public void setSource(EnumProductComponentSource source) {
+        this.source = source;
+    }
+
+    public EnumProductComponentSource getSource() {
+        return source;
+    }
+
+    public void setRatePlan(Long ratePlan) {
+        this.ratePlan = ratePlan;
+    }
+
+    public Long getRatePlan() {
+        return ratePlan;
+    }
+
+    public void setSubscription(Long subscription) {
+        this.subscription = subscription;
+    }
+
+    public Long getSubscription() {
+        return subscription;
+    }
+
+    public void setUnit_off(Long unit_off) {
+        this.unit_off = unit_off;
+    }
+
+    public Long getUnit_off() {
+        return unit_off;
+    }
+
+    public void setRoyalty_mode(EnumRoyaltyRuleCategory royalty_mode) {
+
+        this.royalty_mode = royalty_mode;
+    }
+
+    public EnumRoyaltyRuleCategory getRoyalty_mode() {
+        return royalty_mode;
+    }
+
+    public void setValidate_way(EnumValidateWay validate_way) {
+
+        this.validate_way = validate_way;
+    }
+
+    public EnumValidateWay getValidate_way() {
+        return validate_way;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    public void setProduct(Long product) {
+        this.product = product;
+    }
+
+    public Long getProduct() {
+        return product;
     }
 }

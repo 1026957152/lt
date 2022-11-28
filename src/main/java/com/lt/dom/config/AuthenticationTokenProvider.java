@@ -76,8 +76,6 @@ public class AuthenticationTokenProvider implements AuthenticationProvider {
 
    //     throw new Error401Exception(Enumfailures.Invalid_credentials,"无法找到绑定的 用户 user ");
 
-
-
 /*        org.springframework.security.core.userdetails.User userDetails =  new org.springframework.security.core.userdetails.User(
                 optional.get().getOpenid(), " ", true, true, true, true,
                 getAuthorities(Arrays.asList(
@@ -94,13 +92,17 @@ public class AuthenticationTokenProvider implements AuthenticationProvider {
           throw new Error401Exception(Enumfailures.Missing_credentials,"无法找到绑定的 用户 user ");
 
         }
+
+
+
+
         System.out.println("--token认证认证认证goggggggggggggggggggggggss"+user.get().getUsername());
 
 
         //TODO 这里 给 赋值 getUsername 是否合适呀，  卫视不复制 getPhone 等
 
 
-        IdentityVo identityVo_ = new IdentityVo(EnumIdentityType.user_code,user.get().getCode());
+        IdentityVo identityVo_ = new IdentityVo(EnumIdentityType.weixin,user.get().getOpenid());
 
         org.springframework.security.core.userdetails.UserDetails userDetails =  userDetailsService.loadUserByUsername(gson.toJson(identityVo_));
 
@@ -114,6 +116,11 @@ public class AuthenticationTokenProvider implements AuthenticationProvider {
 
 
   }
+
+
+
+
+
 
   public boolean supports(Class<?> authentication) {
     return (AuthenticationToken.class.isAssignableFrom(authentication));

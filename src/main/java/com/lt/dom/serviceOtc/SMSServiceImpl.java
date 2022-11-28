@@ -9,11 +9,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -71,22 +73,29 @@ public class SMSServiceImpl {
 
 
     public static void main(String[] text) {
+
+        String greetings = String.format(
+                "你的验证码是%s",
+                123);
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
-        params.add("apikey", "apikey");
-        params.add("text", "text");
-        params.add("mobile", "mobile");
+        params.add("apikey", "220dbf356cc27ef60b69d99d28c74f0e");
+        params.add("text", greetings);
+        params.add("mobile", "13468801683");
 
 
 
         HttpHeaders requestHeaders = new HttpHeaders();
 
         requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-       // headers.add("Content-Type", "application/x-www-form-urlencoded");
+
+
+        System.out.println("ddd我的祖国");
+        // headers.add("Content-Type", "application/x-www-form-urlencoded");
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<MultiValueMap<String, String>>(params, requestHeaders);
-
         RestTemplate restTemplate = new RestTemplate();
         //  ResponseEntity<PhoneResp> responseEntity = restTemplate.getForEntity(url,PhoneResp.class);
+        restTemplate.getMessageConverters().set(1, new StringHttpMessageConverter(StandardCharsets.UTF_8));
 
         ResponseEntity<SmsResp> responseEntity = restTemplate.postForEntity("https://sms.yunpian.com/v2/sms/single_send.json",requestEntity,SmsResp.class);
 

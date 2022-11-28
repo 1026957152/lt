@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -171,7 +173,11 @@ public class ComponentRightRestController {
 
     @Operation(summary = "1、查询权益")
     @GetMapping(value = "/supliers/{SUPPLIER_ID}/component_rights", produces = "application/json")
-    public PagedModel getComponentRightList(@PathVariable long SUPPLIER_ID, Pageable pageable, PagedResourcesAssembler<EntityModel<ComponentRight>> assembler) {
+    public PagedModel getComponentRightList(@PathVariable long SUPPLIER_ID,
+
+                                            @PageableDefault(sort = {"createdDate", "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
+
+                                            PagedResourcesAssembler<EntityModel<ComponentRight>> assembler) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
         if(optionalSupplier.isEmpty()) {

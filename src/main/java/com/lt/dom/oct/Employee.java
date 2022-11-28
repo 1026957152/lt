@@ -38,8 +38,8 @@ public class Employee {
         this.id = id;
     }
 
-    private long userId;
-    private long suplierId;
+    private Long userId;
+    private Long suplierId;
 
     private String firstName;
     private String lastName;
@@ -86,11 +86,11 @@ private String code;
     @Transient
     private EnumEmployeeAccessLevel enumEmployeeAccessLevel;
 
-    public long getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(long userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 

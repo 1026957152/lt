@@ -17,6 +17,10 @@ public enum EnumRequestStatus {
     Pending("pending"),
 
 
+
+
+
+
 /*
     APPROVE, REJECT, ABSTAIN, RESET*/
     ;

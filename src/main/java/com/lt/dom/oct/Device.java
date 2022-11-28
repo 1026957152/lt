@@ -9,26 +9,14 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
-public class Device {
-    @Version
-    private Integer version;
+public class Device extends Base{
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-
-    @Id
-    private long id;
 
     @NotEmpty
     private String name;
     private String serialNumber;
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     @NotNull
     private EnumDeviceType type;
@@ -59,6 +47,7 @@ public class Device {
 
     @NotNull
     private EnumDeviceStatus status;
+    private String code;
 
     public String getManufacturer() {
         return manufacturer;
@@ -117,13 +106,6 @@ public class Device {
         this.status = status;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
-
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
 
     public EnumDeviceType getType() {
         return type;
@@ -179,5 +161,13 @@ public class Device {
 
     public String getSerialNumber() {
         return serialNumber;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

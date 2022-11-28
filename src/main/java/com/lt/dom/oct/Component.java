@@ -10,32 +10,34 @@ import java.util.List;
 
 
 @Entity
-public class Component {   // 这个是 下单的时候， 从 product 中生成 的
-    @Version
-    private Integer version;
+public class Component extends Base{   // 这个是 下单的时候， 从 product 中生成 的
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
 
     private long royaltyRuleId;
     private int royaltyRuleCount;
 
-
+    @Enumerated(EnumType.STRING)
     private EnumCompoentGroupingType groupingType = EnumCompoentGroupingType.single;
 
 
-
+    @Enumerated(EnumType.STRING)
     @NotNull
     private EnumProductComponentSource source;
 
+
+    @Enumerated(EnumType.STRING)
     @NotNull
     private EnumValidateWay validate_way;
     private int royaltyAmount;
+    @Enumerated(EnumType.STRING)
     private EnumRoyaltyRuleCategory royalty_mode;
+
+    @Enumerated(EnumType.STRING)
     private EnumRoyaltyCollection_method collection_method;
     private long subscription;
+    private Long ratePlan;
+    private String reference;
+    private String code;
 
     public EnumProductComponentSource getSource() {
         return source;
@@ -49,6 +51,7 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
     private Long supplier;
     private long recipient;
 
+    @Enumerated(EnumType.STRING)
     @NotNull
     private EnumDuration duration;
     private int royaltyPercent;
@@ -69,7 +72,7 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
     public void setBillRecurringInterval_count(Integer billRecurringInterval_count) {
         this.billRecurringInterval_count = billRecurringInterval_count;
     }
-
+    @Enumerated(EnumType.STRING)
     private EnumbillingScheme billingScheme = EnumbillingScheme.per_unit;
     private Long billing_unit_amount = 0l;
     private LocalDateTime billing_cycle_anchor;
@@ -106,10 +109,6 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
 
     public void setBilling_unit_amount(Long billing_unit_amount) {
         this.billing_unit_amount = billing_unit_amount;
-    }
-
-    public long getId() {
-        return id;
     }
 
 
@@ -156,9 +155,7 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
         this.royaltyRule = royaltyRule;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
+
 
     private String name;
     private String note;
@@ -313,5 +310,29 @@ public class Component {   // 这个是 下单的时候， 从 product 中生成
 
     public long getSubscription() {
         return subscription;
+    }
+
+    public Long getRatePlan() {
+        return ratePlan;
+    }
+
+    public void setRatePlan(Long ratePlan) {
+        this.ratePlan = ratePlan;
+    }
+
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

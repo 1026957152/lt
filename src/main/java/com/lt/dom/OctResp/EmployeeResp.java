@@ -45,6 +45,7 @@ private String code;
     private String real_name;
     private String status_text;
     private LocalDateTime created_at;
+    private String nick_name;
 
     public String getStatus_text() {
         return status_text;
@@ -85,7 +86,8 @@ private String code;
         employeeResp.setPhone(user.getPhone());
         employeeResp.setCreated_at(employee.getCreated_at());
         employeeResp.setStatus_text(employee.getStatus().toString());
-        employeeResp.setReal_name(user.getRealName());
+        employeeResp.setNick_name(user.getNick_name()==null?"": user.getNick_name());
+        employeeResp.setReal_name(user.getRealName()==null?"": user.getRealName());
         employeeResp.setCode(user.getCode());
         List<Role> roles = triplet.getValue2().getRoles().stream().collect(Collectors.toList());
         employeeResp.setRoles(RoleResp.fromWithoutModel(roles));
@@ -106,7 +108,8 @@ private String code;
         employeeResp.setStatus_text(employee.getStatus().toString());
      //   employeeResp.setSuplier(employee.getValue0().getName());
         employeeResp.setPhone(user.getPhone());
-        employeeResp.setReal_name(user.getRealName());
+        employeeResp.setReal_name(user.getRealName()==null?"": user.getRealName());
+
         employeeResp.setCode(employee.getCode());
         System.out.println("=================================="+ user.getRoles().size());
         List<Role> roles = user.getRoles().stream().collect(Collectors.toList());
@@ -192,5 +195,13 @@ private String code;
 
     public LocalDateTime getCreated_at() {
         return created_at;
+    }
+
+    public void setNick_name(String nick_name) {
+        this.nick_name = nick_name;
+    }
+
+    public String getNick_name() {
+        return nick_name;
     }
 }

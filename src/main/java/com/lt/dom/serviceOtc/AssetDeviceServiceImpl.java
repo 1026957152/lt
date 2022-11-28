@@ -2,8 +2,10 @@ package com.lt.dom.serviceOtc;
 
 
 import com.lt.dom.oct.*;
+import com.lt.dom.otcenum.EnumValidatorType;
 import com.lt.dom.repository.ComponentVounchRepository;
 import com.lt.dom.vo.DeviceScanValidatorVo;
+import com.lt.dom.vo.ValidatedByTypeVo;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,8 +81,11 @@ public class AssetDeviceServiceImpl {
 
           //  ComponentVounch pass = componentVounchList.get();
 
+            ValidatedByTypeVo vo = new ValidatedByTypeVo();
+            vo.setValidatorType(EnumValidatorType.特定机器);
+
             componentRightService.redeem(componentVounchList.stream().map(e->{
-                return Pair.with(user,e);
+                return Triplet.with(vo,user,e);
             }).collect(Collectors.toList()));
 
 /*          if(pass.getType() == 一卡通){

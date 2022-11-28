@@ -3,7 +3,6 @@ package com.lt.dom.oct;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.OctResp.ComponentRightResp;
 import com.lt.dom.OctResp.EnumLongIdResp;
-import com.lt.dom.OctResp.EnumResp;
 import com.lt.dom.otcenum.*;
 
 import javax.persistence.*;
@@ -15,15 +14,8 @@ import java.util.stream.Collectors;
 
 
 @Entity
-public class ComponentRight {   // 这个是 下单的时候， 从 product 中生成 的
-    @Version
-    private Integer version;
+public class ComponentRight extends Base {   // 这个是 下单的时候， 从 product 中生成 的
 
-
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
 
     @NotNull
     private String long_desc;
@@ -37,10 +29,19 @@ public class ComponentRight {   // 这个是 下单的时候， 从 product 中�
 
 private String code;
 
-
+    @Enumerated(EnumType.STRING)
     private EnumRoyaltyRuleCategory royalty_mode = EnumRoyaltyRuleCategory.AMOUNT;
     private int value;
-    private long subscription;
+    private Long subscription;
+
+    @Enumerated(EnumType.STRING)
+    private EnumPrivacyLevel privacy_level;
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private EnumProductComponentSource source;
+    private Long relateRight;
+    private String relateRightCode;
+    private Long ratePlan;
 
     public static List<EnumLongIdResp> EnumList(List<ComponentRight> componentRightList) {
         return componentRightList.stream().map(x->{
@@ -48,7 +49,7 @@ private String code;
             EnumLongIdResp enumResp = new EnumLongIdResp();
             enumResp.setId(x.getId());
             //  enumResp.setName(x.name());
-            enumResp.setText(x.getName()+"_"+x.getDuration().toString()+"_"+x.getQuantity());
+            enumResp.setText(x.getName()+"_"+x.getDuration().toString()+"_"+x.getLimit_quantity());
             return enumResp;
         }).collect(Collectors.toList());
     }
@@ -69,7 +70,7 @@ private String code;
                 List<RoyaltyRule> royaltyRule = royaltyRuleListMap.get(x.getId());
 
             }
-            enumResp.setText(x.getName()+"_"+x.getDuration().toString()+"_"+x.getQuantity());
+            enumResp.setText(x.getName()+"_"+x.getDuration().toString()+"_"+x.getLimit_quantity());
             return enumResp;
         }).collect(Collectors.toList());
     }
@@ -80,14 +81,12 @@ private String code;
             EnumLongIdResp enumResp = new EnumLongIdResp();
             enumResp.setId(x.getId());
 
-            enumResp.setText(x.getName()+"_"+x.getCode()+"_"+x.getDuration().toString()+"_"+x.getQuantity());
+            enumResp.setText(x.getName()+"_"+x.getCode()+"_"+x.getDuration().toString()+"_"+x.getLimit_quantity());
             return enumResp;
         }).collect(Collectors.toList());
     }
 
-    public long getId() {
-        return id;
-    }
+
 
     @Transient
     List<RatePlan> ratePlans;
@@ -114,9 +113,6 @@ private String code;
         this.royaltyRule = royaltyRule;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     private String name;
     private String note;
@@ -175,11 +171,16 @@ private String code;
     private String additionalInfo;
 
     private LocalDateTime expiry_datetime;
+
+    @Enumerated(EnumType.STRING)
     private EnumComponentStatus status;
+
+
+    @Enumerated(EnumType.STRING)
     private EnumDuration duration;
 
     @NotNull
-    private Long quantity;// (integer, required) - Default: null. How many times a voucher can be redeemed. A null value means unlimited.
+    private Long limit_quantity;// (integer, required) - Default: null. How many times a voucher can be redeemed. A null value means unlimited.
 
     public String getAdditionalInfo() {
         return additionalInfo;
@@ -213,12 +214,12 @@ private String code;
         this.duration = duration;
     }
 
-    public Long getQuantity() {
-        return quantity;
+    public Long getLimit_quantity() {
+        return limit_quantity;
     }
 
-    public void setQuantity(Long quantity) {
-        this.quantity = quantity;
+    public void setLimit_quantity(Long quantity) {
+        this.limit_quantity = quantity;
     }
 
     public void setLong_desc(String long_desc) {
@@ -269,11 +270,51 @@ private String code;
         this.value = value;
     }
 
-    public void setSubscription(long subscription) {
+    public void setSubscription(Long subscription) {
         this.subscription = subscription;
     }
 
-    public long getSubscription() {
+    public Long getSubscription() {
         return subscription;
+    }
+
+    public void setPrivacy_level(EnumPrivacyLevel privacy_level) {
+        this.privacy_level = privacy_level;
+    }
+
+    public EnumPrivacyLevel getPrivacy_level() {
+        return privacy_level;
+    }
+
+    public void setSource(EnumProductComponentSource source) {
+        this.source = source;
+    }
+
+    public EnumProductComponentSource getSource() {
+        return source;
+    }
+
+    public void setRelateRight(Long relateRight) {
+        this.relateRight = relateRight;
+    }
+
+    public Long getRelateRight() {
+        return relateRight;
+    }
+
+    public void setRelateRightCode(String relateRightCode) {
+        this.relateRightCode = relateRightCode;
+    }
+
+    public String getRelateRightCode() {
+        return relateRightCode;
+    }
+
+    public Long getRatePlan() {
+        return ratePlan;
+    }
+
+    public void setRatePlan(Long ratePlan) {
+        this.ratePlan = ratePlan;
     }
 }

@@ -1,40 +1,129 @@
 package com.lt.dom.oct;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.OctResp.EnumLongIdResp;
 import com.lt.dom.otcenum.*;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 //https://bokun.dev/booking-api-restful/vU6sCfxwYdJWd1QAcLt12i/introduction-to-the-data-model-of-products/mGtiogVmyzywvDaZFK29b5
 @Entity
-public class Product {
-    @Version
-    private Integer version;
+public class Product extends Base{
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
-
-
-    @NotNull
+    @Enumerated(EnumType.STRING)
     private EnumAvailabilityType availability_type;
 
-    private EnumPassexpiry passexpiry;
 
+    @Enumerated(EnumType.STRING)
+    private EnumProductTypeType productType;
+
+    @OneToMany(mappedBy = "product",  fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval=true)
+    List<ProductBundle> bundles;
+
+    public List<ProductBundle> getBundles() {
+        return bundles;
+    }
+
+    public void setBundles(List<ProductBundle> bundles) {
+        this.bundles = bundles;
+    }
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY,    cascade = CascadeType.ALL)
+    List<CrossSell> crossSells;
+
+    @OneToMany(mappedBy = "crossSellProduct")
+    Set<CrossSell> registrations;
+    private EnumShippingAddressCollection shippingAddressCollection;
+
+    public void addCrossSellInList(CrossSell addst) {
+        crossSells.add(addst);
+    }
+
+
+    public List<CrossSell> getCrossSells() {
+        return crossSells;
+    }
+
+    public void setCrossSells(List<CrossSell> crossSells) {
+        this.crossSells = crossSells;
+    }
+
+    @Enumerated(EnumType.STRING)
+    private EnumPassExpiry passexpiry;
+    private Long passCapacity;
+    private String deliveryFormats_json;
+
+    public EnumPassExpiry getPassexpiry() {
+        return passexpiry;
+    }
+
+    public void setPassexpiry(EnumPassExpiry passexpiry) {
+        this.passexpiry = passexpiry;
+    }
 
     private EnumBookingTypes types = EnumBookingTypes.PASS;
 
-    @NotNull
+
+    private Boolean customPickupAllowed;
+
+
+
     private Boolean free;
     private Boolean package_;
+
+    @Enumerated(EnumType.STRING)
+    private EnumPrivacyLevel privacyLevel;
+    private String desc_short;
+
+
+    private Boolean availabilityRequired = false;
+    private Integer restriction_maxQuantity;
+    private Integer restriction_minQuantity;
+    private Boolean restriction_passenger_identity_documents_required;
+    private Boolean show_note;
+    private String featureTags_json;
+    private EnumConfirmationType rule_confirmationType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "pass_expiry")
+    private EnumPassExpiry passExpiry;
+    private LocalDate fixedPassExpiryDate;
+    private Long passesAvailable;
+
+    @Enumerated(EnumType.STRING)
+    private EnumPassCapacity passCapacityType;
+    @Transient
+    private List<BookingQuestion> pickupQuestions;
+    @Transient
+    private List<BookingQuestion> dropoffQuestions;
+
+    @Transient
+    private List<BookingQuestion> questions;
+    private Long reviewCount;
+
+    public List<BookingQuestion> getQuestions() {
+        return questions;
+    }
+
+    public void setQuestions(List<BookingQuestion> questions) {
+        this.questions = questions;
+    }
+
+    public Long getPassesAvailable() {
+        return passesAvailable;
+    }
+
+    public void setPassesAvailable(Long passesAvailable) {
+        this.passesAvailable = passesAvailable;
+    }
+
+    private Long passValidForDays;
 
 
     public static List List(List<Product> componentRightMap) {
@@ -131,13 +220,6 @@ private String code;
     // 景区闲逛票，  景区炸鸡票，景区天文馆票
 
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
     private String royaltyId;
     private long supplierId;
@@ -179,7 +261,7 @@ private String code;
     }
 
     @Transient
-    private EnumProductPricingType productType; // Packages（套票） ,or Passes（通票）  or Tickit 单一票
+    private EnumProductPricingType productType__; // Packages（套票） ,or Passes（通票）  or Tickit 单一票
 
    // private String Type ;//Museums, Attractions or Hop on Hop off tours
     @Transient            // walking tours, day trips
@@ -228,6 +310,7 @@ private String code;
 
 
 
+    @Enumerated(EnumType.STRING)
     private EnumProductType type;
 
     public EnumProductType getType() {
@@ -335,7 +418,7 @@ private String code;
         return refund;
     }
 
-    public void setLong_desc(String long_desc) {
+    public void setDesc_long(String long_desc) {
         this.long_desc = long_desc;
     }
 
@@ -389,5 +472,160 @@ private String code;
 
     public Boolean getPackage_() {
         return package_;
+    }
+
+    public void setPrivacyLevel(EnumPrivacyLevel privacyLevel) {
+        this.privacyLevel = privacyLevel;
+    }
+
+    public EnumPrivacyLevel getPrivacyLevel() {
+        return privacyLevel;
+    }
+
+    public void setDesc_short(String desc_short) {
+        this.desc_short = desc_short;
+    }
+
+    public String getDesc_short() {
+        return desc_short;
+    }
+
+    public Boolean getAvailabilityRequired() {
+        return availabilityRequired;
+    }
+
+    public void setAvailabilityRequired(Boolean availabilityRequired) {
+        this.availabilityRequired = availabilityRequired;
+    }
+
+    public void setRestriction_maxQuantity(Integer restriction_maxQuantity) {
+        this.restriction_maxQuantity = restriction_maxQuantity;
+    }
+
+    public Integer getRestriction_maxQuantity() {
+        return restriction_maxQuantity;
+    }
+
+    public void setRestriction_minQuantity(Integer restriction_minQuantity) {
+        this.restriction_minQuantity = restriction_minQuantity;
+    }
+
+    public Integer getRestriction_minQuantity() {
+        return restriction_minQuantity;
+    }
+
+    public Boolean getRestriction_passenger_identity_documents_required() {
+        return restriction_passenger_identity_documents_required;
+    }
+
+    public void setRestriction_passenger_identity_documents_required(Boolean restriction_passenger_identity_documents_required) {
+        this.restriction_passenger_identity_documents_required = restriction_passenger_identity_documents_required;
+    }
+
+    public void setShow_note(Boolean show_note) {
+        this.show_note = show_note;
+    }
+
+    public Boolean getShow_note() {
+        return show_note;
+    }
+
+    public void setFeatureTags_json(String featureTags_json) {
+        this.featureTags_json = featureTags_json;
+    }
+
+    public String getFeatureTags_json() {
+        return featureTags_json;
+    }
+
+    public void setRule_confirmationType(EnumConfirmationType rule_confirmationType) {
+        this.rule_confirmationType = rule_confirmationType;
+    }
+
+    public EnumConfirmationType getRule_confirmationType() {
+        return rule_confirmationType;
+    }
+
+    public void setPassExpiry(EnumPassExpiry passExpiry) {
+
+        this.passExpiry = passExpiry;
+    }
+
+    public EnumPassExpiry getPassExpiry() {
+        return passExpiry;
+    }
+
+    public void setFixedPassExpiryDate(LocalDate fixedPassExpiryDate) {
+        this.fixedPassExpiryDate = fixedPassExpiryDate;
+    }
+
+    public LocalDate getFixedPassExpiryDate() {
+        return fixedPassExpiryDate;
+    }
+
+    public void setPassValidForDays(Long passValidForDays) {
+        this.passValidForDays = passValidForDays;
+    }
+
+    public Long getPassValidForDays() {
+        return passValidForDays;
+    }
+
+    public void setPassCapacityType(EnumPassCapacity passCapacityType) {
+        this.passCapacityType = passCapacityType;
+    }
+
+    public EnumPassCapacity getPassCapacityType() {
+        return passCapacityType;
+    }
+
+    public <T> void setPickupQuestions(List<BookingQuestion> pickupQuestions) {
+        this.pickupQuestions = pickupQuestions;
+    }
+
+    public List<BookingQuestion> getPickupQuestions() {
+        return pickupQuestions;
+    }
+
+    public <T> void setDropoffQuestions(List<BookingQuestion> dropoffQuestions) {
+
+        this.dropoffQuestions = dropoffQuestions;
+    }
+
+    public List<BookingQuestion> getDropoffQuestions() {
+        return dropoffQuestions;
+    }
+
+    public Long getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(Long reviewCount) {
+        this.reviewCount = reviewCount;
+    }
+
+    public void setPassCapacity(Long passCapacity) {
+        this.passCapacity = passCapacity;
+    }
+
+    public Long getPassCapacity() {
+        return passCapacity;
+    }
+
+    public void setDeliveryFormats_json(String deliveryFormats_json) {
+
+        this.deliveryFormats_json = deliveryFormats_json;
+    }
+
+    public String getDeliveryFormats_json() {
+        return deliveryFormats_json;
+    }
+
+    public EnumShippingAddressCollection getShippingAddressCollection() {
+        return shippingAddressCollection;
+    }
+
+    public void setShippingAddressCollection(EnumShippingAddressCollection shippingAddressCollection) {
+        this.shippingAddressCollection = shippingAddressCollection;
     }
 }

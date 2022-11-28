@@ -1,8 +1,10 @@
 package com.lt.dom.requestvo;
 
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.BookingPojo;
+import com.lt.dom.otcReq.BookingSkuPojo;
 import com.lt.dom.otcenum.EnumBookingOjbectType;
+import com.lt.dom.otcenum.EnumDeliveryFormats;
+import com.lt.dom.vo.NegotiatedPricingType;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -14,7 +16,7 @@ public class BookingTypeTowhoVo {
 
 
     private EnumBookingOjbectType toWhoTyp;
-    private Traveler traveler;
+    private List<BookingSkuPojo.TravelerReq> traveler;
     private Supplier supplier;
     private User user;
     private long toWho;
@@ -29,6 +31,10 @@ public class BookingTypeTowhoVo {
     @Valid
     @Size(min=0,max=200)
     private List<Sku> skus;
+    private PricingType sku;
+    private NegotiatedPricingType negotiatedSku;
+    private EnumDeliveryFormats deliveryFormat;
+    private String remark;
 
     public List<Sku> getSkus() {
         return skus;
@@ -36,6 +42,39 @@ public class BookingTypeTowhoVo {
 
     public void setSkus(List<Sku> skus) {
         this.skus = skus;
+    }
+
+    public void setSku(PricingType sku) {
+        this.sku = sku;
+    }
+
+    public PricingType getSku() {
+        return sku;
+    }
+
+    public void setNegotiatedSku(NegotiatedPricingType negotiatedSku) {
+        this.negotiatedSku = negotiatedSku;
+    }
+
+    public NegotiatedPricingType getNegotiatedSku() {
+        return negotiatedSku;
+    }
+
+    public void setDeliveryFormat(EnumDeliveryFormats deliveryFormat) {
+        this.deliveryFormat = deliveryFormat;
+    }
+
+    public EnumDeliveryFormats getDeliveryFormat() {
+        return deliveryFormat;
+    }
+
+    public void setRemark(String remark) {
+
+        this.remark = remark;
+    }
+
+    public String getRemark() {
+        return remark;
     }
 
     public static class Sku {
@@ -79,11 +118,11 @@ public class BookingTypeTowhoVo {
         return toWhoTyp;
     }
 
-    public void setTraveler(Traveler traveler) {
+    public void setTraveler(List<BookingSkuPojo.TravelerReq> traveler) {
         this.traveler = traveler;
     }
 
-    public Traveler getTraveler() {
+    public List<BookingSkuPojo.TravelerReq> getTraveler() {
         return traveler;
     }
 

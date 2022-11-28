@@ -12,6 +12,16 @@ public class SettingUpdateReq {
     private String name;
 
     private String phone;
+    private String id;
+
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     @Size(min = 1)
     private List<String> roles;

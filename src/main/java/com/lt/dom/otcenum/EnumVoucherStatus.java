@@ -10,6 +10,8 @@ public enum EnumVoucherStatus {
     Created("Created"),
     Published("Published"),
     Issued("Issued"),
+
+    PartialyRedeemed("Redeemed"),
     Redeemed("Redeemed"),
     Available("Available"),
     Allocated("Allocated"),

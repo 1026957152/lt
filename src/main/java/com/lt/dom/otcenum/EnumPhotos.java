@@ -6,6 +6,7 @@ public enum EnumPhotos {
     medium(1080,720),
     thumb(200,200),
     avatar(56,56),
+    original(56,56),
 
 
     ;

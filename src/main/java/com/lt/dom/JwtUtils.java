@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.google.gson.Gson;
 import com.lt.dom.error.TokenRefreshException;
+import com.lt.dom.vo.CustomUserDetails;
 import com.lt.dom.vo.LogVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,7 @@ public class JwtUtils {
 	}*/
 
 	public String generateJwtToken(int i, Authentication authentication) {
-		User userPrincipal = (User) authentication.getPrincipal();
+		CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
 		Gson gson = new Gson();
 
 

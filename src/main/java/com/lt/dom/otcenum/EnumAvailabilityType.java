@@ -17,6 +17,11 @@ public enum EnumAvailabilityType {
     OPENING_HOURS("Date not required for booking"),
     START_TIME("Date not required for booking"),
 
+    PASS("Date not required for booking"),
+    DATE_AND_TIME("Date not required for booking"),
+    DATE("Date not required for booking"),
+
+
     ;
 
 

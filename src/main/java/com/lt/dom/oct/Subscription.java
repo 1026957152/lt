@@ -10,14 +10,7 @@ import java.util.List;
 
 
 @Entity
-public class Subscription {   // 这个是 下单的时候， 从 product 中生成 的
-    @Version
-    private Integer version;
-
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
+public class Subscription extends Base {   // 这个是 下单的时候， 从 product 中生成 的
 
     private long royaltyRuleId;
     private int royaltyRuleCount;
@@ -27,11 +20,7 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
 
 
 
-    @NotNull
-    private EnumProductComponentSource source;
 
-    @NotNull
-    private EnumValidateWay validate_way;
     private int royaltyAmount;
     private EnumRoyaltyRuleCategory royalty_mode;
     private EnumRoyaltyCollection_method collection_method;
@@ -42,20 +31,13 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
     private EnumTermSetting termSetting;
     private long ratePlan;
 
-    public EnumProductComponentSource getSource() {
-        return source;
-    }
 
-    public void setSource(EnumProductComponentSource source) {
-        this.source = source;
-    }
 
     @NotNull
     private Long supplier;
     private long recipient;
 
-    @NotNull
-    private EnumDuration duration;
+
     private int royaltyPercent;
     private long priceingType;
 
@@ -70,6 +52,10 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
     private LocalDateTime billing_cycle_anchor;
 
     private String end_behavior;
+
+    @NotNull
+    private Long customer;
+    private String description;
 
     public LocalDateTime getBilling_cycle_anchor() {
         return billing_cycle_anchor;
@@ -103,15 +89,12 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
         this.billing_unit_amount = billing_unit_amount;
     }
 
-    public long getId() {
-        return id;
-    }
+
 
 
     @Transient
     List<RatePlan> ratePlans;
 
-    private long supplierId;
 
     private long product;
     private long componentRightId;
@@ -132,14 +115,6 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
         this.componentRightId = componentRightId;
     }
 
-    public long getSupplierId() {
-        return supplierId;
-    }
-
-    public void setSupplier(long supplierId) {
-        this.supplierId = supplierId;
-    }
-
     @Transient
     private RoyaltyRule royaltyRule ;
 
@@ -151,9 +126,6 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
         this.royaltyRule = royaltyRule;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     private String name;
     private String note;
@@ -209,16 +181,8 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
 
 
 
-    @NotNull
-    private Long unit_off;
 
-    public Long getUnit_off() {
-        return unit_off;
-    }
 
-    public void setUnit_off(Long unit_off) {
-        this.unit_off = unit_off;
-    }
 
     public void setRoyaltyRuleCount(int royaltyRuleCount) {
 
@@ -245,13 +209,7 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
         return recipient;
     }
 
-    public void setDuration(EnumDuration duration) {
-        this.duration = duration;
-    }
 
-    public EnumDuration getDuration() {
-        return duration;
-    }
 
     public void setRoyaltyPercent(int royaltyPercent) {
         this.royaltyPercent = royaltyPercent;
@@ -269,14 +227,6 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
         return priceingType;
     }
 
-
-    public void setValidate_way(EnumValidateWay validate_way) {
-        this.validate_way = validate_way;
-    }
-
-    public EnumValidateWay getValidate_way() {
-        return validate_way;
-    }
 
     public int getRoyaltyAmount() {
         return royaltyAmount;
@@ -349,5 +299,21 @@ public class Subscription {   // 这个是 下单的时候， 从 product 中生
 
     public long getRatePlan() {
         return ratePlan;
+    }
+
+    public void setCustomer(Long customer) {
+        this.customer = customer;
+    }
+
+    public Long getCustomer() {
+        return customer;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

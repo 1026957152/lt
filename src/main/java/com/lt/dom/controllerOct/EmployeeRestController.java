@@ -1,12 +1,16 @@
 package com.lt.dom.controllerOct;
 
+import com.lt.dom.OctResp.EmployeeEditResp;
 import com.lt.dom.OctResp.EmployeeResp;
 import com.lt.dom.OctResp.EnumResp;
 import com.lt.dom.OctResp.SupplierResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
+import com.lt.dom.otcenum.EnumCancel_reason;
+import com.lt.dom.otcenum.EnumEmployeeStatus;
 import com.lt.dom.otcenum.EnumRole;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
 import com.lt.dom.vo.UserVo;
@@ -39,6 +43,8 @@ public class EmployeeRestController {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private PreferenceServiceImpl preferenceService;
 
 
     @Autowired
@@ -85,12 +91,59 @@ public class EmployeeRestController {
                     "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees")));
 
         entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"));
-        entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.get().getId(),null)).withRel("getPageEmployees"));
+        entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.get().getId(),null,null)).withRel("getPageEmployees"));
 
         return entityModel;
     }
 
 
+
+
+    @Operation(summary = "4、成为员工")
+    @GetMapping(value = "/employees/{EMPLOYEE_ID}/edit", produces = "application/json")
+    public EntityModel getEmployeeEdit(@PathVariable long EMPLOYEE_ID) {
+
+
+
+
+        Optional<Employee> optional = employeeRepository.findById(EMPLOYEE_ID);
+        if(optional.isEmpty()) {
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到供应商");
+
+        }
+
+        Employee employee = optional.get();
+        Optional<User> optionalUser = userRepository.findById(employee.getUserId());
+        System.out.println("=================================="+ optionalUser.get());
+        System.out.println("=================================="+ optionalUser.get().getRoles().size());
+
+        EmployeeEditResp employeeResp = EmployeeEditResp.pageElementfrom(Pair.with(employee,optionalUser.get()));
+
+        List<Role> roleList = roleRepository.findAll();
+
+        employeeResp.setParameterList( Map.of("role_list", roleList.stream().map(x->{
+            EnumResp enumResp = new EnumResp();
+            enumResp.setId(x.getName());
+            //   enumResp.setName(x.getName());
+            enumResp.setText(EnumRole.valueOf(x.getName()).toString());
+            return enumResp;
+        }).collect(Collectors.toList())));
+        EntityModel entityModel = EntityModel.of(employeeResp);
+
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(employee.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployeeparameters(employee.getId())).withRel("getParameters"));
+        // entityModel.add(linkTo(methodOn(BookingRestController.class).createBooking(null)).withRel("booking"));
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).delete(employee.getId())).withRel("deleteEmployee"));
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).updateEmployee(employee.getId(),null)).withRel("updateEmployee"));
+
+
+        return entityModel;
+
+
+
+
+
+    }
 
 
     @Operation(summary = "4、成为员工")
@@ -162,7 +215,7 @@ public class EmployeeRestController {
 
 
 
-    @GetMapping(value = "/employees/{EMPLOYEE_ID}/page", produces = "application/json")
+    @GetMapping(value = "/employees/{EMPLOYEE_ID}/Page_updateEmployee", produces = "application/json")
     public EntityModel Page_updateEmployee(@PathVariable long EMPLOYEE_ID) {
         Optional<Employee> optional = employeeRepository.findById(EMPLOYEE_ID);
         if(optional.isEmpty()) {
@@ -180,23 +233,38 @@ public class EmployeeRestController {
         System.out.println("=================================="+ optionalUser.get().getRoles().size());
 
 
-        EmployeeResp employeeResp = EmployeeResp.pageElementfrom(Pair.with(employee,optionalUser.get()));
+        EmployeeEditResp employeeResp = EmployeeEditResp.pageElementfrom(Pair.with(employee,optionalUser.get()));
 
         Map<String,Role> userMap = user.getRoles().stream().collect(Collectors.toMap(e->e.getName(),e->e));
 
 
         List<EnumRole> enumRoles = roleService.get(supplier);
 
-        EntityModel entityModel =  EntityModel.of( Map.of(
-                "employee",employeeResp,
-                "role_list", enumRoles.stream().map(x->{
+
+        List<Role> roleList = roleRepository.findAll();
+
+        employeeResp.setParameterList(Map.of("role_list", roleList.stream().map(x->{
+            EnumResp enumResp = new EnumResp();
+            enumResp.setId(x.getName());
+            //   enumResp.setName(x.getName());
+            enumResp.setText(EnumRole.valueOf(x.getName()).toString());
+            return enumResp;
+        }).collect(Collectors.toList())));
+
+        EntityModel entityModel =  EntityModel.of(employeeResp);// Map.of(
+              //  "employee",employeeResp,
+            //    "parameterList",);
+/*                "role_list", enumRoles.stream().map(x->{
             EnumResp enumResp = new EnumResp();
             enumResp.setId(x.name());
             enumResp.setText(x.toString());
             enumResp.setSelected(userMap.containsKey(x.name()));
             return enumResp;
-        }).collect(Collectors.toList())/*,
-                    "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"))*/));
+        }
+
+
+        ).collect(Collectors.toList())/*,
+                    "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"))*/
 
         entityModel.add(linkTo(methodOn(EmployeeRestController.class).updateEmployee(employee.getId(),null)).withRel("updateEmployee"));
 
@@ -206,7 +274,9 @@ public class EmployeeRestController {
 
     @Operation(summary = "3、更新")
     @PutMapping(value = "/employees/{EMPLOYEE_ID}", produces = "application/json")
-    public ResponseEntity<EntityModel<EmployeeResp>> updateEmployee(@PathVariable long EMPLOYEE_ID, @RequestBody @Valid EmployerUpdatePojo employerPojo) {
+    public ResponseEntity<EntityModel<EmployeeResp>> updateEmployee(@PathVariable long EMPLOYEE_ID,
+
+                                                                    @RequestBody @Valid EmployeeEditResp employerPojo) {
 
         Optional<Employee> optional = employeeRepository.findById(EMPLOYEE_ID);
         if(optional.isEmpty()) {
@@ -241,7 +311,13 @@ public class EmployeeRestController {
         throw new BookNotFoundException(EMPLOYEE_ID,"找不到供应商");
     }
     Employee employee = optional.get();
-    employeeRepository.delete(employee);
+
+
+        preferenceService.whenDeleteEmployee(employee);
+        employee.setUserId(null);
+        employee.setStatus(EnumEmployeeStatus.inactive);
+        employeeRepository.save(employee);
+
     return ResponseEntity.ok(HttpStatus.NO_CONTENT);
 }
 

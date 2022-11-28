@@ -1,26 +1,24 @@
 package com.lt.dom.serviceOtc;
 
 
+import com.lt.dom.OctResp.RatePlanReq;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.AttractionReq;
-import com.lt.dom.otcReq.SubscriptionResp;
+import com.lt.dom.otcReq.ComponentRightPojo;
+import com.lt.dom.otcReq.SubscriptionReq;
+import com.lt.dom.OctResp.SubscriptionResp;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.scheduling.support.PeriodicTrigger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +30,8 @@ public class SubscriptionServiceImpl {
     @Autowired
     ApplicationEventPublisher eventPublisher;
 
+    @Autowired
+    ComponentRightServiceImpl componentRightService;
 
     @Resource
     private SubscriptionRepository subscriptionRepository;
@@ -49,7 +49,7 @@ public class SubscriptionServiceImpl {
     public RatePlan createRateplan(Subscription subscription, ComponentRight component) {
 
         RatePlan ratePlan = new RatePlan();
-        ratePlan.setBillingPeriods(EnumBillingPeriods.Month);
+        ratePlan.setBillingPeriods(EnumBillingPeriod.Month);
         ratePlan.setChargeModel(EnumChargeModel.Perunit);
         ratePlan.setListPrice(10);
         ratePlan.setListPriceBase(EnumListPriceBase.BillingPeriod);
@@ -59,16 +59,51 @@ public class SubscriptionServiceImpl {
     }
 
 
+    public RatePlan createRateplan(Product product, RatePlanReq ratePlanReq, List<Partner> partner) {
+
+        RatePlan ratePlan = new RatePlan();
+        ratePlan.setCode(idGenService.ratePlanCode());
+
+        ratePlan.setPrivacyLevel(EnumPrivacyLevel.shareable);
+
+
+
+        ratePlan.setSharePartners(partner.stream().map(e->{
+
+            PartnerShareRatePlan partnerShareRatePlan = new PartnerShareRatePlan();
+            partnerShareRatePlan.setRatePlan(ratePlan);
+            partnerShareRatePlan.setPartnerSupplier(e.getPartner());
+            partnerShareRatePlan.setPartner(e.getId());
+            partnerShareRatePlan.setSupplier(product.getSupplierId());
+            partnerShareRatePlan.setProduct(product.getId());
+
+            return partnerShareRatePlan;
+
+        }).collect(Collectors.toList()));
+
+        ratePlan.setBillingPeriods(EnumBillingPeriod.Month);
+        ratePlan.setChargeModel(EnumChargeModel.Perunit);
+        ratePlan.setListPrice(ratePlanReq.getListPrice());
+        ratePlan.setListPriceBase(EnumListPriceBase.BillingPeriod);
+        ratePlan.setBillingDay(EnumBillingCycleDayType.SpecificDayOfMonth);
+        ratePlan.setBillCycleDay(ratePlanReq.getBillCycleDay());
+        ratePlan.setProduct(product.getId());
+        ratePlan.setSupplier(product.getSupplierId());
+        ratePlan.setCommissionType(ratePlanReq.getCommissionType());
+        ratePlanRepository.save(ratePlan);
+        return ratePlan;
+    }
+
 
 
     public RatePlan addComponentRight(Subscription subscription, ComponentRight component) {
 
         RatePlan ratePlan = new RatePlan();
-        ratePlan.setBillingPeriods(EnumBillingPeriods.Month);
+        ratePlan.setBillingPeriods(EnumBillingPeriod.Month);
         ratePlan.setChargeModel(EnumChargeModel.Perunit);
         ratePlan.setListPrice(10);
         ratePlan.setListPriceBase(EnumListPriceBase.BillingPeriod);
-        ratePlan.setBillingDay(EnumBillingDay.SpecificDayOfMonth);
+        ratePlan.setBillingDay(EnumBillingCycleDayType.SpecificDayOfMonth);
         ratePlan.setBillCycleDay(1);
 
         ratePlan = ratePlanRepository.save(ratePlan);
@@ -83,6 +118,88 @@ public class SubscriptionServiceImpl {
 
 
 
+
+
+    public Subscription create(Supplier supplier,RatePlan ratePlan,Product product, SubscriptionReq pojo) {
+
+
+
+
+        LocalDateTime original_billing_date = LocalDateTime.now();
+        LocalDateTime billing_cycle  = null;
+        if(ratePlan.getBillingPeriods().equals(EnumBillingPeriod.Quarter)){
+            original_billing_date = original_billing_date.with( TemporalAdjusters.firstDayOfNextMonth() ) ;
+
+            billing_cycle  = original_billing_date.plusDays(1);
+
+        }
+        if(ratePlan.getBillingPeriods().equals(EnumBillingPeriod.Week)){
+
+            original_billing_date = original_billing_date.with(DayOfWeek.MONDAY);
+            original_billing_date = original_billing_date.plusDays(ratePlan.getBillCycleDay());
+            billing_cycle  = original_billing_date.plusWeeks(1);
+
+        }
+        if(ratePlan.getBillingPeriods().equals(EnumBillingPeriod.Month)){
+            original_billing_date = original_billing_date.with( TemporalAdjusters.firstDayOfMonth() ) ;
+            original_billing_date = original_billing_date.plusDays(ratePlan.getBillCycleDay());
+            billing_cycle  = original_billing_date.plusMonths(1);
+        }
+
+
+
+
+        Subscription subscription = new Subscription();
+        subscription.setSupplier(supplier.getId());
+        subscription.setDescription(pojo.getDescription());
+        subscription.setCode(idGenService.subscriptionCode());
+        subscription.setName(pojo.getName());
+        subscription.setCurrent_period_end(billing_cycle);
+        subscription.setCurrent_period_start(original_billing_date);
+
+        subscription.setBilling_cycle_anchor(billing_cycle);
+
+        subscription.setTermSetting(pojo.getTermSetting());
+
+        subscription.setRatePlan(ratePlan.getId());
+        subscription.setProduct(product.getId());
+
+        subscription.setCustomer(product.getSupplierId());
+
+
+
+        // attraction.set(pojo.getName());
+
+        //   attraction.setLongdesc(pojo.getLongdesc());
+        //  attraction.setShortdesc(pojo.getShortdesc());
+        //  attraction.setVideo(pojo.getVideo());
+        subscription.setStatus(EnumSubscriptionStatus.draft);
+        //  attraction.setThumbnail_image(pojo.getVideo_url());
+        subscription = subscriptionRepository.save(subscription);
+
+
+        List<Component> componentRights = componentRepository.findAllByProduct(product.getId());
+
+        Subscription finalSubscription = subscription;
+        componentRights.stream().map(e->{
+            ComponentRight componentRight = componentRightRepository.findById(e.getComponentRightId()).get();
+
+            ComponentRightPojo createComponentRight = new ComponentRightPojo();
+            createComponentRight.setDuration(componentRight.getDuration());
+            createComponentRight.setName(componentRight.getName());
+            createComponentRight.setPrivacy_level(EnumPrivacyLevel.private_);
+            createComponentRight.setLong_desc(componentRight.getLong_desc());
+            createComponentRight.setName_long(componentRight.getName_long());
+            createComponentRight.setNote(componentRight.getNote());
+            createComponentRight.setDuration(componentRight.getDuration());
+            componentRightService.createComponentRight(supplier,createComponentRight, finalSubscription,componentRight);
+            return componentRight;
+        }).collect(Collectors.toList());
+
+
+
+        return subscription;
+    }
 
 
 
@@ -210,44 +327,8 @@ public class SubscriptionServiceImpl {
 
 
 
-    @Autowired
-    private ThreadPoolTaskScheduler taskScheduler;
 
 
-
-    public void start(BillRun billRun) {
-        if(billRun.getStatus().equals(EnumSubscriptionStatus.active)){
-            return;
-        }
-        billRun.setRepeats(EnumBillRecurringInterval.day);
-
-        PeriodicTrigger periodicTrigger
-                = new PeriodicTrigger(15, TimeUnit.DAYS);
-        periodicTrigger.setInitialDelay(Date.from(LocalDateTime.now().plusMinutes(1)
-                .atZone(ZoneId.systemDefault()).toInstant()).getTime());
-        taskScheduler.schedule(
-                new RunnableTask("Periodic Trigger"), periodicTrigger);
-
-        RunnableTask runnableTask = new RunnableTask("Periodic Trigger") ;
-        billRun.setStatus(EnumSubscriptionStatus.active);
-
-
-    }
-
-
-    class RunnableTask implements Runnable {
-
-        private String message;
-
-        public RunnableTask(String message) {
-            this.message = message;
-        }
-
-        @Override
-        public void run() {
-            System.out.println("Runnable Task with " + message + " on thread " + Thread.currentThread().getName());
-        }
-    }
 
 
 /*

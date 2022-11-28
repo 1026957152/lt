@@ -13,14 +13,16 @@ import org.javatuples.Pair;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserResp extends RepresentationModel<UserResp> {
+public class UserResp extends BaseResp {
 
-    private  boolean hired;
+    private  Boolean hired;
     @JsonInclude(JsonInclude.Include.NON_NULL)
 
     private String first_name;//	string	The user’s first name
@@ -49,7 +51,7 @@ public class UserResp extends RepresentationModel<UserResp> {
     private EntityModel supplier;
     private String real_name;
 
-    private boolean bind;
+    private Boolean bind;
 
     private String id_card;
 
@@ -59,15 +61,19 @@ public class UserResp extends RepresentationModel<UserResp> {
     private EntityModel<AssetResp> asset;
     private Integer gender;
     private String avatar;
-    private boolean real_name_verified;
-    private boolean tour_guide;
+    private Boolean real_name_verified;
+    private Boolean tour_guide;
     private BalanceResp balance;
     private EntityModel request;
-    private boolean phone_Verifid;
+    private Boolean phone_Verifid;
     private String token;
     private EntityModel<GuideSummaryVo> tour;
     private EnumSupplierVerifiedStatus merchant_settled_status;
     private LayoutResp layout;
+    private Boolean hasPass;
+    private EntityModel defaultPass;
+    private String status_text;
+    private Map fuctionLayout;
 
 
 /*    nick_name 昵称：
@@ -111,11 +117,11 @@ public class UserResp extends RepresentationModel<UserResp> {
         return userResp;
     }
 
-    public  void setHired(boolean hired) {
+    public  void setHired(Boolean hired) {
         this.hired = hired;
     }
 
-    public  boolean getHired() {
+    public  Boolean getHired() {
         return hired;
     }
 
@@ -189,6 +195,28 @@ public class UserResp extends RepresentationModel<UserResp> {
     }
 
 
+    public static UserResp pcFrom(User user) {
+        UserResp userResp = new UserResp();
+
+        userResp.setUser_code(user.getCode());
+        userResp.setNick_name(user.getNick_name() == null? "":user.getNick_name());
+        userResp.setMobile(user.getPhone() == null? "":user.getPhone());
+
+        userResp.setReal_name(user.getRealName() == null? "":user.getRealName());
+        userResp.setId_card(user.getIdCard() == null? "":user.getIdCard());
+        userResp.setStatus_text(user.getStatus()+"");
+        userResp.setReal_name_verified(user.isRealNameVerified());
+
+
+        userResp.setPhone_Verifid(user.isPhoneVerifid());
+        userResp.setCreatedDate(user.getCreatedDate() == null? LocalDateTime.now() :user.getCreatedDate());
+
+        userResp.setModifiedDate(user.getModifiedDate()== null? LocalDateTime.now() :user.getModifiedDate());
+        return userResp;
+    }
+
+
+
 /*    public static OpenidResp Realnamefrom(Pair<User, Openid> pair) {
         Openid openid = pair.getValue1();
         User user = pair.getValue0();
@@ -210,13 +238,13 @@ public class UserResp extends RepresentationModel<UserResp> {
 
 
 
-        UserResp openidResp = new UserResp();
+        UserResp userResp = new UserResp();
         //openidResp.setOpenid(openid1.getOpenid());
         //openidResp.setCode(openid.getCode());
-        openidResp.setNick_name(openid.getOpenid_name());
-        openidResp.setGender(openid.getOpenid_gender());
-        openidResp.setAvatar(openid.getOpenid_image());
-        openidResp.setBind(openid.getLink());
+        userResp.setNick_name(openid.getOpenid_name());
+        userResp.setGender(openid.getOpenid_gender());
+        userResp.setAvatar(openid.getOpenid_image());
+        userResp.setBind(openid.getLink());
 
 
         /*
@@ -235,7 +263,7 @@ public class UserResp extends RepresentationModel<UserResp> {
         openidResp.setRoles(user.getRoles().stream().map(x->{
             return RoleResp.from(x);
         }).collect(Collectors.toList()));*/
-        return openidResp;
+        return userResp;
 
     }
     public static UserResp userWithOpenidLink(Pair<User, Openid> pair) {
@@ -357,11 +385,11 @@ public class UserResp extends RepresentationModel<UserResp> {
 
 
 
-    public void setBind(boolean bind) {
+    public void setBind(Boolean bind) {
         this.bind = bind;
     }
 
-    public boolean getBind() {
+    public Boolean getBind() {
         return bind;
     }
 
@@ -411,20 +439,20 @@ public class UserResp extends RepresentationModel<UserResp> {
         return avatar;
     }
 
-    public void setReal_name_verified(boolean real_name_verified) {
+    public void setReal_name_verified(Boolean real_name_verified) {
 
         this.real_name_verified = real_name_verified;
     }
 
-    public boolean getReal_name_verified() {
+    public Boolean getReal_name_verified() {
         return real_name_verified;
     }
 
-    public void setTour_guide(boolean tour_guide) {
+    public void setTour_guide(Boolean tour_guide) {
         this.tour_guide = tour_guide;
     }
 
-    public boolean getTour_guide() {
+    public Boolean getTour_guide() {
         return tour_guide;
     }
 
@@ -444,11 +472,11 @@ public class UserResp extends RepresentationModel<UserResp> {
         return request;
     }
 
-    public void setPhone_Verifid(boolean phone_verifid) {
+    public void setPhone_Verifid(Boolean phone_verifid) {
         this.phone_Verifid = phone_verifid;
     }
 
-    public boolean getPhone_Verifid() {
+    public Boolean getPhone_Verifid() {
         return phone_Verifid;
     }
 
@@ -482,5 +510,37 @@ public class UserResp extends RepresentationModel<UserResp> {
 
     public LayoutResp getLayout() {
         return layout;
+    }
+
+    public void setHasPass(Boolean hasPass) {
+        this.hasPass = hasPass;
+    }
+
+    public Boolean isHasPass() {
+        return hasPass;
+    }
+
+    public void setDefaultPass(EntityModel defaultPass) {
+        this.defaultPass = defaultPass;
+    }
+
+    public EntityModel getDefaultPass() {
+        return defaultPass;
+    }
+
+    public void setStatus_text(String status_text) {
+        this.status_text = status_text;
+    }
+
+    public String getStatus_text() {
+        return status_text;
+    }
+
+    public void setFuctionLayout(Map fuctionLayout) {
+        this.fuctionLayout = fuctionLayout;
+    }
+
+    public Map getFuctionLayout() {
+        return fuctionLayout;
     }
 }

@@ -7,6 +7,7 @@ import com.lt.dom.controllerOct.Axh.XhEmployeeRestController;
 import com.lt.dom.controllerOct.Axh.XhSupplierRestController;
 import com.lt.dom.controllerOct.Axh.XhController;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.PrefereneVo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.vo.GuideSummaryVo;
@@ -62,8 +63,12 @@ public class UserVoServiceImpl {
 
     @Autowired
     private FeatureServiceImpl featureService;
+    @Autowired
+    private PassServiceImpl passService;
 
 
+    @Autowired
+    private PreferenceServiceImpl preferenceService;
 
     @Autowired
     private ApplyForApprovalServiceImpl requestService;
@@ -77,32 +82,32 @@ public class UserVoServiceImpl {
 
 
             userResp = UserResp.userWithOpenidLink(Pair.with(user,optionalOpenid.get()));
+
+
+
         }else{
             userResp = UserResp.from(user);
         }
+
+
         EntityModel entityModel = EntityModel.of(userResp);
 
 
 
+/*
 
         Optional<EntityModel<RequestResp>> requestRespOptional = requestService.getByUser(user,userResp);
 
         if(requestRespOptional.isPresent()){
 
-          //  RequestResp requestResp = RequestResp.simpleFrom(optionalRequest.get(),user);
-
             EntityModel<RequestResp> entityModel_ = requestRespOptional.get();
 
             userResp.setRequest(entityModel_);
 
-           // SupplierResp supplierResp = SupplierResp.from(requestResp);
-          //  supplierResp.setVerify_status(EnumSupplierVerifiedStatus.unverified.id());
-
-           // EntityModel supplierRespEntityModel = EntityModel.of(supplierResp);
-       //     userResp.setSupplier(supplierRespEntityModel);
 
             return entityModel;
         }
+*/
 
 
 
@@ -123,6 +128,12 @@ public class UserVoServiceImpl {
 
 
             Balance balance = balanceService.balance(supplier.getId(), EnumUserType.business);
+
+
+
+
+
+
 
 
 
@@ -177,6 +188,78 @@ public class UserVoServiceImpl {
             supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).page_addEmployee(employee.getSuplierId())).withRel("Page_createEmployee"));
 
 
+            supplierRespEntityModel.add(linkTo(methodOn(TheatreRestController.class).Page_listTheatre(employee.getSuplierId())).withRel("Page_listTheatre"));
+
+
+         //   supplierRespEntityModel.add(linkTo(methodOn(TheatreRestController.class).getTheatreList(employee.getSuplierId(),null,null)).withRel("getTheatreList"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(MediaRestController.class).Page_createMedia(employee.getSuplierId())).withRel("Page_createMedia"));
+            supplierRespEntityModel.add(linkTo(methodOn(MediaRestController.class).getMediaList(employee.getSuplierId(),null,null)).withRel("getMediaList"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(MuseumRestController.class).Page_createMuseum(employee.getSuplierId())).withRel("Page_createMuseum"));
+            supplierRespEntityModel.add(linkTo(methodOn(MuseumRestController.class).getMuseumList(employee.getSuplierId(),null,null)).withRel("getMuseumList"));
+
+
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(BookingMakeplanController.class).Page_createResource(employee.getSuplierId())).withRel("Page_createBookingResource"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(BookingMakeplanController.class).Page_createBookingService(employee.getSuplierId())).withRel("Page_createBookingService"));
+            supplierRespEntityModel.add(linkTo(methodOn(BookingMakeplanController.class).getBookingServices(employee.getSuplierId(),null,null)).withRel("getBookingServiceList"));
+            supplierRespEntityModel.add(linkTo(methodOn(BookingMakeplanController.class).getBookingResources(employee.getSuplierId(),null,null)).withRel("getBookingResourceList"));
+            supplierRespEntityModel.add(linkTo(methodOn(BookingMakeplanController.class).getBookingProviders(employee.getSuplierId(),null,null)).withRel("getBookingProviderList"));
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(PassRestController.class).getBulkissuaknceList(employee.getSuplierId(),null,null)).withRel("getBulkIssuanceList"));
+            supplierRespEntityModel.add(linkTo(methodOn(PassRestController.class).getPassList(employee.getSuplierId(),null,null)).withRel("getPassList"));
+            supplierRespEntityModel.add(linkTo(methodOn(PassRestController.class).Page_createPass(employee.getSuplierId())).withRel("Page_createPass"));
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(PassRestController.class).Page_createBulkIssuance(employee.getSuplierId())).withRel("Page_createBulkIssuance"));
+            supplierRespEntityModel.add(linkTo(methodOn(InvitationRestController.class).getInvitationList(employee.getSuplierId(),null,null)).withRel("getInvitationList"));
+            supplierRespEntityModel.add(linkTo(methodOn(InvitationRestController.class).Page_createInvitation(employee.getSuplierId())).withRel("Page_createInvitation"));
+            supplierRespEntityModel.add(linkTo(methodOn(PartnerRestController.class).getPartnerList(employee.getSuplierId(),null,null)).withRel("getPartnerList"));
+            supplierRespEntityModel.add(linkTo(methodOn(PartnerRestController.class).Page_getPartnerList(employee.getSuplierId())).withRel("Page_getPartnerList"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(MarketRestController.class).Page_market()).withRel("Page_market"));
+
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(CityWalkRestController.class).Page_getCityWalkList(employee.getSuplierId())).withRel("Page_getCityWalkList"));
+
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(CityWalkRestController.class).getCityWalkList(employee.getSuplierId(),null,null)).withRel("getCityWalkList"));
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(InvoiceRestController.class).Page_listInvoice(employee.getSuplierId())).withRel("Page_listInvoice"));
+
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(SubscriptionRestController.class).Page_listSubscription(employee.getSuplierId())).withRel("Page_listSubscription"));
+
+        //    supplierRespEntityModel.add(linkTo(methodOn(BookingRestController.class).getReservationList(employee.getSuplierId())).withRel("Page_listSubscription"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(BookingRestController.class).Page_listBooking(employee.getSuplierId())).withRel("Page_listBooking"));
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(MovieRestController.class).Page_listMovie(employee.getSuplierId())).withRel("Page_listMovie"));
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(SeatingLayoutRestController.class).Page_listSeatingLayout(employee.getSuplierId())).withRel("Page_listSeatingLayout"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(VoucherTicketRestController.class).Page_listSupplierVoucher(employee.getSuplierId())).withRel("Page_listVoucher"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(ThirdPartyRestController.class).Page_listThirdPartyProduct(employee.getSuplierId())).withRel("Page_listThirdPartyProduct"));
+            supplierRespEntityModel.add(linkTo(methodOn(ThirdPartyRestController.class).Page_listThirdParty(employee.getSuplierId())).withRel("Page_listThirdParty"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(TripRestController.class).Page_listPlace(employee.getSuplierId())).withRel("Page_listPlace"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(ExtraRestController.class).Page_listExtra(employee.getSuplierId())).withRel("Page_listExtra"));
+
+
+
+
             userResp.setSupplier(supplierRespEntityModel);
 
          //   supplierResp.setVerify_status(EnumSupplierVerifiedStatus.verified.id());
@@ -192,7 +275,7 @@ public class UserVoServiceImpl {
 
             entityModel.add(linkTo(methodOn(RedemptionRestController.class).validateVoucherByCode(null)).withRel("redeem"));
 
-            entityModel.add(linkTo(methodOn(RedemptionRestController.class).pageRedemptionEntry(employee.getSuplierId(),null,null)).withRel("getRedemptionEntryList"));
+            entityModel.add(linkTo(methodOn(RedemptionRestController.class).listRedemptionEntry(employee.getSuplierId(),null,null)).withRel("getRedemptionEntryList"));
             entityModel.add(linkTo(methodOn(RedemptionRestController.class).Page_pageRedemptionEntry(employee.getSuplierId())).withRel("Page_getRedemptionEntryList"));
             entityModel.add(linkTo(methodOn(ProductRestController.class).createProduct_for_attraction(employee.getSuplierId(),null)).withRel("createProduct"));
             entityModel.add(linkTo(methodOn(ProductRestController.class).Page_createProduct(employee.getSuplierId())).withRel("Page_createProduct"));
@@ -200,15 +283,22 @@ public class UserVoServiceImpl {
             entityModel.add(linkTo(methodOn(ProductRestController.class).Page_getProductList(employee.getSuplierId())).withRel("Page_getProductList"));
             entityModel.add(linkTo(methodOn(TourCampaignRestController.class).Page_createTourBooking()).withRel("Page_createTourBooking"));
             entityModel.add(linkTo(methodOn(TourCampaignRestController.class).createTourBooking(null,null)).withRel("createTourBooking"));
-            entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(employee.getSuplierId(),null)).withRel("getEmployeeList"));
+            entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(employee.getSuplierId(),null,null)).withRel("getEmployeeList"));
             entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(employee.getSuplierId(),null)).withRel("createEmployee"));
 
             entityModel.add(linkTo(methodOn(RequestFuckRestController.class).getRequestList(employee.getSuplierId(),null,null)).withRel("getRequestList"));
-            entityModel.add(linkTo(methodOn(SettingRestController.class).Page_getSettingList()).withRel("Page_getSettingList"));
+            entityModel.add(linkTo(methodOn(SettingRestController.class).Page_getSettingList(supplier.getId())).withRel("Page_getSettingList"));
             entityModel.add(linkTo(methodOn(RequestFuckRestController.class).page_getRequestList(employee.getSuplierId())).withRel("Page_getRequestList"));
 
 
 
+          //  entityModel.add(linkTo(methodOn(RequestFuckRestController.class).page_getRequestList(employee.getSuplierId())).withRel("Page_getRequestList"));
+
+
+            entityModel.add(linkTo(methodOn(UserRestController.class).getSupplier(employee.getSuplierId())).withRel("Page_getSupplier"));
+
+        }else{
+            userResp.setHired(false);
         }
         entityModel.add(linkTo(methodOn(UserRestController.class).beGuide(user.getId())).withRel("beGuide"));
 
@@ -285,6 +375,18 @@ public class UserVoServiceImpl {
      entityModel.add(linkTo(methodOn(XhController.class).getPull(null,null)).withRel("xh_getYxdRequestList"));
 
 
+        entityModel.add(linkTo(methodOn(UserRestController.class).getProfile(user.getId())).withRel("Page_getProfile"));
+
+
+
+
+
+
+
+
+        entityModel.add(linkTo(methodOn(CustomerRestController.class).Page_listUser()).withRel("Page_listUser"));
+
+        entityModel.add(linkTo(methodOn(PassRestController.class).Page_linkPass(user.getId())).withRel("Page_linkUser"));
 
 
 
@@ -304,9 +406,33 @@ public class UserVoServiceImpl {
         }
 
 
-        userResp.setLayout(featureService.meFill());;
+        Preference preference = preferenceService.getValue(user,EnumPreference.working_space);
+
+        EnumPreferenceSpace enumPreferenceSpace = EnumPreferenceSpace.valueOf(preference.getString_value());
+        if(enumPreferenceSpace.equals(EnumPreferenceSpace.employee)){
+            if(employeeOptional.isPresent()){
+                userResp.setFuctionLayout(featureService.meFuctionFill(user));;
+                userResp.setLayout(featureService.meFillEmployee(user,employeeOptional));;
+
+            }else{
+                PrefereneVo prefereneVo = new PrefereneVo();
+                prefereneVo.setString_value(EnumPreferenceSpace.default_.name());
+                prefereneVo.setValue_type(EnumPreference.working_space.getType());
+                preference = preferenceService.update(preference,prefereneVo);
+
+                userResp.setLayout(featureService.meFill(user,employeeOptional));;
+
+            }
+
+        }
+        if(enumPreferenceSpace.equals(EnumPreferenceSpace.default_)){
+
+            userResp.setLayout(featureService.meFill(user,employeeOptional));;
+        }
 
 
+
+        passService.withMe(userResp,user);
         return entityModel;
 
     }

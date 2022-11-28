@@ -1,3 +1,4 @@
+/*
 package com.lt.dom.vo;
 
 
@@ -56,3 +57,4 @@ public class GalleryImageVo {
         this.desc = desc;
     }
 }
+*/

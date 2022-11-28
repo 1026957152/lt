@@ -1,10 +1,8 @@
 package com.lt.dom.OctResp;
 
 import com.lt.dom.oct.Refund;
-import com.lt.dom.otcenum.EnumRefundReason;
-import com.lt.dom.otcenum.EnumRefundStatus;
+import com.lt.dom.otcenum.*;
 
-import javax.persistence.Column;
 import java.time.LocalDateTime;
 
 
@@ -24,6 +22,16 @@ public class RefundResp {
     private String charge_code;
     private String status_text;
     private String reason_text;
+    private String transactionId;
+    private String return_msg;
+    private int refund_fee;
+    private EnumRefundSourceType sourceType;
+    private EnumRefundType refundType;
+    private EnumPayChannel channel;
+    private String channel_text;
+    private Boolean unlinked;
+    private EnumPlatform platform;
+    private String platform_text;
 
     public static RefundResp from(Refund x) {
         RefundResp resp = new RefundResp();
@@ -35,6 +43,19 @@ public class RefundResp {
         resp.setStatus_text(x.getStatus().toString());
         resp.setCharge_code(x.getCharge_Code());
         resp.setCreated_at(x.getCreated());
+        resp.setReturn_msg(x.getReturn_msg());
+        resp.setRefund_fee(x.getRefund_fee());
+        resp.setTransactionId(x.getTransactionId());
+        resp.setRefundType(x.getRefundType());
+        resp.setUnlinked(x.getUnlinked());
+        resp.setSourceType(x.getSourceType());
+
+        resp.setPlatform(x.getPlatform());
+        resp.setPlatform_text(x.getPlatform().toString());
+        if(!x.getUnlinked()){
+            resp.setChannel_text(x.getChannel().toString());
+            resp.setChannel(x.getChannel());
+        }
         return resp;
     }
 
@@ -116,6 +137,86 @@ public class RefundResp {
 
     public String getReason_text() {
         return reason_text;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setReturn_msg(String return_msg) {
+        this.return_msg = return_msg;
+    }
+
+    public String getReturn_msg() {
+        return return_msg;
+    }
+
+    public void setRefund_fee(int refund_fee) {
+        this.refund_fee = refund_fee;
+    }
+
+    public int getRefund_fee() {
+        return refund_fee;
+    }
+
+    public void setSourceType(EnumRefundSourceType sourceType) {
+        this.sourceType = sourceType;
+    }
+
+    public EnumRefundSourceType getSourceType() {
+        return sourceType;
+    }
+
+    public void setRefundType(EnumRefundType refundType) {
+        this.refundType = refundType;
+    }
+
+    public EnumRefundType getRefundType() {
+        return refundType;
+    }
+
+    public void setChannel(EnumPayChannel channel) {
+        this.channel = channel;
+    }
+
+    public EnumPayChannel getChannel() {
+        return channel;
+    }
+
+    public void setChannel_text(String channel_text) {
+        this.channel_text = channel_text;
+    }
+
+    public String getChannel_text() {
+        return channel_text;
+    }
+
+    public void setUnlinked(Boolean unlinked) {
+        this.unlinked = unlinked;
+    }
+
+    public Boolean getUnlinked() {
+        return unlinked;
+    }
+
+    public void setPlatform(EnumPlatform platform) {
+        this.platform = platform;
+    }
+
+    public EnumPlatform getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform_text(String platform_text) {
+        this.platform_text = platform_text;
+    }
+
+    public String getPlatform_text() {
+        return platform_text;
     }
 
 /*    "id": "re_y1u944PmfnrTHyvnL0nD0iD1",

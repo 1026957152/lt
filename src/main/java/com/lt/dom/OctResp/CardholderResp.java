@@ -1,6 +1,8 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.oct.Cardholder;
 import com.lt.dom.otcenum.EnumCardholderStatus;
 import com.lt.dom.otcenum.EnumCardholderType;
 
@@ -8,13 +10,16 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 
+
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CardholderResp {
 
 
 
-    private long company;
+    private Long company;
 
-    private long user;
+    private Long user;
 
 
     private LocalDateTime created_at;
@@ -39,20 +44,36 @@ public class CardholderResp {
 
 
     private EnumCardholderType type;
+    private PhotoResp front;
+    private PhotoResp back;
+    private String identity;
+    private String uuid;
 
-    public long getCompany() {
+    public static CardholderResp from(Cardholder cardholder) {
+        CardholderResp cardholderResp = new CardholderResp();
+        cardholderResp.setName(cardholder.getName());
+        cardholderResp.setIdentity(cardholder.getIdentity());
+        cardholderResp.setType(cardholder.getType());
+        cardholderResp.setPhoneNumber(cardholder.getPhoneNumber());
+        cardholderResp.setUuid(cardholder.getUuid());
+
+
+        return cardholderResp;
+    }
+
+    public Long getCompany() {
         return company;
     }
 
-    public void setCompany(long company) {
+    public void setCompany(Long company) {
         this.company = company;
     }
 
-    public long getUser() {
+    public Long getUser() {
         return user;
     }
 
-    public void setUser(long user) {
+    public void setUser(Long user) {
         this.user = user;
     }
 
@@ -102,5 +123,37 @@ public class CardholderResp {
 
     public void setType(EnumCardholderType type) {
         this.type = type;
+    }
+
+    public void setFront(PhotoResp front) {
+        this.front = front;
+    }
+
+    public PhotoResp getFront() {
+        return front;
+    }
+
+    public void setBack(PhotoResp back) {
+        this.back = back;
+    }
+
+    public PhotoResp getBack() {
+        return back;
+    }
+
+    public void setIdentity(String identity) {
+        this.identity = identity;
+    }
+
+    public String getIdentity() {
+        return identity;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 }

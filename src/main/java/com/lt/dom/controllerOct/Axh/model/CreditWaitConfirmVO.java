@@ -31,7 +31,7 @@ public class CreditWaitConfirmVO {
     @JsonProperty("createTime")
     private String createTime;
     @JsonProperty("creditAmount")
-    private Integer creditAmount_授信额度; // 授信额度(万元)：
+    private Float creditAmount_授信额度; // 授信额度(万元)：
     @JsonProperty("disabled")
     private Integer disabled;
     @JsonProperty("endTime")
@@ -49,7 +49,7 @@ public class CreditWaitConfirmVO {
     @JsonProperty("loanLimit")
     private Integer loanLimit_贷款期限;  //贷款期限(个月)：
     @JsonProperty("loanRate")
-    private Integer loanRate_贷款年化利率; //贷款年化利率(%)：
+    private Float loanRate_贷款年化利率; //贷款年化利率(%)：
     @JsonProperty("orderId")
     private Integer orderId_申请id;  //申请id
     @JsonProperty("otherFee")
@@ -95,11 +95,11 @@ public class CreditWaitConfirmVO {
         this.createTime = createTime;
     }
 
-    public Integer getCreditAmount_授信额度() {
+    public Float getCreditAmount_授信额度() {
         return creditAmount_授信额度;
     }
 
-    public void setCreditAmount_授信额度(Integer creditAmount_授信额度) {
+    public void setCreditAmount_授信额度(Float creditAmount_授信额度) {
         this.creditAmount_授信额度 = creditAmount_授信额度;
     }
 
@@ -167,11 +167,11 @@ public class CreditWaitConfirmVO {
         this.loanLimit_贷款期限 = loanLimit_贷款期限;
     }
 
-    public Integer getLoanRate_贷款年化利率() {
+    public Float getLoanRate_贷款年化利率() {
         return loanRate_贷款年化利率;
     }
 
-    public void setLoanRate_贷款年化利率(Integer loanRate_贷款年化利率) {
+    public void setLoanRate_贷款年化利率(Float loanRate_贷款年化利率) {
         this.loanRate_贷款年化利率 = loanRate_贷款年化利率;
     }
 

@@ -8,30 +8,33 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @EntityListeners(AuditingEntityListener.class)
 @MappedSuperclass
 public class Base {
-
+    @Version
+    private Integer version;
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private long id;
+    private Long id;
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
+    @Column(name = "created_date", updatable = false)
 
-    @Column(name = "created_date", nullable = false, updatable = false)
+  //  @Column(name = "created_date", nullable = false, updatable = false)
     @CreatedDate
-    private long createdDate;
+    private LocalDateTime createdDate;
 
     @Column(name = "modified_date")
     @LastModifiedDate
-    private long modifiedDate;
+    private LocalDateTime modifiedDate;
 
     @Column(name = "created_by")
     @CreatedBy
@@ -42,19 +45,19 @@ public class Base {
     private String modifiedBy;
 
 
-    public long getCreatedDate() {
+    public LocalDateTime getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(long createdDate) {
+    public void setCreatedDate(LocalDateTime createdDate) {
         this.createdDate = createdDate;
     }
 
-    public long getModifiedDate() {
+    public LocalDateTime getModifiedDate() {
         return modifiedDate;
     }
 
-    public void setModifiedDate(long modifiedDate) {
+    public void setModifiedDate(LocalDateTime modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
 

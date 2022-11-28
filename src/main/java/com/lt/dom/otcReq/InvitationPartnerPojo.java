@@ -9,13 +9,13 @@ public class InvitationPartnerPojo {
 
     @NotEmpty
     private String companyName;//	string	yes (if user_id isn’t provided)	The email of the new member or multiple emails separated by commas.
-    @NotEmpty
+
     private EnumSupplierType type;///	integer	yes	A valid access level
-    @NotEmpty
+
     private String firstName;///	integer	yes	A valid access level
-    @NotEmpty
+
     private String lastName;///	integer	yes	A valid access level
-    @NotEmpty
+
     private String phone;///	integer	yes	A valid access level
 
 

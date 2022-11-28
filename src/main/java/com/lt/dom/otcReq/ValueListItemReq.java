@@ -22,6 +22,7 @@ public class ValueListItemReq {
     private String value;
 
     private String metadata;
+    private Integer index;
 
     public Long getValue_list() {
         return value_list;
@@ -45,5 +46,13 @@ public class ValueListItemReq {
 
     public void setMetadata(String metadata) {
         this.metadata = metadata;
+    }
+
+    public Integer getIndex() {
+        return index;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
     }
 }

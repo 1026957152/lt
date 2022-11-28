@@ -5,7 +5,9 @@ import com.lt.dom.OctResp.EnumResp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 
+import java.time.DayOfWeek;
 import java.time.Month;
+import java.time.format.TextStyle;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -24,7 +26,34 @@ public enum EnumAvailabilityRangetype {
 
     ;
 
+    public static List<EnumResp> DayOfWeek() {
+        return Arrays.stream(DayOfWeek.values()).map(x_by_person->{
+            EnumResp enumResp_by_person = new EnumResp();
+            enumResp_by_person.setId(x_by_person.name());
+            //  enumResp.setName(x.name());
+            enumResp_by_person.setText(x_by_person.getDisplayName(TextStyle.SHORT, Locale.CHINA));
+            return enumResp_by_person;
+        }).collect(Collectors.toList());
+    }
+    public static List<EnumResp> Month() {
+        return Arrays.stream(Month.values()).map(x_by_person->{
+            EnumResp resp_month = new EnumResp();
+            resp_month.setId(x_by_person.name());
+            //  enumResp.setName(x.name());
+            resp_month.setText(x_by_person.getDisplayName(TextStyle.SHORT, Locale.CHINA));
+            return resp_month;
+        }).collect(Collectors.toList());
+    }
+    public static List<EnumResp> simplefrom() {
+        return Arrays.stream(EnumAvailabilityRangetype.values()).map(x->{
+            EnumResp enumResp = new EnumResp();
+            enumResp.setId(x.name());
+            //  enumResp.setName(x.name());
+            enumResp.setText(x.toString());
 
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
 
     public static List<EnumResp> from() {
         return Arrays.stream(EnumAvailabilityRangetype.values()).map(x->{
@@ -38,17 +67,17 @@ public enum EnumAvailabilityRangetype {
                     EnumResp resp_month = new EnumResp();
                     resp_month.setId(x_by_person.name());
                     //  enumResp.setName(x.name());
-                    resp_month.setText(x_by_person.toString());
+                    resp_month.setText(x_by_person.getDisplayName(TextStyle.SHORT, Locale.CHINA));
                     return resp_month;
                 }).collect(Collectors.toList()));
 
             }
             if(x.equals(EnumAvailabilityRangetype.Range_of_weeks)){
-                enumResp.setSubitems(Arrays.stream(Week.values()).map(x_by_person->{
+                enumResp.setSubitems(Arrays.stream(DayOfWeek.values()).map(x_by_person->{
                     EnumResp enumResp_by_person = new EnumResp();
                     enumResp_by_person.setId(x_by_person.name());
                     //  enumResp.setName(x.name());
-                    enumResp_by_person.setText(x_by_person.toString());
+                    enumResp_by_person.setText(x_by_person.getDisplayName(TextStyle.SHORT, Locale.CHINA));
                     return enumResp_by_person;
                 }).collect(Collectors.toList()));
 

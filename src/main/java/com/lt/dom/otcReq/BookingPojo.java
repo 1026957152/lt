@@ -8,6 +8,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -29,6 +30,7 @@ public class BookingPojo {
 
     @NotNull
     private Long count = 1l;
+    private List<ProductReq.Sku> skus;
 
 
     public Tour getAdditional_info() {
@@ -85,6 +87,14 @@ public class BookingPojo {
 
     public void setCount(Long count) {
         this.count = count;
+    }
+
+    public List<ProductReq.Sku> getSkus() {
+        return skus;
+    }
+
+    public void setSkus(List<ProductReq.Sku> skus) {
+        this.skus = skus;
     }
 
     public static class Tour {

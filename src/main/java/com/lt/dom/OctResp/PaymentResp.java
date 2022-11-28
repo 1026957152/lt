@@ -3,6 +3,9 @@ package com.lt.dom.OctResp;
 import cn.hutool.core.io.unit.DataUnit;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.Payment;
+import com.lt.dom.otcenum.EnumIdType;
+import com.lt.dom.otcenum.EnumPayChannel;
+import com.lt.dom.otcenum.EnumPaymentSourceType;
 import com.lt.dom.otcenum.EnumPaymentStatus;
 import com.lt.dom.util.DateUtils;
 import org.springframework.hateoas.EntityModel;
@@ -16,11 +19,52 @@ import java.util.List;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PaymentResp  extends RepresentationModel<PaymentResp> {
+public class PaymentResp   {
+
+    public static class Customer   {
+        private EnumIdType id_type;
+        private String phone;
+        private String id_number;
+        private String name;
+
+        public EnumIdType getId_type() {
+            return id_type;
+        }
+
+        public void setId_type(EnumIdType id_type) {
+            this.id_type = id_type;
+        }
+
+        public String getPhone() {
+            return phone;
+        }
+
+        public void setPhone(String phone) {
+            this.phone = phone;
+        }
+
+        public String getId_number() {
+            return id_number;
+        }
+
+        public void setId_number(String id_number) {
+            this.id_number = id_number;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+
 
 
     private String object;//	string	Object type, payment
-    private Long customer;//	Integereger	Associated Customer, if any
+    private Customer customer;//	Integereger	Associated Customer, if any
     private LocalDateTime date;//	timestamp	Payment date
     private String currency;//	string	3-letter ISO code
     private Integer amount;//	number	Payment amount
@@ -44,6 +88,9 @@ public class PaymentResp  extends RepresentationModel<PaymentResp> {
     private LocalDateTime expireTime;
     private String time_remaining;
     private long seconds_remaining;
+    private List charges;
+    private EnumPayChannel payment_method;
+    private EnumPaymentSourceType sourceType;
 
     public static PaymentResp from(Payment payment) {
 
@@ -64,6 +111,29 @@ public class PaymentResp  extends RepresentationModel<PaymentResp> {
         return paymentResp;
     }
 
+    public static PaymentResp detailfrom(Payment payment) {
+
+        PaymentResp paymentResp = new PaymentResp();
+        //  paymentResp.setCustomer(payment.getCustomer());
+        //   paymentResp.setBalance(payment.getBalance());
+        paymentResp.setCreated_at(payment.getCreated_at());
+        paymentResp.setAmount(payment.getAmount());
+        paymentResp.setStatus(payment.getStatus());
+        paymentResp.setExpire_time(payment.getExpireTime());
+        paymentResp.setPayment_method(payment.getPayment_method());
+        paymentResp.setSourceType(payment.getSourceType());
+        paymentResp.setStatus_text(payment.getStatus().toString());
+
+
+        Customer customer1 = new Customer();
+        customer1.setName(payment.getLog_customer_name());
+        customer1.setId_number(payment.getLog_customer_id_number());
+        customer1.setPhone(payment.getLog_customer_phone());
+        customer1.setId_type(payment.getLog_customer_id_type());
+
+        paymentResp.setCustomer(customer1);
+        return paymentResp;
+    }
 
 
     public String getObject() {
@@ -74,11 +144,11 @@ public class PaymentResp  extends RepresentationModel<PaymentResp> {
         this.object = object;
     }
 
-    public Long getCustomer() {
+    public Customer getCustomer() {
         return customer;
     }
 
-    public void setCustomer(Long customer) {
+    public void setCustomer(Customer customer) {
         this.customer = customer;
     }
 
@@ -264,5 +334,29 @@ public class PaymentResp  extends RepresentationModel<PaymentResp> {
 
     public long getSeconds_remaining() {
         return seconds_remaining;
+    }
+
+    public <R> void setCharges(List charges) {
+        this.charges = charges;
+    }
+
+    public List getCharges() {
+        return charges;
+    }
+
+    public void setPayment_method(EnumPayChannel payment_method) {
+        this.payment_method = payment_method;
+    }
+
+    public EnumPayChannel getPayment_method() {
+        return payment_method;
+    }
+
+    public void setSourceType(EnumPaymentSourceType sourceType) {
+        this.sourceType = sourceType;
+    }
+
+    public EnumPaymentSourceType getSourceType() {
+        return sourceType;
     }
 }

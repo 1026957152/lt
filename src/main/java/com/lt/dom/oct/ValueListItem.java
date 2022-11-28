@@ -22,6 +22,8 @@ public class ValueListItem {
     private LocalDateTime created;
     private String created_by;
     private String metadata;
+    @Column(name = "index_")
+    private Integer index;
 
     public long getValueList() {
         return valueList;
@@ -75,5 +77,13 @@ public class ValueListItem {
     @Override
     public String toString() {
         return ReflectionToStringBuilder.toString(this);
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
+    }
+
+    public Integer getIndex() {
+        return index;
     }
 }

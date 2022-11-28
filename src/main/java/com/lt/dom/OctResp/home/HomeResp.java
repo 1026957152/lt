@@ -1,6 +1,7 @@
 package com.lt.dom.OctResp.home;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.lt.dom.OctResp.MediaResp;
 import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.OctResp.ProductResp;
 import org.javatuples.Pair;
@@ -8,8 +9,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 
 import java.util.List;
-
-
+import java.util.Map;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -20,10 +20,13 @@ public class HomeResp {
     private CollectionModel campaignCategories;
     private List<EntityModel<ProductResp>> recommend_products;
     private List<EntityModel> recommend_attractions;
-    private List<PhotoResp> carousel;
+    private List<MediaResp> carousel;
     private List<EntityModel<FeatureResp>> features;
     private Boolean show_policy;
     private String policy;
+    private List movies;
+    private List greatYulin;
+    private Map cityPass;
 
     public static void noteShow(HomeResp homeResp, Pair<Boolean, String> stringPair) {
 
@@ -61,11 +64,11 @@ public class HomeResp {
         return recommend_attractions;
     }
 
-    public void setCarousel(List<PhotoResp> carousel) {
+    public void setCarousel(List<MediaResp> carousel) {
         this.carousel = carousel;
     }
 
-    public List<PhotoResp> getCarousel() {
+    public List<MediaResp> getCarousel() {
         return carousel;
     }
 
@@ -91,5 +94,29 @@ public class HomeResp {
 
     public String getPolicy() {
         return policy;
+    }
+
+    public <R> void setMovies(List movies) {
+        this.movies = movies;
+    }
+
+    public List getMovies() {
+        return movies;
+    }
+
+    public <R> void setGreatYulin(List greatYulin) {
+        this.greatYulin = greatYulin;
+    }
+
+    public List getGreatYulin() {
+        return greatYulin;
+    }
+
+    public void setCityPass(Map cityPass) {
+        this.cityPass = cityPass;
+    }
+
+    public Map getCityPass() {
+        return cityPass;
     }
 }

@@ -2,16 +2,20 @@ package com.lt.dom.serviceOtc;
 
 
 import com.google.gson.Gson;
+import com.lt.dom.OctResp.ProductEditResp;
 import com.lt.dom.OctResp.ProductResp;
 import com.lt.dom.oct.BookingRule;
 import com.lt.dom.oct.Departures;
 import com.lt.dom.oct.Product;
 import com.lt.dom.otcReq.BookingRulePojo;
+import com.lt.dom.otcReq.BookingRulePojoFuck;
 import com.lt.dom.otcenum.EnumAvailabilityRangetype;
 import com.lt.dom.otcenum.EnumAvailabilityStatus;
 import com.lt.dom.otcenum.EnumAvailabilityType;
+import com.lt.dom.otcenum.EnumPassExpiry;
 import com.lt.dom.repository.BookingRuleRepository;
-import com.lt.dom.vo.AvailabilityVO;
+import com.lt.dom.vo.AvailabilityCalendarVO;
+import com.lt.dom.vo.BookingRuleVO;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +39,6 @@ public class AvailabilityServiceImpl {
 
 
         List<LocalDate> localDates = departures.stream().filter(x -> x.getType() == "").map(x -> {
-
             return Arrays.asList(LocalDate.now());
 
         }).flatMap(List::stream).collect(Collectors.toList());
@@ -54,9 +57,7 @@ public class AvailabilityServiceImpl {
 
 
     // 这里都取得 交集  都是 可下下单则 可下单， 其他都是 不下单
-    public List<AvailabilityVO> getAvailability_(Product product, List<BookingRule> bookingRules, LocalDate localDate) {
-
-
+    public List<AvailabilityCalendarVO> getAvailability_(Product product, List<BookingRule> bookingRules, LocalDate localDate) {
 
 /*
         List<Pair<LocalDate,Boolean>> localDates_date_rang = bookingRules.stream().filter(x->x.getRangetype() == EnumAvailabilityRangetype.Date_range).map(x->{
@@ -111,9 +112,6 @@ public class AvailabilityServiceImpl {
 
 
         System.out.println("这里时 获得了 每日的时间 序列"+pairList);
-
-
-
 
         Set<Month> monthList_bookable = bookingRules.stream()
                 .filter(x->x.getRangetype() == EnumAvailabilityRangetype.Range_of_months )
@@ -252,36 +250,36 @@ public class AvailabilityServiceImpl {
 
 
 
-        List<AvailabilityVO> pairList_withtime = IntStream.range(0,close.size()).mapToObj(e->{
+        List<AvailabilityCalendarVO> pairList_withtime = IntStream.range(0,close.size()).mapToObj(e->{
 
             Pair<LocalDate,Boolean> x = close.get(e);
             LocalDate l = x.getValue0();
             Boolean bookable = x.getValue1();
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
-            AvailabilityVO availabilityVO = new AvailabilityVO();
+            AvailabilityCalendarVO availabilityCalendarVO = new AvailabilityCalendarVO();
 
-            availabilityVO.setBooking_at(l);
-            availabilityVO.setBooking_at_text(formatter.format(l));
+            availabilityCalendarVO.setBooking_at(l);
+            availabilityCalendarVO.setBooking_at_text(formatter.format(l));
 
             if(e == 0){
-                availabilityVO.setBooking_at_text("明天");
+                availabilityCalendarVO.setBooking_at_text("明天");
             }
             if(e == 1){
-                availabilityVO.setBooking_at_text("后天");
+                availabilityCalendarVO.setBooking_at_text("后天");
             }
 
-            availabilityVO.setAvailable(bookable);
-            availabilityVO.setWeek_text(l.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.CHINA));
+            availabilityCalendarVO.setAvailable(bookable);
+            availabilityCalendarVO.setWeek_text(l.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.CHINA));
             if(bookable){
-                availabilityVO.setOpeningHours(Arrays.asList());
-                availabilityVO.setSpaces_remaining(200);
-                availabilityVO.setCapacity(200);
+                availabilityCalendarVO.setOpeningHours(Arrays.asList());
+                availabilityCalendarVO.setSpaces_remaining(200);
+                availabilityCalendarVO.setCapacity(200);
 
-                availabilityVO.setStatus(EnumAvailabilityStatus.AVAILABLE);
+                availabilityCalendarVO.setStatus(EnumAvailabilityStatus.AVAILABLE);
             }else{
-                availabilityVO.setSpaces_remaining(0);
-                availabilityVO.setStatus(EnumAvailabilityStatus.CLOSED);
+                availabilityCalendarVO.setSpaces_remaining(0);
+                availabilityCalendarVO.setStatus(EnumAvailabilityStatus.CLOSED);
             }
 
 
@@ -293,18 +291,18 @@ public class AvailabilityServiceImpl {
            // availabilityVO.setPriority(x.getPriority());
 
 
-            availabilityVO.setOpeningHours(finalBookingRules.stream().filter(bookingRule->bookingRule.getRangetype() == EnumAvailabilityRangetype.Time_Range_$all_week$ ).map(bookingRule->{
+            availabilityCalendarVO.setOpeningHours(finalBookingRules.stream().filter(bookingRule->bookingRule.getRangetype() == EnumAvailabilityRangetype.Time_Range_$all_week$ ).map(bookingRule->{
 
-
-                AvailabilityVO.OpeningHour time = new AvailabilityVO.OpeningHour();
-                time.setFrom(bookingRule.getTime_from());
-                time.setTo(bookingRule.getTime_to());
+                DateTimeFormatter formatter_time = DateTimeFormatter.ofPattern("HH-mm");
+                AvailabilityCalendarVO.OpeningHour time = new AvailabilityCalendarVO.OpeningHour();
+                time.setFrom(formatter_time.format(bookingRule.getTime_from()));
+                time.setTo(formatter_time.format(bookingRule.getTime_to()));
                 return time;
 
             }).collect(Collectors.toList()));
 
 
-            return availabilityVO;
+            return availabilityCalendarVO;
         }).collect(Collectors.toList());
 
 
@@ -370,76 +368,63 @@ public class AvailabilityServiceImpl {
 
 
 
-    public static List<AvailabilityVO> getTimeBetweenUsingJava9(List<LocalDate> localDates , BookingRule departures) {
+    public static List<AvailabilityCalendarVO> getTimeBetweenUsingJava9(List<LocalDate> localDates , BookingRule departures) {
 
         LocalDateTime.now().toLocalTime();
         return localDates.stream().map(x->{
 
-            AvailabilityVO availabilityVO = new AvailabilityVO();
+            AvailabilityCalendarVO availabilityCalendarVO = new AvailabilityCalendarVO();
          //   availabilityVO.setBooking_at(x);
 
       /*      availabilityVO.setTime_from(departures.getTime_from());
             availabilityVO.setTime_to(departures.getTime_to());*/
-            availabilityVO.setBookable(departures.getBookable());
+            availabilityCalendarVO.setBookable(departures.getBookable());
          //   availabilityVO.setPriority(departures.getPriority());
-            return availabilityVO;
+            return availabilityCalendarVO;
         }).collect(Collectors.toList());
     }
     public List<Calendar> listAvailability(Product product) {
         return null;
     }
 
-    public ProductResp.Availability form(List<BookingRule> bookingRuleList) {
+    public String getAvailabilitySimple(Product product) {
+        if(EnumAvailabilityType.PASS.equals(product.getAvailability_type())){
+
+            return "下单即可用";
+        }else{
+            List<BookingRule> bookingRuleList = bookingRuleRepository.findByProduct(product.getId());
+
+            if(bookingRuleList.isEmpty()){
+                return "下单即可用";
+            }
+            List<AvailabilityCalendarVO> availabilityCalendarVOList = getAvailability_(product,bookingRuleList, LocalDate.now().plusDays(5));
+
+            if(availabilityCalendarVOList.isEmpty()){
+                return "下单即可用";
+            }
+            AvailabilityCalendarVO availabilityCalendarVO = availabilityCalendarVOList.get(0);
+
+            return availabilityCalendarVO.getBooking_at_text()+" 可用";
+        }
 
 
 
-            ProductResp.Availability availability = new ProductResp.Availability();
-            availability.setRanges(bookingRuleList.stream().map(e->{
-                BookingRulePojo bookingRuleVO = new BookingRulePojo();
-                bookingRuleVO.setBookable(e.getBookable());
-                bookingRuleVO.setPriority(e.getPriority());
-
-                bookingRuleVO.setRangetype(e.getRangetype());
-
-
-
-
-                if(e.getRangetype().equals(EnumAvailabilityRangetype.Date_range)){
-
-
-                    // Parses the date
-/*                LocalDate dt1
-                        = LocalDate
-                        .parse("2018-11-03T12:45:30");*/
-                    bookingRuleVO.setFrom(e.getBookings_from().toString());
-                    bookingRuleVO.setTo(e.getBookings_to().toString());
-
-                }
-                if(e.getRangetype().equals(EnumAvailabilityRangetype.Range_of_months)){
-   /*                 bookingRuleVO.setFrom(e.getMonth_from().toString());
-                    bookingRuleVO.setTo(e.getMonth_to().toString());*/
-                    bookingRuleVO.setWeeks(Arrays.stream(new Gson().fromJson(e.getMonths_json(),DayOfWeek[].class)).map(ee->ee.getDisplayName(TextStyle.SHORT, Locale.CHINA)).collect(Collectors.toList()));
-
-                }
-                if(e.getRangetype().equals(EnumAvailabilityRangetype.Time_Range_$all_week$)){
-
-                    bookingRuleVO.setFrom(e.getTime_from().toString());
-                    bookingRuleVO.setTo(e.getTime_to().toString());
-
-                }
-
-                if(e.getRangetype().equals(EnumAvailabilityRangetype.Range_of_weeks)){
-                   // bookingRuleVO.setFrom(e.getWeek_from().toString());
-                    bookingRuleVO.setWeeks(Arrays.stream(new Gson().fromJson(e.getWeeks_json(),DayOfWeek[].class)).map(ee->ee.getDisplayName(TextStyle.SHORT, Locale.CHINA).toString()).collect(Collectors.toList()));
-                 //   bookingRuleVO.setTo(e.getWeek_to().toString());
-
-
-                }
-                return bookingRuleVO;
-            }).collect(Collectors.toList()));
-
-            return availability;
     }
+
+    public LocalDateTime getExpiry_datetime(Product product) {
+        if(product.getAvailability_type().equals(EnumAvailabilityType.PASS)){
+            if(product.getPassExpiry().equals(EnumPassExpiry.RELATIVE_DATE)){
+
+
+                //     product.get
+
+                return LocalDateTime.now().plusDays(product.getPassValidForDays());
+            }
+
+        }
+        return LocalDateTime.now();
+    }
+
 
 
 

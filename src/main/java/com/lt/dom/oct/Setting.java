@@ -1,27 +1,23 @@
 package com.lt.dom.oct;
 
 import com.lt.dom.otcenum.EnumAssetType;
+import com.lt.dom.otcenum.EnumSettingSpace;
 import com.lt.dom.otcenum.EnumValueType;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
-public class Setting {
-    @Version
-    private Integer version;
+public class Setting extends Base{
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private EnumSettingSpace space;
 
-    @Id
-    private long id;
-
-    public long getId() {
-        return id;
+    public EnumSettingSpace getSpace() {
+        return space;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setSpace(EnumSettingSpace space) {
+        this.space = space;
     }
 
     private String name;
@@ -42,13 +38,7 @@ public class Setting {
         this.value_type = value_type;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
 
     public Integer getInt_value() {
         return int_value;

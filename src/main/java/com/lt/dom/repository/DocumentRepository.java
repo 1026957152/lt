@@ -27,4 +27,8 @@ public interface DocumentRepository extends JpaRepository<Document
     List<Document> findAllByTypeAndReferenceIn(EnumDocumentType scenario_logo, List<String> reference);
 
     Page<Document> findAllByTypeAndReference(EnumDocumentType attraction_photos, String code, Pageable pageable);
+
+    void deleteAllByTypeAndReference(EnumDocumentType type, String objectCode);
+
+    List<Document> findAllByReference( String tempDocumentCode);
 }

@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -72,7 +74,12 @@ public class RefundRestController {
 
 
     @GetMapping(value = "/refunds", produces = "application/json")
-    public ResponseEntity<PagedModel> getRefundList(Pageable pageable , PagedResourcesAssembler<EntityModel<RefundResp>> assembler) {
+    public ResponseEntity<PagedModel> getRefundList(
+            @PageableDefault(sort = {"createdDate",
+                    "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
+
+
+            PagedResourcesAssembler<EntityModel<RefundResp>> assembler) {
 
 
 

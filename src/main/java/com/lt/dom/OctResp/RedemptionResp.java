@@ -1,10 +1,10 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcenum.EnumAssociatedType;
-import com.lt.dom.otcenum.EnumPublicationObjectType;
-import com.lt.dom.otcenum.EnumRedemptionType;
+import com.lt.dom.otcReq.VoucherTicketResp;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
 import org.javatuples.Quintet;
 import org.javatuples.Triplet;
@@ -19,18 +19,253 @@ import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RedemptionResp {
 
 
     private Long quantity;
     private Long redeemed_quantity;
 
-    private List<RedemptionEntryResp> entries;
+    private List entries;
     private LocalDateTime redeem_at;
 
     private String crypto_code;
     private String voucher_code;
+
+    private RelateObject relateObject;
+    private Customer customer;
+    private String code;
+    private LocalDateTime createdDate;
+
+
+    public void setRelateObject(RelateObject relateObject) {
+        this.relateObject = relateObject;
+    }
+
+    public RelateObject getRelateObject() {
+        return relateObject;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+
+    public static class Validator {
+
+        private EnumValidatorType type;
+        private Long id;
+        private String user_name;
+        private String user_code;
+        private String device_code;
+        private String device_name;
+        private String type_text;
+
+        public EnumValidatorType getType() {
+            return type;
+        }
+
+        public void setType(EnumValidatorType type) {
+            this.type = type;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public void setUser_name(String user_name) {
+            this.user_name = user_name;
+        }
+
+        public String getUser_name() {
+            return user_name;
+        }
+
+        public void setUser_code(String user_code) {
+            this.user_code = user_code;
+        }
+
+        public String getUser_code() {
+            return user_code;
+        }
+
+        public void setDevice_code(String device_code) {
+            this.device_code = device_code;
+        }
+
+        public String getDevice_code() {
+            return device_code;
+        }
+
+        public void setDevice_name(String device_name) {
+            this.device_name = device_name;
+        }
+
+        public String getDevice_name() {
+            return device_name;
+        }
+
+        public void setType_text(String type_text) {
+            this.type_text = type_text;
+        }
+
+        public String getType_text() {
+            return type_text;
+        }
+    }
+
+
+
+    public static class Customer {
+
+        private String name;
+        private Long id;
+        private String code;
+
+        public static Customer from(User user) {
+
+            Customer customer = new Customer();
+            customer.setName(user.getRealName());
+            customer.setCode(user.getCode());
+            customer.setId(user.getId());
+            return customer;
+        }
+
+        public static Customer from(Redemption x) {
+
+            Customer customer1 = new Customer();
+            customer1.setName(x.getLog_Customer_name());
+            customer1.setCode(x.getLog_Customer_code());
+            return customer1;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public String getCode() {
+            return code;
+        }
+    }
+
+    public static class RelateObject {
+
+        private EnumRelatedObjectType type;
+        private long id;
+
+        private EnumVoucherType objectType;
+        private String code;
+        private String lable;
+        private String type_text;
+        private String objectType_text;
+
+        public EnumRelatedObjectType getType() {
+            return type;
+        }
+
+        public void setType(EnumRelatedObjectType type) {
+            this.type = type;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+
+
+        public void setObjectType(EnumVoucherType objectType) {
+            this.objectType = objectType;
+        }
+
+        public EnumVoucherType getObjectType() {
+            return objectType;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setLable(String lable) {
+            this.lable = lable;
+        }
+
+        public String getLable() {
+            return lable;
+        }
+
+        public void setType_text(String type_text) {
+            this.type_text = type_text;
+        }
+
+        public String getType_text() {
+            return type_text;
+        }
+
+        public void setObjectType_text(String objectType_text) {
+            this.objectType_text = objectType_text;
+        }
+
+        public String getObjectType_text() {
+            return objectType_text;
+        }
+    }
+    private Validator validator;
+
+    public void setValidator(Validator validator) {
+        this.validator = validator;
+    }
+
+    public Validator getValidator() {
+        return validator;
+    }
 
     public static List<EntityModel<RedemptionResp>> from(List<Triplet<RedemptionEntry, Redemption, PublishTowhoVo>> list) {
 
@@ -40,8 +275,6 @@ public class RedemptionResp {
             RedemptionEntry redemptionEntry = pair.getValue0();
             RedemptionResp redemptionResp = new RedemptionResp();
             redemptionResp.setRedeemed_quantity(pair.getValue1().getRedeemed_quantity());
-            redemptionResp.setRelatedObjectId(pair.getValue1().getRelatedObjectId());
-            redemptionResp.setRelatedObjectType(pair.getValue1().getRelatedObjectType());
 
             RedemptionEntryResp redemptionEntryResp = new RedemptionEntryResp();
 
@@ -87,6 +320,34 @@ public class RedemptionResp {
 
         return redemptionResp;
     }
+    public static RedemptionResp from(Redemption redemption) {
+
+
+        RedemptionResp redemptionResp = new RedemptionResp();
+        redemptionResp.setCode(redemption.getCode());
+
+        redemptionResp.setRedeemed_quantity(redemption.getRedeemed_quantity());
+
+      //  redemptionResp.setEntries(Arrays.asList(redemptionEntryResp));
+        Validator validator1 = new  Validator();
+
+
+        validator1.setType(redemption.getValidatorType());
+        validator1.setType_text(redemption.getValidatorType().toString());
+     //   validator1.setId(redemption.getValidator());
+        validator1.setUser_name(redemption.getLog_Validator_user_name());
+        validator1.setUser_code(redemption.getLog_Validator_user_code());
+        validator1.setDevice_code(redemption.getLog_Validator_device_code());
+        validator1.setDevice_name(redemption.getLog_Validator_device_name());
+
+        redemptionResp.setValidator(validator1);
+        redemptionResp.setCreatedDate(redemption.getCreatedDate());
+      //  redemptionResp.setEntries(Arrays.asList(redemptionEntryResp));
+
+
+
+        return redemptionResp;
+    }
 
     public static RedemptionResp from(Triplet<RedemptionEntry, Redemption, PublishTowhoVo> pair) {
 
@@ -95,8 +356,6 @@ public class RedemptionResp {
         RedemptionResp redemptionResp = new RedemptionResp();
 
         redemptionResp.setRedeemed_quantity(pair.getValue1().getRedeemed_quantity());
-        redemptionResp.setRelatedObjectId(pair.getValue1().getRelatedObjectId());
-        redemptionResp.setRelatedObjectType(pair.getValue1().getRelatedObjectType());
 
         RedemptionEntryResp redemptionEntryResp = new RedemptionEntryResp();
 
@@ -163,11 +422,11 @@ public class RedemptionResp {
 
     }
 
-    public List<RedemptionEntryResp> getEntries() {
+    public List getEntries() {
         return entries;
     }
 
-    public void setEntries(List<RedemptionEntryResp> entries) {
+    public void setEntries(List entries) {
         this.entries = entries;
     }
 
@@ -188,24 +447,9 @@ public class RedemptionResp {
     }
 
 
-    private EnumAssociatedType relatedObjectType;
-    private long relatedObjectId;
 
-    public EnumAssociatedType getRelatedObjectType() {
-        return relatedObjectType;
-    }
 
-    public void setRelatedObjectType(EnumAssociatedType related_object_type) {
-        this.relatedObjectType = related_object_type;
-    }
 
-    public long getRelatedObjectId() {
-        return relatedObjectId;
-    }
-
-    public void setRelatedObjectId(long related_object_id) {
-        this.relatedObjectId = related_object_id;
-    }
 
     private Towho towho;
 
@@ -242,6 +486,8 @@ public class RedemptionResp {
     public String getVoucher_code() {
         return voucher_code;
     }
+
+
 
     public static class Towho {
 

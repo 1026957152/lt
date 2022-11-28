@@ -1,21 +1,19 @@
 package com.lt.dom.serviceOtc;
 
+import com.lt.dom.OctResp.EmployeeEditResp;
+import com.lt.dom.OctResp.SupplierEditResp;
+import com.lt.dom.domain.SettleAccount;
 import com.lt.dom.error.BookNotFoundException;
-import com.lt.dom.error.ExistException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
-import com.lt.dom.otcenum.EnumEmployeeStatus;
-import com.lt.dom.otcenum.EnumSupplierStatus;
-import com.lt.dom.otcenum.Enumfailures;
-import com.lt.dom.repository.EmployeeRepository;
-import com.lt.dom.repository.RoleRepository;
-import com.lt.dom.repository.SupplierRepository;
-import com.lt.dom.repository.UserRepository;
+import com.lt.dom.otcenum.*;
+import com.lt.dom.repository.*;
 import com.lt.dom.vo.SupplierPojoVo;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +28,12 @@ public class SupplierServiceImp {
     private IdGenServiceImpl idGenService;
 
     @Autowired
+    private FileStorageServiceImpl fileStorageService;
+    @Autowired
+    private UserAuthorityRepository userAuthorityRepository;
+
+
+    @Autowired
     private UserServiceImpl userService;
 
     @Autowired
@@ -37,6 +41,8 @@ public class SupplierServiceImp {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private RoleRepository roleRepository;
 
 
 
@@ -86,9 +92,44 @@ public class SupplierServiceImp {
 
     }
 
-    public Supplier put(Supplier supplier, SupplierPutPojo pojo) {
+    @Transactional
+    public Supplier edit(Supplier supplier, SupplierEditResp.InfoTab pojo) {
 
-        supplier.setDesc(pojo.getDescription());
+        supplier.setDesc(pojo.getDesc());
+
+
+
+        supplier.setRegistered_address(pojo.getRegistered_address());
+        supplier.setRegistered_name(pojo.getRegistered_name());
+        supplier.setUniformSocialCreditCode(pojo.getUniformSocialCreditCode());
+
+
+        supplier.setName(pojo.getName());
+        supplier.setSlug(pojo.getSlug());
+
+        SettleAccount settleAccount = new SettleAccount();
+        settleAccount.setAccountName(pojo.getSettleAccount().getAccountName());
+        settleAccount.setBankAccount(pojo.getSettleAccount().getBankAccountNumber());
+        settleAccount.setBankName(pojo.getSettleAccount().getBankName());
+
+        supplier.setSettleAccount(settleAccount);
+
+
+        Address address = new Address();
+        address.setAddressLine1(pojo.getLocation().getAddress());
+        address.setLatitude(pojo.getLocation().getLatitude());
+        address.setLongitude(pojo.getLocation().getLongitude());
+
+        supplier.setLocation(address);
+
+        supplier.setSlug(pojo.getSlug());
+        supplierRepository.save(supplier);
+
+
+
+        if(pojo.getLogo() != null){
+            fileStorageService.updateFromTempDocument(supplier.getCode(),pojo.getLogo(),EnumDocumentType.supllier_logo);
+        }
         return supplier;
     }
 
@@ -103,10 +144,10 @@ public class SupplierServiceImp {
         supplier.setLocality(pojo.getLocality());
         supplier.setRegion(pojo.getRegion());
         supplier.setState(pojo.getState());*/
-        supplier.setLocation(pojo.getLocation());
+      //  supplier.setLocation(pojo.getLocation());
         supplier.setLocationName(pojo.getLocationName());
-        supplier.setLatitude(Float.valueOf(pojo.getLat()));
-        supplier.setLongitude(Float.valueOf(pojo.getLng()));
+        supplier.setLatitude(pojo.getLat());
+        supplier.setLongitude(pojo.getLng());
 
         supplier.setName(pojo.getSupplierName());
         supplier.setCode(idGenService.supplierNo());
@@ -120,6 +161,24 @@ public class SupplierServiceImp {
 
     }
 
+    public Triplet<Supplier,Employee,User> linkEmployee(Supplier supplier, EmployerPojo employerPojo, List<String> hasEnumRoles) {
+
+        Optional<UserAuthority> optional = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,employerPojo.getPhone());
+        if(optional.isEmpty()){
+
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到用户");
+        }
+        UserAuthority userAuthority = optional.get();
+
+        Optional<User> optionalUser = userRepository.findById(userAuthority.getUser_id());
+        if(optionalUser.isEmpty()){
+
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到用户");
+        }
+        User user = optionalUser.get();
+        Employee employee = 成为员工(supplier,user);
+        return Triplet.with(supplier,employee,user);
+    }
 
 
     public Triplet<Supplier,Employee,User> createEmployee(Supplier supplier, EmployerPojo employerPojo, List<String> hasEnumRoles) {
@@ -152,7 +211,22 @@ public class SupplierServiceImp {
 
 
 
-    public Triplet<Supplier,Employee,User> updateEmployee(Employee employee, EmployerUpdatePojo employerPojo) {
+    public Triplet<Supplier,Employee,User> updateEmployee(Employee employee, EmployeeEditResp employerPojo) {
+
+        Optional<Supplier> optionalSupplier = supplierRepository.findById(employee.getSuplierId());
+
+
+        Optional<User> users = userRepository.findById(employee.getUserId());
+        User user = users.get();
+
+        List<Role> roleList = roleRepository.findByNameIn(employerPojo.getRoles());
+
+        user = userService.createRoleIfNotFound(user,roleList.stream().map(e->e.getName()).collect(Collectors.toList()));
+        user = userRepository.save(user);
+        employerPojo.getRoles();
+        return Triplet.with(optionalSupplier.get(),employee,user);
+    }
+    public Triplet<Supplier,Employee,User> updateEmployeeBackup(Employee employee, EmployerUpdatePojo employerPojo) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(employee.getSuplierId());
 

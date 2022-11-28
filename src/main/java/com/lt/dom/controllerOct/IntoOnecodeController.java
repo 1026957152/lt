@@ -222,28 +222,23 @@ public PagedModel getPassList( Pageable pageable, PagedResourcesAssembler<Entity
 
         User user = intoOnecodeService.byCode(pojo___.getCode());
 
-
-
         Authentication authentication = authenticationFacade.getAuthentication();
 
         UserVo userOv = authenticationFacade.getUserVo(authentication);
 
-
-
         Supplier supplier = userOv.getSupplier();
 
-
-
         List<ComponentVounch> componentVounchList = componentVounchRepository.findAllByUser(user.getId());
-if(componentVounchList.size() ==0){
-    throw new BookNotFoundException(Enumfailures.not_found,"该 用户无可核销得 权益"+user.getPhone());
+        if(componentVounchList.size() ==0){
+            throw new BookNotFoundException(Enumfailures.not_found,"该 用户无可核销得 权益"+user.getPhone());
 
-}
+        }
 
-        return validateService.user扫文旅码(userOv,componentVounchList);
+        return validateService.user扫文旅码(user,userOv,componentVounchList);
 
 
     }
+
 
 
 

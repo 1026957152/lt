@@ -1,49 +1,29 @@
 package com.lt.dom.oct;
 
 
-import com.lt.dom.otcenum.EnumFinancialAccountStatus;
 import com.lt.dom.otcenum.EnumIdentityType;
-import com.lt.dom.otcenum.EnumUserType;
 
 import javax.persistence.*;
 
 @Entity
-public class UserAuthority {
-    @Version
-    private Integer version;
+public class UserAuthority extends Base{
 
-
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    private long id;
-
-    private EnumIdentityType identity_type;
+    @Enumerated(EnumType.STRING)
+    private EnumIdentityType identityType;
     private String credential;
     private String identifier;
     private long user_id;
 
-    public Integer getVersion() {
-        return version;
+
+
+
+
+    public EnumIdentityType getIdentityType() {
+        return identityType;
     }
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public EnumIdentityType getIdentity_type() {
-        return identity_type;
-    }
-
-    public void setIdentity_type(EnumIdentityType identity_type) {
-        this.identity_type = identity_type;
+    public void setIdentityType(EnumIdentityType identity_type) {
+        this.identityType = identity_type;
     }
 
     public String getCredential() {

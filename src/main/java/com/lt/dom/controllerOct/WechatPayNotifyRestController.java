@@ -67,11 +67,84 @@ public class WechatPayNotifyRestController {
                 String refundDecryptedData = wxDecodeUtil.decryptData(reqInfo);
                 Map<String, String> reqInfoMap = WXPayUtil.xmlToMap(refundDecryptedData);
                logger.info("[refundAsyncNotify] [reqInfo解密成功] [reqInfoMap:{}]", reqInfoMap);
+
+               System.out.println("====================="+ reqInfoMap);
+
+               logger.info("[refundAsyncNotify] [reqInfo解密成功] [reqInfoMap:{}]", reqInfoMap);
                 // TODO 订单退款成功后相关业务逻辑...
 
                Optional<Refund> optional = refundRepository.findByCode((String)reqInfoMap.get("out_refund_no"));
+               Refund refund = optional.get();
 
-                paymentService.refundCompleted(optional.get());
+
+
+
+
+               //支付交易号
+               String transactionId = reqInfoMap.get("transaction_id");
+               //订单号sys/sysDepart/batchSyncSysDepart
+               String outTradeNo = reqInfoMap.get("out_trade_no");
+               //退款交易号
+               String refundId = reqInfoMap.get("refund_id");
+               //退款单号
+               String outRefundNo = reqInfoMap.get("out_refund_no");
+               //订单金额
+               String totalFee = reqInfoMap.get("total_fee");
+               String settlementTotalFee = reqInfoMap.get("settlement_total_fee");
+               //申请金额
+               String refundFee = reqInfoMap.get("refund_fee");
+               //退款金额
+               String settlementRefundFee = reqInfoMap.get("settlement_refund_fee");
+               //退款状态
+               String refundStatus = reqInfoMap.get("refund_status");
+               //成功时间
+               String successTime = reqInfoMap.get("success_time");
+               String refundRecvAccout = reqInfoMap.get("refund_recv_accout");
+               String refundAccount = reqInfoMap.get("refund_account");
+               String refundRequestSource = reqInfoMap.get("refund_request_source");
+
+
+
+               refund.setTransactionId(transactionId);
+
+
+
+
+               if (null == settlementRefundFee) {
+                   logger.info("退款金额为空");
+                   refund.setReturn_msg("退款金额为空");
+                   paymentService.refundError(refund);
+
+                   return "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[报文为空]]></return_msg></xml>";
+
+
+               }
+               if (null == outRefundNo) {
+                   logger.info("商户退款单号为空");
+                   refund.setReturn_msg("微信退款单号为空");
+                   paymentService.refundError(refund);
+
+                   return "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[报文为空]]></return_msg></xml>";
+               }
+               if (null == refundId) {
+                   logger.info("微信退款单号为空");
+                   refund.setReturn_msg("微信退款单号为空");
+                   paymentService.refundError(refund);
+
+
+                   return "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[报文为空]]></return_msg></xml>";
+               }
+/*————————————————
+               版权声明：本文为CSDN博主「by_ing!」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+               原文链接：https://blog.csdn.net/qq_40506288/article/details/111353331*/
+
+
+
+
+
+
+
+                paymentService.refundCompleted(refund);
                 // 实现自己的逻辑
                 //    logger.info("退款远程回调:{}", xmlData);
                 // 必须要返回 SUCCESS 不过有 WxPayNotifyResponse 给整合成了 xml了

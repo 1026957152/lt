@@ -72,7 +72,7 @@ public class ValidatorParkingServiceImpl {
 
         ComponentVounch componentVounch = 找到当前权益(validator, license);
 
-        componentVounch.setCount(componentVounch.getCount()-1);
+        componentVounch.setLimit(componentVounch.getLimit()-1);
         componentVounch = componentVounchRepository.save(componentVounch);
         return componentVounch;
     }

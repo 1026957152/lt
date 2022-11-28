@@ -1,12 +1,12 @@
 package com.lt.dom.serviceOtc;
 
+import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcenum.EnumAssociatedType;
-import com.lt.dom.otcenum.EnumPublicationObjectType;
-import com.lt.dom.otcenum.EnumQuotaType;
-import com.lt.dom.otcenum.EnumVoucherType;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import com.lt.dom.vo.ValidatedByTypeVo;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -18,7 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,6 +37,10 @@ public class RedemptionServiceImpl {
     private IdGenServiceImpl idGenService;
 
     @Autowired
+    private DeviceRepository deviceRepository;
+
+
+    @Autowired
     private RedemptionRepository redemptionRepository;
 
 
@@ -47,14 +50,17 @@ public class RedemptionServiceImpl {
     @Autowired
     private WriteoffEquipServiceImpl writeoffEquipService;
     @Autowired
-    private VoucherRepository voucherRepository;
+    private ComponentRightRepository componentRightRepository;
 
     @Autowired
-    private ValidatorRepository validatorRepository;
+    private RightRedemptionEntryRepository rightRedemptionEntryRepository;
 
-
+    @Autowired
+    UsageRepository usageRepository;
     @Autowired
     private ComponentVounchRepository componentVounchRepository;
+    @Autowired
+    private ComponentRepository componentRepository;
 
     @Autowired
     private RoyaltySettlementRepository royaltySettlementRepository;
@@ -319,6 +325,181 @@ public class RedemptionServiceImpl {
     }
 
 
+    public  List<RightRedemptionEntry> redeemRight(VoucherTicket voucher, ValidatedByTypeVo  verifier核销人员, User traveler用户, List<ComponentVounch> componentVounchList) {
+
+
+        Redemption redemption = new Redemption();
+
+        redemption.setCode(idGenService.redemptionNo());
+        redemption.setRelatedObjectId(voucher.getId());
+        redemption.setRelatedObjectType(EnumRelatedObjectType.voucher);
+        redemption.setQuantity(1l);
+        redemption.setRedeemed_quantity(0l);
+
+        redemption.setLog_RelatedObject_lable(voucher.getLable());
+        redemption.setLog_RelatedObject_code(voucher.getCode());
+        redemption.setLog_RelatedObject_type(voucher.getType());
+
+
+        redemption.setValidatorType(verifier核销人员.getValidatorType());
+        redemption.setValidator(verifier核销人员.funGetValidator());
+
+
+        redemption.setCustomer(traveler用户.getId());
+        redemption.setLog_Customer_name(traveler用户.getRealName());
+        redemption.setLog_Customer_code(traveler用户.getCode());
+
+
+
+
+        if(verifier核销人员.getValidatorType().equals(EnumValidatorType.特定的人员)){
+
+            redemption.setLog_Validator_user_name(verifier核销人员.getUser().getRealName());
+            redemption.setLog_Validator_user_code(verifier核销人员.getUser().getCode());
+
+        }
+        if(verifier核销人员.getValidatorType().equals(EnumValidatorType.特定机器)){
+
+            Device device =  verifier核销人员.getDevice();//= deviceRepository.findById(verifier核销人员.getDevice()).get();
+
+            redemption.setLog_Validator_device_name(device.getName());
+            redemption.setLog_Validator_device_code(device.getCode());
+            redemption.setLog_Validator_device_type(device.getType());
+        }
+
+
+
+
+
+        redemption = redemptionRepository.save(redemption);
+
+        Redemption finalRedemption = redemption;
+        List<RightRedemptionEntry> redemptionEntryList = componentVounchList.stream()
+
+                .filter(e->!e.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed))
+
+                .map(x->{
+
+                    return redeemRightForeach(finalRedemption,verifier核销人员,traveler用户,x);
+
+                }).collect(Collectors.toList());
+
+
+
+        return redemptionEntryList;
+    }
+
+    public RightRedemptionEntry redeemRightForeach(Redemption redemption ,ValidatedByTypeVo  verifier核销人员, User traveler用户, ComponentVounch voucher权益) {
+
+
+        if(voucher权益.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed)){
+
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"已完全核销，无法核销");
+        }
+        if(voucher权益.getLimit()< (voucher权益.getRedeemed_quantity()+voucher权益.getTry_())){
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"核销权益超出限制，无法核销");
+
+        }
+
+
+
+
+
+
+
+
+ /*       Optional<Component> componentOptional = componentRepository.findById(voucher权益.getComponent());
+
+        if(componentOptional.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"无法找到");
+        }
+        Component component = componentOptional.get();
+        if(component.getSource().equals(EnumProductComponentSource.partner)){
+            Assert.notNull(component.getSubscription(), "系统已有 componment的 Subscription 不能为空，当前空，新建 Usage 失败");
+            Assert.notNull(component.getRatePlan(), "系统已有 componment RatePlan 不能为空，当前空，新建 Usage 失败");
+
+            component.getSubscription();  // 对他进行了一次核销， 对他进行了二次核销
+
+            Usage usage = new Usage();
+            usage.setQty(1l);
+            usage.setSubscription(component.getSubscription());
+            usage.setComponentRight(component.getComponentRightId());
+
+            usage.setRatePlan(component.getRatePlan());
+            usage.setStartDate(LocalDate.now());
+            usage.setEndDate(LocalDate.now());
+            usageRepository.save(usage);
+        }
+*/
+
+        RightRedemptionEntry entry = new RightRedemptionEntry();
+        entry.setCode(idGenService.redemptionEntryCode());
+
+        entry.setRelatedObjectType(EnumRelatedObjectType.voucher);
+        entry.setRelatedObjectId(voucher权益.getVoucherId());
+
+
+
+        entry.setComponentVoucher(voucher权益.getId());
+
+        Optional<ComponentRight> componentOptional = componentRightRepository.findById(voucher权益.getComponentRight());
+        ComponentRight componentRight = componentOptional.get();
+
+        entry.setComponent_right(voucher权益.getComponentRight());
+        entry.setRedeemed_quantity(voucher权益.getTry_());
+        entry.setLog_Component_right_name(componentRight.getName());
+        entry.setLog_Component_right_code(componentRight.getCode());
+
+
+        entry.setRedemption(redemption.getId());
+        entry.setCustomer_id(traveler用户.getId());
+
+        entry.setLog_Customer_name(traveler用户.getRealName());
+
+        entry.setValidatorType(verifier核销人员.getValidatorType());
+
+        if(verifier核销人员.getValidatorType().equals(EnumValidatorType.特定的人员)){
+            entry.setUser(verifier核销人员.getUser().getId());
+
+            entry.setLog_Verifier_user_name(verifier核销人员.getUser().getRealName());
+            entry.setLog_Verifier_user_code(verifier核销人员.getUser().getCode());
+
+        }
+        if(verifier核销人员.getValidatorType().equals(EnumValidatorType.特定机器)){
+
+            Device device = verifier核销人员.getDevice();
+            entry.setDevice(device.getId());
+            entry.setLog_Verifier_device_name(device.getName());
+            entry.setLog_Verifier_device_code(device.getCode());
+            entry.setLog_Verifier_device_type(device.getType());
+        }
+        entry.setCreatedAt(LocalDateTime.now());
+
+        entry.setSupplier(voucher权益.getSupplier());
+
+        voucher权益.setRedeemed_quantity(voucher权益.getRedeemed_quantity()+voucher权益.getTry_());
+
+        if(voucher权益.getLimit()== voucher权益.getRedeemed_quantity()){
+            voucher权益.setStatus(EnumComponentVoucherStatus.AlreadyRedeemed);
+        }else{
+            voucher权益.setStatus(EnumComponentVoucherStatus.PartialyRedeemed);
+        }
+
+
+        componentVounchRepository.save(voucher权益);
+
+        return entry;
+
+    }
+
+
+    public void redeemRightForeach(List<Triplet<ValidatedByTypeVo,User, ComponentVounch>> vouchers) {
+
+
+
+
+
+    }
 
 
 }

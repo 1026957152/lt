@@ -185,7 +185,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 				"/oct/campaigns/page",
 				"/oct/scenarios/**",
 				"/oct/campaigns/list",
-				"/oct/getPhone"
+				"/oct/getPhone",
+
+				"/third/item_list",
+				"/third/item_orders",
+				"/third/item_refund",
+				"/third/item_orders_modify"
 			//	"/oct/realname-auths/individual"
 		), path);
 

@@ -7,41 +7,25 @@ import com.lt.dom.otcenum.EnumAssetType_dynamic_static;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
-public class Activity {
-    @Version
-    private Integer version;
-
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-
-    @Id
-    private long id;
-
-    private long user;
+public class Activity extends Base{
 
 
-    public long getId() {
-        return id;
-    }
+    private LocalDate date;
+    private LocalTime startingTime;
 
-    public void setId(long id) {
-        this.id = id;
-    }
+
     @NotNull
     private EnumActivityType type;
 
 
     private LocalDateTime activityDate;
 
-    public Integer getVersion() {
-        return version;
-    }
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
 
     public EnumActivityType getType() {
         return type;

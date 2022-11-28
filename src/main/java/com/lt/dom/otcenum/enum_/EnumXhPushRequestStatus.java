@@ -4,7 +4,10 @@ public enum EnumXhPushRequestStatus {
     Created(1),
     Rejected(2),
     Approved(3),
-    Loaned(3);
+    Loaned(3),
+    Error(3)
+
+            ;
 
 
     private Integer id;

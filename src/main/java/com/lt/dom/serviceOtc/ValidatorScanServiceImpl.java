@@ -165,7 +165,7 @@ public class ValidatorScanServiceImpl {
 
         List<ComponentVounch> componentVounches = 找到当前权益(validator, license);
 
-        componentVounches.get(0).setCount(componentVounches.get(0).getCount()-1);
+        componentVounches.get(0).setLimit(componentVounches.get(0).getLimit()-1);
         ComponentVounch componentVounch_ = componentVounchRepository.save(componentVounches.get(0));
         return componentVounch_;
     }

@@ -14,6 +14,9 @@ public enum EnumProductStatus {
     active("active"),
     archived("archived"),
     draft("draft"),
+    INACTIVE("INACTIVE"),
+    SUSPENDED("SUSPENDED"),
+    TERMINATED("TERMINATED"),
 
 
     ;

@@ -9,10 +9,12 @@ import com.lt.dom.otcReq.EmployerUpdatePojo;
 import com.lt.dom.otcReq.SettingReq;
 import com.lt.dom.otcReq.SettingUpdateReq;
 import com.lt.dom.otcenum.EnumRole;
+import com.lt.dom.otcenum.EnumSettingSpace;
 import com.lt.dom.otcenum.EnumSettings;
 import com.lt.dom.otcenum.EnumValueListType;
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.SettingRepository;
+import com.lt.dom.repository.SupplierRepository;
 import com.lt.dom.repository.VoucherRepository;
 import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.SettingServiceImpl;
@@ -52,12 +54,21 @@ public class SettingRestController {
     @Autowired
     private SettingRepository settingRepository;
 
+    @Autowired
+    private SupplierRepository supplierRepository;
 
 
 
 
-    @GetMapping(value = "/settings", produces = "application/json")
-    public EntityModel Page_getSettingList() {
+
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/settings", produces = "application/json")
+    public EntityModel Page_getSettingList(@PathVariable long SUPPLIER_ID) {
+        Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
+        if(optionalSupplier.isEmpty()) {
+            throw new BookNotFoundException(SUPPLIER_ID,"找不到供应商");
+
+        }
+        Supplier supplier = optionalSupplier.get();
 
 
 
@@ -84,7 +95,7 @@ public class SettingRestController {
         );
 
      //   entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"));
-   entityModel.add(linkTo(methodOn(SettingRestController.class).Page_getSettingList()).withSelfRel());
+   entityModel.add(linkTo(methodOn(SettingRestController.class).Page_getSettingList(supplier.getId())).withSelfRel());
 
         return entityModel;
     }
@@ -114,11 +125,11 @@ public class SettingRestController {
 
     @Operation(summary = "3、更新")
     @PutMapping(value = "/settings", produces = "application/json")
-    public ResponseEntity<CollectionModel> updateSetting( @RequestBody @Valid SettingReq employerPojo) {
+    public ResponseEntity<CollectionModel> updateSetting( @RequestBody @Valid SettingVo employerPojo) {
 
 
 
-        List<Setting> setting = settingService.update(employerPojo);
+        List<Setting> setting = settingService.update(EnumSettingSpace.default_,employerPojo);
 
         CollectionModel entityModel = CollectionModel.of(setting);
         return ResponseEntity.ok(entityModel);

@@ -10,14 +10,10 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-public class BalanceTransaction {  //余额结算
-    @Version
-    private Integer version;
+public class BalanceTransaction extends Base {  //余额结算
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    private long id; // 用户余额转账对象 ID，由Ping++ 生成。
 
+    @Enumerated(EnumType.STRING)
     private EnumTranType flowType;
     private long balance;
     private int fee;
@@ -49,6 +45,9 @@ private String code;
     对应 app 对象的 id，查看 如何获取App ID。*/
 
     private boolean livemode; //是否是 live 模式。
+
+    @Enumerated(EnumType.STRING)
+
     private EnumBalanceTranStatus status;//目前值为转账成功：succeeded。
     private int amount;//接收方收到转账的金额，单位为分。
 
@@ -84,13 +83,7 @@ private String code;
         this.posted_at = posted_at;
     }
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public long getTransaction_no() {
         return transaction_no;

@@ -1,30 +1,18 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.OctResp.EnumLongIdResp;
 import com.lt.dom.otcenum.EnumAssetType;
 import com.lt.dom.otcenum.EnumShippingRateType;
 import com.lt.dom.otcenum.EnumTaxbehavior;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
-public class ShippingRate {
+public class ShippingRate extends Base{
 
-    @Version
-    private Integer version;
-
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-
-    @Id
-    private long id;
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
 
 
@@ -35,6 +23,18 @@ public class ShippingRate {
   //  delivery_estimate	An object describing the estimated delivery time for this shipping rate option.
     @NotNull
     private EnumShippingRateType type;
+
+    private String display_name;
+    private String code;
+
+    public String getDisplay_name() {
+        return display_name;
+    }
+
+    public void setDisplay_name(String display_name) {
+        this.display_name = display_name;
+    }
+
     @NotNull
     private String fixed_amount;
     private String delivery_estimate;
@@ -46,13 +46,40 @@ public class ShippingRate {
 
     private String tax_code;
 
+    private Long supplier;
 
-    public Integer getVersion() {
-        return version;
+    public EnumTaxbehavior getTaxbehavior() {
+        return taxbehavior;
     }
 
-    public void setVersion(Integer version) {
-        this.version = version;
+    public void setTaxbehavior(EnumTaxbehavior taxbehavior) {
+        this.taxbehavior = taxbehavior;
+    }
+
+    public String getTax_code() {
+        return tax_code;
+    }
+
+    public void setTax_code(String tax_code) {
+        this.tax_code = tax_code;
+    }
+
+    public static List List(List<ShippingRate> componentRightMap) {
+        return componentRightMap.stream().map(x->{
+
+            EnumLongIdResp enumResp = new EnumLongIdResp();
+            enumResp.setId(x.getId());
+
+            enumResp.setText(x.getDisplay_name());
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
+    public Long getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Long supplier) {
+        this.supplier = supplier;
     }
 
     public EnumShippingRateType getType() {
@@ -85,5 +112,13 @@ public class ShippingRate {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
     }
 }

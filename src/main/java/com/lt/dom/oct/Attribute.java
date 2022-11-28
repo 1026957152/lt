@@ -1,33 +1,32 @@
 package com.lt.dom.oct;
 
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Version;
+import com.lt.dom.otcenum.EnumFeatureTag;
+import org.hibernate.validator.constraints.Length;
+
+import javax.persistence.*;
 
 @Entity
-public class Attribute {
-    @Version
-    private Integer version;
-    @Id
-    private long id;
+public class Attribute extends Base{
 
 
     
 //##@Column(unique=true)
 private String code;
     private String name;
+
+    @Length(max = 5000)
     private String description;
     private long objectId;
+    private String objectCode;
 
-    public long getId() {
-        return id;
-    }
+    @Enumerated(EnumType.STRING)
+    private EnumFeatureTag featureType;
 
-    public void setId(long id) {
-        this.id = id;
-    }
+
+    @Column(name = "key_")
+    private String key;
+
 
     public String getCode() {
         return code;
@@ -59,6 +58,30 @@ private String code;
 
     public long getObjectId() {
         return objectId;
+    }
+
+    public void setObjectCode(String objectCode) {
+        this.objectCode = objectCode;
+    }
+
+    public String getObjectCode() {
+        return objectCode;
+    }
+
+    public void setFeatureType(EnumFeatureTag featureType) {
+        this.featureType = featureType;
+    }
+
+    public EnumFeatureTag getFeatureType() {
+        return featureType;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public String getKey() {
+        return key;
     }
 /*                "code": "digitalprojection",
                         "name": "Digital Projection",

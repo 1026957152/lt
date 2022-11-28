@@ -6,30 +6,23 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.*;
 import com.alipay.api.response.*;
 import com.google.gson.Gson;
-import com.lt.dom.OctResp.ChargeResp;
 import com.lt.dom.config.pay.AlipayProperties;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.Charge;
 import com.lt.dom.oct.Payment;
 import com.lt.dom.oct.Product;
 import com.lt.dom.oct.Reservation;
-import com.lt.dom.otcReq.BookingPayPojo;
-import com.lt.dom.otcenum.EnumBookingOjbectType;
-import com.lt.dom.otcenum.EnumPayChannel;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.PaymentRepository;
 import com.lt.dom.repository.ReservationRepository;
-import com.lt.dom.requestvo.BookingTypeTowhoVo;
-import com.lt.dom.serviceOtc.AliPaymentServiceImpl;
+import com.lt.dom.serviceOtc.pay.AliPaymentServiceImpl;
 import com.lt.dom.serviceOtc.AuthenticationFacade;
 import com.lt.dom.serviceOtc.IdGenServiceImpl;
 import com.lt.dom.serviceOtc.PaymentServiceImpl;
 import com.lt.dom.util.HttpUtils;
 import com.lt.dom.util.ZxingBarcodeGenerator;
 import com.lt.dom.vo.ChargeMetadataVo;
-import com.lt.dom.vo.QrcodeReaderResult;
 import com.lt.dom.vo.UserVo;
-import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +30,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -45,7 +37,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.awt.image.BufferedImage;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/payment_free")

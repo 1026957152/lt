@@ -1,5 +1,7 @@
 package com.lt.dom.controllerOct;
 
+import com.google.gson.Gson;
+import com.lt.dom.HeroCardInfoResp;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
@@ -11,12 +13,14 @@ import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.AssetServiceImpl;
 import com.lt.dom.serviceOtc.AttractionServiceImpl;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
+import com.lt.dom.serviceOtc.SearchReminderServiceImpl;
 import com.lt.dom.vo.ImageVo;
 import io.swagger.v3.oas.annotations.Operation;
-import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -47,6 +51,8 @@ public class AttractionRestController {
 
     @Autowired
     private AttractionRepository attractionRepository;
+    @Autowired
+    private SearchReminderServiceImpl searchReminderService;
 
     @Autowired
     private SupplierRepository supplierRepository;
@@ -63,12 +69,16 @@ public class AttractionRestController {
     private DocumentRepository documentRepository;
 
     @Autowired
+    private CityWalkRepository cityWalkRepository;
+    @Autowired
+    private AttributeRepository attributeRepository;
+
+
+    @Autowired
     private AssetServiceImpl assetService;
-
-
     @Operation(summary = "2、创建Product对象")
-    @GetMapping(value = "/attractions/{ATTRACTION_ID}", produces = "application/json")
-    public ResponseEntity<EntityModel> getAttraction(@PathVariable long ATTRACTION_ID) {
+    @GetMapping(value = "/attractions/{ATTRACTION_ID}/Page_edit_detail", produces = "application/json")
+    public ResponseEntity<EntityModel> getEditAttraction(@PathVariable long ATTRACTION_ID) {
 
         Optional<Attraction> validatorOptional = attractionRepository.findById(ATTRACTION_ID);
         if(validatorOptional.isEmpty()) {
@@ -79,6 +89,251 @@ public class AttractionRestController {
         List<Product> attractionPage = productRepository.findAllByTypeAndTypeTo(EnumProductType.Attraction,attraction.getId());
 
 
+        List<PricingType> pricingTypeList =  pricingTypeRepository.findByProductIdIn(attractionPage.stream().map(e->e.getId()).collect(Collectors.toList()));
+        Map<Long,List<PricingType>> longListMap = pricingTypeList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
+
+        Map<Long,PricingType> longPricingTypeMap =  pricingTypeList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
+
+        AttractionEditResp attractionResp = AttractionEditResp.from(attraction);
+
+
+        AttractionEditResp.InfoTab infoTab = AttractionEditResp.InfoTab.from(attraction);
+        infoTab.setParameterList(
+                Map.of(
+                        "privacy_level_list",EnumPrivacyLevel.List(),
+                        "tag_list",EnumTags.List(),
+                        "feature_tag_list",EnumFeatureTag.List()
+        ));
+
+        EntityModel entityModel_infoTab = EntityModel.of(infoTab);
+        entityModel_infoTab.add(linkTo(methodOn(AttractionRestController.class).editAttractionInfo(attraction.getId(),null)).withRel("edit"));
+
+        infoTab.setImages(fileStorageService.loadDocumentsWithCodeEdit( EnumDocumentType.attraction_photos,attraction.getCode()));
+        infoTab.setVideo(fileStorageService.loadDocumentWithCodeEdit( EnumDocumentType.attraction_video,attraction.getCode()));
+        infoTab.setThumb(fileStorageService.loadDocumentWithCodeEdit( EnumDocumentType.attraction_thumb,attraction.getCode()));
+        attractionResp.setInfoTab(entityModel_infoTab);
+
+
+
+        List<Attribute> attributeList = attributeRepository.findAllByObjectCode(attraction.getCode());
+        AttractionEditResp.AboutTap aboutTap = AttractionEditResp.AboutTap.from(attributeList);
+
+        aboutTap.setParameterList(
+                Map.of(
+                        "feature_tag_list",EnumFeatureTag.List()
+
+                ));
+        EntityModel entityModel_aboutTap = EntityModel.of(aboutTap);
+        entityModel_aboutTap.add(linkTo(methodOn(AttractionRestController.class).editAttractionAboutTab(attraction.getId(),null)).withRel("edit"));
+        attractionResp.setAboutTab(entityModel_aboutTap);
+
+
+
+
+/*
+
+        attractionResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.attraction_photos,attraction.getCode()));
+        attractionResp.setThumbnail_image(fileStorageService.loadDocumentWithDefault(Arrays.asList(EnumPhotos.thumb),EnumDocumentType.attraction_thumb,attraction.getCode()));
+        attractionResp.setVideo(fileStorageService.loadDocumentWithDefault(EnumDocumentType.attraction_video,attraction.getCode()));
+
+*/
+
+
+
+
+        HeroCardInfoResp heroCardInfoResp = new HeroCardInfoResp();
+        heroCardInfoResp.setPrice("普通预定20元");
+        heroCardInfoResp.setOption("主人卡包含该景点");
+        heroCardInfoResp.setPurchase("购买主任卡");
+        EntityModel entityModel_hero = EntityModel.of(heroCardInfoResp);
+        entityModel_hero.add(linkTo(methodOn(IndexController.class).heroPass(null)).withRel("cityPass"));
+
+        attractionResp.setHeroCardInfo(entityModel_hero);
+
+
+
+
+        AttractionEditResp.ProductTap productTap = AttractionEditResp.ProductTap.from(attraction);
+
+        productTap.setParameterList(
+                Map.of(
+                        "product_list",Product.List(attractionPage)
+                ));
+        EntityModel entityModel_productTap = EntityModel.of(productTap);
+        entityModel_productTap.add(linkTo(methodOn(AttractionRestController.class).editAttractionProduct(attraction.getId(),null)).withRel("edit"));
+        attractionResp.setProductTab(entityModel_productTap);
+
+
+
+        EntityModel entityModel = EntityModel.of(attractionResp);
+
+
+
+
+
+
+/*
+        String link = linkTo(methodOn(AttractionRestController.class).getAttraction(attraction.getId())).withRel("create").getHref();
+
+        String url_with_link = String.format(EnumReferralType.fill_up_passager_info.getUrl(),link);
+
+*/
+
+
+
+
+
+        List<CityWalk> cityWalks = cityWalkRepository.findAll();
+        AttractionEditResp.SelfGuideTap selfGuideTap = AttractionEditResp.SelfGuideTap.from();
+        selfGuideTap.setSelfGuided(attraction.getSelfGuided());
+        selfGuideTap.setParameterList(
+                Map.of(
+                        "self_guide_list",CityWalk.List(cityWalks)
+                ));
+        EntityModel entityModel_selfGuideTap = EntityModel.of(selfGuideTap);
+        entityModel_selfGuideTap.add(linkTo(methodOn(AttractionRestController.class).editAttractionSelfGuide(attraction.getId(),null)).withRel("edit"));
+        attractionResp.setSelfGuideTap(entityModel_selfGuideTap);
+
+
+
+
+
+        Asset asset = assetService.getWithNew(attraction.getCode(),attraction.getId(),EnumAssetType.tour_qr);
+        Asset asset_booking = assetService.getWithNew(attraction.getCode(),attraction.getId(),EnumAssetType.booking_qr);
+
+   //     attractionResp.setAssetList(AssetResp.toList(Arrays.asList(asset,asset_booking)));
+
+        AttractionEditResp.AssetTap assetTap = AttractionEditResp.AssetTap.from();
+        assetTap.setAssetMap(AssetResp.toMap(Arrays.asList(asset,asset_booking)));
+        assetTap.setParameterList(
+                Map.of(
+
+                ));
+        EntityModel entityModel_assetTap = EntityModel.of(assetTap);
+        attractionResp.setAssetTap(entityModel_assetTap);
+
+        return ResponseEntity.ok(entityModel);
+
+
+    }
+
+    @PutMapping(value = "/attractions/{ATTRACTION_ID}/aboutTab", produces = "application/json")
+    public ResponseEntity<AttractionResp> editAttractionAboutTab(@PathVariable long ATTRACTION_ID,@RequestBody @Valid AttractionEditResp.AboutTap pojo) {
+
+        Optional<Attraction> validatorOptional = attractionRepository.findById(ATTRACTION_ID);
+        if(validatorOptional.isEmpty()) {
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到 景区"+ATTRACTION_ID);
+        }
+        Attraction attraction = validatorOptional.get();
+
+
+        Attraction product_pair=  attractionService.editAboutTab(attraction,pojo);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(product_pair.getId())
+                .toUri();
+        return ResponseEntity.created(uri)
+                .body(AttractionResp.from(attraction));
+
+
+    }
+
+    @PutMapping(value = "/attractions/{ATTRACTION_ID}/productTab", produces = "application/json")
+    public ResponseEntity<AttractionResp> editAttractionProduct(@PathVariable long ATTRACTION_ID,@RequestBody @Valid AttractionEditResp.ProductTap pojo) {
+
+        Optional<Attraction> validatorOptional = attractionRepository.findById(ATTRACTION_ID);
+        if(validatorOptional.isEmpty()) {
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到 景区"+ATTRACTION_ID);
+        }
+        Attraction attraction = validatorOptional.get();
+
+
+
+        Attraction product_pair=  attractionService.editAttractionProduct(attraction,pojo);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(product_pair.getId())
+                .toUri();
+        return ResponseEntity.created(uri)
+                .body(AttractionResp.from(attraction));
+
+
+    }
+    @PutMapping(value = "/attractions/{ATTRACTION_ID}/selfGuideTab", produces = "application/json")
+    public ResponseEntity<AttractionResp> editAttractionSelfGuide(@PathVariable long ATTRACTION_ID,@RequestBody @Valid AttractionEditResp.SelfGuideTap pojo) {
+
+        System.out.println("===logger:"+pojo.getSelfGuided());
+        Optional<Attraction> validatorOptional = attractionRepository.findById(ATTRACTION_ID);
+        if(validatorOptional.isEmpty()) {
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到 景区"+ATTRACTION_ID);
+        }
+        Attraction attraction = validatorOptional.get();
+
+
+
+        Attraction product_pair=  attractionService.editAttractionSelfGuide(attraction,pojo);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(product_pair.getId())
+                .toUri();
+        return ResponseEntity.created(uri)
+                .body(AttractionResp.from(attraction));
+
+
+    }
+
+    @PutMapping(value = "/attractions/{ATTRACTION_ID}/infoTab", produces = "application/json")
+    public ResponseEntity<AttractionResp> editAttractionInfo(@PathVariable long ATTRACTION_ID,@RequestBody @Valid AttractionEditResp.InfoTab pojo) {
+
+        System.out.println("========传递的参数是"+pojo.toString());
+        Optional<Attraction> validatorOptional = attractionRepository.findById(ATTRACTION_ID);
+        if(validatorOptional.isEmpty()) {
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到 景区"+ATTRACTION_ID);
+        }
+        Attraction attraction = validatorOptional.get();
+
+
+
+        Attraction product_pair=  attractionService.editAttractionInfo(attraction,pojo);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(product_pair.getId())
+                .toUri();
+        return ResponseEntity.created(uri)
+                .body(AttractionResp.from(attraction));
+
+
+    }
+
+
+
+    @Operation(summary = "2、创建Product对象")
+    @GetMapping(value = "/attractions/{ATTRACTION_ID}", produces = "application/json")
+    public ResponseEntity<EntityModel> getAttraction(@PathVariable long ATTRACTION_ID,@RequestParam(required = false) EnumUrlSourceType sourceType) {
+
+
+
+        System.out.println("参数参数   "+sourceType);
+        Optional<Attraction> validatorOptional = attractionRepository.findById(ATTRACTION_ID);
+        if(validatorOptional.isEmpty()) {
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到 景区"+ATTRACTION_ID);
+        }
+        Attraction attraction = validatorOptional.get();
+
+        if(sourceType != null && sourceType.equals(EnumUrlSourceType.search)){
+            searchReminderService.createSeatingLayout(attraction.getName(),attraction.getId());
+        }
+
+        List<Product> attractionPage = null;
+        if(attraction.getProducts_json() != null){
+            attractionPage = productRepository.findAllById(Arrays.stream(new Gson().fromJson(attraction.getProducts_json(),Long[].class)).toList());
+
+        }else{
+            attractionPage = productRepository.findAllById(Arrays.asList());
+
+        }
+
+
       List<PricingType> pricingTypeList =  pricingTypeRepository.findByProductIdIn(attractionPage.stream().map(e->e.getId()).collect(Collectors.toList()));
       Map<Long,List<PricingType>> longListMap = pricingTypeList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
 
@@ -86,17 +341,80 @@ public class AttractionRestController {
 
         AttractionResp attractionResp = AttractionResp.from(attraction);
 
+
+        HeroCardInfoResp heroCardInfoResp = new HeroCardInfoResp();
+        heroCardInfoResp.setPrice("普通预定20元");
+        heroCardInfoResp.setOption("主人卡包含该景点");
+        heroCardInfoResp.setPurchase("购买主任卡");
+        EntityModel entityModel_hero = EntityModel.of(heroCardInfoResp);
+        entityModel_hero.add(linkTo(methodOn(IndexController.class).heroPass(null)).withRel("cityPass"));
+
+        attractionResp.setHeroCardInfo(entityModel_hero);
+
+
+
+
+        List<Attribute> attributeList = attributeRepository.findAllByObjectCode(attraction.getCode());
+        attractionResp.withAbout(attributeList);
+/*
+
+        AttributeResp attributeResp =new AttributeResp();
+        attributeResp.setName("购票须知");
+        attributeResp.setDescription(" you will need to wait in line to receive a time slot. We recommend arriving between 9AM and 3PM for the shortest wait times. Use the Rockefeller Plaza entrance on 50th Street (between 5th and 6th Avenues) and go down the staircase to enter the Go City pass line.");
+
+        AttributeResp attributeResp2 =new AttributeResp();
+        attributeResp2.setName("购票须知");
+        attributeResp2.setDescription(" you will need to wait in line to receive a time slot. We recommend arriving between 9AM and 3PM for the shortest wait times. Use the Rockefeller Plaza entrance on 50th Street (between 5th and 6th Avenues) and go down the staircase to enter the Go City pass line.");
+        AttributeResp attributeResp5 =new AttributeResp();
+        attributeResp5.setName("团购票");
+        attributeResp5.setDescription("if you are traveling with a tour group, please send a tour group leader to exchange all Go City Passes for timed admission tickets between 10 AM and 11 AM on the day you plan to visit the observatory. Tour groups that arrive after 11 AM without timed admission tickets may be turned away.");
+
+      //  attractionResp.setKnowBeforeYouGo(Arrays.asList(attributeResp,attributeResp2,attributeResp5));
+*/
+/*
+
+
+
+
+
+        attributeResp =new AttributeResp();
+        attributeResp.setBefore("https://newyorkpass.com/themes/custom/go_theme/css/groot_newyork/brand/primary/address.svg");
+
+        attributeResp.setName("地址");
+        attributeResp.setDescription("山西省榆林市镇北台孵化中心");
+        AttributeResp attributeResp3 =new AttributeResp();
+        attributeResp3.setName("公交车");
+        attributeResp3.setBefore("https://newyorkpass.com/themes/custom/go_theme/css/groot_newyork/brand/primary/bus.svg");
+
+        attributeResp3.setDescription("乘坐18路攻击，到达终点站，向北100米");
+        attractionResp.setGettingThere(Arrays.asList(attributeResp,attributeResp3));
+
+
+        attributeResp =new AttributeResp();
+        attributeResp.setName("每天");
+        attributeResp.setDescription("早上9点 – 下午5点，最后入园下午4点");
+
+
+
+        attractionResp.setHoursOfOperation(Arrays.asList(attributeResp));*/
+
+
         attractionResp.setProducts(attractionPage.stream().map(e->{
 
 
 
-            ProductResp productResp =  ProductResp.from(e);
+            ProductResp productResp =  ProductResp.basefrom(e);
 
-            PricingType pricingType = longPricingTypeMap.get(e.getDefault_price());
 
-            PricingTypeResp pricingTypeResp_default = PricingTypeResp.from(pricingType);
+                PricingType pricingType = longPricingTypeMap.get(e.getDefault_price());
+            if(pricingType != null){
+                PricingTypeResp pricingTypeResp_default = PricingTypeResp.from(pricingType);
 
-            productResp.setDefault_price(pricingTypeResp_default);
+                productResp.setDefault_price(pricingTypeResp_default);
+            }
+
+
+
 
            productResp.setPriceTypes(longListMap.getOrDefault(e.getId(),Arrays.asList()).stream().map(ee->{
                 PricingTypeResp pricingTypeResp = PricingTypeResp.from(ee);
@@ -104,7 +422,7 @@ public class AttractionRestController {
 
                 EntityModel entityModel1 = EntityModel.of(pricingTypeResp);
 
-                entityModel1.add(linkTo(methodOn(BookingRestController.class).Page_createBookingFromPriceType(ee.getId())).withRel("createBooking"));
+               // entityModel1.add(linkTo(methodOn(BookingRestController.class).Page_createBookingFromPriceType(ee.getId())).withRel("createBooking"));
 
                 return entityModel1;
             }).collect(Collectors.toList()));
@@ -112,7 +430,7 @@ public class AttractionRestController {
 
             EntityModel entityModel = EntityModel.of(productResp);
 
-            entityModel.add(linkTo(methodOn(BookingRestController.class).Page_createBooking(e.getId())).withRel("Page_createBooking"));
+            entityModel.add(linkTo(methodOn(BookingRestController.class).Page_createBooking(e.getId(),null)).withRel("Page_createBooking").expand());
 
             entityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(e.getSupplierId())).withRel("getSupplier"));
 
@@ -125,8 +443,8 @@ public class AttractionRestController {
 
         attractionResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.attraction_photos,attraction.getCode()));
 
-        attractionResp.setThumbnail_image(fileStorageService.loadDocument(Arrays.asList(EnumPhotos.thumb),EnumDocumentType.attraction_thumb,attraction.getCode()));
-        attractionResp.setVideo(fileStorageService.loadDocument(EnumDocumentType.attraction_video,attraction.getCode()));
+       // attractionResp.setThumbnail_image(fileStorageService.loadDocumentWithDefault(Arrays.asList(EnumPhotos.thumb),EnumDocumentType.attraction_thumb,attraction.getCode()));
+        attractionResp.setVideo(fileStorageService.loadDocumentWithDefault(EnumDocumentType.attraction_video,attraction.getCode()));
 
 
 
@@ -136,18 +454,44 @@ public class AttractionRestController {
         entityModel.add(linkTo(methodOn(AttractionRestController.class).Page_getImageList(attraction.getId())).withRel("Page_getImageList"));
 
 
-        LocationResp locationResp = new LocationResp();
-        locationResp.setAddress("榆林北极");
-        locationResp.setLatitude(0);
-        locationResp.setLongitude(0);
+        LocationResp locationResp = LocationResp.from(attraction.getLocation());
+
         attractionResp.setLocation(locationResp);
 
 
 
-        String link = linkTo(methodOn(AttractionRestController.class).getAttraction(attraction.getId())).withRel("create").getHref();
+        String link = linkTo(methodOn(AttractionRestController.class).getAttraction(attraction.getId(), EnumUrlSourceType.normal)).withRel("create").getHref();
 
         String url_with_link = String.format(EnumReferralType.fill_up_passager_info.getUrl(),link);
 
+        if(attraction.getSelfGuided()!= null){
+            Optional<CityWalk> cityWalks = cityWalkRepository.findById(attraction.getSelfGuided());
+            CityWalk cityWalk = cityWalks.get();
+
+            CityWalkResp cityWalkResp = CityWalkResp.fromSnip(cityWalk);
+
+            String link_city = linkTo(methodOn(AudioGuideRestController.class).getCityWalk(cityWalk.getId())).withSelfRel().getHref();
+
+            attractionResp.setSelfGuidedTour(Map.of("name","自助旅行","url",link_city,
+                    "path",EnumMiniappPagePath.audio_guide.getPath()+"?url="+link_city,"tour",cityWalkResp));
+
+            attractionResp.setSelfGuided(true);
+        }else{
+            attractionResp.setSelfGuided(false);
+        }
+
+
+/*
+
+        Asset asset = assetService.getWithNew(attraction.getCode(),attraction.getId(),EnumAssetType.tour_qr);
+
+        Asset asset_booking = assetService.getWithNew(attraction.getCode(),attraction.getId(),EnumAssetType.booking_qr);
+
+       attractionResp.setAssetList(AssetResp.toList(Arrays.asList(asset,asset_booking)));
+
+        attractionResp.setAssetMap(AssetResp.toMap(Arrays.asList(asset,asset_booking)));
+
+*/
 
 
         return ResponseEntity.ok(entityModel);
@@ -209,7 +553,12 @@ public class AttractionRestController {
 
 
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/attractions", produces = "application/json")
-    public PagedModel getAttractionList(@PathVariable long SUPPLIER_ID, Pageable pageable, PagedResourcesAssembler<EntityModel<Attraction>> assembler) {
+    public PagedModel getAttractionList(@PathVariable long SUPPLIER_ID,
+                                        @PageableDefault(sort = {"createdDate",
+                                                "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
+
+
+                                        PagedResourcesAssembler<EntityModel<Attraction>> assembler) {
 
         Optional<Supplier> validatorOptional = supplierRepository.findById(SUPPLIER_ID);
         if(validatorOptional.isEmpty()){
@@ -233,11 +582,11 @@ public class AttractionRestController {
                 attractionResp.setThumbnail_image(list.get(0));
             }
 
-            attractionResp.setThumbnail_image(fileStorageService.loadDocument(EnumDocumentType.attraction_thumb,e.getCode()));
+            attractionResp.setThumbnail_image(fileStorageService.loadDocumentWithDefault(EnumDocumentType.attraction_thumb,e.getCode()));
 
             EntityModel entityModel = EntityModel.of(attractionResp);
-            entityModel.add(linkTo(methodOn(AttractionRestController.class).Page_updateAttraction(e.getId())).withRel("Page_update"));
-            entityModel.add(linkTo(methodOn(AttractionRestController.class).getAttraction(e.getId())).withSelfRel());
+         //   entityModel.add(linkTo(methodOn(AttractionRestController.class).Page_updateAttraction(e.getId())).withRel("Page_update"));
+            entityModel.add(linkTo(methodOn(AttractionRestController.class).getEditAttraction(e.getId())).withSelfRel());
 
 
             return entityModel;
@@ -281,7 +630,7 @@ public class AttractionRestController {
 
                 EntityModel entityModel1 = EntityModel.of(pricingTypeResp);
 
-                entityModel1.add(linkTo(methodOn(BookingRestController.class).Page_createBookingFromPriceType(ee.getId())).withRel("createBooking"));
+             //   entityModel1.add(linkTo(methodOn(BookingRestController.class).Page_createBookingFromPriceType(ee.getId())).withRel("createBooking"));
 
                 return entityModel1;
             }).collect(Collectors.toList()));
@@ -289,7 +638,7 @@ public class AttractionRestController {
 
             EntityModel entityModel = EntityModel.of(productResp);
 
-            entityModel.add(linkTo(methodOn(BookingRestController.class).Page_createBooking(e.getId())).withRel("Page_createBooking"));
+            entityModel.add(linkTo(methodOn(BookingRestController.class).Page_createBooking(e.getId(), null)).withRel("Page_createBooking").expand());
 
             entityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(e.getSupplierId())).withRel("getSupplier"));
 
@@ -333,6 +682,7 @@ public class AttractionRestController {
 
 
         Attraction attraction=  attractionService.create(supplier,pojo);
+/*
 
         if(tempDocuments.size() > 0){
 
@@ -340,7 +690,7 @@ public class AttractionRestController {
             attraction.setThumbnail_image(fileStorageService.saveFromTempDocument(attraction.getCode(),EnumDocumentType.attraction_thumb,tempDocument));
         }
 
-            attraction.setVideo(fileStorageService.saveFromTempDocumentCode(attraction.getCode(),EnumDocumentType.attraction_video,pojo.getVideo()));
+            attraction.setVideo(fileStorageService.saveFromTempDocumentCode(attraction.getCode(),EnumDocumentType.attraction_video,pojo.getVideo()).getCode());
        //     attractionRepository.save(attraction);
 
 
@@ -350,6 +700,7 @@ public class AttractionRestController {
                 }).collect(Collectors.toList()));
 
 
+*/
 
 
 
@@ -428,7 +779,7 @@ public class AttractionRestController {
 
 
 
-    @GetMapping(value = "/attractions/{ATTRACTION_ID}/Page_updateAttraction",produces = "application/json")
+/*    @GetMapping(value = "/attractions/{ATTRACTION_ID}/Page_updateAttraction",produces = "application/json")
     public ResponseEntity<EntityModel> Page_updateAttraction(@PathVariable long ATTRACTION_ID) {
 
         Optional<Attraction> validatorOptional = attractionRepository.findById(ATTRACTION_ID);
@@ -457,9 +808,9 @@ public class AttractionRestController {
         return ResponseEntity.ok(entityModel);
 
 
-    }
+    }*/
 
-
+/*
     @Operation(summary = "2、创建Product对象")
     @PutMapping(value = "/attractions/{ATTRACTION_ID}", produces = "application/json")
     public ResponseEntity<Attraction> updateAttractions(@PathVariable long ATTRACTION_ID, @RequestBody @Valid AttractionReq pojo) {
@@ -482,7 +833,7 @@ public class AttractionRestController {
         if(optionalImageReq_default.isPresent()){
             Optional<TempDocument> optionalTempDocument = tempDocuments.stream().filter(e->e.getCode().equals(optionalImageReq_default.get().getImage())).findAny();
             if(optionalTempDocument.isPresent()){
-                attraction.setThumbnail_image(optionalTempDocument.get().getCode());
+           //     attraction.setThumbnail_image(optionalTempDocument.get().getCode());
                 attractionRepository.save(attraction);
 
             }
@@ -506,7 +857,7 @@ public class AttractionRestController {
         return ResponseEntity.created(uri)
                 .body(attraction);
 
-    }
+    }*/
 
 
 

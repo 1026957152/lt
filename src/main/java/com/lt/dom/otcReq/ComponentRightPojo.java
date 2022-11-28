@@ -3,6 +3,7 @@ package com.lt.dom.otcReq;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.otcenum.EnumDiscountVoucherCategory;
 import com.lt.dom.otcenum.EnumDuration;
+import com.lt.dom.otcenum.EnumPrivacyLevel;
 import com.lt.dom.otcenum.EnumWhenSettle;
 import org.hibernate.validator.constraints.Length;
 
@@ -31,6 +32,16 @@ public class ComponentRightPojo {   // 这个是 下单的时候， 从 product 
     @NotNull
     @JsonProperty("private")
     private Boolean private_ = false;
+
+    private EnumPrivacyLevel privacy_level = EnumPrivacyLevel.private_;
+
+    public EnumPrivacyLevel getPrivacy_level() {
+        return privacy_level;
+    }
+
+    public void setPrivacy_level(EnumPrivacyLevel privacy_level) {
+        this.privacy_level = privacy_level;
+    }
 
     public Boolean getPrivate_() {
         return private_;

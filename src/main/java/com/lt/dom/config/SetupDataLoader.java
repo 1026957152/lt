@@ -19,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -95,7 +94,10 @@ public class SetupDataLoader implements
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
- 
+
+        valueListService.setupDataSupper();
+        settingService.setupDataSupper();
+
         if (alreadySetup)
             return;
 
@@ -354,8 +356,8 @@ public class SetupDataLoader implements
         supplierPojoVo.setBusiness_type(EnumBussinessType.non_profit);
         supplierPojoVo.setLocation("陕西省榆林市高新技术产业园区榆溪大道高科城C座4层");
         supplierPojoVo.setLocationName("陕西省榆林市高新技术产业园区榆溪大道高科城C座4层");
-        supplierPojoVo.setLat(Float.valueOf(0));
-        supplierPojoVo.setLng(Float.valueOf(0));
+        supplierPojoVo.setLat(Double.valueOf(0));
+        supplierPojoVo.setLng(Double.valueOf(0));
         supplierPojoVo.setSupplierName("榆林市旅游投资发展有限公司");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
@@ -382,8 +384,8 @@ public class SetupDataLoader implements
         supplierPojoVo.setBusiness_type(EnumBussinessType.government_entity);
         supplierPojoVo.setLocation("陕西省榆阳区青山东路1号");
         supplierPojoVo.setLocationName("陕西省榆阳区青山东路1号");
-        supplierPojoVo.setLat(Float.valueOf(0));
-        supplierPojoVo.setLng(Float.valueOf(0));
+        supplierPojoVo.setLat(Double.valueOf(0));
+        supplierPojoVo.setLng(Double.valueOf(0));
         supplierPojoVo.setSupplierName("榆林市文化和旅游局");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
@@ -398,7 +400,7 @@ public class SetupDataLoader implements
         realNameAuthenticationService.setupData(user,"龙","1234567ddddd890");
 
 
-        valueListService.setupData(EnumValueListDefault.High_Quality_Product_recommendation);
+        valueListService.setupData();
 
     }
 
@@ -420,8 +422,8 @@ public class SetupDataLoader implements
         supplierPojoVo.setBusiness_type(EnumBussinessType.company);
         supplierPojoVo.setLocation("陕西省榆林市高新技术产业园区明珠大道人民大厦一楼办公区");
         supplierPojoVo.setLocationName("陕西省榆林市高新技术产业园区明珠大道人民大厦一楼办公区");
-        supplierPojoVo.setLat(Float.valueOf(0));
-        supplierPojoVo.setLng(Float.valueOf(0));
+        supplierPojoVo.setLat(Double.valueOf(0));
+        supplierPojoVo.setLng(Double.valueOf(0));
         supplierPojoVo.setSupplierName("榆林国际旅行社有限责任公司");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
@@ -446,8 +448,8 @@ public class SetupDataLoader implements
         supplierPojoVo.setBusiness_type(EnumBussinessType.company);
         supplierPojoVo.setLocation("榆林市榆阳区榆阳镇北岳庙村");
         supplierPojoVo.setLocationName("榆林市榆阳区榆阳镇北岳庙村");
-        supplierPojoVo.setLat(Float.valueOf(0));
-        supplierPojoVo.setLng(Float.valueOf(0));
+        supplierPojoVo.setLat(Double.valueOf(0));
+        supplierPojoVo.setLng(Double.valueOf(0));
         supplierPojoVo.setSupplierName("榆林市红石峡生态公园有限责任公司");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
@@ -484,8 +486,8 @@ public class SetupDataLoader implements
         supplierPojoVo.setBusiness_type(EnumBussinessType.company);
         supplierPojoVo.setLocation("榆阳区长城中路2号");
         supplierPojoVo.setLocationName("榆阳区长城中路2号");
-        supplierPojoVo.setLat(Float.valueOf(0));
-        supplierPojoVo.setLng(Float.valueOf(0));
+        supplierPojoVo.setLat(Double.valueOf(0));
+        supplierPojoVo.setLng(Double.valueOf(0));
         supplierPojoVo.setSupplierName("榆林农村商业银行");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
@@ -513,8 +515,8 @@ public class SetupDataLoader implements
         supplierPojoVo.setBusiness_type(EnumBussinessType.company);
         supplierPojoVo.setLocation("陕西省榆林市横山区横山镇迎宾路北");
         supplierPojoVo.setLocationName("陕西省榆林市横山区横山镇迎宾路北");
-        supplierPojoVo.setLat(Float.valueOf(0));
-        supplierPojoVo.setLng(Float.valueOf(0));
+        supplierPojoVo.setLat(Double.valueOf(0));
+        supplierPojoVo.setLng(Double.valueOf(0));
         supplierPojoVo.setSupplierName("横山支行");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 

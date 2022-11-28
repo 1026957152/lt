@@ -18,6 +18,7 @@ public class SeatingLayoutPojo {
 
     private List<Seat> seats;//	The list of seats in the layout.
     private int versionNumber;//	The version of an auditorium layout. When a layout is changed, this will be incremented.
+    private Long theatre;
 
     public int getRows() {
         return rows;
@@ -49,5 +50,13 @@ public class SeatingLayoutPojo {
 
     public void setVersionNumber(int versionNumber) {
         this.versionNumber = versionNumber;
+    }
+
+    public Long getTheatre() {
+        return theatre;
+    }
+
+    public void setTheatre(Long theatre) {
+        this.theatre = theatre;
     }
 }

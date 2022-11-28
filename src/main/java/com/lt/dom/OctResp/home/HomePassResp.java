@@ -2,9 +2,12 @@ package com.lt.dom.OctResp.home;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.OctResp.ComponentRightResp;
+import com.lt.dom.OctResp.MediaResp;
 import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.OctResp.ProductResp;
-import com.lt.dom.vo.GalleryImageVo;
+import com.lt.dom.oct.Comment;
+
+import com.lt.dom.oct.Media;
 import org.javatuples.Pair;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -19,12 +22,14 @@ public class HomePassResp {
     private CollectionModel campaignCategories;
     private List<EntityModel<ProductResp>> recommend_products;
     private List<EntityModel> recommend_attractions;
-    private List<PhotoResp> carousel;
-    private List<EntityModel<FeatureResp>> features;
+    private List<MediaResp> carousel;
+    private List features;
     private Boolean show_policy;
     private String policy;
     private List<EntityModel<ComponentRightResp>> component_rights;
-    private List<GalleryImageVo> gallery;
+    private List<MediaResp> gallery;
+    private List<Comment> reviews;
+    private List highligths;
 
     public static void noteShow(HomePassResp homeResp, Pair<Boolean, String> stringPair) {
 
@@ -61,19 +66,19 @@ public class HomePassResp {
         return recommend_attractions;
     }
 
-    public void setCarousel(List<PhotoResp> carousel) {
+    public void setCarousel(List<MediaResp> carousel) {
         this.carousel = carousel;
     }
 
-    public List<PhotoResp> getCarousel() {
+    public List<MediaResp> getCarousel() {
         return carousel;
     }
 
-    public  void setFeatures(List<EntityModel<FeatureResp>> features) {
+    public  void setFeatures(List features) {
         this.features = features;
     }
 
-    public List<EntityModel<FeatureResp>> getFeatures() {
+    public List getFeatures() {
         return features;
     }
 
@@ -101,11 +106,27 @@ public class HomePassResp {
         return component_rights;
     }
 
-    public void setGallery(List<GalleryImageVo> gallery) {
+    public void setGallery(List<MediaResp> gallery) {
         this.gallery = gallery;
     }
 
-    public List<GalleryImageVo> getGallery() {
+    public List<MediaResp> getGallery() {
         return gallery;
+    }
+
+    public void setReviews(List<Comment> reviews) {
+        this.reviews = reviews;
+    }
+
+    public List<Comment> getReviews() {
+        return reviews;
+    }
+
+    public <R> void setHighligths(List highligths) {
+        this.highligths = highligths;
+    }
+
+    public List getHighligths() {
+        return highligths;
     }
 }

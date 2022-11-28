@@ -13,24 +13,70 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Entity
-public class Supplier {
-    @Version
-    private Integer version;
+public class Supplier extends Base {
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
+    private String registered_address;
+    private String uniformSocialCreditCode;
+    private String registered_name;
+    private String contact_detail;
+    private String about;
+    private String slug;
 
+    public String getRegistered_address() {
+        return registered_address;
+    }
+
+    public void setRegistered_address(String registered_address) {
+        this.registered_address = registered_address;
+    }
+
+    public String getUniformSocialCreditCode() {
+        return uniformSocialCreditCode;
+    }
+
+    public void setUniformSocialCreditCode(String uniformSocialCreditCode) {
+        this.uniformSocialCreditCode = uniformSocialCreditCode;
+    }
+
+    public String getRegistered_name() {
+        return registered_name;
+    }
+
+    public void setRegistered_name(String registered_name) {
+        this.registered_name = registered_name;
+    }
+
+    public String getContact_detail() {
+        return contact_detail;
+    }
+
+    public void setContact_detail(String contact_detail) {
+        this.contact_detail = contact_detail;
+    }
+
+    public String getAbout() {
+        return about;
+    }
+
+    public void setAbout(String about) {
+        this.about = about;
+    }
 
     @Length(max = 2000)
     @Column(name = "desc_")
     private String desc;
     @NotNull
+    @Enumerated(EnumType.STRING)
     private EnumBussinessType business_type;
     @NotNull
+    @Enumerated(EnumType.STRING)
     private EnumSupplierType type;
-    private String location;
+
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "location", referencedColumnName = "id")
+    private Address location;
+
     private String locationName;
     private boolean review;
 
@@ -42,18 +88,13 @@ public class Supplier {
         this.business_type = business_type;
     }
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     @Transient
     private PingxxUser pingxxUser;
 
-    @Transient
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "settleAccount", referencedColumnName = "id")
     private SettleAccount settleAccount;
 
     public SettleAccount getSettleAccount() {
@@ -92,9 +133,9 @@ private String code;
         this.name = name;
     }
 
-    @Transient
-    @JsonProperty("contact")
-    private ContactDTO contact;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "contact", referencedColumnName = "id")
+    private Contact contact;
 
 
     @Transient
@@ -116,12 +157,13 @@ private String code;
         return type;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+
+    public Address getLocation() {
+        return location;
     }
 
-    public String getLocation() {
-        return location;
+    public void setLocation(Address location) {
+        this.location = location;
     }
 
     public void setLocationName(String locationName) {
@@ -138,6 +180,14 @@ private String code;
 
     public boolean getReview() {
         return review;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
+    public String getSlug() {
+        return slug;
     }
 
     public static class ContactDTO {
@@ -244,8 +294,8 @@ private String code;
 
 
 
-    private float latitude;
-    private float longitude;
+    private Double latitude;
+    private Double longitude;
     private String street; // 街道
     private String postal_code; // 邮编
     private String locality; // 县/区
@@ -253,6 +303,7 @@ private String code;
     private String state; //省
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     private EnumSupplierStatus status; //省
 
 
@@ -273,19 +324,19 @@ private String code;
                             "state": "CA",
                             "country": "US"*/
 
-    public float getLatitude() {
+    public Double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(float latitude) {
+    public void setLatitude(Double latitude) {
         this.latitude = latitude;
     }
 
-    public float getLongitude() {
+    public Double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(float longitude) {
+    public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
 

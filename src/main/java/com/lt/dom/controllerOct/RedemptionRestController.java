@@ -8,10 +8,12 @@ import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.RedemByCryptoCodePojo;
 import com.lt.dom.otcReq.RedemBycodePojo;
 import com.lt.dom.otcReq.ReviewReq;
+import com.lt.dom.otcReq.VoucherTicketResp;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.serviceOtc.product.MultiTicketServiceImpl;
 import com.lt.dom.vo.CodeWithLatLngVo;
 import com.lt.dom.vo.UserVo;
 import com.lt.dom.vo.WrittenOffMerchantVo;
@@ -23,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -54,7 +58,31 @@ public class RedemptionRestController {
     private IAuthenticationFacade authenticationFacade;
 
     @Autowired
+    private MultiTicketServiceImpl multiTicketService;
+
+
+
+
+    @Autowired
+    private ComponentVounchRepository componentVounchRepository;
+
+    @Autowired
+    private ValidateServiceImpl validateService;
+
+
+
+
+    @Autowired
+    private IntoOnecodeServiceImpl intoOnecodeService;
+
+
+
+    @Autowired
     private RedemptionServiceImpl redemptionService;
+
+    @Autowired
+    private VoucherTicketRepository voucherTicketRepository;
+
 
     @Autowired
     private RedemptionRepository redemptionRepository;
@@ -62,6 +90,8 @@ public class RedemptionRestController {
     private SupplierRepository supplierRepository;
     @Autowired
     private RedemptionEntryRepository redemptionEntryRepository;
+    @Autowired
+    private RightRedemptionEntryRepository rightRedemptionEntryRepository;
 
 
     @Autowired
@@ -100,7 +130,28 @@ public class RedemptionRestController {
 
 
 
-    @PostMapping(value = "/redemptions/{REDEMPTION_ID}", produces = "application/json")
+    @PostMapping(value = "/right_redemption_entries/{REDEMPTION_ID}", produces = "application/json")
+    public EntityModel getRightRedemptionEntry(@PathVariable long REDEMPTION_ID) {
+
+
+        Optional<RightRedemptionEntry> validatorOptional = rightRedemptionEntryRepository.findById(REDEMPTION_ID);
+
+        if(validatorOptional.isEmpty()){
+
+            throw new BookNotFoundException(REDEMPTION_ID,"找不到核销");
+
+        }
+        RightRedemptionEntry rightRedemptionEntry = validatorOptional.get();
+
+
+        EntityModel<RightRedemptionEntry> entityModel = EntityModel.of(rightRedemptionEntry);
+
+        return entityModel;
+
+
+    }
+
+    @GetMapping(value = "/redemptions/{REDEMPTION_ID}", produces = "application/json")
     public EntityModel<Redemption> getRedemption(@PathVariable long REDEMPTION_ID) {
 
 
@@ -112,8 +163,41 @@ public class RedemptionRestController {
 
         }
 
+        Redemption x = validatorOptional.get();
 
-        EntityModel<Redemption> entityModel = EntityModel.of(validatorOptional.get());
+        RedemptionResp entry = RedemptionResp.from(x);
+
+
+        RedemptionResp.RelateObject relateObject = new RedemptionResp.RelateObject();
+        relateObject.setType(x.getRelatedObjectType());
+        relateObject.setType_text(x.getRelatedObjectType().toString());
+        relateObject.setId(x.getRelatedObjectId());
+        relateObject.setCode(x.getLog_RelatedObject_code());
+        relateObject.setLable(x.getLog_RelatedObject_lable());
+        relateObject.setObjectType(x.getLog_RelatedObject_type());
+        relateObject.setObjectType_text(x.getLog_RelatedObject_type().toString());
+
+
+        entry.setRelateObject(relateObject);
+
+
+
+        RedemptionResp.Customer customer = RedemptionResp.Customer.from(x);
+        entry.setCustomer(customer);
+
+
+
+
+        List<RightRedemptionEntry> componentVounchList = rightRedemptionEntryRepository.findAllByRedemption(x.getId());
+
+        entry.setEntries(componentVounchList.stream().map(e->{
+            return RightRedemptionEntryResp.from(e);
+        }).collect(Collectors.toList()));
+
+
+
+        EntityModel entityModel = EntityModel.of(entry);
+        entityModel.add(linkTo(methodOn(RedemptionRestController.class).getRedemption(x.getId())).withSelfRel());
 
         return entityModel;
 
@@ -162,9 +246,69 @@ public class RedemptionRestController {
         return entityModel;
     }
 
+    @Operation(summary = "1、查询Product对象列表")
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/redemptions", produces = "application/json")
+    public PagedModel listRedemption(@PathVariable long SUPPLIER_ID ,
+                                     @PageableDefault(sort = {"createdDate",
+                                             "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
+                                     PagedResourcesAssembler<EntityModel<RedemptionEntryResp>> assembler) {
+
+
+        Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
+
+        if(optionalSupplier.isEmpty()) {
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到供应商");
+        }
+            //  optionalSupplier.get().getId(),
+            Page<Redemption> clainQuotas = redemptionRepository.findAll( pageable);
+
+
+
+            return assembler.toModel(clainQuotas.map(x -> {
+                RedemptionResp entry = RedemptionResp.from(x);
+
+
+                RedemptionResp.RelateObject relateObject = new RedemptionResp.RelateObject();
+                relateObject.setType(x.getRelatedObjectType());
+                relateObject.setId(x.getRelatedObjectId());
+                relateObject.setCode(x.getLog_RelatedObject_code());
+                relateObject.setLable(x.getLog_RelatedObject_lable());
+                relateObject.setObjectType(x.getLog_RelatedObject_type());
+
+
+/*                if(x.getRelatedObjectType().equals(EnumRelatedObjectType.voucher)){
+                    VoucherTicket voucherTicket = voucherTicketRepository.findById(x.getRelatedObjectId()).get();
+                    relateObject.setReferer(VoucherTicketResp.from(voucherTicket));
+                }*/
+                entry.setRelateObject(relateObject);
+
+
+
+
+              //  User user = userRepository.findById(x.getCustomer()).get();
+
+                RedemptionResp.Customer customer = RedemptionResp.Customer.from(x);
+                entry.setCustomer(customer);
+
+
+
+                EntityModel redemptionEntryEntityModel = EntityModel.of(entry);
+
+                List<RightRedemptionEntry> componentVounchList = rightRedemptionEntryRepository.findAllByRedemption(x.getId());
+
+                entry.setEntries(componentVounchList.stream().map(e->{
+                    return RightRedemptionEntryResp.from(e);
+                }).collect(Collectors.toList()));
+                redemptionEntryEntityModel.add(linkTo(methodOn(RedemptionRestController.class).getRedemption(x.getId())).withSelfRel());
+
+                return redemptionEntryEntityModel;
+            }));
+
+
+    }
     @Operation(summary = "3、list所有员工")
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/redemption_entries", produces = "application/json")
-    public PagedModel pageRedemptionEntry(@PathVariable long SUPPLIER_ID,
+    public PagedModel listRedemptionEntry(@PathVariable long SUPPLIER_ID,
                                           Pageable pageable,
                                           PagedResourcesAssembler<EntityModel<RedemptionEntryResp>> assembler) {
 
@@ -212,7 +356,7 @@ public class RedemptionRestController {
 
                 EntityModel<RedemptionEntryResp> redemptionEntryEntityModel = EntityModel.of(entry);
 
-                redemptionEntryEntityModel.add(linkTo(methodOn(RedemptionRestController.class).getRedemption(x.getId())).withRel("upload_file_url"));
+                redemptionEntryEntityModel.add(linkTo(methodOn(RedemptionRestController.class).getRedemption(x.getId())).withSelfRel());
 
                 return redemptionEntryEntityModel;
             }));
@@ -221,6 +365,39 @@ public class RedemptionRestController {
         throw new RuntimeException();
     }
 
+    @Operation(summary = "3、list所有员工")
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/right_entries", produces = "application/json")
+    public PagedModel listRightRedemptionEntry(@PathVariable long SUPPLIER_ID,
+                                          Pageable pageable,
+                                          PagedResourcesAssembler<EntityModel<RedemptionEntryResp>> assembler) {
+
+        Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
+
+        if(optionalSupplier.isEmpty()) {
+
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到供应商");
+        }
+            //  optionalSupplier.get().getId(),
+            Page<RightRedemptionEntry> clainQuotas = rightRedemptionEntryRepository.findAll( pageable);
+
+
+
+            return assembler.toModel(clainQuotas.map(x -> {
+                RightRedemptionEntryResp entry = RightRedemptionEntryResp.from(x);
+
+                ComponentVounch componentVounch = componentVounchRepository.findById(x.getComponentVoucher()).get();
+
+                entry.setComponentVoucher(ComponentVounchResp.from(componentVounch));
+
+                EntityModel redemptionEntryEntityModel = EntityModel.of(entry);
+
+
+                redemptionEntryEntityModel.add(linkTo(methodOn(RedemptionRestController.class).getRightRedemptionEntry(x.getId())).withSelfRel());
+
+                return redemptionEntryEntityModel;
+            }));
+
+    }
 
     @Operation(summary = "3、list所有员工")
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/redemption_entries/summary", produces = "application/json")
@@ -260,32 +437,39 @@ public class RedemptionRestController {
         UserVo userVo = authenticationFacade.getUserVo(authentication);
 
 
-        logger.debug("参数啊啊 {}",pojo_.toString());
-
+        System.out.println("参数啊啊 {}"+pojo_.toString());
+        System.out.println("参数啊啊 getUser_id {}"+userVo.getUser_id());
 
 
         Gson gson = new Gson();
 
-        RedemBycodePojo.Code code =  gson.fromJson(pojo_.getCode(),RedemBycodePojo.Code.class);
 
+      RedemBycodePojo.Code code = new RedemBycodePojo.Code();//  gson.fromJson(pojo_.getCode(),RedemBycodePojo.Code.class);
+        code.setCode(pojo_.getCode());
 
-        code.setCode(qrcodeService._decode(code.getCode()));
+    //    code.setCode(qrcodeService._decode(code.getCode()));
+
 
 
 
         Supplier supplier = userVo.getSupplier();
 
         CodeWithLatLngVo codeWithLatLngVo = new CodeWithLatLngVo();
-        codeWithLatLngVo.setC(code.getCode());
+/*        codeWithLatLngVo.setC(code.getCode());
         codeWithLatLngVo.setCt(code.getLatitude());
-        codeWithLatLngVo.setCg(code.getLongitude());
+        codeWithLatLngVo.setCg(code.getLongitude());*/
         codeWithLatLngVo.setSt(pojo_.getLatitude());
         codeWithLatLngVo.setSg(pojo_.getLongitude());
 
 
+
+        EntityModel entityModel = multiTicketService.validate(code,userVo);
+        if(entityModel != null){
+            return entityModel;
+        }
+
         if(code.getCode().startsWith("TT-NI")){
             Optional<Voucher> optionalVoucher = voucherRepository.findByCode(code.getCode());
-
 
 
             if(optionalVoucher.isEmpty()) {
@@ -369,6 +553,26 @@ public class RedemptionRestController {
 
         }
 
+
+
+
+        if(code.getCode().startsWith("into_")){
+            User user = intoOnecodeService.byCode(code.getCode());
+
+          //  Authentication authentication = authenticationFacade.getAuthentication();
+
+            UserVo userOv = authenticationFacade.getUserVo(authentication);
+
+          //  Supplier supplier = userOv.getSupplier();
+
+            List<ComponentVounch> componentVounchList = componentVounchRepository.findAllByUser(user.getId());
+            if(componentVounchList.size() ==0){
+                throw new BookNotFoundException(Enumfailures.not_found,"该 用户无可核销得 权益"+user.getPhone());
+
+            }
+
+            return validateService.user扫文旅码(user,userOv,componentVounchList);
+        }
 
         throw new BookNotFoundException("找不到核销券","找不到核销券");
     }
@@ -468,18 +672,117 @@ public class RedemptionRestController {
 */
 
 
-
-    //TODO 这里有点问题
+    //TODO 这里有点问题 redemptions
     @PostMapping(value = "/crypto_redemptions", produces = "application/json")
-    public Object redeemVonchorByCryptoCode(@RequestBody RedemByCryptoCodePojo pojo___) {
-
-
-
+    public Object redeemVonchor(@RequestBody RedemByCryptoCodePojo pojo___) {
 
 
         Authentication authentication = authenticationFacade.getAuthentication();
 
         UserVo userOv = authenticationFacade.getUserVo(authentication);
+
+
+
+        CodeWithLatLngVo codeWithLatLngVo =  new CodeWithLatLngVo();
+        codeWithLatLngVo.setC(pojo___.getCode());
+
+
+        codeWithLatLngVo.setC(pojo___.getCrypto_code());
+
+        Supplier supplier = userOv.getSupplier();
+
+
+
+
+        EntityModel entityModel = multiTicketService.redeem(codeWithLatLngVo,userOv);
+        if(entityModel != null){
+            return entityModel;
+        }
+
+
+        if(codeWithLatLngVo.getC().startsWith("TT-NI")){
+            Optional<Voucher> optionalVoucher = voucherRepository.findByCode(codeWithLatLngVo.getC());
+
+
+            if(optionalVoucher.isEmpty()) {
+                throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到消费券"+codeWithLatLngVo.getC());
+            }
+
+            Voucher voucher =optionalVoucher.get();
+            if(voucher.getStatus().equals(EnumVoucherStatus.Redeemed)){
+                throw new ExistException(Enumfailures.invalid_voucher,"该券已核销");
+            }
+
+            if(!voucher.isActive()){
+                throw new BookNotFoundException(Enumfailures.voucher_not_active,"该券状态不活跃");
+            }
+            if(!voucher.getPublished()){
+                throw new voucher_not_publishException(voucher.getId(),codeWithLatLngVo.getC()+"券换没有被认领","券换没有被认领");
+            }
+
+
+
+            Optional<Campaign> optionalCampaign = campaignRepository.findById(voucher.getCampaign());
+
+            WrittenOffMerchantVo writtenOffMerchantVo = new WrittenOffMerchantVo(supplier,userOv);
+            boolean v = redeemService.是否符合验证(optionalCampaign.get(),supplier);
+            if(v){
+                Triplet<RedemptionEntry,Redemption, PublishTowhoVo> pair= redeemService.RedeemVounchor(voucher,optionalCampaign.get(),writtenOffMerchantVo,codeWithLatLngVo);
+
+
+                RedemptionResp resp = RedemptionResp.from(pair);
+                EntityModel<RedemptionResp> redemptionEntryEntityModel =  EntityModel.of(resp);
+
+
+                return redemptionEntryEntityModel;
+            }else{
+                throw new Voucher_has_no_permistion_redeemException(voucher.getId(),"Foo Not Found","该商户无法核销该券");
+            }
+        }
+
+        if(codeWithLatLngVo.getC().startsWith("ctt")){
+
+            Optional<CampaignAssignToTourBooking> campaignAssignToTourBookingOptional = campaignAssignToTourBookingRepository.findByCode(codeWithLatLngVo.getC());
+            if(campaignAssignToTourBookingOptional.isEmpty()) {
+                throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到消费券");
+            }
+
+            CampaignAssignToTourBooking campaignAssignToTourBooking = campaignAssignToTourBookingOptional.get();
+
+
+            if(campaignAssignToTourBooking.getStatus().equals(EnumCampaignToTourBookingStatus.AlreadyRedeemed)){
+                throw  new ExistException(Enumfailures.invalid_voucher,"团订单领票已核销");
+            }
+            Optional<Campaign> campaigns = campaignRepository.findById(campaignAssignToTourBooking.getCampaign());
+            Optional<TourBooking> optionalTourBooking = tourBookingRepository.findById(campaignAssignToTourBooking.getTourBooking());
+            TourBooking tourBooking = optionalTourBooking.get();
+            Campaign campaign = campaigns.get();
+
+            List<Traveler> travelerList = travelerRepository.findAllByBooking(campaignAssignToTourBooking.getTourBooking());
+
+
+            WrittenOffMerchantVo writtenOffMerchantVo = new WrittenOffMerchantVo(supplier,userOv);
+
+
+            List<Triplet<RedemptionEntry,Redemption,PublishTowhoVo>> pair= redeemService.RedeemVounchor(campaignAssignToTourBooking,tourBooking,campaign,writtenOffMerchantVo,codeWithLatLngVo);
+            return RedemptionResp.from(pair);
+
+        }
+
+        throw new BookNotFoundException("找不到核销券","找不到核销券");
+    }
+
+
+    //TODO 这里有点问题
+    @PostMapping(value = "/crypto_redemptions__b", produces = "application/json")
+    public Object redeemVonchorByCryptoCode(@RequestBody RedemByCryptoCodePojo pojo___) {
+
+
+        Authentication authentication = authenticationFacade.getAuthentication();
+
+        UserVo userOv = authenticationFacade.getUserVo(authentication);
+
+System.out.println("---------------"+pojo___.getCrypto_code());
 
 
 
@@ -558,9 +861,6 @@ public class RedemptionRestController {
             return RedemptionResp.from(pair);
 
         }
-
-
-
 
         throw new BookNotFoundException("找不到核销券","找不到核销券");
     }

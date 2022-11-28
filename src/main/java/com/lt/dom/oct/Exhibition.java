@@ -1,8 +1,100 @@
 package com.lt.dom.oct;
 
-public class Exhibition {
+import com.lt.dom.otcenum.EnumPrivacyLevel;
 
-  /*  {
+import javax.persistence.Entity;
+import java.time.LocalDateTime;
+
+@Entity
+public class Exhibition extends Base{
+
+    private String title;
+    private String slug;
+
+    private String desc_long;
+    private String desc_short;
+
+    private EnumPrivacyLevel privacyLevel;
+    private long supplier;
+    private String organizer;
+    private String code;
+
+
+    private LocalDateTime opening_date;
+
+    public LocalDateTime getOpening_date() {
+        return opening_date;
+    }
+
+    public void setOpening_date(LocalDateTime opening_date) {
+        this.opening_date = opening_date;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
+    public String getDesc_long() {
+        return desc_long;
+    }
+
+    public void setDesc_long(String desc_long) {
+        this.desc_long = desc_long;
+    }
+
+    public String getDesc_short() {
+        return desc_short;
+    }
+
+    public void setDesc_short(String desc_short) {
+        this.desc_short = desc_short;
+    }
+
+    public EnumPrivacyLevel getPrivacyLevel() {
+        return privacyLevel;
+    }
+
+    public void setPrivacyLevel(EnumPrivacyLevel privacyLevel) {
+        this.privacyLevel = privacyLevel;
+    }
+
+    public void setSupplier(long supplier) {
+        this.supplier = supplier;
+    }
+
+    public long getSupplier() {
+        return supplier;
+    }
+
+    public void setOrganizer(String organizer) {
+        this.organizer = organizer;
+    }
+
+    public String getOrganizer() {
+        return organizer;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    /*  {
         "primaryimageurl": "http://nrs.harvard.edu/urn-3:huam:GS04997_dynmc",
             "venues": [
         {

@@ -13,10 +13,16 @@ import com.lt.dom.notification.event.OnChargePaidCompleteEvent;
 import com.lt.dom.notification.event.OnRefundCompleteEvent;
 import com.lt.dom.notification.event.OnRefundCreatedEvent;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.NonReferencedRefundReq;
+import com.lt.dom.otcReq.RefundReq;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
+import com.lt.dom.serviceOtc.pay.AliPaymentServiceImpl;
+import com.lt.dom.serviceOtc.pay.CashPaymentServiceImpl;
+import com.lt.dom.serviceOtc.pay.WeixinPaymentServiceImpl;
 import com.lt.dom.vo.ChargeMetadataVo;
+import com.lt.dom.vo.PlatUserVo;
 import com.lt.dom.vo.UserVo;
 import com.lt.dom.vo.VoucherPublicationPaymentVo;
 import org.javatuples.Pair;
@@ -26,6 +32,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,6 +48,10 @@ public class PaymentServiceImpl {
 
     @Autowired
     private IdGenServiceImpl idGenService;
+
+    @Autowired
+    private LineItemRepository lineItemRepository;
+
 
     @Autowired
     private PaymentRepository paymentRepository;
@@ -63,6 +74,14 @@ public class PaymentServiceImpl {
     private ReservationRepository reservationRepository;
     @Autowired
     private RefundRepository refundRepository;
+    @Autowired
+    private WeixinPaymentServiceImpl weixinPaymentService;
+
+    @Autowired
+    private AliPaymentServiceImpl aliPaymentService;
+    @Autowired
+    private CashPaymentServiceImpl cashPaymentService;
+
 
     @Autowired
     private ApplicationFeeRepository applicationFeeRepository;
@@ -88,11 +107,58 @@ public class PaymentServiceImpl {
 
 
 
-    public Map createCharge(String ip, String code, Long booking_id, long totalproce, String openid, UserVo userVo, String metadata) {
+
+    public void successCharge(Charge charge,Reservation reservation, Payment payment) {
+
+        charge.setStatus(EnumChargeStatus.succeeded);
+        charge = chargeRepository.save(charge);
+
+
+        reservation.setStatus(EnumBookingStatus.PAID);
+        reservation.setPaied_at(LocalDateTime.now());
+        reservationRepository.save(reservation);
+        payment.setStatus(EnumPaymentStatus.PAID);
+        paymentRepository.save(payment);
+
+    }
+
+        public Charge createCharge(String chargeCode, EnumPayChannel payChannel, String ip, Payment payment, UserVo userVo, String metadata) {
 
 
 
 
+            Charge charge = new Charge();
+            charge.setChannel(payChannel);
+            charge.setPaid(false);
+        //    charge.setApp(myConfig.getAppID());
+            charge.setClientIp(ip);
+            charge.setAmount(Double.valueOf(payment.getAmount()).intValue());
+
+            charge.setLivemode(false);
+            charge.setPayment_code(payment.getCode());
+
+            charge.setPayment(payment.getId());
+            charge.setCreated(LocalDateTime.now());
+
+            charge.setBody("body");
+            charge.setPayer(userVo.getUser_id());
+            charge.setCurrency("currency");
+            charge.setCode(chargeCode);
+            charge.setStatus(EnumChargeStatus.pending);
+            charge.setAmountRefunded(0);
+            charge.setApplication_fee_amount(1);
+            charge.setBooking(payment.getBooking());
+            charge.setMetadata(metadata);
+            charge  = chargeRepository.save(charge);
+            return charge;
+
+    }
+
+    public Map createCharge(String ip, String code, Reservation reservation, long totalproce, String openid, UserVo userVo, String metadata, Payment payment) {
+
+
+
+        Long booking_id = reservation.getId();
 
         MyConfig myConfig = null;
         try {
@@ -108,7 +174,11 @@ public class PaymentServiceImpl {
             e.printStackTrace();
         }
 
-        String body = "123rrrr";
+
+
+        List<LineItem> lineItems = lineItemRepository.findAllByBooking(reservation.getId());
+
+        String body = LineItem.OrderLable(lineItems);
         String currency = "CNY";
         String chargeCode = idGenService.chargeCode();
         Map<String, String> data = new HashMap<String, String>();
@@ -162,6 +232,9 @@ public class PaymentServiceImpl {
             prepayResp.setTimestamp(timestamp);
 
 
+            Charge  charge = createCharge(chargeCode,EnumPayChannel.wx,ip,payment,userVo,metadata);
+/*
+
             Charge charge = new Charge();
             charge.setChannel(EnumPayChannel.wx);
             charge.setPaid(false);
@@ -184,6 +257,7 @@ public class PaymentServiceImpl {
             charge.setMetadata(metadata);
             chargeRepository.save(charge);
 
+*/
 
 
             return map;
@@ -197,6 +271,10 @@ public class PaymentServiceImpl {
 
         return null;
         }
+
+
+
+
 
     public Charge getOneOrderStatusByPayNo(String out_trade_no) {
 
@@ -222,6 +300,7 @@ public class PaymentServiceImpl {
 
 
 
+    @Transactional
     public void paidChage(Charge charge, Payment payment,Reservation reservation) {
 
 
@@ -359,14 +438,9 @@ public class PaymentServiceImpl {
         charge.setTransactionNo(balanceTransaction.getCode());
         charge = chargeRepository.save(charge);
 
+        successCharge(charge,reservation,payment);
 
 
-        reservation.setStatus(EnumBookingStatus.PAID);
-        reservation.setPaied_at(LocalDateTime.now());
-        reservationRepository.save(reservation);
-
-        payment.setStatus(EnumPaymentStatus.COMPLETE);
-        paymentRepository.save(payment);
 /*
 
         BalanceTransaction balanceTransaction_tax = new BalanceTransaction();
@@ -429,6 +503,10 @@ public class PaymentServiceImpl {
 
         Charge charge = optional.get();//
 
+
+
+
+
 /*        Optional<Payment> optionalPayment = paymentRepository.findById(charge.getOrderNo());
         Payment payment = optionalPayment.get();//*/
        // Balance balance = balance(payment.getRecipient(),EnumUserType.business);
@@ -464,6 +542,7 @@ public class PaymentServiceImpl {
         reservation.setStatus(EnumBookingStatus.Refunded);
         reservationRepository.save(reservation);
 
+        weixinPaymentService.refundCompleted(refund,charge,reservation);
 
 
 /*
@@ -499,10 +578,28 @@ public class PaymentServiceImpl {
         ChargeMetadataVo metadataVo = gson.fromJson(charge.getMetadata(),ChargeMetadataVo.class);
 
 
-        publicationService.refundPublication(metadataVo.getVoucher());
+     //   publicationService.refundPublication(metadataVo.getVoucher());
 
         eventPublisher.publishEvent(new OnRefundCompleteEvent(new User(),
                 charge, EnumEvents.charge$refunded));
+
+
+        return refund;
+    }
+
+
+
+
+
+        public Refund refundError(Refund refund) {
+
+
+
+        refund.setStatus(EnumRefundStatus.failed);
+
+
+        refundRepository.save(refund);
+
 
 
         return refund;
@@ -515,25 +612,37 @@ public class PaymentServiceImpl {
     }
 
 
-    public Refund createCharge(String refundCode, Charge charge, Reservation reservation) {
+    public Refund createRefund(String refundCode, Charge charge, Reservation reservation, RefundReq refundReq) {
 
+
+        int      refund_fee = refundReq.getRefund_fee();      //退款金额(这里是按分来计算的)
+
+        if(refundReq.getRefund_fee()== null){
+            refund_fee = charge.getAmount();      //退款金额(这里是按分来计算的)
+
+        }
         Refund refund = new Refund();
         refund.setCode(refundCode);
-        refund.setReason(EnumRefundReason.requested_by_customer);
+        refund.setReason(refundReq.getReason());
+
         refund.setCreated(LocalDateTime.now());
         refund.setStatus(EnumRefundStatus.pending);
         refund.setCharge(charge.getId());
         refund.setCharge_Code(charge.getCode());
-        refund.setAmount(charge.getAmount());
+        refund.setAmount(charge.getAmount()); //total_fee
+        refund.setRefund_fee(refund_fee); //total_fee
+
+        refund.setChannel(charge.getChannel());
+        refund.setBooking(reservation.getId());
+
         refund =  refundRepository.save(refund);
 
 
-        reservation.setStatus(EnumBookingStatus.RefundInProgress);
-        reservationRepository.save(reservation);
+        weixinPaymentService.refundPending(refund,charge,reservation);
 
-        charge.setRefund(refund.getId());
-        charge.setRefundStatus(EnumRefundStatus.pending);
-        chargeRepository.save(charge);
+        cashPaymentService.refundPending(refund,charge,reservation);
+        cashPaymentService.refundCompleted(refund,charge,reservation);
+
 
         eventPublisher.publishEvent(new OnRefundCreatedEvent(new User(),
                 null, EnumEvents.charge$pending));
@@ -542,6 +651,36 @@ public class PaymentServiceImpl {
 
     }
 
+    public Refund createRefundNonReferenced(String refundCode, Reservation reservation, NonReferencedRefundReq refundReq, EnumPayChannel payChannel) {
+
+
+        Refund refund = new Refund();
+        refund.setCode(refundCode);
+        refund.setReason(refundReq.getReason());
+
+        refund.setCreated(LocalDateTime.now());
+        refund.setStatus(EnumRefundStatus.succeeded);
+
+        refund.setAmount(refundReq.getAmount()); //total_fee
+        refund.setRefund_fee(refundReq.getAmount()); //total_fee
+
+        refund.setChannel(payChannel);
+
+        refund.setBooking(reservation.getId());
+        refund =  refundRepository.save(refund);
+
+
+
+        cashPaymentService.createRefundNonReferenced(payChannel,refund,reservation);
+
+
+        return refund;
+
+    }
+
+
+
+
     public Charge refundCompleted(Charge charge) {
         return null;
     }
@@ -549,7 +688,7 @@ public class PaymentServiceImpl {
 
 
     public Payment createPayment(String enumPayChannels , int amount, UserVo userVo, Reservation reservation) {
-        Optional<Payment> optionalPayment = paymentRepository.findByReference(reservation.getCode());
+        List<Payment> optionalPayment = paymentRepository.findByReference(reservation.getCode());
 
         if(optionalPayment.isEmpty()){
             Payment payment = new Payment();
@@ -563,7 +702,128 @@ public class PaymentServiceImpl {
             Gson gson = new Gson();
 
             payment.setPayment_method_json(enumPayChannels);
-            payment.setStatus(EnumPaymentStatus.Initialized);
+            payment.setStatus(EnumPaymentStatus.PENDING);
+            payment.setCode(idGenService.paymentNo());
+
+            payment.setExpireTime(LocalDateTime.now().plusMinutes(30));
+
+            payment.setPayment_flow(EnumPaymentFlow.one_step);
+            payment.setSplit(reservation.getPaymentSplit());
+
+
+            payment.setBooking(reservation.getId());
+            payment = paymentRepository.save(payment);
+
+
+            if(reservation.getPaymentSplit()){
+
+                List<RoyaltyRule> royaltyRules = royaltyRuleRepository.findAllBySplitCode(reservation.getPaymentSplitCode());
+
+                Payment finalPayment = payment;
+                List<Splits> splitsList = royaltyRules.stream().map(e->{
+                    Splits splits = new Splits();
+                    splits.setType(EnumSpliteType.percentage);
+                    splits.setShares(e.getPercent());
+                    splits.setBearer_type(EnumSplitBearerType.account);
+                    splits.setPayment(finalPayment.getId());
+                    return splits;
+                }).collect(Collectors.toList());
+
+                splitRepository.saveAll(splitsList);
+            }
+
+
+
+            reservation.setStatus(EnumBookingStatus.Payment_Pending);
+            reservation = reservationRepository.save(reservation);
+            return payment;
+        }
+        Payment payment = optionalPayment.get(0);
+
+        return payment;
+
+    }
+
+    public Payment recodePayment(String enumPayChannels , int amount, PlatUserVo userVo, Reservation reservation) {
+        List<Payment> optionalPayment = paymentRepository.findByReference(reservation.getCode());
+
+        if(optionalPayment.isEmpty()){
+            Payment payment = new Payment();
+            payment.setAmount(amount);
+            payment.setBalance(amount);
+            payment.setDate(LocalDateTime.now());
+            payment.setVoided(false);
+
+
+         //   payment.setCustomer(userVo.getUser_id());
+
+            payment.setLog_customer_id_type(reservation.getLog_buyer_id_ntype());
+            payment.setLog_customer_phone(reservation.getLog_buyer_phone());
+            payment.setLog_customer_id_number(reservation.getLog_buyer_id_number());
+            payment.setLog_customer_name(reservation.getLog_buyer_name());
+
+
+            payment.setReference(reservation.getCode());
+
+
+            payment.setPayment_method_json(enumPayChannels);
+            payment.setStatus(EnumPaymentStatus.PAID);
+            payment.setCode(idGenService.paymentNo());
+
+            payment.setExpireTime(LocalDateTime.now().plusMinutes(30));
+
+            payment.setPayment_flow(EnumPaymentFlow.one_step);
+            payment.setSplit(reservation.getPaymentSplit());
+
+
+            payment.setBooking(reservation.getId());
+            payment = paymentRepository.save(payment);
+
+
+            if(reservation.getPaymentSplit()){
+
+                List<RoyaltyRule> royaltyRules = royaltyRuleRepository.findAllBySplitCode(reservation.getPaymentSplitCode());
+
+                Payment finalPayment = payment;
+                List<Splits> splitsList = royaltyRules.stream().map(e->{
+                    Splits splits = new Splits();
+                    splits.setType(EnumSpliteType.percentage);
+                    splits.setShares(e.getPercent());
+                    splits.setBearer_type(EnumSplitBearerType.account);
+                    splits.setPayment(finalPayment.getId());
+                    return splits;
+                }).collect(Collectors.toList());
+
+                splitRepository.saveAll(splitsList);
+            }
+
+
+
+            reservation.setStatus(EnumBookingStatus.PAID);
+            reservation = reservationRepository.save(reservation);
+            return payment;
+        }
+        Payment payment = optionalPayment.get(0);
+
+        return payment;
+
+    }
+    public Payment createPayment(PaymentReq paymentReq, UserVo userVo, Reservation reservation) {
+
+            Payment payment = new Payment();
+            payment.setAmount(reservation.getAmount());
+            payment.setBalance(-1);
+            payment.setDate(LocalDateTime.now());
+            payment.setVoided(false);
+            payment.setCustomer(userVo.getUser_id());
+
+            payment.setReference(reservation.getCode());
+
+            payment.setPayment_method(paymentReq.getPayment_method());
+
+        payment.setSourceType(paymentReq.getSourceType());
+
+            payment.setStatus(EnumPaymentStatus.PENDING);
             payment.setCode(idGenService.paymentNo());
 
             payment.setExpireTime(LocalDateTime.now().plusMinutes(30));
@@ -595,19 +855,17 @@ public class PaymentServiceImpl {
             reservation.setStatus(EnumBookingStatus.Payment_Pending);
             reservation = reservationRepository.save(reservation);
             return payment;
-        }
-        Payment payment = optionalPayment.get();
 
-        return payment;
 
     }
-
-
     public Optional<Payment>  getByBooking(Reservation reservation) {
 
-        Optional<Payment> optionalPayment = paymentRepository.findByReference(reservation.getCode());
+        List<Payment> optionalPayment = paymentRepository.findByReference(reservation.getCode());
 
-        return optionalPayment;
+        if(optionalPayment.isEmpty()){
+            return Optional.empty();
+        }
+        return Optional.of(optionalPayment.get(0));
 
     }
 
@@ -621,8 +879,14 @@ public class PaymentServiceImpl {
             EntityModel<PaymentMethodResp> entityModel = EntityModel.of(PaymentMethodResp.of(e));
 
             switch (e){
+                case cash:{
+                    entityModel.add(linkTo(methodOn(PaymentRestController.class).createCharge(payment.getId(),EnumPayChannel.cash,null,null)).withSelfRel());
+                }
+                break;
                 case wx:{
-                    entityModel.add(linkTo(methodOn(PaymentRestController.class).wxPayRequest(payment.getId(),null)).withSelfRel());
+                    entityModel.add(linkTo(methodOn(PaymentRestController.class).createCharge(payment.getId(),EnumPayChannel.wx,null,null)).withSelfRel());
+
+             //       entityModel.add(linkTo(methodOn(PaymentRestController.class).wxPayRequest(payment.getId(),null)).withSelfRel());
                 }
                 break;
                 case alipay:{
@@ -630,6 +894,9 @@ public class PaymentServiceImpl {
                 }
                 case balance:{
                     entityModel.add(linkTo(methodOn(BookingRestController.class).惠民卡支付(payment.getId())).withSelfRel());
+                }
+                case hero_card:{
+                    entityModel.add(linkTo(methodOn(BookingRestController.class).主人卡支付(payment.getId())).withSelfRel());
                 }
                 break;
                 default:{}
@@ -640,5 +907,12 @@ public class PaymentServiceImpl {
         }).collect(Collectors.toList());
 
         return entityModelList;
+    }
+
+    public List<Charge> getCharge(Reservation reservation) {
+
+        List<Charge> chargeList = chargeRepository.findByBooking(reservation.getId());
+
+        return chargeList;
     }
 }

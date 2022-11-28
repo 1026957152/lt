@@ -1,25 +1,88 @@
 package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.Gson;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.BookingRulePojo;
-import com.lt.dom.otcenum.EnumPayChannel;
-import com.lt.dom.otcenum.EnumPaymentOption;
-import com.lt.dom.otcenum.EnumProductStatus;
-import com.lt.dom.otcenum.EnumProductType;
-import com.lt.dom.vo.AvailabilityVO;
+import com.lt.dom.otcReq.*;
+import com.lt.dom.otcenum.*;
+import com.lt.dom.vo.AvailabilityCalendarVO;
+import com.lt.dom.vo.ProductPriceRangeVo;
 import org.javatuples.Pair;
 import org.springframework.hateoas.EntityModel;
 
-import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProductResp {
+public class ProductResp extends BaseResp{
+
+
+    private List ratePlans;
+    private PricingTypeResp default_sku;
+    private PhotoResp video;
+    private Boolean hasVideo;
+    private List<FeatureTagResp> featureTags;
+    private String availabilityNote;
+    private List<CommentResp> comments;
+
+    private List options;
+    private Long reviewCount;
+    private LocalDate fixedPassExpiryDate;
+    private Long passValidForDays;
+    private EnumPassExpiry passExpiry;
+    private EnumPassCapacity passCapacityType;
+    private Long passCapacity;
+    private Boolean showSupplier;
+    private String desc_long;
+    private List zones;
+    private EnumAvailabilityType availability_type;
+    private EntityModel booking;
+    private List<EntityModel> youLike;
+    private MetricsDTO metrics;
+    private List extras;
+
+    @JsonProperty("package")
+    private Boolean package_;
+    private List bundles;
+    private ProductPriceRangeVo priceRange;
+
+
+    public static ActivityResp toActivity(Product product) {
+        ActivityResp resp = new ActivityResp();
+
+
+
+        resp.setType_text(product.getType().toString());
+        resp.setCode(product.getCode());
+        resp.setName(product.getName());
+        resp.setDesc_short(product.getDesc_short());
+
+        resp.setStatus_text(product.getStatus().toString());
+        return resp;
+    }
+
+    public  void setRatePlans(List ratePlans) {
+        this.ratePlans = ratePlans;
+    }
+
+    public List getRatePlans() {
+        return ratePlans;
+    }
+
+    public RestrictionResp getRestriction() {
+        return restriction;
+    }
+
+    public void setRestriction(RestrictionResp restriction) {
+        this.restriction = restriction;
+    }
+
+    private RestrictionResp restriction;
+
 
 
 
@@ -33,21 +96,24 @@ public class ProductResp {
     private List<PhotoResp> images;
     private PhotoResp thumbnail_image;
     private EntityModel availability;
-    private List<AvailabilityVO> bookingAvailability;
-    private boolean shippable;
+    private List<AvailabilityCalendarVO> bookingAvailability;
+    private Boolean shippable;
     private String traveller_term;
     private String booking_note;
-    private long id;
-    private String short_desc;
+    private Long id;
+    private String desc_short;
     private String short_name;
     private List<Long> component_rights;
+
+    private List skus;
+    private List about;
 
     public static ProductResp dayTourFrom(Product product, Tour tour, List<Campaign> campaignAssignToTourProducts) {
 
 
 
         ProductResp resp = new ProductResp();
-        resp.setSupplier(product.getSupplierId()+"");
+
         resp.setPaymentOptionList(Arrays.asList(EnumPaymentOption.giftCard,
                 EnumPaymentOption.wechat_pay).stream().map(x->{
                     EnumResp enumResp = new EnumResp();
@@ -91,7 +157,7 @@ public class ProductResp {
 
     public static ProductResp from(Product e, List<PricingType> pricingTypeList) {
 
-        ProductResp productResp = ProductResp.from(e);
+        ProductResp productResp = ProductResp.Simplefrom(e);
 
 /*        productResp.setPriceTypes(pricingTypeList.stream().map(ee->{
             return EntityModel.of(PricingTypeResp.from(ee));
@@ -99,12 +165,12 @@ public class ProductResp {
 
 
         PricingType pricingType = pricingTypeList.get(0);
-        productResp.setDefault_price(PricingTypeResp.from(pricingType));
+        productResp.setDefault_sku(PricingTypeResp.sku(pricingType));
         return productResp;
     }
     public static ProductResp Richfrom(Product e, List<PricingType> pricingTypeList) {
 
-        ProductResp productResp = ProductResp.from(e);
+        ProductResp productResp = ProductResp.Simplefrom(e);
 
       productResp.setPriceTypes(pricingTypeList.stream().map(ee->{
             return EntityModel.of(PricingTypeResp.from(ee));
@@ -133,7 +199,7 @@ public class ProductResp {
         this.tour = tour;
     }
 
-    private String supplier;
+    private EntityModel supplier;
     
 //##@Column(unique=true) 
 private String code;
@@ -142,11 +208,11 @@ private String code;
     private String nameLong;
 
 
-    public String getSupplier() {
+    public EntityModel getSupplier() {
         return supplier;
     }
 
-    public void setSupplier(String supplier) {
+    public void setSupplier(EntityModel supplier) {
         this.supplier = supplier;
     }
 
@@ -192,11 +258,11 @@ private String code;
         this.theatre = theatre;
     }
 
-    public Attraction getAttraction() {
+    public AttractionResp getAttraction() {
         return attraction;
     }
 
-    public void setAttraction(Attraction attraction) {
+    public void setAttraction(AttractionResp attraction) {
         this.attraction = attraction;
     }
 
@@ -209,43 +275,137 @@ private String code;
     List<AttributeResp> attributes;
     List<EnumResp> paymentOptionList;
 
-    @Transient
+
     private ProductTheatre theatre;
-    @Transient
-    private Attraction attraction;
+
+    private AttractionResp attraction;
 
 
     public static ProductResp from(Pair<Product,Supplier> pair) {
         Product product = pair.getValue0();
         Supplier supplier = pair.getValue1();
 
-        ProductResp resp = ProductResp.from(product);
-        resp.setSupplier(supplier.getName());
+        ProductResp resp = ProductResp.Simplefrom(product);
+        resp.setSupplier(EntityModel.of(supplier));
         resp.setSupplierCode(supplier.getCode());
         return resp;
     }
 
+
     public static ProductResp from(Product product) {
 
         ProductResp resp = ProductResp.Simplefrom(product);
-        resp.setPaymentOptionList(EnumPayChannel.from(Arrays.stream((new Gson()).fromJson(product.getPaymentMethods_json(), EnumPayChannel[].class)).collect(Collectors.toList())));
+        if(product.getPaymentMethods_json() != null){
+            resp.setPaymentOptionList(EnumPayChannel.from(Arrays.stream((new Gson()).fromJson(product.getPaymentMethods_json(), EnumPayChannel[].class)).collect(Collectors.toList())));
+
+        }else{
+            resp.setPaymentOptionList(Arrays.asList());
+        }
         resp.setName_long(product.getName_long());
         resp.setShippable(product.getShippable());
+
         resp.setTags((new Gson()).fromJson(product.getTags_json(),List.class));
         resp.setStatus_text(product.getStatus().toString());
         resp.setStatus(product.getStatus());
-        resp.setId(product.getId());
 
+/*        productResp.setFeatureTags(Arrays.asList(FeatureTag.of("","gem-o","45分~1小时"),
+                FeatureTag.of("","gift-o","接送")));*/
+        if(product.getFeatureTags_json()== null){
+            product.setFeatureTags_json("[]");
+        }
+        resp.setFeatureTags(Arrays.stream(new Gson().fromJson(product.getFeatureTags_json(), FeatureTagReq[].class)).map(e->{
+            FeatureTagResp featureTagResp = new FeatureTagResp();
+            featureTagResp.setType(e.getType());
+            featureTagResp.setText(e.getText());
+            featureTagResp.setIcon(e.getType().getIcon());
+            return featureTagResp;
+        }).collect(Collectors.toList()));
+
+        RestrictionResp restriction1 = new RestrictionResp();
+
+        restriction1.setMinQuantity(product.getRestriction_minQuantity());
+        restriction1.setMaxQuantity(product.getRestriction_maxQuantity());
+        restriction1.setIdRequired(product.getRestriction_passenger_identity_documents_required());
+
+        resp.setRestriction(restriction1);
+
+        resp.setPackage(product.getPackage_());
+        resp.setBundles(product.getBundles().stream().map(e->{
+            return e;
+        }).collect(Collectors.toList()));
 
         return resp;
     }
 
 
-    public static ProductResp Simplefrom(Product product) {
+
+    public static ProductResp miniappHome(Product product) {
+        ProductResp resp = new ProductResp();
+        resp.setDesc_short(product.getName_long());
+        resp.setType_text(product.getType().toString());
+
+        resp.setName(product.getName());
+        resp.setReviewCount(product.getReviewCount()== null? 0l: product.getReviewCount());
+        if(product.getFeatureTags_json() ==null){
+            resp.setFeatureTags(Arrays.asList());
+        }else{
+            resp.setFeatureTags(Arrays.stream(new Gson().fromJson(product.getFeatureTags_json(), FeatureTagReq[].class)).map(e->{
+                FeatureTagResp featureTagResp = new FeatureTagResp();
+                featureTagResp.setType(e.getType());
+                featureTagResp.setText(e.getText());
+                featureTagResp.setIcon(e.getType().getIcon());
+                return featureTagResp;
+            }).collect(Collectors.toList()));
+        }
+
+        return resp;
+    }
+
+    public static ProductResp fromFront(Product product) {
+        ProductResp resp = new ProductResp();
+        resp.setDesc_short(product.getDesc_short());
+        resp.setDesc_long(product.getLong_desc());
+        resp.setDesc_short(product.getDesc_short());
+       // resp.setShort_name(product.getName());
+        resp.setType(product.getType());
+        resp.setType_text(product.getType().toString());
+        resp.setCode(product.getCode());
+        resp.setName(product.getName());
+        resp.setReviewCount(product.getReviewCount());
+
+        if(product.getPaymentMethods_json() != null){
+            resp.setPaymentOptionList(EnumPayChannel.from(Arrays.stream((new Gson()).fromJson(product.getPaymentMethods_json(), EnumPayChannel[].class)).collect(Collectors.toList())));
+
+        }else{
+            resp.setPaymentOptionList(Arrays.asList());
+        }
+        resp.setName_long(product.getName_long());
+       // resp.setShippable(product.getShippable());
+
+        resp.setTags((new Gson()).fromJson(product.getTags_json(),List.class));
+        resp.setStatus_text(product.getStatus().toString());
+       // resp.setStatus(product.getStatus());
+
+
+
+
+      //  resp.setAvailabilityRequired(product.getAvailabilityRequired());
+
+    //    resp.setAvailability_type(product.getAvailability_type());
+
+        resp.setPackage(product.getPackage_());
+        resp.setBundles(product.getBundles().stream().map(e->{
+            return e;
+        }).collect(Collectors.toList()));
+
+        return resp;
+    }
+
+    public static ProductResp basefrom(Product product) {
 
 
         ProductResp resp = new ProductResp();
-        resp.setShort_desc(product.getName_long());
+        resp.setDesc_short(product.getName_long());
         resp.setShort_name(product.getName());
         resp.setType(product.getType());
         resp.setType_text(product.getType().toString());
@@ -253,10 +413,100 @@ private String code;
         resp.setName(product.getName());
 
 
+        return resp;
+    }
+
+    public static ProductResp Simplefrom(Product product) {
+
+
+        ProductResp resp = new ProductResp();
+        resp.setDesc_short(product.getDesc_short());
+        resp.setName_long(product.getName_long());
+        resp.setShort_name(product.getName());
+
+        resp.setType(product.getType());
+        resp.setType_text(product.getType().toString());
+        resp.setCode(product.getCode());
+        resp.setName(product.getName());
+        resp.setStatus_text(product.getStatus().toString());
+        resp.setStatus(product.getStatus());
+        resp.setCreatedDate(product.getCreatedDate());
+        resp.setModifiedDate(product.getModifiedDate());
+
+        resp.setFixedPassExpiryDate(product.getFixedPassExpiryDate());
+        resp.setPassValidForDays(product.getPassValidForDays());
+        resp.setPassExpiry(product.getPassExpiry());
+        resp.setPassCapacityType(product.getPassCapacityType());
+        resp.setPassCapacity(product.getPassCapacity());
 
 
 
         return resp;
+    }
+
+    public static ProductResp bookingPage(Product product) {
+
+
+        ProductResp resp = new ProductResp();
+        resp.setDesc_short(product.getDesc_short());
+        resp.setName_long(product.getName_long());
+        resp.setShort_name(product.getName());
+
+        resp.setType(product.getType());
+        resp.setType_text(product.getType().toString());
+        resp.setCode(product.getCode());
+        resp.setName(product.getName());
+        resp.setStatus_text(product.getStatus().toString());
+        resp.setStatus(product.getStatus());
+
+
+        resp.setFixedPassExpiryDate(product.getFixedPassExpiryDate());
+        resp.setPassValidForDays(product.getPassValidForDays());
+        resp.setPassExpiry(product.getPassExpiry());
+        resp.setPassCapacityType(product.getPassCapacityType());
+        resp.setPassCapacity(product.getPassCapacity());
+
+
+
+        if(product.getPaymentMethods_json() != null){
+            resp.setPaymentOptionList(EnumPayChannel.from(Arrays.stream((new Gson()).fromJson(product.getPaymentMethods_json(), EnumPayChannel[].class)).collect(Collectors.toList())));
+
+        }else{
+            resp.setPaymentOptionList(Arrays.asList());
+        }
+        resp.setName_long(product.getName_long());
+        resp.setShippable(product.getShippable());
+
+        resp.setTags((new Gson()).fromJson(product.getTags_json(),List.class));
+        resp.setStatus_text(product.getStatus().toString());
+        resp.setStatus(product.getStatus());
+
+/*        productResp.setFeatureTags(Arrays.asList(FeatureTag.of("","gem-o","45分~1小时"),
+                FeatureTag.of("","gift-o","接送")));*/
+        if(product.getFeatureTags_json()== null){
+            product.setFeatureTags_json("[]");
+        }
+        resp.setFeatureTags(Arrays.stream(new Gson().fromJson(product.getFeatureTags_json(), FeatureTagReq[].class)).map(e->{
+            FeatureTagResp featureTagResp = new FeatureTagResp();
+            featureTagResp.setType(e.getType());
+            featureTagResp.setText(e.getText());
+            featureTagResp.setIcon(e.getType().getIcon());
+            return featureTagResp;
+        }).collect(Collectors.toList()));
+
+        RestrictionResp restriction1 = new RestrictionResp();
+
+        restriction1.setMinQuantity(product.getRestriction_minQuantity());
+        restriction1.setMaxQuantity(product.getRestriction_maxQuantity());
+        restriction1.setIdRequired(product.getRestriction_passenger_identity_documents_required());
+
+        resp.setRestriction(restriction1);
+
+
+
+        return resp;
+
+
     }
 
     public void setCode(String code) {
@@ -363,19 +613,19 @@ private String code;
         return availability;
     }
 
-    public void setBookingAvailability(List<AvailabilityVO> bookingAvailability) {
+    public void setBookingAvailability(List<AvailabilityCalendarVO> bookingAvailability) {
         this.bookingAvailability = bookingAvailability;
     }
 
-    public List<AvailabilityVO> getBookingAvailability() {
+    public List<AvailabilityCalendarVO> getBookingAvailability() {
         return bookingAvailability;
     }
 
-    public void setShippable(boolean shippable) {
+    public void setShippable(Boolean shippable) {
         this.shippable = shippable;
     }
 
-    public boolean getShippable() {
+    public Boolean getShippable() {
         return shippable;
     }
 
@@ -395,20 +645,20 @@ private String code;
         return booking_note;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setShort_desc(String short_desc) {
-        this.short_desc = short_desc;
+    public void setDesc_short(String desc_short) {
+        this.desc_short = desc_short;
     }
 
-    public String getShort_desc() {
-        return short_desc;
+    public String getDesc_short() {
+        return desc_short;
     }
 
     public void setShort_name(String short_name) {
@@ -428,13 +678,244 @@ private String code;
     }
 
 
-    public static class Availability {
+    public void setSkus(List skus) {
+        this.skus = skus;
+    }
+
+    public List getSkus() {
+        return skus;
+    }
+
+    public void setAbout(List about) {
+        this.about = about;
+    }
+
+    public List getAbout() {
+        return about;
+    }
+
+    public void setDefault_sku(PricingTypeResp default_sku) {
+        this.default_sku = default_sku;
+    }
+
+    public PricingTypeResp getDefault_sku() {
+        return default_sku;
+    }
+
+    public void setVideo(PhotoResp video) {
+        this.video = video;
+    }
+
+    public PhotoResp getVideo() {
+        return video;
+    }
+
+    public void setHasVideo(Boolean hasVideo) {
+        this.hasVideo = hasVideo;
+    }
+
+    public Boolean isHasVideo() {
+        return hasVideo;
+    }
+
+    public <T> void setFeatureTags(List<FeatureTagResp> featureTags) {
+        this.featureTags = featureTags;
+    }
+
+    public List<FeatureTagResp> getFeatureTags() {
+        return featureTags;
+    }
+
+    public void setAvailabilityNote(String availabilityNote) {
+        this.availabilityNote = availabilityNote;
+    }
+
+    public String getAvailabilityNote() {
+        return availabilityNote;
+    }
+
+
+    public static void withRateplans(ProductResp subscription,List<RatePlan> ratePlans) {
+
+
+        subscription.setRatePlans(ratePlans.stream().map(e->{
+            RatePlanResp ratePlanResp = RatePlanResp.from(e);
+            return ratePlanResp;
+        }).collect(Collectors.toList()));
+
+    }
+
+    public void setComments(List<CommentResp> comments) {
+        this.comments = comments;
+    }
+
+    public List<CommentResp> getComments() {
+        return comments;
+    }
+
+
+
+    public <T> void setOptions(List options) {
+        this.options = options;
+    }
+
+    public List getOptions() {
+        return options;
+    }
+
+    public void setReviewCount(Long reviewCount) {
+        this.reviewCount = reviewCount;
+    }
+
+    public Long getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setFixedPassExpiryDate(LocalDate fixedPassExpiryDate) {
+
+        this.fixedPassExpiryDate = fixedPassExpiryDate;
+    }
+
+    public LocalDate getFixedPassExpiryDate() {
+        return fixedPassExpiryDate;
+    }
+
+    public void setPassValidForDays(Long passValidForDays) {
+        this.passValidForDays = passValidForDays;
+    }
+
+    public Long getPassValidForDays() {
+        return passValidForDays;
+    }
+
+    public void setPassExpiry(EnumPassExpiry passExpiry) {
+        this.passExpiry = passExpiry;
+    }
+
+    public EnumPassExpiry getPassExpiry() {
+        return passExpiry;
+    }
+
+    public void setPassCapacityType(EnumPassCapacity passCapacityType) {
+        this.passCapacityType = passCapacityType;
+    }
+
+    public EnumPassCapacity getPassCapacityType() {
+        return passCapacityType;
+    }
+
+    public void setPassCapacity(Long passCapacity) {
+        this.passCapacity = passCapacity;
+    }
+
+    public Long getPassCapacity() {
+        return passCapacity;
+    }
+
+    public void withSupplier(EntityModel supplier) {
+
+        this.setSupplier(supplier);
+        this.setShowSupplier(true);
+
+
+    }
+
+    public void setShowSupplier(Boolean showSupplier) {
+        this.showSupplier = showSupplier;
+    }
+
+    public Boolean isShowSupplier() {
+        return showSupplier;
+    }
+
+    public void setDesc_long(String desc_long) {
+        this.desc_long = desc_long;
+    }
+
+    public String getDesc_long() {
+        return desc_long;
+    }
+
+    public <R> void setZones(List zones) {
+        this.zones = zones;
+    }
+
+    public List getZones() {
+        return zones;
+    }
+
+    public void setAvailability_type(EnumAvailabilityType availability_type) {
+        this.availability_type = availability_type;
+    }
+
+    public EnumAvailabilityType getAvailability_type() {
+        return availability_type;
+    }
+
+    public <T> void setBooking(EntityModel booking) {
+        this.booking = booking;
+    }
+
+    public EntityModel getBooking() {
+        return booking;
+    }
+
+    public void setYouLike(List<EntityModel> youLike) {
+        this.youLike = youLike;
+    }
+
+    public List<EntityModel> getYouLike() {
+        return youLike;
+    }
+
+    public void setMetrics(MetricsDTO metrics) {
+        this.metrics = metrics;
+    }
+
+    public MetricsDTO getMetrics() {
+        return metrics;
+    }
+
+    public <R> void setExtras(List extras) {
+        this.extras = extras;
+    }
+
+    public List getExtras() {
+        return extras;
+    }
+
+    public void setPackage(Boolean aPackage) {
+        this.package_ = aPackage;
+    }
+
+    public Boolean getPackage() {
+        return package_;
+    }
+
+    public <R> void setBundles(List bundles) {
+        this.bundles = bundles;
+    }
+
+    public List getBundles() {
+        return bundles;
+    }
+
+    public void setPriceRange(ProductPriceRangeVo priceRange) {
+        this.priceRange = priceRange;
+    }
+
+    public ProductPriceRangeVo getPriceRange() {
+        return priceRange;
+    }
+
+
+    public static class AvailabilityTab {
 
         private List<BookingRulePojo> ranges;
         private Map parameter;
 
-        public static Availability from(List<BookingRule> bookingRuleList) {
-            Availability availability = new Availability();
+        public static AvailabilityTab from(List<BookingRule> bookingRuleList) {
+            AvailabilityTab availability = new AvailabilityTab();
             availability.setRanges(bookingRuleList.stream().map(e->{
                 BookingRulePojo bookingRulePojo = new BookingRulePojo();
                 bookingRulePojo.setBookable(e.getBookable());
@@ -481,18 +962,29 @@ private String code;
 
 
 
-
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ComponentTap {
 
         private List<ComponentResp> components;
 
+        private List<EntityModel> prices;
+        private Map parameterList;
+        private List<ProductPojo.Royalty> royalties;
+
+        public List<EntityModel> getPrices() {
+            return prices;
+        }
+
+        public void setPrices(List<EntityModel> prices) {
+            this.prices = prices;
+        }
+
         public static ComponentTap from(List<Component> bookingRuleList) {
             ComponentTap availability = new ComponentTap();
 
-            availability.setComponents(bookingRuleList.stream().map(e->{
+/*            availability.setComponents(bookingRuleList.stream().map(e->{
                 return ComponentResp.from(e);
-            }).collect(Collectors.toList()));
+            }).collect(Collectors.toList()));*/
 
             return availability;
         }
@@ -504,5 +996,276 @@ private String code;
         public void setComponents(List<ComponentResp> components) {
             this.components = components;
         }
+
+        public <V, K> void setParameterList(Map parameterList) {
+            this.parameterList = parameterList;
+        }
+
+        public Map getParameterList() {
+            return parameterList;
+        }
+
+        public void setRoyalties(List<ProductPojo.Royalty> royalties) {
+            this.royalties = royalties;
+        }
+
+        public List<ProductPojo.Royalty> getRoyalties() {
+            return royalties;
+        }
     }
+
+
+
+
+
+
+
+
+
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class RightTap {
+
+        private List<ComponentResp> components;
+
+        private List<EntityModel> prices;
+        private Map parameterList;
+        private List<ProductPojo.Royalty> royalties;
+
+        public List<EntityModel> getPrices() {
+            return prices;
+        }
+
+        public void setPrices(List<EntityModel> prices) {
+            this.prices = prices;
+        }
+
+        public static RightTap from(List<Component> bookingRuleList) {
+            RightTap availability = new RightTap();
+
+/*            availability.setComponents(bookingRuleList.stream().map(e->{
+                return ComponentResp.from(e);
+            }).collect(Collectors.toList()));*/
+
+            return availability;
+        }
+
+        public List<ComponentResp> getComponents() {
+            return components;
+        }
+
+        public void setComponents(List<ComponentResp> components) {
+            this.components = components;
+        }
+
+        public <V, K> void setParameterList(Map parameterList) {
+            this.parameterList = parameterList;
+        }
+
+        public Map getParameterList() {
+            return parameterList;
+        }
+
+        public void setRoyalties(List<ProductPojo.Royalty> royalties) {
+            this.royalties = royalties;
+        }
+
+        public List<ProductPojo.Royalty> getRoyalties() {
+            return royalties;
+        }
+    }
+
+
+
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class RuleTap {
+        private EnumConfirmationType confirmationType;
+
+        private RestrictionReq restriction;
+        private List<TermReq> terms;
+
+        public RestrictionReq getRestriction() {
+            return restriction;
+        }
+
+        public void setRestriction(RestrictionReq restriction) {
+            this.restriction = restriction;
+        }
+
+        private Map parameterList;
+
+        private List tips;
+
+
+        public static RuleTap from(Product bookingRuleList) {
+            RuleTap availability = new RuleTap();
+
+            availability.setConfirmationType(bookingRuleList.getRule_confirmationType());
+
+            RestrictionReq restrictionReq = new RestrictionReq();
+            restrictionReq.setMaxAge(bookingRuleList.getRestriction_maxQuantity());
+            restrictionReq.setMinQuantity(bookingRuleList.getRestriction_minQuantity());
+            restrictionReq.setMaxQuantity(bookingRuleList.getRestriction_maxQuantity());
+       //     restrictionReq.setPassenger_identity_documents_required(bookingRuleList.getRestriction_passenger_identity_documents_required());
+            restrictionReq.setIdRequired(bookingRuleList.getRestriction_passenger_identity_documents_required());
+
+            availability.setRestriction(restrictionReq);
+
+
+/*            availability.setComponents(bookingRuleList.stream().map(e->{
+                return ComponentResp.from(e);
+            }).collect(Collectors.toList()));*/
+
+            return availability;
+        }
+
+
+        public <V, K> void setParameterList(Map parameterList) {
+            this.parameterList = parameterList;
+        }
+
+        public Map getParameterList() {
+            return parameterList;
+        }
+
+
+        public <T> void setTips(List tips) {
+            this.tips = tips;
+        }
+
+        public List getTips() {
+            return tips;
+        }
+
+        public void setConfirmationType(EnumConfirmationType confirmationType) {
+            this.confirmationType = confirmationType;
+        }
+
+        public EnumConfirmationType getConfirmationType() {
+            return confirmationType;
+        }
+
+
+        public <R> void setTerms(List<TermReq> terms) {
+
+            this.terms = terms;
+        }
+
+        public List<TermReq> getTerms() {
+            return terms;
+        }
+    }
+
+
+
+
+    public static class Availability {
+
+        private EnumAvailabilityType type;
+        private String text;
+        private List<AvailabilityCalendarVO> bookingAvailability;
+        private LocalDate fixedPassExpiryDate;
+        private Long passValidForDays;
+        private EnumPassExpiry passExpiry;
+        private EnumPassCapacity passCapacityType;
+        private Long passCapacity;
+
+
+        public static Availability from(Product product) {
+
+
+            Availability availability = new Availability();
+            availability.setType(product.getAvailability_type());
+
+
+            if(product.getAvailability_type().equals(EnumAvailabilityType.PASS)){
+
+                if(product.getPassExpiry().equals(EnumPassExpiry.FIXED_DATE)){
+                    availability.setText(String.format("有效期截至: %s", product.getFixedPassExpiryDate().toString()));
+                }
+                if(product.getPassExpiry().equals(EnumPassExpiry.RELATIVE_DATE)){
+                    availability.setText(String.format("购买后: %s 天有效", product.getPassValidForDays()));
+                }
+                if(product.getPassExpiry().equals(EnumPassExpiry.NEVER)){
+                    availability.setText(String.format("一直有效"));
+                }
+            }
+
+
+
+            return availability;
+        }
+
+
+
+        public void setType(EnumAvailabilityType type) {
+            this.type = type;
+        }
+
+        public EnumAvailabilityType getType() {
+            return type;
+        }
+
+        public void setText(String text) {
+
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setBookingAvailability(List<AvailabilityCalendarVO> bookingAvailability) {
+
+            this.bookingAvailability = bookingAvailability;
+        }
+
+        public List<AvailabilityCalendarVO> getBookingAvailability() {
+            return bookingAvailability;
+        }
+
+        public void setFixedPassExpiryDate(LocalDate fixedPassExpiryDate) {
+            this.fixedPassExpiryDate = fixedPassExpiryDate;
+        }
+
+        public LocalDate getFixedPassExpiryDate() {
+            return fixedPassExpiryDate;
+        }
+
+        public void setPassValidForDays(Long passValidForDays) {
+
+            this.passValidForDays = passValidForDays;
+        }
+
+        public Long getPassValidForDays() {
+            return passValidForDays;
+        }
+
+        public void setPassExpiry(EnumPassExpiry passExpiry) {
+            this.passExpiry = passExpiry;
+        }
+
+        public EnumPassExpiry getPassExpiry() {
+            return passExpiry;
+        }
+
+        public void setPassCapacityType(EnumPassCapacity passCapacityType) {
+            this.passCapacityType = passCapacityType;
+        }
+
+        public EnumPassCapacity getPassCapacityType() {
+            return passCapacityType;
+        }
+
+        public void setPassCapacity(Long passCapacity) {
+            this.passCapacity = passCapacity;
+        }
+
+        public Long getPassCapacity() {
+            return passCapacity;
+        }
+    }
+
+
 }

@@ -1,21 +1,14 @@
 package com.lt.dom.serviceOtc;
 
 
-import com.lt.dom.OctResp.*;
-import com.lt.dom.controllerOct.*;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
-import com.lt.dom.error.username_already_exists_errorException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.UserPojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
-import com.lt.dom.vo.GuideSummaryVo;
-import com.lt.dom.vo.UserVo;
 import org.javatuples.Pair;
-import org.springdoc.webmvc.core.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +16,6 @@ import javax.validation.Valid;
 import java.util.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class UserServiceImpl {
@@ -63,12 +55,66 @@ public class UserServiceImpl {
     private AssetServiceImpl assetService;
 
 
-    public User createUser(@Valid UserPojo pojo,List<Pair<EnumIdentityType,String>> enumIdentityTypes) {
 
+    public User userAuth(User finalUser, List<Pair<EnumIdentityType,String>> enumIdentityTypes) {
+
+
+
+        enumIdentityTypes.forEach(x->{
+            UserAuthority userAuthority = new UserAuthority();
+            userAuthority.setUser_id(finalUser.getId());
+
+
+            EnumIdentityType type = x.getValue0();
+            String identifier = x.getValue1();
+            userAuthority.setIdentityType(type);
+            switch (type){
+                case phone:
+                    userAuthority.setIdentifier(identifier);
+                    userAuthority.setCredential(passwordEncoder.encode("123"));
+
+                    userAuthorityRepository.save(userAuthority);
+                    break;
+                case weixin:
+                    userAuthority.setIdentifier(identifier);
+                    userAuthority.setCredential(passwordEncoder.encode("123"));
+
+                    userAuthorityRepository.save(userAuthority);
+                    break;
+                case identity_card:
+                    userAuthority.setIdentifier(identifier);
+                    userAuthority.setCredential(passwordEncoder.encode("123"));
+
+                    userAuthorityRepository.save(userAuthority);
+                    break;
+            }
+
+
+
+        });
+
+        return finalUser;
+    }
+
+
+
+    public User createUser(@Valid UserPojo pojo, List<Pair<EnumIdentityType,String>> enumIdentityTypes) {
+
+
+
+        EnumIdentityType enumIdentityType = enumIdentityTypes.get(0).getValue0();
+        String identifier_ = enumIdentityTypes.get(0).getValue1();
+        Optional<UserAuthority> optionalUserAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(enumIdentityType,identifier_);
+        if(optionalUserAuthority.isPresent()){
+            throw new ExistException(Enumfailures.username_already_exists_error, enumIdentityType+" 已经注册" + identifier_);
+
+        }
+
+/*
         Optional<User> optional = userRepository.findByPhone(pojo.getPhone());
         if(optional.isPresent()){
             throw new ExistException(Enumfailures.username_already_exists_error, pojo.getPhone()+"手机号已经注册");
-        }
+        }*/
         User user = new User();
 
 
@@ -92,38 +138,15 @@ public class UserServiceImpl {
         user = userRepository.save(user);
 
 
-        User finalUser = user;
-        enumIdentityTypes.forEach(x->{
-            UserAuthority userAuthority = new UserAuthority();
-            userAuthority.setUser_id(finalUser.getId());
-
-            EnumIdentityType type = x.getValue0();
-            String identifier = x.getValue1();
-            switch (type){
-                case phone:
-                    userAuthority.setIdentifier(identifier);
-                    userAuthorityRepository.save(userAuthority);
-                    break;
-                case weixin:
-                    userAuthority.setIdentifier(identifier);
-                    userAuthorityRepository.save(userAuthority);
-                    break;
-                case identity_card:
-                    userAuthority.setIdentifier(identifier);
-                    userAuthorityRepository.save(userAuthority);
-                    break;
-            }
+        user = userAuth(user,enumIdentityTypes);
 
 
-
-        });
-
-
-
-        assetService.newQr(user);
+        assetService.getWithNew(user);
 
         return user;
     }
+
+
 
     //@Transactional
     User createRoleIfNotFound(User user,String name) {
@@ -167,7 +190,41 @@ public class UserServiceImpl {
     }
 
 
+    public void verifyPhone(VerificationToken verificationToken____) {
+        Optional<User> optionalUser = userRepository.findByCode(verificationToken____.getUserCode());
+        if(optionalUser.isPresent()){
+            Optional<User> userList = userRepository.findByPhone(verificationToken____.getPhone());
 
+            if(userList.isPresent()){
+                User user_older = userList.get();
+                user_older.setPhone(null);
+                user_older.setPhoneVerifid(false);
+                userRepository.save(user_older);
+            }
+
+            User user = optionalUser.get();
+            user.setPhoneVerifid(true);
+            user.setPhone(verificationToken____.getPhone());
+            userRepository.save(user);
+
+            Optional<UserAuthority> optionalUserAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,verificationToken____.getPhone());
+
+            if(optionalUserAuthority.isPresent()){
+                UserAuthority userAuthority = optionalUserAuthority.get();
+                userAuthority.setUser_id(user.getId());
+                userAuthorityRepository.save(userAuthority);
+            }else{
+                UserAuthority userAuthority = new UserAuthority();
+                userAuthority.setIdentifier(verificationToken____.getPhone());
+                userAuthority.setIdentityType(EnumIdentityType.phone);
+
+                userAuthority.setCredential(passwordEncoder.encode("123"));
+                userAuthority.setUser_id(user.getId());
+                userAuthorityRepository.save(userAuthority);
+            }
+        }
+
+    }
 }
 
 

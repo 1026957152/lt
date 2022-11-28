@@ -25,4 +25,8 @@ public interface ComponentRepository extends JpaRepository<Component
 
     List<Component> findAllBySubscription(long id);
 
+    void deleteAllByProduct(long id);
+
+    List<Component> findAllByReference(String code);
+
 }

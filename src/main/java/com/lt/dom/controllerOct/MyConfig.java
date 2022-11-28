@@ -3,15 +3,22 @@ package com.lt.dom.controllerOct;
 import com.github.wxpay.sdk.IWXPayDomain;
 import com.github.wxpay.sdk.WXPayConfig;
 import com.github.wxpay.sdk.WXPayConstants;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.*;
 
+@Component
 public class MyConfig extends WXPayConfig {
+
+    // 商户号
+    @Value("${wxpay.cert_path}")
+    private String certPath;
 
     private byte[] certData;
 
     public MyConfig() throws Exception {
-        String certPath = "E:\\work\\dom\\src\\main\\resources\\apiclient_cert.p12";
+   String certPath ="C:\\Users\\1\\IdeaProjects\\lt\\src\\main\\resources\\apiclient_cert.p12";// "E:\\work\\dom\\src\\main\\resources\\apiclient_cert.p12";
         File file = new File(certPath);
         InputStream certStream = new FileInputStream(file);
         this.certData = new byte[(int) file.length()];

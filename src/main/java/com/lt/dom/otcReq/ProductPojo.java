@@ -1,24 +1,37 @@
 package com.lt.dom.otcReq;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.OctResp.AttributeResp;
-import com.lt.dom.otcenum.*;
+import com.lt.dom.OctResp.RestrictionResp;
+import com.lt.dom.oct.PricingType;
 import com.lt.dom.otcReq.product.ProductGiftVoucherPojo;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.vo.ByHour;
 import com.lt.dom.vo.ByItem;
 import com.lt.dom.vo.ByPerson;
 import com.lt.dom.vo.Fixed;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductPojo {
 
+    public RestrictionResp getRestriction() {
+        return restriction;
+    }
+
+    public void setRestriction(RestrictionResp restriction) {
+        this.restriction = restriction;
+    }
+
+
+    @Valid
+    private RestrictionResp restriction;
     private Boolean free = false;
 
 
@@ -39,8 +52,27 @@ public class ProductPojo {
     @Size(max = 100)
     private String name_long;
 
-    @Size(max = 100)
+    @Size(max = 2000)
     private String long_desc;
+    @Size(max = 100)
+    private String desc_short;
+
+    public String getDesc_short() {
+        return desc_short;
+    }
+
+    public void setDesc_short(String desc_short) {
+        this.desc_short = desc_short;
+    }
+
+
+    @Valid
+    @NotNull
+    private List<EnumTags> tags;
+
+    @NotNull
+    @JsonProperty("privacyLevel")
+    private EnumPrivacyLevel privacyLevel;
 
     public EnumAvailabilityType getAvailability_type() {
         return availability_type;
@@ -80,6 +112,16 @@ public class ProductPojo {
 
     private Boolean is_refund;
     private String note;
+    private Boolean availabilityRequired;
+
+    public Boolean getAvailabilityRequired() {
+        return availabilityRequired;
+    }
+
+    public void setAvailabilityRequired(Boolean availabilityRequired) {
+        this.availabilityRequired = availabilityRequired;
+    }
+
     private EnumValidateWay validate_way = EnumValidateWay.none;
 
     public EnumValidateWay getValidate_way() {
@@ -91,7 +133,7 @@ public class ProductPojo {
     }
 
     @Valid
-    @Size(min=1)
+   // @Size(min=1)
     private List<Royalty> royalties;
 
     public List<Royalty> getRoyalties() {
@@ -197,13 +239,168 @@ public class ProductPojo {
         this.shipping_rate = shipping_rate;
     }
 
+    public List<EnumTags> getTags() {
+        return tags;
+    }
 
+    public void setTags(List<EnumTags> tags) {
+        this.tags = tags;
+    }
+
+    public EnumPrivacyLevel getPrivacyLevel() {
+        return privacyLevel;
+    }
+
+    public void setPrivacyLevel(EnumPrivacyLevel privacyLevel) {
+        this.privacyLevel = privacyLevel;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Price {
-        private String nick_name;
+
+        private Long id;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public static Price from(PricingType e) {
+
+            Price price1 = new Price();
+            price1.setName(e.getNick_name());
+            price1.setByPersonType(e.getBy());
+            price1.setType(e.getType());
+            price1.setActive(e.getActive());
+            price1.setId(e.getId());
+            ByPerson  byPerson1 = new ByPerson();
+            byPerson1.setPrice(e.getPrice());
+            byPerson1.setRetail(e.getRetail());
+            byPerson1.setOriginal(e.getOriginal());
+            byPerson1.setNet(e.getNet());
+
+            byPerson1.setGroupType(e.getGroup_type());
+            price1.setByPerson(byPerson1);
+
+
+
+            Restriction restriction1 = new Restriction();
+            restriction1.setIdRequired(e.getRestriction_IdRequired());
+            restriction1.setMinAge(e.getRestriction_MinAge());
+            restriction1.setMaxAge(e.getRestriction_MaxAge());
+            restriction1.setMaxQuantity(e.getRestriction_MaxQuantity());
+            restriction1.setMinQuantity(e.getRestriction_MinQuantity());
+
+            restriction1.setPaxCount(e.getPaxCount());
+          //  restriction1.setAccompaniedBy(e.getAccompaniedBy());
+
+            price1.setRestriction(restriction1);
+
+
+            return price1;
+        }
+
+        public Restriction getRestriction() {
+            return restriction;
+        }
+
+        public void setRestriction(Restriction restriction) {
+            this.restriction = restriction;
+        }
+
+        private Restriction restriction;
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setActive(Boolean active) {
+            this.active = active;
+        }
+
+        public Boolean getActive() {
+            return active;
+        }
+
+
+        public static class Restriction {
+
+
+            @JsonProperty("minAge")
+            private Integer minAge;
+            @JsonProperty("maxAge")
+            private Integer maxAge;
+            @JsonProperty("idRequired")
+            private Boolean idRequired;
+            @JsonProperty("minQuantity")
+            private Integer minQuantity;
+            @JsonProperty("maxQuantity")
+            private Integer maxQuantity;
+            @JsonProperty("paxCount")
+            private Integer paxCount;
+            @JsonProperty("accompaniedBy")
+            private List<String> accompaniedBy;
+
+            public Integer getMinAge() {
+                return minAge;
+            }
+
+            public void setMinAge(Integer minAge) {
+                this.minAge = minAge;
+            }
+
+            public Integer getMaxAge() {
+                return maxAge;
+            }
+
+            public void setMaxAge(Integer maxAge) {
+                this.maxAge = maxAge;
+            }
+
+            public Boolean getIdRequired() {
+                return idRequired;
+            }
+
+            public void setIdRequired(Boolean idRequired) {
+                this.idRequired = idRequired;
+            }
+
+            public Integer getMinQuantity() {
+                return minQuantity;
+            }
+
+            public void setMinQuantity(Integer minQuantity) {
+                this.minQuantity = minQuantity;
+            }
+
+            public Integer getMaxQuantity() {
+                return maxQuantity;
+            }
+
+            public void setMaxQuantity(Integer maxQuantity) {
+                this.maxQuantity = maxQuantity;
+            }
+
+            public Integer getPaxCount() {
+                return paxCount;
+            }
+
+            public void setPaxCount(Integer paxCount) {
+                this.paxCount = paxCount;
+            }
+
+            public List<String> getAccompaniedBy() {
+                return accompaniedBy;
+            }
+
+            public void setAccompaniedBy(List<String> accompaniedBy) {
+                this.accompaniedBy = accompaniedBy;
+            }
+        }
+            private String name;
         @NotNull
         private EnumProductPricingType type;
         @NotNull
-        private EnumProductPricingTypeByPerson by;
+        private EnumProductPricingTypeByPerson byPersonType;
         private ByHour byHour;
         private ByItem byItem;
         private ByPerson byPerson;
@@ -227,12 +424,12 @@ public class ProductPojo {
             this.rights = rights;
         }
 
-        public String getNick_name() {
-            return nick_name;
+        public String getName() {
+            return name;
         }
 
-        public void setNick_name(String nick_name) {
-            this.nick_name = nick_name;
+        public void setName(String name) {
+            this.name = name;
         }
 
         @Override
@@ -247,12 +444,12 @@ public class ProductPojo {
             this.type = type;
         }
 
-        public EnumProductPricingTypeByPerson getBy() {
-            return by;
+        public EnumProductPricingTypeByPerson getByPersonType() {
+            return byPersonType;
         }
 
-        public void setBy(EnumProductPricingTypeByPerson by) {
-            this.by = by;
+        public void setByPersonType(EnumProductPricingTypeByPerson byPersonType) {
+            this.byPersonType = byPersonType;
         }
 
         public ByHour getByHour() {
@@ -464,44 +661,21 @@ public class ProductPojo {
 
 
 
-    @Valid
-    public Pass pass;
-
-    public Pass getPass() {
-        return pass;
-    }
-
-    public void setPass(Pass pass) {
-        this.pass = pass;
-    }
-
-    public static class Pass {
-        @Size(min = 1,max = 30)
-        private List<Royalty> royalties;
-        private Iterable<Long> rights;
-
-        public List<Royalty> getRoyalties() {
-            return royalties;
-        }
-
-
-
-        public void setRights(Iterable<Long> rights) {
-            this.rights = rights;
-        }
-    }
-
-
     public static class Royalty {
 
-        @NotNull
+
         private Long component_right;
         private int amount;
         private int percent;
 
+        private EnumRatePlaneCommissionType ratePlaneCommissionType;
+
+
         @NotNull
         private EnumValidateWay validate_way = EnumValidateWay.none;
         private EnumRoyaltyCollection_method collection_method;
+        private Long id;
+        private Long limit_quantity;
 
         public EnumValidateWay getValidate_way() {
             return validate_way;
@@ -533,6 +707,22 @@ public class ProductPojo {
 
         public void setCollection_method(EnumRoyaltyCollection_method collection_method) {
             this.collection_method = collection_method;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setLimit_quantity(Long limit_quantity) {
+            this.limit_quantity = limit_quantity;
+        }
+
+        public Long getLimit_quantity() {
+            return limit_quantity;
         }
     }
 

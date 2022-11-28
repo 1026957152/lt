@@ -61,6 +61,8 @@ private String code;
         chargeResp.setBody(x.getBody());
         chargeResp.setTransactionNo(x.getTransactionNo());
         chargeResp.setTransactionNo(x.getTransactionNo());
+        chargeResp.setAmountRefunded(x.getAmountRefunded());
+
         return chargeResp;
     }
 

@@ -1,14 +1,11 @@
 package com.lt.dom.serviceOtc;
 
 
-import cn.hutool.core.util.ReUtil;
 import com.google.gson.Gson;
 import com.lt.dom.OctResp.*;
-import com.lt.dom.controllerOct.OpenidRestController;
 import com.lt.dom.controllerOct.RequestFuckRestController;
-import com.lt.dom.error.BookNotFoundException;
-import com.lt.dom.error.Missing_documentException;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.MerchantsSettledEdit;
 import com.lt.dom.otcReq.MerchantsSettledReq;
 import com.lt.dom.otcReq.RequestReq;
 import com.lt.dom.otcReq.ReviewReq;
@@ -20,14 +17,13 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.nonNull;
+import static com.lt.dom.serviceOtc.JsonParse.GSON;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -150,9 +146,8 @@ public class ApplyForApprovalServiceImpl {
 
         if(request.getType().equals(EnumRequestType.Merchants_settled)){
 
-            Gson gson = new Gson();
 
-            MerchantsSettledReq requestMerchants_settled =  gson.fromJson(request.getAdditional_info(), MerchantsSettledReq.class);
+            MerchantsSettledEdit requestMerchants_settled =  GSON.fromJson(request.getAdditional_info(), MerchantsSettledEdit.class);
 
 
             marchertSettledService.merchants_settled(requestMerchants_settled,request.getOwner());
@@ -160,6 +155,7 @@ public class ApplyForApprovalServiceImpl {
 
         request.setStatus(EnumRequestStatus.APPROVE);
 
+        request.setActive(false);
         request = requestRepository.save(request);
 
         Review review = new Review();
@@ -175,27 +171,40 @@ public class ApplyForApprovalServiceImpl {
 
 
 
-    public void create(EnumRequestType merchants_settled, @Valid MerchantsSettledReq merchantsSettledReq, User user) {
-        Request request = new Request();
-        request.setCode(idGenService.requestNo());
-        if(merchants_settled.equals(EnumRequestType.Merchants_settled)){
-            request.setType(EnumRequestType.Merchants_settled);
-        }
+    public MerchantsSettledEdit update(Request request,  @Valid MerchantsSettledEdit merchantsSettledReq) {
 
-        Gson gson = new Gson();
-        request.setAdditional_info(gson.toJson(merchantsSettledReq));
+
+
+
+
+        request.setAdditional_info(GSON.toJson(merchantsSettledReq));
         request.setStatus(EnumRequestStatus.Pending);
-        request.setApplied_at(LocalDateTime.now());
-        request.setOwner(user.getId());
+
+
         request = requestRepository.save(request);
 
+
+        if(merchantsSettledReq.getBussiness_license_image()!= null){
+            fileStorageService.updateFromTempDocument(request.getCode(),merchantsSettledReq.getBussiness_license_image(),EnumDocumentType.business_license);
+        }
+        if(merchantsSettledReq.getLicense_image()!= null){
+            fileStorageService.updateFromTempDocument(request.getCode(),merchantsSettledReq.getLicense_image(),EnumDocumentType.license);
+        }
+        if(merchantsSettledReq.getLiability_insurance_image()!= null){
+            fileStorageService.updateFromTempDocument(request.getCode(),merchantsSettledReq.getLiability_insurance_image(),EnumDocumentType.liability_insurance);
+        }
+        if(merchantsSettledReq.getLicense_for_opening_bank_account_image()!= null){
+            fileStorageService.updateFromTempDocument(request.getCode(),merchantsSettledReq.getLicense_for_opening_bank_account_image(),EnumDocumentType.license_for_opening_bank_account);
+        }
+
+        return merchantsSettledReq;
 
     }
 
 
 
 
-    public Request create(EnumRequestType merchants_settled, TourBooking tourBooking, User user) {
+    public Request update(EnumRequestType merchants_settled, TourBooking tourBooking, User user) {
         Request request = new Request();
         request.setCode(idGenService.requestNo());
         if(merchants_settled.equals(EnumRequestType.tour_approve)){
@@ -243,13 +252,13 @@ public class ApplyForApprovalServiceImpl {
             MerchantsSettledReq merchantsSettledReq = gson.fromJson(request.getAdditional_info(), MerchantsSettledReq.class);
 
 
-            Map<EnumDocumentType,TempDocument> enumDocumentTypeTempDocumentMap = fileStorageService.loadTempDocument(Arrays.asList(
+/*            Map<EnumDocumentType,TempDocument> enumDocumentTypeTempDocumentMap = fileStorageService.loadTempDocument(Arrays.asList(
                     Pair.with(EnumDocumentType.business_license,merchantsSettledReq.getBussiness_license()),
                     Pair.with(EnumDocumentType.license,merchantsSettledReq.getLicense_image()),
                     Pair.with(EnumDocumentType.liability_insurance,merchantsSettledReq.getLiability_insurance_image()),
                     Pair.with(EnumDocumentType.license_for_opening_bank_account,merchantsSettledReq.getLicense_for_opening_bank_account())
-            ));
-            MerchantsSettledReqResp merchantsSettledReqResp1 = MerchantsSettledReqResp.from(merchantsSettledReq, enumDocumentTypeTempDocumentMap);
+            ));*/
+            MerchantsSettledReqResp merchantsSettledReqResp1 = MerchantsSettledReqResp.from(merchantsSettledReq);
 
 
             RequestResp requestResp = RequestResp.fromWithMearchantSettled(request, reviewers,merchantsSettledReqResp1);
@@ -290,13 +299,7 @@ public class ApplyForApprovalServiceImpl {
             if(request.getType().equals(EnumRequestType.Merchants_settled)){
 
 
-
-
-
-
-
                 RequestResp requestResp = Merchants_settled_images(request,reviewers);
-
 
                 //好丑陋的 代码
                 SupplierResp supplierResp = SupplierResp.from(requestResp);
@@ -329,25 +332,16 @@ public class ApplyForApprovalServiceImpl {
                 return Optional.of(entityModel_);
             }
 
-
-
-
-
-
-
-
         }
-
-
-
             return Optional.empty();
-
-
-
     }
+
+
+
 
     RequestResp Merchants_settled_images(Request request,List<Reviewer> reviewers){
         MerchantsSettledReq merchantsSettledReq = MerchantsSettledReqResp.fromJsonString(request.getAdditional_info());
+/*
 
         Map<EnumDocumentType,TempDocument> enumDocumentTypeTempDocumentMap = fileStorageService.loadTempDocument(Arrays.asList(
                 Pair.with(EnumDocumentType.business_license,merchantsSettledReq.getBussiness_license()),
@@ -356,8 +350,12 @@ public class ApplyForApprovalServiceImpl {
                 Pair.with(EnumDocumentType.license_for_opening_bank_account,merchantsSettledReq.getLicense_for_opening_bank_account())
         ));
 
+*/
 
-        MerchantsSettledReqResp merchantsSettledReqResp1 = MerchantsSettledReqResp.from(merchantsSettledReq, enumDocumentTypeTempDocumentMap);
+        MerchantsSettledReqResp merchantsSettledReqResp1 = MerchantsSettledReqResp.from(merchantsSettledReq);
+
+
+
         RequestResp requestResp = RequestResp.fromWithMearchantSettled(request,reviewers,merchantsSettledReqResp1);
         merchantsSettledReq.setUser_phone("");
         merchantsSettledReq.setUser_name("");

@@ -11,4 +11,6 @@ public interface SeatRepository extends JpaRepository<Seat
 
 
 	List<Seat> findBySeatingLayoutId(long id);
+
+	List<Seat> findAllByZone(long id);
 }

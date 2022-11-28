@@ -14,4 +14,8 @@ public interface RequestRepository extends JpaRepository<Request
     List<Request> findByOwner(long id);
 
     Optional<Request> findByTypeAndIdId(EnumRequestType tour_approve, String code);
+
+    Optional<Request> findByOwnerAndType(Long user_id, EnumRequestType merchants_settled);
+
+    Optional<Request> findByOwnerAndTypeAndActive(Long user_id, EnumRequestType merchants_settled, boolean b);
 }

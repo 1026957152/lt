@@ -35,6 +35,7 @@ public class ValueListReq {
     private List<Long> item_ids;
     private String type_text;
     private EnumValueType item_value_type;
+    private boolean sortable;
 
 
     @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
@@ -115,5 +116,13 @@ public class ValueListReq {
 
     public EnumValueType getItem_value_type() {
         return item_value_type;
+    }
+
+    public void setSortable(boolean sortable) {
+        this.sortable = sortable;
+    }
+
+    public boolean isSortable() {
+        return sortable;
     }
 }

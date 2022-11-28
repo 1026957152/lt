@@ -8,6 +8,7 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.util.CodeConfig;
 import org.javatuples.Pair;
+import org.javatuples.Quartet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,9 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
+import static com.lt.dom.serviceOtc.JsonParse.GSON;
 import static org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED;
 
 
@@ -30,7 +34,7 @@ public class VoucherServiceImpl {
     @Autowired
     private CampaignRepository campaignRepository;
     @Autowired
-    private VoucherAsyncServiceImpl voucherAsyncService;
+    private VoucherTicketRepository voucherTicketRepository;
 
     @Autowired
     private VoucherRepository voucherRepository;
@@ -41,6 +45,24 @@ public class VoucherServiceImpl {
 
     @Autowired
     private AssetServiceImpl assetService;
+
+
+
+    @Autowired
+    private ComponentRepository componentRepository;
+
+
+    @Autowired
+    private AttractionRepository attractionRepository;
+
+
+    @Autowired
+    private ProductServiceImpl productService;
+
+
+
+    @Autowired
+    private ComponentRightServiceImpl componentRightService;
 
 
 
@@ -116,7 +138,7 @@ public class VoucherServiceImpl {
         campaign.setStatus(EnumCampaignStatus.Draft);
         campaign = campaignRepository.saveAndFlush(campaign);
 
-        assetService.newQr(campaign);
+        assetService.getWithNew(campaign);
 
 
 
@@ -201,4 +223,141 @@ public class VoucherServiceImpl {
 
         voucherRepository.save(voucher);
     }
+    public void update(VoucherTicket voucher, EnumEvents events) {
+
+        voucherTicketRepository.save(voucher);
+    }
+
+    public List<VoucherTicket> createVoucher(Reservation reservation, LineItem bookingProduct, User payer, int i) {
+
+
+
+        List<VoucherTicket> vouchers = LongStream.range(0,bookingProduct.getQuantity()).boxed().map(x->{
+            VoucherTicket voucher = new VoucherTicket();
+           // String no = VoucherCodes.generate(config);
+/*            System.out.println("Execute method asynchronously. "
+                    + no);*/
+
+            voucher.setBooking(reservation.getId());
+            voucher.setUser(payer.getId());
+
+            voucher.setCode(idGenService.ticketCode());
+            voucher.setType(EnumVoucherType.TICKET);
+
+            voucher.setStatus(EnumVoucherStatus.Created);
+            voucher.setPublished(false);
+
+            voucher.setActive(false);
+            return voucher;
+        }).collect(Collectors.toList());
+
+        vouchers = voucherTicketRepository.saveAll(vouchers);
+        return vouchers;
+    }
+
+
+    public void createVoucherBig(Reservation reservation, List<LineItem> lineItemList, User payer, int i) {
+
+/*
+        VoucherTicket voucher_voucher = new VoucherTicket();
+        voucher_voucher.setBooking(reservation.getId());
+        voucher_voucher.setUser(payer.getId());
+        voucher_voucher.setCode(idGenService.ticketCode());
+        voucher_voucher.setType(EnumVoucherType.VOUCHER);
+        voucher_voucher.setStatus(EnumVoucherStatus.Created);
+        voucher_voucher.setPublished(false);
+        voucher_voucher.setActive(false);
+        voucher_voucher = voucherTicketRepository.save(voucher_voucher);
+
+*/
+
+
+
+
+
+
+  //      List<ComponentVounch> componentVounchList = createComponentVounch(reservation.getId(),componentRightList,user);
+
+
+
+
+
+
+        VoucherTicket finalVoucher_voucher_ =null;// voucher_voucher;
+        lineItemList.stream().forEach(bookingProduct -> {
+
+
+            if(!bookingProduct.getLineType().equals(EnumLineType.Showtime)){
+
+                return;
+            }
+            Quartet<Zone,Movie,Theatre,Sku> triplet =  productService.showTime(bookingProduct.getSku());
+
+            Zone zone = triplet.getValue0();
+            Movie movie = triplet.getValue1();
+            Theatre theatre = triplet.getValue2();
+            Sku sku = triplet.getValue3();
+
+            List<Component> componentRightList = componentRepository.findAllByProduct(bookingProduct.getProduct());
+
+
+            List<VoucherTicket> vouchers = LongStream.range(0, bookingProduct.getQuantity()).boxed().map(x -> {
+                        VoucherTicket voucher = new VoucherTicket();
+                        // String no = VoucherCodes.generate(config);
+/*            System.out.println("Execute method asynchronously. "
+                    + no);*/
+
+                        voucher.setBooking(reservation.getId());
+                        voucher.setUser(payer.getId());
+
+
+
+
+                        voucher.setLable(movie.getName());
+
+
+
+                VoucherTicket.Showtime showtime = new VoucherTicket.Showtime();
+                showtime.setEventDate(LocalDate.now());
+                showtime.setVenue(theatre.getId());
+                showtime.setVenueName(theatre.getName());
+                showtime.setSection(zone.getName());
+                showtime.setRow(11);
+                showtime.setSeat(11);
+                voucher.setData_json(GSON.toJson(showtime));
+
+
+                        voucher.setCode(idGenService.ticketCode());
+                        voucher.setType(EnumVoucherType.TICKET);
+
+                        voucher.setStatus(EnumVoucherStatus.Created);
+                        voucher.setPublished(false);
+
+                        voucher.setActive(false);
+                        if(finalVoucher_voucher_!= null){
+                            voucher.setVoucher(finalVoucher_voucher_.getId());
+
+                        }
+                        return voucher;
+                    }).collect(Collectors.toList());
+
+
+            Long limit = 1l;
+
+
+
+            vouchers = voucherTicketRepository.saveAll(vouchers);
+            vouchers.stream().forEach(e->{
+                componentRightService.assingtoTicket(e,componentRightList, limit);
+
+            });
+
+
+                }
+
+        );
+
+
+    }
+
 }

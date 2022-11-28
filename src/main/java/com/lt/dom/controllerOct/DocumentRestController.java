@@ -1,5 +1,6 @@
 package com.lt.dom.controllerOct;
 
+import com.google.gson.Gson;
 import com.lt.dom.OctResp.CampaignResp;
 import com.lt.dom.OctResp.ClainQuotaStatisticsResp;
 import com.lt.dom.OctResp.MessageFileResp;
@@ -7,8 +8,10 @@ import com.lt.dom.config.LtConfig;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.CompaignPojo;
+import com.lt.dom.otcReq.LinkDocumentReq;
 import com.lt.dom.otcReq.QuotaReq;
 import com.lt.dom.otcenum.EnumDocumentType;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.ClainQuotaServiceImpl;
 import com.lt.dom.serviceOtc.FileStorageService;
@@ -205,4 +208,120 @@ public class DocumentRestController {
     }
 
 
+
+
+
+
+
+
+
+
+
+
+
+    @PostMapping(value = "/document/link")
+    public ResponseEntity linkDocument(@RequestBody @Valid LinkDocumentReq linkDocumentReq) {
+
+        Optional<TempDocument> optionalTempDocument = tempDocumentRepository.findByCode(linkDocumentReq.getTempDocumentCode());
+
+
+        if(optionalTempDocument.isEmpty()){
+            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到零时文档");
+
+        }
+
+
+        TempDocument tempDocument = optionalTempDocument.get();
+
+        String document = fileStorageService.saveFromTempDocument(linkDocumentReq.getObjectCode(),linkDocumentReq.getDocumentType(),tempDocument);
+
+
+        return ResponseEntity.ok(document);
+
+    }
+
+    @PutMapping(value = "/document/all")
+    public ResponseEntity updateDocument(@RequestBody  List<Document> documentList) {
+
+
+    //    Document[] doc = new Gson().fromJson("",Document[].class);
+
+        System.out.println("------------------"+documentList.toString());
+ /*       Arrays.stream(doc).map(e->{
+            e.setId(null);
+            return e;
+        });*/
+        documentList = documentRepository.saveAll(documentList);
+          System.out.println("--参数---的值------"+ documentList.toString());
+
+
+
+        return ResponseEntity.ok(documentList);
+
+    }
+    @GetMapping(value = "/document/all")
+    public ResponseEntity getDocumentAll() {
+
+
+        List<Document> documentList = documentRepository.findAll();
+        System.out.println("--参数---的值------"+ documentList.toString());
+
+        //TempDocument tempDocument = optionalTempDocument.get();
+
+        // fileStorageService.saveFromTempDocument(linkDocumentReq.getObjectCode(),linkDocumentReq.getDocumentType(),tempDocument);
+
+
+        return ResponseEntity.ok(documentList);
+
+    }
+    @GetMapping(value = "/document")
+    public ResponseEntity getDocument( LinkDocumentReq linkDocumentReq) {
+
+        System.out.println("--参数---------"+ linkDocumentReq.toString());
+        System.out.println("--参数---的值------"+ linkDocumentReq.getDocumentType().value());
+        List<Document> optionalTempDocument = documentRepository.findAllByTypeAndReference(linkDocumentReq.getDocumentType(),linkDocumentReq.getObjectCode());
+
+
+/*        if(optionalTempDocument.isEmpty()){
+            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到零时文档");
+
+        }*/
+        List<Document> documentList = documentRepository.findAllByReference(linkDocumentReq.getObjectCode());
+        System.out.println("--参数---的值------"+ documentList.toString());
+
+        //TempDocument tempDocument = optionalTempDocument.get();
+
+       // fileStorageService.saveFromTempDocument(linkDocumentReq.getObjectCode(),linkDocumentReq.getDocumentType(),tempDocument);
+
+
+        return ResponseEntity.ok(documentList);
+
+    }
+    @PutMapping(value = "/documents/{id}")
+    public ResponseEntity changeDocument(@PathVariable Long id,@RequestBody LinkDocumentReq linkDocumentReq) {
+
+        System.out.println("--参数---------"+ linkDocumentReq.toString());
+        System.out.println("--参数---的值------"+ linkDocumentReq.getDocumentType().value());
+        Optional<Document> optionalTempDocument = documentRepository.findById(id);
+
+
+       if(optionalTempDocument.isEmpty()){
+            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到零时文档");
+
+        }
+
+        Document document = optionalTempDocument.get();
+        document.setType(linkDocumentReq.getDocumentType());
+
+
+        document   = documentRepository.save(document);
+
+        //TempDocument tempDocument = optionalTempDocument.get();
+
+        // fileStorageService.saveFromTempDocument(linkDocumentReq.getObjectCode(),linkDocumentReq.getDocumentType(),tempDocument);
+
+
+        return ResponseEntity.ok(document);
+
+    }
 }

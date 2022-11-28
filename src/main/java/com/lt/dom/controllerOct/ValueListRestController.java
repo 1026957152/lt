@@ -5,16 +5,17 @@ import com.lt.dom.OctResp.ValueListResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ValueListEditReq;
+import com.lt.dom.otcReq.ValueListItemEidtReq;
 import com.lt.dom.otcReq.ValueListItemReq;
 import com.lt.dom.otcReq.ValueListReq;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
-import com.lt.dom.requestvo.PublishTowhoVo;
+import com.lt.dom.serviceOtc.ProductServiceImpl;
 import com.lt.dom.serviceOtc.ValueListServiceImpl;
+import com.lt.dom.specification.ProductQueryfieldsCriteria;
+import com.lt.dom.specification.ProductSpecification;
 import com.lt.dom.state.ApplicationReviewEvents;
 import com.lt.dom.state.ApplicationReviewStates;
-import com.lt.dom.vo.VoucherPublicationPaymentVo;
-import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,21 +27,15 @@ import org.springframework.hateoas.server.core.EmbeddedWrapper;
 import org.springframework.hateoas.server.core.EmbeddedWrappers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.Message;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.config.StateMachineFactory;
-import org.springframework.statemachine.persist.StateMachinePersister;
-import org.springframework.statemachine.state.State;
-import org.springframework.statemachine.support.DefaultStateMachineContext;
-import org.springframework.statemachine.support.StateMachineInterceptorAdapter;
-import org.springframework.statemachine.transition.Transition;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
+import static org.springframework.data.jpa.domain.Specification.where;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -60,15 +55,33 @@ public class ValueListRestController {
     private ValueListRepository valueListRepository;
 
     @Autowired
+    private MediaRepository mediaRepository;
+
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+
+
+    @Autowired
     private SupplierRepository supplierRepository;
     @Autowired
     private ComponentRightRepository componentRightRepository;
     @Autowired
     private ProductRepository productRepository;
-
+    @Autowired
+    private AttractionRepository attractionRepository;
+    @Autowired
+    private MovieRepository movieRepository;
 
     @Autowired
+    private ProductServiceImpl productService;
+
+
+/*
+    @Autowired
     private StateMachineFactory<ApplicationReviewStates, ApplicationReviewEvents> stateMachineFactory;
+*/
 
 
 /*
@@ -162,12 +175,15 @@ public class ValueListRestController {
             throw new BookNotFoundException(VALUE_LIST_ID,"找不到 Value list");
         }
         ValueList valueList = optionalValueList.get();
-        List<ValueListItem> valueListItems = valueListItemRepository.findAllByValueList(valueList.getId());
-
+        List<ValueListItem> valueListItems =valueListService.getByValueList(valueList);
         ValueListResp valueListResp = ValueListResp.from(valueList,valueListItems);
 
         EntityModel<ValueListResp> entityModel = EntityModel.of(valueListResp);
 
+
+        entityModel.add(linkTo(methodOn(ValueListRestController.class).createValueListItem(valueList.getId(),null)).withRel("createValueListItem"));
+        entityModel.add(linkTo(methodOn(ValueListRestController.class).getValueList(valueList.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(ValueListRestController.class).editValueList(valueList.getId(),null)).withRel("edit"));
 
 
 
@@ -290,10 +306,6 @@ public class ValueListRestController {
     public CollectionModel Page_createValueList_getItems( @PathVariable EnumValueListType type) {
 
 
-
-
-
-
         CollectionModel entityModel = null;
 
         if(type.equals(EnumValueListType.city_pass_right_recommendation)){
@@ -326,7 +338,11 @@ public class ValueListRestController {
         }
         if(type.equals(EnumValueListType.High_Quality_Product_recommendation)){
 
-            List<Product> productList = productRepository.findAll();
+
+            ProductQueryfieldsCriteria searchQuery = new ProductQueryfieldsCriteria();
+            searchQuery.setPrivacyLevel(EnumPrivacyLevel.public_);
+            searchQuery.setStatuses(Arrays.asList(EnumProductStatus.active));
+            List<Product>  productList = productService.find(searchQuery);
 
             if(productList.isEmpty()){
                 EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
@@ -341,9 +357,109 @@ public class ValueListRestController {
 
         }
 
+        if(type.equals(EnumValueListType.home_page_attraction_recommendation)){
 
 
+            List<Attraction> productList = attractionRepository.findAllByPrivacyLevel(EnumPrivacyLevel.public_);
 
+            if(productList.isEmpty()){
+                EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+                EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(EnumLongIdResp.class);
+                //Resources<Object> resources = new Resources<>(Arrays.asList(wrapper));
+
+                entityModel  = CollectionModel.of(Arrays.asList(wrapper));
+            }else{
+                entityModel = CollectionModel.of(Attraction.List(productList));
+
+            }
+
+        }
+
+        if(type.equals(EnumValueListType.hero_pass_inspired)){
+
+            List<Media> productList = mediaRepository.findAll();
+
+            if(productList.isEmpty()){
+                EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+                EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(EnumLongIdResp.class);
+                //Resources<Object> resources = new Resources<>(Arrays.asList(wrapper));
+
+                entityModel  = CollectionModel.of(Arrays.asList(wrapper));
+            }else{
+                entityModel = CollectionModel.of(Media.List(productList));
+
+            }
+
+        }
+
+
+        if(type.equals(EnumValueListType.mini_app_carousel)){
+
+            List<Media> productList = mediaRepository.findAll();
+
+            if(productList.isEmpty()){
+                EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+                EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(EnumLongIdResp.class);
+                //Resources<Object> resources = new Resources<>(Arrays.asList(wrapper));
+
+                entityModel  = CollectionModel.of(Arrays.asList(wrapper));
+            }else{
+                entityModel = CollectionModel.of(Media.List(productList));
+
+            }
+
+        }
+
+        if(type.equals(EnumValueListType.city_pass)){
+
+
+            ProductQueryfieldsCriteria searchQuery = new ProductQueryfieldsCriteria();
+            searchQuery.setPrivacyLevel(EnumPrivacyLevel.public_);
+            searchQuery.setStatuses(Arrays.asList(EnumProductStatus.active));
+            searchQuery.setType(EnumProductType.Pass);
+            List<Product>  productList = productService.find(searchQuery);
+
+            if(productList.isEmpty()){
+                EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+                EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(EnumLongIdResp.class);
+                //Resources<Object> resources = new Resources<>(Arrays.asList(wrapper));
+
+                entityModel  = CollectionModel.of(Arrays.asList(wrapper));
+            }else{
+                entityModel = CollectionModel.of(Product.List(productList));
+
+            }
+        }
+        if(type.equals(EnumValueListType.hero_pass)){
+
+            List<Product> productList = productRepository.findAllByType(EnumProductType.Pass);
+
+            if(productList.isEmpty()){
+                EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+                EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(EnumLongIdResp.class);
+                //Resources<Object> resources = new Resources<>(Arrays.asList(wrapper));
+
+                entityModel  = CollectionModel.of(Arrays.asList(wrapper));
+            }else{
+                entityModel = CollectionModel.of(Product.List(productList));
+
+            }
+        }
+        if(type.equals(EnumValueListType.mini_app_movie_recommendation)){
+
+            List<Movie> productList = movieRepository.findAll();
+
+            if(productList.isEmpty()){
+                EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+                EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(EnumLongIdResp.class);
+                //Resources<Object> resources = new Resources<>(Arrays.asList(wrapper));
+
+                entityModel  = CollectionModel.of(Arrays.asList(wrapper));
+            }else{
+                entityModel = CollectionModel.of(Movie.List(productList));
+
+            }
+        }
 
         entityModel.add(linkTo(methodOn(ValueListRestController.class).Page_createValueList_getItems(type)).withSelfRel());
 
@@ -439,8 +555,8 @@ public class ValueListRestController {
         }
         ValueList valueList = optionalValueList.get();
 
+        List<ValueListItem> valueListItems =valueListService.getByValueList(valueList);
 
-        List<ValueListItem> valueListItems = valueListItemRepository.findAllByValueList(valueList.getId());
 
 /*
 
@@ -525,7 +641,7 @@ public class ValueListRestController {
         ValueList user = valueListService.edit(valueList,pojo);
 
 
-        List<ValueListItem> valueListItems = valueListItemRepository.findAllByValueList(valueList.getId());
+        List<ValueListItem> valueListItems =valueListService.getByValueList(valueList);
 
         ValueListResp valueListResp = ValueListResp.from(valueList,valueListItems);
 
@@ -578,4 +694,64 @@ public class ValueListRestController {
         return ResponseEntity.ok(HttpStatus.NO_CONTENT);
     }
 
+
+
+
+
+    @GetMapping(value = "/value_lists/{VALUE_LIST_ID}/value_list_items",produces = "application/json")
+    public PagedModel getValueListItemList(@PathVariable long VALUE_LIST_ID,Pageable pageable,PagedResourcesAssembler<EntityModel<ValueListResp>> assembler) {
+
+
+        Optional<ValueList> optionalValueList = valueListRepository.findById(VALUE_LIST_ID);
+        if(optionalValueList.isEmpty()){
+            throw new BookNotFoundException(VALUE_LIST_ID,"找不到 Value list");
+        }
+        ValueList valueList = optionalValueList.get();
+
+        Page<ValueListItem> valueListItems = valueListItemRepository.findAllByValueList(valueList.getId(),pageable);
+        return assembler.toModel(valueListItems.map(e->{
+
+            EntityModel entityModel = EntityModel.of(e);
+            entityModel.add(linkTo(methodOn(ValueListRestController.class).editValueListItem(e.getId(),null)).withRel("edit"));
+            entityModel.add(linkTo(methodOn(ValueListRestController.class).deleteValueListItem(e.getId())).withRel("delete"));
+
+            return entityModel;
+        }));
+    }
+
+
+    @DeleteMapping(value = "/value_list_items/{VALUE_LIST_ITEM_ID}", produces = "application/json")
+    public ResponseEntity deleteValueListItem(@PathVariable long VALUE_LIST_ITEM_ID) {
+        Optional<ValueListItem> optionalValueList = valueListItemRepository.findById(VALUE_LIST_ITEM_ID);
+        if(optionalValueList.isEmpty()){
+            throw new BookNotFoundException(VALUE_LIST_ITEM_ID,"找不到 Value list");
+        }
+        ValueListItem valueList = optionalValueList.get();
+        valueListItemRepository.delete(valueList);
+
+        return ResponseEntity.ok(HttpStatus.NO_CONTENT);
+    }
+
+
+
+
+    @PutMapping(value = "/value_list_items/{VALUE_LIST_ITEM_ID}",produces = "application/json")
+    public EntityModel<ValueListItem> editValueListItem(@PathVariable long VALUE_LIST_ITEM_ID,@RequestBody @Valid ValueListItemEidtReq pojo) {
+
+        Optional<ValueListItem> optionalValueList = valueListItemRepository.findById(VALUE_LIST_ITEM_ID);
+        if(optionalValueList.isEmpty()){
+            throw new BookNotFoundException(VALUE_LIST_ITEM_ID,"找不到 Value list item");
+        }
+        ValueListItem valueList = optionalValueList.get();
+
+        ValueListItem user = valueListService.editValueListItem(valueList,pojo);
+
+        //ValueListItemResp valueListResp = ValueListItemResp.from(valueList,valueListItems);
+
+        EntityModel<ValueListItem> entityModel = EntityModel.of(user);
+
+
+
+        return entityModel;
+    }
 }

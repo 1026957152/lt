@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public enum EnumProductType {
 
- //   Showtime ("Allocates costs across your targets based on the proportional weighted cost of each target."),
+   Showtime ("Allocates costs across your targets based on the proportional weighted cost of each target."),
 
 //    Movie("Allocates costs across your targets based on your defined allocation percentage."),
 
@@ -23,8 +23,14 @@ public enum EnumProductType {
 
 
 
-  //  Activity("Activity  Short or specific activities such as skydive jump, balloon flight, scuba dive and other sporting activities."),
+   Event("Activity  Short or specific activities such as skydive jump, balloon flight, scuba dive and other sporting activities."),
     Daytour("Day tour   Any type of short tour, for example walking city tour, bus tours, guided bike ride, sightseeing cruise, guided kayak tour, etc."),
+
+
+
+    BusTicket(""),
+
+    AudioTourGuide("audio tour guide"),
 
  //   GiftCard("Gift Card  A gift card that can be purchased for your other products. You can define a fixed amount and/or bookable products, and an expiry date."),
  //   Multiday("Multi-day tourLonger tours which last for multiple days. For example hiking expeditions and excursions."),
@@ -40,13 +46,15 @@ public enum EnumProductType {
  //   Customproduct("Custom product    This lets you create a product completely from scratch, with all options available.")
     //
 
+    //Join_ticket("联票"),
+    Multi_Ticket("联票")
     ;
 
 
 
 
 
-    public static List<EnumResp> from() {
+    public static List<EnumResp> EnumList() {
         return Arrays.stream(EnumProductType.values()).map(x->{
             EnumResp enumResp = new EnumResp();
             enumResp.setId(x.name());

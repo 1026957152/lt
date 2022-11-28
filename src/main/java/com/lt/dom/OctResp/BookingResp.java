@@ -2,6 +2,7 @@ package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.ShippingAddressResp;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.requestvo.BookingTypeTowhoVo;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -12,20 +13,113 @@ import org.springframework.hateoas.EntityModel;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BookingResp  {
+public class BookingResp extends BaseResp {
 
+    private Contact contact;
+    private Map parameterList;
+    private List charges;
+    private List refunds;
+    private EntityModel refund;
+    private Shipping shipping;
+    private String platform_text;
+    private Fulfillment fulfillment;
 
+    public void setContact(Contact contact) {
+        this.contact = contact;
+    }
+
+    public Contact getContact() {
+        return contact;
+    }
+
+    public <K, V> void setParameterList(Map parameterList) {
+        this.parameterList = parameterList;
+    }
+
+    public Map getParameterList() {
+        return parameterList;
+    }
+
+    public <R> void setCharges(List charges) {
+        this.charges = charges;
+    }
+
+    public List getCharges() {
+        return charges;
+    }
+
+    public <R> void setPayments(List payments) {
+        this.payments = payments;
+    }
+
+    public List getPayments() {
+        return payments;
+    }
+
+    public <R> void setRefunds(List refunds) {
+        this.refunds = refunds;
+    }
+
+    public List getRefunds() {
+        return refunds;
+    }
+
+    public void setRefund(EntityModel refund) {
+        this.refund = refund;
+    }
+
+    public EntityModel getRefund() {
+        return refund;
+    }
+
+    public void setShipping(Shipping shipping) {
+        this.shipping = shipping;
+    }
+
+    public Shipping getShipping() {
+        return shipping;
+    }
+
+    public void setPlatform_text(String platform_text) {
+        this.platform_text = platform_text;
+    }
+
+    public String getPlatform_text() {
+        return platform_text;
+    }
+
+    public static class Contact {
+
+        private String name;
+        private String phone;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getPhone() {
+            return phone;
+        }
+
+        public void setPhone(String phone) {
+            this.phone = phone;
+        }
+    }
 
     List<RoomStay> roomStays; // 表示库存 多久的库存。
 
 
-
-  Product product ;
+    Product product;
 
 
     List<TravelerResp> travelers;
@@ -38,9 +132,9 @@ public class BookingResp  {
 
 
     List<RoyaltyRule> royaltyRules;
-    
 
-private String code;
+
+    private String code;
     private EnumProductType productType;
     private String productCode;
     private String note;
@@ -52,17 +146,35 @@ private String code;
     private String type_text;
     private EnumValidateWay validate_way;
     private EnumValidationStatus validationStatus;
-    private PaymentResp payment;
+    private EntityModel payment;
     private Integer quantity;
     private String status_text;
-    private String paied_at;
+    private LocalDateTime paid_at;
     private LocalDateTime created_at;
-    private EnumFulfillment_behavior fulfillmentType;
+
+
+    public static class Fulfillment {
+        private EnumFulfillment_behavior fulfillmentType;
+
+        public EnumFulfillment_behavior getFulfillmentType() {
+            return fulfillmentType;
+        }
+
+        public void setFulfillmentType(EnumFulfillment_behavior fulfillmentType) {
+            this.fulfillmentType = fulfillmentType;
+        }
+    }
+
+    private Integer subTotal;
+
+
+    private int amount_due;
+    private List lines;
 
     public static BookingResp toResp(Reservation booking, List<Traveler> travelers, List<Document> documents) {
 
-       // Product product = pair.getValue1();
-       // Tour tour = pair.getValue2();
+        // Product product = pair.getValue1();
+        // Tour tour = pair.getValue2();
         BookingResp reservationResp = new BookingResp();
 
         reservationResp.setAmount(booking.getAmount());
@@ -76,8 +188,8 @@ private String code;
 
         reservationResp.setDocuments(DocumentResp.Listfrom(documents));
         reservationResp.setTravelers(TravelerResp.Listfrom(travelers));
-      //  reservationResp.setProductCode(product.getCode());
-       // reservationResp.setNote(tour.getTour_name());
+        //  reservationResp.setProductCode(product.getCode());
+        // reservationResp.setNote(tour.getTour_name());
         //reservationResp.setNote(tour.getTour_name_long());
         return reservationResp;
 
@@ -142,8 +254,6 @@ private String code;
     List<BookAnswer> answers;
 
 
-
-
     private EnumBookingStatus status;
 
     public EnumBookingStatus getStatus() {
@@ -174,19 +284,17 @@ private String code;
     private String token;//	A GUID identifier for the Order.
 
 
-
-    List<BookingProductFuckResp> products;
+    List<EntityModel> products;
 
     List<BookingPayment> payments;
 
-    public List<BookingProductFuckResp> getProducts() {
+    public List<EntityModel> getProducts() {
         return products;
     }
 
-    public void setProducts(List<BookingProductFuckResp> products) {
+    public void setProducts(List<EntityModel> products) {
         this.products = products;
     }
-
 
 
     List<Component> components;
@@ -200,21 +308,19 @@ private String code;
     }
 
 
-
-
     private Integer amount;
     //Integereger	Represents a total amount of order items (sum of item.amount)
 
     //Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 is written as 10000.
-    private Integer  items_discount_amount;//
+    private Integer items_discount_amount;//
     //Integereger	Represents total amount of the discount applied to order line items
 
     //Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 is written as 10000.
-    private Integer  total_discount_amount;//
-   // Integereger	Summarize all discounts applied to the order including discounts applied to particular order line items and discounts applied to the whole cart.
+    private Integer total_discount_amount;//
+    // Integereger	Summarize all discounts applied to the order including discounts applied to particular order line items and discounts applied to the whole cart.
 
-   // Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 is written as 10000.
-    private Integer  total_amount;//
+    // Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 is written as 10000.
+    private Integer total_amount;//
 
     public Integer getAmount() {
         return amount;
@@ -273,52 +379,57 @@ private String code;
     }
 
 
+    public static BookingResp toResp_LIST(Pair<Reservation, List<LineItem>> pair) {
+
+        List<LineItem> bookingTypeTowhoVolIST = pair.getValue1();
+
+        //  if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Product)) {
+        Reservation booking = pair.getValue0();
+        //   Product product = bookingTypeTowhoVo.getProduct();
+
+        BookingResp reservationResp = new BookingResp();
+
+        Fulfillment fulfillment = new Fulfillment();
+        fulfillment.setFulfillmentType(booking.getFulfillment_behavior());
+        reservationResp.setFulfillment(fulfillment);
 
 
+        reservationResp.setValidate_way(booking.getSetValidate_way());
+        reservationResp.setValidationStatus(booking.getValidationStatus());
+        // reservationResp.setAmount(booking.getAmount());
+        // reservationResp.setPaied(booking.getPaied());
 
-    public static BookingResp toResp_LIST(Pair<Reservation, List<BookingProductFuck>> pair) {
-
-        List<BookingProductFuck> bookingTypeTowhoVolIST = pair.getValue1();
-
-      //  if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Product)) {
-            Reservation booking = pair.getValue0();
-         //   Product product = bookingTypeTowhoVo.getProduct();
-
-            BookingResp reservationResp = new BookingResp();
-
-        reservationResp.setFulfillmentType(booking.getFulfillment_behavior());
-
-
-            reservationResp.setValidate_way(booking.getSetValidate_way());
-            reservationResp.setValidationStatus(booking.getValidationStatus());
-           // reservationResp.setAmount(booking.getAmount());
-       // reservationResp.setPaied(booking.getPaied());
-
-            reservationResp.setCode(booking.getCode());
-            reservationResp.setStatus(booking.getStatus());
+        reservationResp.setCode(booking.getCode());
+        reservationResp.setStatus(booking.getStatus());
         reservationResp.setStatus_text(booking.getStatus().toString());
 
-            reservationResp.setTotal_amount(bookingTypeTowhoVolIST.stream().mapToInt(e->e.getAmount()).sum());
-           reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
+        reservationResp.setTotal_amount(bookingTypeTowhoVolIST.stream().mapToInt(e -> e.getAmount()).sum());
+        reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
 
-            reservationResp.setProductType(booking.getProductType());
-        reservationResp.setCreated_at(booking.getCreated_at());
-        reservationResp.setPaied_at(booking.getPaied_at()!= null? booking.getCreated_at().toString():"");
+        reservationResp.setProductType(booking.getProductType());
+        reservationResp.setCreated_at(booking.getCreatedDate());
+        reservationResp.setPaid_at(booking.getPaied_at());
 
-          //  reservationResp.setProductCode(product.getCode());
+        //  reservationResp.setProductCode(product.getCode());
 
-            reservationResp.setProducts(bookingTypeTowhoVolIST.stream().map(e->{
-                return BookingProductFuckResp.from(e);
-            }).collect(Collectors.toList()));
+        reservationResp.setProducts(bookingTypeTowhoVolIST.stream().map(e -> {
+            LineItemResp lineItemResp = LineItemResp.from(e);
+
+            return EntityModel.of(lineItemResp);
+        }).collect(Collectors.toList()));
 
 
+        reservationResp.setType(booking.getType());
+        reservationResp.setType_text(booking.getType().toString());
+        reservationResp.setNote(booking.getNote());
+        reservationResp.setPlatform_text(booking.getPlatform().toString());
 
-            reservationResp.setType(booking.getType());
-            reservationResp.setType_text(booking.getType().toString());
-            reservationResp.setNote(booking.getNote());
-            //reservationResp.setNote(tour.getTour_name_long());
-            return reservationResp;
-    //    }
+        reservationResp.setCreatedDate(booking.getCreatedDate());
+        reservationResp.setModifiedDate(booking.getModifiedDate());
+
+        //reservationResp.setNote(tour.getTour_name_long());
+        return reservationResp;
+        //    }
    /*     if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Voucher)) {
             Reservation booking = pair.getValue0();
             Campaign campaign = bookingTypeTowhoVo.getCampaign();
@@ -343,6 +454,60 @@ private String code;
     }
 
 
+    public static BookingResp from(Reservation booking) {
+
+
+        //  if (bookingTypeTowhoVo.getToWhoTyp().equals(EnumBookingOjbectType.Product)) {
+
+        //   Product product = bookingTypeTowhoVo.getProduct();
+
+        BookingResp reservationResp = new BookingResp();
+
+        Fulfillment fulfillment1 = new Fulfillment();
+        fulfillment1.setFulfillmentType(booking.getFulfillment_behavior());
+
+        reservationResp.setFulfillment(fulfillment1);
+
+
+        //    reservationResp.setValidate_way(booking.getSetValidate_way());
+        //   reservationResp.setValidationStatus(booking.getValidationStatus());
+        // reservationResp.setAmount(booking.getAmount());
+        // reservationResp.setPaied(booking.getPaied());
+
+        reservationResp.setCode(booking.getCode());
+        reservationResp.setStatus(booking.getStatus());
+        reservationResp.setStatus_text(booking.getStatus().toString());
+
+        reservationResp.setSubTotal(booking.getTotal_amount());
+        reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
+    //    reservationResp.setHeroCard_amount(booking.getTotal_amount());
+
+        reservationResp.setTotal_amount(booking.getTotal_amount());
+
+
+
+        reservationResp.setAmount_due(booking.getTotal_amount());
+        reservationResp.setProductType(booking.getProductType());
+        reservationResp.setCreated_at(booking.getCreatedDate());
+        reservationResp.setPaid_at(booking.getPaied_at());
+
+        //  reservationResp.setProductCode(product.getCode());
+
+
+        //   reservationResp.setType(booking.getType());
+        //   reservationResp.setType_text(booking.getType().toString());
+        reservationResp.setNote(booking.getNote());
+
+        Contact contact = new Contact();
+        contact.setName(booking.getContact_fullName());
+        contact.setPhone(booking.getContact_phoneNumber());
+        reservationResp.setContact(contact);
+
+
+        //reservationResp.setNote(tour.getTour_name_long());
+        return reservationResp;
+
+    }
 
     public static BookingResp toResp(Pair<Reservation, BookingTypeTowhoVo> pair) {
 
@@ -366,7 +531,7 @@ private String code;
             reservationResp.setProductCode(product.getCode());
             reservationResp.setType(booking.getType());
             reservationResp.setType_text(booking.getType().toString());
-             reservationResp.setNote(booking.getNote());
+            reservationResp.setNote(booking.getNote());
             //reservationResp.setNote(tour.getTour_name_long());
             return reservationResp;
         }
@@ -393,9 +558,9 @@ private String code;
         return null;
     }
 
-    public static BookingResp toResp(Triplet<Reservation,BookingTypeTowhoVo,List<Traveler>> pair) {
+    public static BookingResp toResp(Triplet<Reservation, BookingTypeTowhoVo, List<Traveler>> pair) {
 
-        BookingResp resp = toResp(Pair.with(pair.getValue0(),pair.getValue1()));
+        BookingResp resp = toResp(Pair.with(pair.getValue0(), pair.getValue1()));
         List<Traveler> travelers = pair.getValue2();
         ;
         resp.setTraveler_number(travelers.size());
@@ -404,12 +569,10 @@ private String code;
         return resp;
     }
 
-    public static BookingResp toResp(Quartet<Reservation,BookingTypeTowhoVo,List<Traveler>,List<Document>> pair,Asset asset) {
+    public static BookingResp toResp(Quartet<Reservation, BookingTypeTowhoVo, List<Traveler>, List<Document>> pair, Asset asset) {
 
-        BookingResp resp = toResp(Triplet.with(pair.getValue0(),pair.getValue1(),pair.getValue2()));
+        BookingResp resp = toResp(Triplet.with(pair.getValue0(), pair.getValue1(), pair.getValue2()));
         List<Document> travelers = pair.getValue3();
-
-
 
 
         resp.setDocuments(DocumentResp.Listfrom(travelers));
@@ -418,7 +581,8 @@ private String code;
 
         return resp;
     }
-    public static BookingResp with(BookingResp resp ,List<Traveler> travelers,List<Document> documents,Asset asset) {
+
+    public static BookingResp with(BookingResp resp, List<Traveler> travelers, List<Document> documents, Asset asset) {
 
         resp.setTraveler_number(travelers.size());
         resp.setTravelers(TravelerResp.Listfrom(travelers));
@@ -428,13 +592,13 @@ private String code;
 
         return resp;
     }
-    public static BookingResp toResp(Quartet<Reservation,BookingTypeTowhoVo,List<Traveler>,List<Document>> pair) {
 
-        BookingResp resp = toResp(Triplet.with(pair.getValue0(),pair.getValue1(),pair.getValue2()));
+    public static BookingResp toResp(Quartet<Reservation, BookingTypeTowhoVo, List<Traveler>, List<Document>> pair) {
+
+        BookingResp resp = toResp(Triplet.with(pair.getValue0(), pair.getValue1(), pair.getValue2()));
         List<Document> travelers = pair.getValue3();
         DocumentResp.Listfrom(travelers);
         resp.setDocuments(DocumentResp.Listfrom(travelers));
-
 
 
         return resp;
@@ -480,7 +644,6 @@ private String code;
     public Integer getTraveler_number() {
         return traveler_number;
     }
-
 
 
     public void setPaymentMethods(List<EntityModel<PaymentMethodResp>> paymentMethods) {
@@ -530,11 +693,11 @@ private String code;
         return validationStatus;
     }
 
-    public void setPayment(PaymentResp payment) {
+    public void setPayment(EntityModel payment) {
         this.payment = payment;
     }
 
-    public PaymentResp getPayment() {
+    public EntityModel getPayment() {
         return payment;
     }
 
@@ -555,12 +718,12 @@ private String code;
         return status_text;
     }
 
-    public void setPaied_at(String paied_at) {
-        this.paied_at = paied_at;
+    public void setPaid_at(LocalDateTime paid_at) {
+        this.paid_at = paid_at;
     }
 
-    public String getPaied_at() {
-        return paied_at;
+    public LocalDateTime getPaid_at() {
+        return paid_at;
     }
 
     public void setCreated_at(LocalDateTime created_at) {
@@ -571,11 +734,262 @@ private String code;
         return created_at;
     }
 
-    public void setFulfillmentType(EnumFulfillment_behavior fulfillmentType) {
-        this.fulfillmentType = fulfillmentType;
+    public Fulfillment getFulfillment() {
+        return fulfillment;
     }
 
-    public EnumFulfillment_behavior getFulfillmentType() {
-        return fulfillmentType;
+    public void setFulfillment(Fulfillment fulfillment) {
+        this.fulfillment = fulfillment;
     }
+
+/*    public void withLines(List<BookingProductFuck> bookingProductFuckList) {
+
+        this.setProducts(bookingProductFuckList.stream().map(e->{
+            BookingProductFuckResp bookingProductFuckResp =  BookingProductFuckResp.from(e);
+
+            return EntityModel.of(bookingProductFuckResp);
+        }).collect(Collectors.toList()));
+    }*/
+
+    public void setSubTotal(Integer subTotal) {
+        this.subTotal = subTotal;
+    }
+
+    public Integer getSubTotal() {
+        return subTotal;
+    }
+
+
+
+    public void setAmount_due(int amount_due) {
+        this.amount_due = amount_due;
+    }
+
+    public int getAmount_due() {
+        return amount_due;
+    }
+
+    public <R> void setLines(List lines) {
+        this.lines = lines;
+    }
+
+    public List getLines() {
+        return lines;
+    }
+
+
+    public static class Refund {
+
+
+        private Integer amountRefunded;
+        private List refunds;
+
+
+        public void setAmountRefunded(Integer amountRefunded) {
+            this.amountRefunded = amountRefunded;
+        }
+
+        public Integer getAmountRefunded() {
+            return amountRefunded;
+        }
+
+        public <R> void setRefunds(List refunds) {
+            this.refunds = refunds;
+        }
+
+        public List getRefunds() {
+            return refunds;
+        }
+    }
+
+/*
+
+    public static class PaymentResp {
+
+        private Long customer;//	Integereger	Associated Customer, if any
+
+
+        private Integer amount;//	number	Payment amount
+
+
+        private String method;//	string	Payment instrument used
+        private String reference;//	string	Reference number, i.e. check #
+        private String source;//	string	Source of the payment
+        private String notes;//	string	Integerernal notes
+
+        private List<EntityModel<PaymentMethodResp>> methods;
+        private String status_text;
+        private EnumPaymentStatus status;
+        private LocalDateTime expireTime;
+        private String time_remaining;
+        private long seconds_remaining;
+        private List charges = Arrays.asList();
+        private LocalDateTime expire_time;
+
+        public Long getCustomer() {
+            return customer;
+        }
+
+        public void setCustomer(Long customer) {
+            this.customer = customer;
+        }
+
+
+
+
+        public Integer getAmount() {
+            return amount;
+        }
+
+        public void setAmount(Integer amount) {
+            this.amount = amount;
+        }
+
+
+        public String getMethod() {
+            return method;
+        }
+
+        public void setMethod(String method) {
+            this.method = method;
+        }
+
+
+        public String getReference() {
+            return reference;
+        }
+
+        public void setReference(String reference) {
+            this.reference = reference;
+        }
+
+        public String getSource() {
+            return source;
+        }
+
+        public void setSource(String source) {
+            this.source = source;
+        }
+
+        public String getNotes() {
+            return notes;
+        }
+
+        public void setNotes(String notes) {
+            this.notes = notes;
+        }
+
+
+        public List<EntityModel<PaymentMethodResp>> getMethods() {
+            return methods;
+        }
+
+        public void setMethods(List<EntityModel<PaymentMethodResp>> methods) {
+            this.methods = methods;
+        }
+
+        public String getStatus_text() {
+            return status_text;
+        }
+
+        public void setStatus_text(String status_text) {
+            this.status_text = status_text;
+        }
+
+        public EnumPaymentStatus getStatus() {
+            return status;
+        }
+
+        public void setStatus(EnumPaymentStatus status) {
+            this.status = status;
+        }
+
+        public LocalDateTime getExpireTime() {
+            return expireTime;
+        }
+
+        public void setExpireTime(LocalDateTime expireTime) {
+            this.expireTime = expireTime;
+        }
+
+        public String getTime_remaining() {
+            return time_remaining;
+        }
+
+        public void setTime_remaining(String time_remaining) {
+            this.time_remaining = time_remaining;
+        }
+
+        public long getSeconds_remaining() {
+            return seconds_remaining;
+        }
+
+        public void setSeconds_remaining(long seconds_remaining) {
+            this.seconds_remaining = seconds_remaining;
+        }
+
+        public List getCharges() {
+            return charges;
+        }
+
+        public void setCharges(List charges) {
+            this.charges = charges;
+        }
+
+        public static PaymentResp from(Payment payment) {
+
+            PaymentResp paymentResp = new PaymentResp();
+            //  paymentResp.setCustomer(payment.getCustomer());
+            //   paymentResp.setBalance(payment.getBalance());
+            paymentResp.setAmount(payment.getAmount());
+            paymentResp.setStatus(payment.getStatus());
+            paymentResp.setExpire_time(payment.getExpireTime());
+
+            Instant instant = payment.getExpireTime().toInstant(ZoneOffset.UTC);
+            Date date = Date.from(instant);
+            paymentResp.setTime_remaining(DateUtils.fromDeadline(date));
+            paymentResp.setSeconds_remaining(DateUtils.secondfromDeadline(date));
+
+            paymentResp.setStatus_text(payment.getStatus().toString());
+            return paymentResp;
+        }
+
+        public void setExpire_time(LocalDateTime expire_time) {
+            this.expire_time = expire_time;
+        }
+
+        public LocalDateTime getExpire_time() {
+            return expire_time;
+        }
+    }
+
+*/
+
+
+    public static class Shipping {
+
+
+        private ShippingAddressResp shippingCardAddressResp;
+
+        private ShippingRateResp shippingRate;
+
+        public ShippingAddressResp getShippingCardAddressResp() {
+            return shippingCardAddressResp;
+        }
+
+        public void setShippingCardAddressResp(ShippingAddressResp shippingCardAddressResp) {
+            this.shippingCardAddressResp = shippingCardAddressResp;
+        }
+
+
+
+        public void setShippingRate(ShippingRateResp shippingRate) {
+            this.shippingRate = shippingRate;
+        }
+
+        public ShippingRateResp getShippingRate() {
+            return shippingRate;
+        }
+    }
+
 }

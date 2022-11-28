@@ -17,6 +17,8 @@ public class Asset {
 
     @Id
     private long id;
+    private String linkCode;
+    private String code;
 
     public long getId() {
         return id;
@@ -86,6 +88,22 @@ public class Asset {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public void setLinkCode(String linkCode) {
+        this.linkCode = linkCode;
+    }
+
+    public String getLinkCode() {
+        return linkCode;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
     }
 
     /*    "qr":{

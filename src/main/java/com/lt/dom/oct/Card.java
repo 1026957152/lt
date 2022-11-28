@@ -4,17 +4,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Entity;
+import javax.persistence.Transient;
 import java.util.List;
 
-@NoArgsConstructor
-@Data
-public class Card {
+
+@Entity
+public class Card extends Base{
 
 
     @JsonProperty("id")
     private String id;
     @JsonProperty("object")
     private String object;
+
+    @Transient
     @JsonProperty("billing")
     private BillingDTO billing;
     @JsonProperty("company")
@@ -27,6 +31,7 @@ public class Card {
     private Object individual;
     @JsonProperty("livemode")
     private Boolean livemode;
+    @Transient
     @JsonProperty("metadata")
     private MetadataDTO metadata;
     @JsonProperty("name")
@@ -35,8 +40,10 @@ public class Card {
     private String phoneNumber;
     @JsonProperty("redaction")
     private Object redaction;
+    @Transient
     @JsonProperty("requirements")
     private RequirementsDTO requirements;
+    @Transient
     @JsonProperty("spending_controls")
     private SpendingControlsDTO spendingControls;
     @JsonProperty("status")

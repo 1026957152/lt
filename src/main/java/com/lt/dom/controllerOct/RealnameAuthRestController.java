@@ -10,6 +10,7 @@ import com.lt.dom.oct.Product;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcReq.OpenidResp;
 import com.lt.dom.otcReq.RealnameAuthsReq;
+import com.lt.dom.otcenum.EnumUserType;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.OpenidRepository;
 import com.lt.dom.repository.ProductRepository;
@@ -19,6 +20,7 @@ import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.IAuthenticationFacade;
 import com.lt.dom.serviceOtc.UserServiceImpl;
 import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import com.lt.dom.vo.UserVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.validation.Valid;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -61,6 +64,25 @@ public class RealnameAuthRestController {
     @Autowired
     private UserServiceImpl userService;
 
+
+
+    @GetMapping(value = "/Page_realnameAuth", produces = "application/json")
+    public EntityModel Page_realnameAuth() {
+
+
+
+        Map map = Map.of();
+
+
+        EntityModel entityModel = EntityModel.of(map);
+
+
+        entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).individual_only_for_realnameauth(null)).withRel("realnameAuths"));
+
+
+        return entityModel;
+
+    }
 
     @Operation(summary = "1、实名认证")
     @PostMapping(value = "/realname-auths/individual", produces = "application/json")
@@ -141,6 +163,26 @@ public class RealnameAuthRestController {
         Pair<User, Openid> user = realnameAuthsService.postWxRealnameAuths(openid,realnameAuthsReq);
 
         EntityModel entityModel = EntityModel.of(UserResp.userWithOpenidLink(user));
+        entityModel.add(linkTo(methodOn(UserRestController.class).getCurrent()).withRel("getCurrent"));
+
+        return ResponseEntity.ok(entityModel);
+
+
+    }
+
+
+
+    @Operation(summary = "1、实名认证")
+    @PostMapping(value = "/realname-auths/individual_only_for_realnameauth", produces = "application/json")
+    public ResponseEntity individual_only_for_realnameauth( @RequestBody @Valid RealnameAuthsReq realnameAuthsReq) {
+        System.out.println("参数参数"+realnameAuthsReq.toString());
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        UserVo userVo = authenticationFacade.getUserVo(authentication);
+
+        User user = realnameAuthsService.postWxRealnameAuths_for_real_name(userVo,realnameAuthsReq);
+
+        EntityModel entityModel = EntityModel.of(UserResp.from(user));
         entityModel.add(linkTo(methodOn(UserRestController.class).getCurrent()).withRel("getCurrent"));
 
         return ResponseEntity.ok(entityModel);

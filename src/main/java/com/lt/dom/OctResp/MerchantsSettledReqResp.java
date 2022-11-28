@@ -41,7 +41,7 @@ public class MerchantsSettledReqResp {
     private String location_text;
     private String supplier_type_text;
 
-    public static MerchantsSettledReqResp from(MerchantsSettledReq max, Map<EnumDocumentType,TempDocument> documents) {
+    public static MerchantsSettledReqResp from(MerchantsSettledReq max) {
         MerchantsSettledReqResp merchantsSettledReqResp = new MerchantsSettledReqResp();
         merchantsSettledReqResp.setAccount_name(max.getAccount_name());
         merchantsSettledReqResp.setDesc(max.getDesc());
@@ -54,36 +54,12 @@ public class MerchantsSettledReqResp {
         merchantsSettledReqResp.setUser_phone(max.getUser_phone());
         merchantsSettledReqResp.setSupplier_name(max.getSupplier_name());
         merchantsSettledReqResp.setSupplier_type(max.getSupplier_type());
-        merchantsSettledReqResp.setSupplier_type_text(max.getAllowed_supplier().getType().toString());
+    //    merchantsSettledReqResp.setSupplier_type_text(max.getAllowed_supplier().getType().toString());
 
 
         merchantsSettledReqResp.setBusiness_type_text(max.getBusiness_type().toString());
 
         merchantsSettledReqResp.setLocation_text(max.getLocation().getAddress());
-
-        if(!documents.isEmpty()){
-
-            if(documents.containsKey(EnumDocumentType.liability_insurance)){
-                merchantsSettledReqResp.setLiability_insurance_image(FileStorageServiceImpl.url(documents.get(EnumDocumentType.liability_insurance)));
-            }else{
-                merchantsSettledReqResp.setLiability_insurance_image(new PhotoResp());
-            }
-            if(documents.containsKey(EnumDocumentType.license)){
-                merchantsSettledReqResp.setLicense_image(FileStorageServiceImpl.url(documents.get(EnumDocumentType.license)));
-            }else{
-                merchantsSettledReqResp.setLicense_image(new PhotoResp());
-            }
-            if(documents.containsKey(EnumDocumentType.business_license)){
-                merchantsSettledReqResp.setBussiness_license(FileStorageServiceImpl.url(documents.get(EnumDocumentType.business_license)));
-            }else {
-                merchantsSettledReqResp.setBussiness_license(new PhotoResp());
-            }
-            if(documents.containsKey(EnumDocumentType.license_for_opening_bank_account)){
-                merchantsSettledReqResp.setLicense_for_opening_bank_account(FileStorageServiceImpl.url(documents.get(EnumDocumentType.license_for_opening_bank_account)));
-            }else{
-                merchantsSettledReqResp.setLicense_for_opening_bank_account(new PhotoResp());
-            }
-        }
 
         return merchantsSettledReqResp;
     }

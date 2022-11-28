@@ -1,11 +1,14 @@
 package com.lt.dom.controllerOct;
 
+import com.lt.dom.OctResp.BookingResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.Asset;
 import com.lt.dom.oct.Campaign;
+import com.lt.dom.oct.User;
 import com.lt.dom.oct.Voucher;
 import com.lt.dom.otcReq.VoucherResp;
 import com.lt.dom.repository.CampaignRepository;
+import com.lt.dom.repository.UserRepository;
 import com.lt.dom.repository.VoucherRepository;
 import com.lt.dom.serviceOtc.AssetServiceImpl;
 import com.lt.dom.serviceOtc.QrcodeServiceImpl;
@@ -15,7 +18,11 @@ import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +37,8 @@ public class VoucherRestController {
     @Autowired
     private VoucherRepository voucherRepository;
 
+    @Autowired
+    private UserRepository userRepository;
 
 
 
@@ -90,6 +99,33 @@ public class VoucherRestController {
     }
 
 
+
+
+
+
+    @Operation(summary = "1、获得订购")
+    @GetMapping(value = "/users/{USER_ID}/vouchers", produces = "application/json")
+    public PagedModel listVoucher(@PathVariable long USER_ID, Pageable pageable , PagedResourcesAssembler<EntityModel<VoucherResp>> assembler) {
+
+
+        Optional<User> optionalUser = userRepository.findById(USER_ID);
+
+        if(optionalUser.isEmpty()){
+            throw new BookNotFoundException(USER_ID,User.class.getSimpleName());
+
+        }
+
+
+        Page<Voucher> voucherPage = voucherRepository.findAll(pageable);
+
+
+        return assembler.toModel(voucherPage.map(e->{
+            VoucherResp Voucher = VoucherResp.from(e);
+            return EntityModel.of(Voucher);
+        }));
+
+
+    }
 
 
 

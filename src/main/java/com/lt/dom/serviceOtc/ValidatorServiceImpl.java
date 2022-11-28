@@ -1,5 +1,6 @@
 package com.lt.dom.serviceOtc;
 
+import com.lt.dom.OctResp.ValidatorEditResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ComponentRightValidatorUpdatePojo;
@@ -50,6 +51,43 @@ public class ValidatorServiceImpl {
         rabbitTemplate.convertAndSend(this.queue.getName(), order);
     }
 
+    @Transactional
+    public List<Validator_> updateUserValidator(User device, List<Validator_> validatorOptional, ValidatorEditResp pojoList) {
+
+
+
+
+
+
+        validatorRepository.deleteAllByDevice(device.getId());
+
+        List<Validator_> validator_list = validatorRepository.saveAll(validatorOptional.stream().map(e->{
+            pojoList.getIds().contains(e.getId());
+            e.setActive(true);
+            return e;
+        }).collect(Collectors.toList()));
+
+        return validator_list;
+    }
+
+    @Transactional
+    public List<Validator_> newValidatorForDevice(Device device, List<ComponentRight> pojoList) {
+
+
+        validatorRepository.deleteAllByDevice(device.getId());
+
+        List<Validator_> validator_list = validatorRepository.saveAll(pojoList.stream().map(e->{
+            Validator_ validator = new Validator_();
+            validator.setDevice(device.getId());
+            validator.setType(EnumValidatorType.特定机器);
+            validator.setActive(false);
+            validator.setComponentRightId(e.getId());
+            return validator;
+        }).collect(Collectors.toList()));
+
+        return validator_list;
+    }
+
 
     @Transactional
     public List<Validator_> newValidator(ComponentRight componentRight, List<ComponentRightValidatorUpdatePojo> pojoList) {
@@ -79,6 +117,7 @@ public class ValidatorServiceImpl {
                     Validator_ validator = new Validator_();
                     validator.setDevice(e.getId());
                     validator.setType(pojo.getType());
+                    validator.setActive(false);
                     validator.setComponentRightId(componentRight.getId());
                     return validator;
                 }).collect(Collectors.toList()));
@@ -103,6 +142,7 @@ public class ValidatorServiceImpl {
                     Validator_ validator = new Validator_();
                     validator.setUser(e.getId());
                     validator.setType(pojo.getType());
+                    validator.setActive(false);
                     validator.setComponentRightId(componentRight.getId());
                     return validator;
                 }).collect(Collectors.toList()));

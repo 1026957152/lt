@@ -74,7 +74,14 @@ public class SupplierSpecification implements Specification<Supplier> {
             predicates.add(builder.equal(
                     root.<EnumSupplierType> get("type"),type));
         }
-        return builder.or(predicates.toArray(new Predicate[0]));
+
+
+  /*      if(predicates.isEmpty()){
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+
+        }*/
+        return builder.and(predicates.toArray(new Predicate[predicates.size()]));
       //   return  builder.or(predicates.toArray(new Predicate[predicates.size()]));
 
 

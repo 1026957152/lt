@@ -146,7 +146,7 @@ public class PublicationRestController {
             EntityModel entityModel = EntityModel.of(PublicationResp.sigleFrom(Quartet.with(x,voucher,campaign,assetList)));
             PublicationEntry publicationEntry = x.get(0);
             if(publicationEntry.getPaied()){
-                entityModel.add(linkTo(methodOn(PaymentRestController.class).refund(publicationEntry.getCharge(),null)).withRel("refund"));
+                entityModel.add(linkTo(methodOn(PaymentRestController.class).refund(publicationEntry.getCharge(),null,null)).withRel("refund"));
             }
 
             entityModel.add(linkTo(methodOn(VoucherRestController.class).refresh(voucher.getId())).withRel("qr_refresh"));
@@ -204,7 +204,7 @@ public class PublicationRestController {
                 EntityModel entityModel = EntityModel.of(PublicationResp.sigleFrom(Quartet.with(Arrays.asList(x),voucher,campaign,assetList)));
 
                 if(x.getPaied()){
-                    entityModel.add(linkTo(methodOn(PaymentRestController.class).refund(x.getCharge(),null)).withRel("refund"));
+                    entityModel.add(linkTo(methodOn(PaymentRestController.class).refund(x.getCharge(),null,null)).withRel("refund"));
                 }
 
                 return entityModel;

@@ -189,6 +189,7 @@ public class SecurityConfig {
                 "/oct/wxLogin",
                 "/h2-console/**",
                 "/oct/files/*",
+                "/third/**",
                 "/oct/documents",
                 "/oct/getPhone");
     }

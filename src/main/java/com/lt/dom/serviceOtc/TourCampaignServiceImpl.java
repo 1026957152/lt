@@ -126,7 +126,7 @@ public class TourCampaignServiceImpl {
 
 
 
-        Asset asset = assetService.newQr(tourBooking);
+        Asset asset = assetService.getWithNew(tourBooking);
 
 
 
@@ -372,7 +372,7 @@ public class TourCampaignServiceImpl {
         }).collect(Collectors.toList());
 
 
-        int va = redeemService.RedeemVounchor(tourBooking.getId(),EnumAssociatedType.booking,sss);  //销和这些券
+        int va = redeemService.RedeemVounchor(tourBooking.getId(),EnumRelatedObjectType.booking,sss);  //销和这些券
 
         tourBooking.setStatus(EnumTourBookingStatus.Completed);
         tourBooking = tourBookingRepository.save(tourBooking);

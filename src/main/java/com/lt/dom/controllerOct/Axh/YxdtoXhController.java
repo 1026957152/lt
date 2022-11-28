@@ -11,6 +11,7 @@ import com.lt.dom.oct.Axh.XydToXhPushRequest;
 import com.lt.dom.oct.Axh.XydToXhPushRequestJsonFit;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.EnumIdentityType;
+import com.lt.dom.otcenum.enum_.EnumXhPushRequestStatus;
 import com.lt.dom.repository.Axh.XydToXhPushRequestRepository;
 import com.lt.dom.vo.IdentityVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -124,6 +126,8 @@ public class YxdtoXhController {
         XydToXhPushRequest xydToXhPushRequest = new XydToXhPushRequest();
         xydToXhPushRequest.setJson(json_string);
         xydToXhPushRequest.setOrderIdX申请id(xydToXhPushRequestJsonFit.getOrderId());
+        xydToXhPushRequest.setStatus_xh(EnumXhPushRequestStatus.Created);
+        xydToXhPushRequest.setCreatedDate(LocalDateTime.now());
         xydToXhPushRequest = xydToXhPushRequestRepository.save(xydToXhPushRequest);
 
         xhToYxdService.cronTaskYmlDemo();

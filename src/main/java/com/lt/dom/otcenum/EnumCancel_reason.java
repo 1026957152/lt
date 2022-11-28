@@ -1,14 +1,46 @@
 package com.lt.dom.otcenum;
 
-public enum EnumCancel_reason {
-    barcode("barcode"),
-    reference_number("reference number"),
-    Barcodescan("Barcode scan"),
-    FacialRecognition("Facial Recognition"),
-    NFCtap("NFC tap"),
+import com.lt.dom.OctResp.EnumResp;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public enum EnumCancel_reason {
+
+    customer("this bookable item is no longer available"),
+    inventory("this booking was rejected on account of the weather"),
+    fraud("this is a duplicate booking"),
+
+    declined("the product is no longer operating"),
+
+
+    other("there are too few passengers for the product to operate"),
+
+
+
+    CUSTOMER_REQUESTED("Cancellation requested by the buyer."),
+
+            OUT_OF_STOCK("Product is out of stock at fulfillment."),
+
+            INVALID_ADDRESS("Unable to ship to address provided by the buyer."),
+
+            SUSPICIOUS_ORDER("Order is suspicious/possible fraud."),
+
+    CANCEL_REASON_OTHER("Other cancellation reason.")
 
     ;
+
+    public static List<EnumResp> list() {
+        return Arrays.stream(EnumCancel_reason.values()).map(x->{
+            EnumResp enumResp = new EnumResp();
+            enumResp.setId(x.name());
+            //  enumResp.setName(x.name());
+            enumResp.setText(x.toString());
+
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
 
 /*1 - Cancelled by customer request, see notes
 2 - Cancelled by customer request, booked another tour

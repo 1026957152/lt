@@ -12,10 +12,7 @@ import com.lt.dom.otcReq.SettleAccountPojo;
 import com.lt.dom.otcReq.SupplierPojo;
 import com.lt.dom.otcReq.UserPojo;
 import com.lt.dom.otcenum.*;
-import com.lt.dom.repository.BookingRuleRepository;
-import com.lt.dom.repository.OpenidRepository;
-import com.lt.dom.repository.TempDocumentRepository;
-import com.lt.dom.repository.UserRepository;
+import com.lt.dom.repository.*;
 import com.lt.dom.vo.SupplierPojoVo;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -60,6 +58,10 @@ public class OpenidServiceImpl {
     @Autowired
     private OpenidRepository openidRepository;
 
+    @Autowired
+    private UserAuthorityRepository userAuthorityRepository;
+
+
 
     @Autowired
     private IdGenServiceImpl idGenService;
@@ -77,6 +79,13 @@ public class OpenidServiceImpl {
     }
 
     public Openid linkUser(Openid openid, User user) {
+
+        List<User> userList = userRepository.findByOpenid(openid.getOpenid());
+        userRepository.saveAll(userList.stream().map(e->{
+            e.setOpenid(null);
+            e.setOpenidLink(false);
+            return e;
+        }).collect(Collectors.toList()));
 
         List<Openid> openids = openidRepository.findByUserId(user.getId());
         openidRepository.saveAll(openids.stream().map(x->{
@@ -97,6 +106,34 @@ public class OpenidServiceImpl {
 
     }
 
+    @Transactional
+    public void unLinkUser(Openid openid) {
+
+        openid.setLink(false);
+        openid.setUserId(0);
+        openidRepository.save(openid);
+ /*       List<User> userList = userRepository.findByOpenid(openid.getOpenid());
+
+
+        userRepository.saveAll(userList.stream().map(e->{
+            e.setOpenid(null);
+            e.setOpenidLink(false);
+            return e;
+        }).collect(Collectors.toList()));
+
+
+        List<Openid> openids = openidRepository.findByUserIdIn(userList.stream().map(e->e.getId()).collect(Collectors.toList()));
+        openidRepository.saveAll(openids.stream().map(x->{
+            x.setUserId(0);
+            x.setLink(false);
+            return x;
+        }).collect(Collectors.toList()));
+*/
+
+        userAuthorityRepository.deleteAllByIdentityTypeAndIdentifier(EnumIdentityType.weixin,openid.getOpenid());
+
+
+    }
 
     public Openid setupData(String openid) {
 

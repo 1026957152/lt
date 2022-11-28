@@ -39,6 +39,8 @@ private String code;
 
 
     private EnumDuration duration;
+    private Long booking;
+    private Long user;
 
     public EnumDuration getDuration() {
         return duration;
@@ -281,5 +283,21 @@ private String code;
 
     public EnumPublicationObjectType getPublishToType() {
         return publishToType;
+    }
+
+    public void setBooking(Long booking) {
+        this.booking = booking;
+    }
+
+    public Long getBooking() {
+        return booking;
+    }
+
+    public void setUser(Long user) {
+        this.user = user;
+    }
+
+    public Long getUser() {
+        return user;
     }
 }

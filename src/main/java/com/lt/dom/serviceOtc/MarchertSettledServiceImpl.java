@@ -5,9 +5,7 @@ import com.lt.dom.JwtUtils;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.Missing_documentException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.MerchantsSettledReq;
-import com.lt.dom.otcReq.SettleAccountPojo;
-import com.lt.dom.otcReq.SupplierPojo;
+import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.OpenidRepository;
 import com.lt.dom.repository.TempDocumentRepository;
@@ -72,7 +70,7 @@ public class MarchertSettledServiceImpl {
 
 
 
-    public Request merchants_settled(MerchantsSettledReq wxlinkUserReq, long owner) {
+    public Request merchants_settled(MerchantsSettledEdit wxlinkUserReq, long owner) {
 
 
         User user = userRepository.findById(owner).get();
@@ -84,22 +82,22 @@ public class MarchertSettledServiceImpl {
         EnumSupplier enumSupplier = wxlinkUserReq.getAllowed_supplier();
 
         if(enumSupplier.getType().equals(EnumSupplierType.TravelAgent)){
-            if(nonNull(wxlinkUserReq.getBussiness_license())){
-                docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.business_license,wxlinkUserReq.getBussiness_license()));
+            if(nonNull(wxlinkUserReq.getBussiness_license_image())){
+               // docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.business_license,wxlinkUserReq.getBussiness_license_image()));
             }else{
                 throw new BookNotFoundException(Enumfailures.missing_documents,"需要上传 营业执照");
             }
 
-            if(nonNull(wxlinkUserReq.getBussiness_license())){
-                docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.license_for_opening_bank_account,wxlinkUserReq.getBussiness_license()));
+            if(nonNull(wxlinkUserReq.getLicense_image())){
+             //   docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.license_for_opening_bank_account,wxlinkUserReq.getBussiness_license()));
             }else{
                 throw new BookNotFoundException(Enumfailures.missing_documents,"需要上传 开户许可证");
 
 
             }
 
-            if(nonNull(wxlinkUserReq.getLicense_image())){
-                docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.license,wxlinkUserReq.getLicense_image()));
+            if(nonNull(wxlinkUserReq.getLicense_for_opening_bank_account_image())){
+            //    docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.license,wxlinkUserReq.getLicense_for_opening_bank_account_image()));
 
                 // docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.license,x)).collect(Collectors.toList()));
             }else{
@@ -107,7 +105,7 @@ public class MarchertSettledServiceImpl {
                 throw new BookNotFoundException(Enumfailures.missing_documents,"需要上传 责任保险");
             }
             if(nonNull(wxlinkUserReq.getLiability_insurance_image())){
-                docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.liability_insurance,wxlinkUserReq.getLiability_insurance_image()));
+           //     docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.liability_insurance,wxlinkUserReq.getLiability_insurance_image()));
 
                 // docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.liability_insurance,x)).collect(Collectors.toList()));
             }else{
@@ -115,8 +113,8 @@ public class MarchertSettledServiceImpl {
 
             }
         }else{
-            if(nonNull(wxlinkUserReq.getBussiness_license())){
-                docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.business_license,wxlinkUserReq.getBussiness_license()));
+            if(nonNull(wxlinkUserReq.getBussiness_license_image())){
+              //  docTypeWithDocCodepairList.add(Pair.with(EnumDocumentType.business_license,wxlinkUserReq.getBussiness_license()));
 
                 //    docTypeWithDocCodepairList.addAll(wxlinkUserReq.getBussiness_license().stream().map(x->Pair.with(EnumDocumentType.contract,x)).collect(Collectors.toList()));
             }else{
@@ -146,10 +144,10 @@ public class MarchertSettledServiceImpl {
 
 
 
-        if(docTypeWithTempDocPairList.isEmpty()){
+ /*       if(docTypeWithTempDocPairList.isEmpty()){
             throw new Missing_documentException(1, Supplier.class.getSimpleName(),"需要附上申请相关文档");
         }
-
+*/
 
 
         SupplierPojo supplierPojo = new SupplierPojo();
@@ -162,12 +160,12 @@ public class MarchertSettledServiceImpl {
 
 
 
-        MerchantsSettledReq.Location location = wxlinkUserReq.getLocation();
+        LocationEditResp location = wxlinkUserReq.getLocation();
 
         supplierPojo.setLat(location.getLatitude());
         supplierPojo.setLng(location.getLongitude());
         supplierPojo.setLocation(location.getAddress());
-        supplierPojo.setLocationName(location.getName());
+       // supplierPojo.setLocationName(location.getName());
 
 
         if(wxlinkUserReq.getBusiness_type() == null){

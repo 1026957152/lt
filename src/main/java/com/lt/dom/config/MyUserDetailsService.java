@@ -6,10 +6,13 @@ import com.lt.dom.error.Error401Exception;
 import com.lt.dom.oct.Privilege;
 import com.lt.dom.oct.Role;
 import com.lt.dom.oct.User;
+import com.lt.dom.oct.UserAuthority;
 import com.lt.dom.otcenum.EnumIdentityType;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.RoleRepository;
+import com.lt.dom.repository.UserAuthorityRepository;
 import com.lt.dom.repository.UserRepository;
+import com.lt.dom.vo.CustomUserDetails;
 import com.lt.dom.vo.IdentityVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +44,8 @@ public class MyUserDetailsService implements UserDetailsService {
  
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private UserAuthorityRepository userAuthorityRepository;
 
     @Override
     public UserDetails loadUserByUsername(String ident)
@@ -65,17 +70,40 @@ public class MyUserDetailsService implements UserDetailsService {
 
         }*/
         Optional<User> optionalUser = Optional.empty();
+        String username = null;
+        UserAuthority userAuthority = null;
         if(identityVo.getType().equals(EnumIdentityType.phone)){
-           optionalUser = userRepository.findByPhone(identityVo.getCredential());
+
+            Optional<UserAuthority> optionalUserAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,identityVo.getCredential());
+            if(optionalUserAuthority.isPresent()){
+                userAuthority = optionalUserAuthority.get();
+                optionalUser = userRepository.findById(userAuthority.getUser_id());
+
+                username = optionalUser.get().getPhone();
+            }
+
 
         }
         if(identityVo.getType().equals(EnumIdentityType.weixin)){
-            optionalUser = userRepository.findByOpenidAndOpenidLink(identityVo.getCredential(),true);
 
+            Optional<UserAuthority> optionalUserAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.weixin,identityVo.getCredential());
+            if(optionalUserAuthority.isPresent()){
+                userAuthority = optionalUserAuthority.get();
+                optionalUser = userRepository.findById(userAuthority.getUser_id());
+                username = optionalUser.get().getOpenid();
+            }
+          //  optionalUser = userRepository.findByOpenidAndOpenidLink(identityVo.getCredential(),true);
+           // username = optionalUser.get().getOpenid();
         }
         if(identityVo.getType().equals(EnumIdentityType.user_code)){
-            optionalUser = userRepository.findByCode(identityVo.getCredential());
-
+            Optional<UserAuthority> optionalUserAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.user_code,identityVo.getCredential());
+            if(optionalUserAuthority.isPresent()){
+                userAuthority = optionalUserAuthority.get();
+                optionalUser = userRepository.findById(userAuthority.getUser_id());
+                username = optionalUser.get().getCode();
+            }
+          //  optionalUser = userRepository.findByCode(identityVo.getCredential());
+          //  username = optionalUser.get().getCode();
         }
         if(optionalUser.isEmpty()){
             String s = "微信，和 手机 号 找不到用户"+ identityVo.getType()+" "+identityVo.getCredential();
@@ -114,9 +142,10 @@ public class MyUserDetailsService implements UserDetailsService {
             System.out.println("ddddddddddddd"+user.toString());
 
         }
-        System.out.println("找到了而设备ia啊啊啊啊啊"+user.getPhone()+ "------"+user.getPassword());
-        return new org.springframework.security.core.userdetails.User(
-          user.getPhone(), user.getPassword(), user.isEnabled(), true, true,
+
+
+        System.out.println("找到了而设备ia啊啊啊啊啊"+username+ "------"+user.getPassword()); // user.isEnabled()
+        return new CustomUserDetails(userAuthority,userAuthority.getIdentifier(), userAuthority.getCredential(), user.getEnabled(), true, true,
           true, getAuthorities(user.getRoles()));
     }
 

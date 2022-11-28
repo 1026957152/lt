@@ -12,6 +12,8 @@ import com.lt.dom.serviceOtc.PaymentServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -84,7 +86,12 @@ public class BalanceRestController {
 
 
     @GetMapping(value = "balances/{BALANCE_ID}/transactions", produces = "application/json")
-    public PagedModel listTransactions(@PathVariable long BALANCE_ID, Pageable pageable,PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
+    public PagedModel listTransactions(@PathVariable long BALANCE_ID,
+                                       @PageableDefault(sort = {"createdDate",
+                                               "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
+
+
+                                       PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
 
         Optional<Balance> validatorOptional = balanceRepository.findById(BALANCE_ID);
         if(validatorOptional.isEmpty()) {
@@ -137,7 +144,10 @@ public class BalanceRestController {
 
 
     @GetMapping(value = "/balances", produces = "application/json")
-    public ResponseEntity<PagedModel> balances(Pageable pageable, PagedResourcesAssembler<EntityModel<Balance>> assembler) {
+    public ResponseEntity<PagedModel> balances(Pageable pageable,
+
+
+                                               PagedResourcesAssembler<EntityModel<Balance>> assembler) {
 
             Page<Balance> campaignResps =  balanceRepository.findAll(pageable);
 

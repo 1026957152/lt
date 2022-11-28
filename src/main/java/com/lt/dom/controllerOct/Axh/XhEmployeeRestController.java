@@ -24,6 +24,8 @@ import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -94,7 +96,7 @@ public class XhEmployeeRestController {
                     "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees")));
 
         entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"));
-        entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.get().getId(),null)).withRel("getPageEmployees"));
+        entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.get().getId(),null,null)).withRel("getPageEmployees"));
 
         return entityModel;
     }
@@ -142,7 +144,11 @@ public class XhEmployeeRestController {
 
     @Operation(summary = "3、list所有员工")
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/employees", produces = "application/json")
-    public PagedModel getEmployerList(@PathVariable long SUPPLIER_ID, Pageable pageable, PagedResourcesAssembler<EntityModel<EmployeeResp>> assembler) {
+    public PagedModel getEmployerList(@PathVariable long SUPPLIER_ID,
+                                      @PageableDefault(sort = {"createdDate",
+                                              "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
+
+                                      PagedResourcesAssembler<EntityModel<EmployeeResp>> assembler) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
         if(optionalSupplier.isEmpty()) {
@@ -227,7 +233,7 @@ public class XhEmployeeRestController {
         }
 
         Employee employee = optional.get();
-        Triplet<Supplier,Employee,User> componentRight = supplierService.updateEmployee(optional.get(),employerPojo);
+        Triplet<Supplier,Employee,User> componentRight = supplierService.updateEmployee(optional.get(),null);
 
 
 

@@ -8,6 +8,7 @@ import com.lt.dom.domain.SettleAccount;
 import com.lt.dom.oct.Asset;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.otcenum.EnumBussinessType;
+import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.otcenum.EnumSupplierStatus;
 import com.lt.dom.otcenum.EnumSupplierType;
 import org.springframework.hateoas.EntityModel;
@@ -22,7 +23,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SupplierResp  extends RepresentationModel<SupplierResp> {
+public class SupplierResp   {
 
 
     private String desc;
@@ -36,6 +37,12 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
     private String location;
     private int verify_status;
     private EntityModel<BalanceResp> balance;
+    private PhotoResp logo;
+    private String registered_address;
+    private String uniformSocialCreditCode;
+    private String registered_name;
+    private String contact_detail;
+    private String about;
 
     public static SupplierResp from(RequestResp request) {
         SupplierResp supplierResp = new SupplierResp();
@@ -62,11 +69,6 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
 
     public static SupplierResp from(Supplier supplier, List<Asset> assets) {
         SupplierResp supplierResp = SupplierResp.from(supplier);
-
-        supplierResp.add(linkTo(methodOn(RequestFuckRestController.class).applyCertification(supplier.getId(),null)).withRel("apply_for_approval_url"));
-        supplierResp.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.getId(),null)).withRel("employee_url"));
-
-
         supplierResp.setAssets(assets.stream().map(x->AssetResp.from(x)).collect(Collectors.toList()));
         return supplierResp;
     }
@@ -83,6 +85,12 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
         supplierResp.setStatus(supplier.getStatus());
         supplierResp.setStatus_text(supplier.getStatus().toString());
         supplierResp.setLocation(supplier.getLocationName());
+        supplierResp.setRegistered_address(supplier.getLocationName());
+
+        supplierResp.setUniformSocialCreditCode(supplier.getUniformSocialCreditCode());
+        supplierResp.setContact_detail(supplier.getContact_detail());
+        supplierResp.setRegistered_name(supplier.getName());
+        supplierResp.setAbout(supplier.getDesc());
         return supplierResp;
     }
 
@@ -92,6 +100,12 @@ public class SupplierResp  extends RepresentationModel<SupplierResp> {
         supplierResp.setName(supplier.getName());
         supplierResp.setDesc(supplier.getDesc());
         supplierResp.setLocation(supplier.getLocationName());
+        return supplierResp;
+    }
+    public static SupplierResp verySimpleFrom(Supplier supplier) {
+        SupplierResp supplierResp = new SupplierResp();
+        supplierResp.setCode(supplier.getCode());
+        supplierResp.setName(supplier.getName());
         return supplierResp;
     }
 
@@ -221,6 +235,54 @@ private String code;
 
     public EntityModel<BalanceResp> getBalance() {
         return balance;
+    }
+
+    public void setLogo(PhotoResp logo) {
+        this.logo = logo;
+    }
+
+    public PhotoResp getLogo() {
+        return logo;
+    }
+
+    public void setRegistered_address(String registered_address) {
+        this.registered_address = registered_address;
+    }
+
+    public String getRegistered_address() {
+        return registered_address;
+    }
+
+    public void setUniformSocialCreditCode(String uniformSocialCreditCode) {
+        this.uniformSocialCreditCode = uniformSocialCreditCode;
+    }
+
+    public String getUniformSocialCreditCode() {
+        return uniformSocialCreditCode;
+    }
+
+    public void setRegistered_name(String registered_name) {
+        this.registered_name = registered_name;
+    }
+
+    public String getRegistered_name() {
+        return registered_name;
+    }
+
+    public void setContact_detail(String contact_detail) {
+        this.contact_detail = contact_detail;
+    }
+
+    public String getContact_detail() {
+        return contact_detail;
+    }
+
+    public void setAbout(String about) {
+        this.about = about;
+    }
+
+    public String getAbout() {
+        return about;
     }
 
     public static class ContactDTO {

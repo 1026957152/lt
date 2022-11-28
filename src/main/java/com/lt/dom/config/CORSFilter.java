@@ -12,7 +12,7 @@ public class CORSFilter extends GenericFilterBean implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chaine)
             throws IOException, ServletException {
         HttpServletResponse httpResponse = (HttpServletResponse)response;
-        httpResponse.setHeader("Access-Control-Allow-Origin", "*");
+        httpResponse.setHeader("Access-Control-Allow-Origin", "http://10.0.0.41:8080");
         httpResponse.setHeader("Access-Control-Allow-Methods", "*");
         httpResponse.setHeader("Access-Control-Allow-Headers", "*");
         httpResponse.setHeader("Access-Control-Allow-Credentials", "false");

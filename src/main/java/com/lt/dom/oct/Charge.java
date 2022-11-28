@@ -12,15 +12,9 @@ import java.util.List;
 
 
 @Entity
-public class Charge {
-
-    @Version
-    private Integer version;
+public class Charge extends Base{
 
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    private long id;
     private String payment_code;
     
 //##@Column(unique=true) 
@@ -33,13 +27,7 @@ private String code;
     private EnumRefundStatus refundStatus;
     private String prepayId;
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     private LocalDateTime created;
     private Boolean livemode;

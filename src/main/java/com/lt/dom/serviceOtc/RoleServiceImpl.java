@@ -30,6 +30,7 @@ public class RoleServiceImpl {
     public List<EnumRole> get(Supplier supplier) {
 
 
+        System.out.println("查看具有的权限"+supplier.getBusiness_type());
         if(supplier.getBusiness_type().equals(EnumBussinessType.government_entity)){
             return Arrays.asList();
         }
@@ -39,7 +40,11 @@ public class RoleServiceImpl {
                // return Arrays.asList(EnumRole.ROLE_VOUCHER_REDEEMER);
 
             }
+            if(supplier.getType().equals(EnumSupplierType.A级景区)){
+                return Arrays.asList(EnumRole.ROLE_VOUCHER_REDEEMER,EnumRole.ROLE_VOUCHER_REDEEMER);
+                // return Arrays.asList(EnumRole.ROLE_VOUCHER_REDEEMER);
 
+            }
 
             if(supplier.getType().equals(EnumSupplierType.Bank)){
 

@@ -6,14 +6,8 @@ import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-public class MemberCertification {
-    @Version
-    private Integer version;
+public class MemberCertification extends Base {
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
 
 
 
@@ -34,13 +28,6 @@ public class MemberCertification {
   //  private String 人脸图片;
     private LocalDate update_at;
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;

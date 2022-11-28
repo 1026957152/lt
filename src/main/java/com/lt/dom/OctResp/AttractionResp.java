@@ -2,31 +2,78 @@ package com.lt.dom.OctResp;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.gson.Gson;
+import com.lt.dom.HeroCardInfoResp;
 import com.lt.dom.controllerOct.SupplierRestController;
-import com.lt.dom.oct.Attraction;
-import com.lt.dom.oct.ComponentRight;
-import com.lt.dom.oct.Supplier;
+import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.AttributeEditReq;
 import com.lt.dom.otcReq.LocationResp;
+import com.lt.dom.otcenum.EnumKnownfor;
+import com.lt.dom.otcenum.EnumProductStatus;
+import com.lt.dom.otcenum.EnumTags;
 import org.springframework.hateoas.EntityModel;
 
-import javax.persistence.*;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AttractionResp {
+public class AttractionResp extends BaseResp {
 
     private List<EntityModel> products;
     private EntityModel supplier;
-    private boolean visible;
+    private Boolean visible;
     private String code;
     private List<String> tags;
     private LocationResp location;
 
+    private EntityModel<HeroCardInfoResp> heroCardInfo;
+    private List<AttributeResp> knowBeforeYouGo;
+    private List<AttributeResp> gettingThere;
+    private List<AttributeResp> hoursOfOperation;
+    private Map selfGuidedTour;
+    private Boolean selfGuided;
+
+    private EntityModel<AssetResp> tourLink;
+    private EntityModel<AssetResp> bookingLink;
+    private EntityModel assets;
+    private Map assetMap;
+    private List assetList;
+    private EnumProductStatus status;
+    private String status_text;
+    private PhotoResp thumb;
+    private List knowfors;
+    private String privacyLevel_text;
+
+
+    public EntityModel<AssetResp> getTourLink() {
+        return tourLink;
+    }
+
+    public void setTourLink(EntityModel<AssetResp> tourLink) {
+        this.tourLink = tourLink;
+    }
+
+    public EntityModel<AssetResp> getBookingLink() {
+        return bookingLink;
+    }
+
+    public void setBookingLink(EntityModel<AssetResp> bookingLink) {
+        this.bookingLink = bookingLink;
+    }
+
+    public EntityModel<HeroCardInfoResp> getHeroCardInfo() {
+        return heroCardInfo;
+    }
+
+    public void setHeroCardInfo(EntityModel<HeroCardInfoResp> heroCardInfo) {
+        this.heroCardInfo = heroCardInfo;
+    }
 
     public static List<EnumLongIdResp> EnumList(List<Attraction> componentRightList) {
         return componentRightList.stream().map(x->{
@@ -47,6 +94,14 @@ public class AttractionResp {
         this.supplier = supplier;
     }
 
+
+    public static AttractionResp cityPassfrom20221026(Attraction attraction) {
+        AttractionResp attractionResp = new AttractionResp();
+
+        attractionResp.setName(attraction.getName());
+        attractionResp.setShortdesc(attraction.getShortdesc());
+        return attractionResp;
+    }
     public static AttractionResp from(Attraction attraction) {
         AttractionResp attractionResp = new AttractionResp();
         attractionResp.setName(attraction.getName());
@@ -58,7 +113,22 @@ public class AttractionResp {
         attractionResp.setLongitude(attraction.getLongitude());
 
 
-        attractionResp.setVisible(true);
+
+        attractionResp.setLongitude(attraction.getLongitude());
+        if(attraction.getTags_json() != null){
+            attractionResp.setTags(Arrays.stream((new Gson()).fromJson(attraction.getTags_json(),EnumTags[].class)).map(e->e.name()).toList());
+
+        }else{
+            attractionResp.setTags(Arrays.asList());
+
+        }
+
+
+        attractionResp.setCreatedDate(attraction.getCreatedDate());
+        attractionResp.setModifiedDate(attraction.getModifiedDate());
+        attractionResp.setStatus(attraction.getStatus());
+        attractionResp.setStatus_text(attraction.getStatus().toString());
+        attractionResp.setPrivacyLevel_text(attraction.getPrivacyLevel().toString());
 
         return attractionResp;
     }
@@ -70,6 +140,56 @@ public class AttractionResp {
         attractionResp.setThumbnail_image(photoResp);
 
         return attractionResp;
+    }
+
+    public static AttractionResp simpleFrom(Attraction attraction) {
+        AttractionResp attractionResp = new AttractionResp();
+        attractionResp.setName(attraction.getName());
+        attractionResp.setShortdesc(attraction.getShortdesc());
+
+        attractionResp.setStatus_text(attraction.getStatus().toString());
+
+        return attractionResp;
+
+    }
+    public static AttractionResp simpleFrom(Attraction attraction,PhotoResp photoResp) {
+        AttractionResp attractionResp = new AttractionResp();
+        attractionResp.setName(attraction.getName());
+        attractionResp.setShortdesc(attraction.getShortdesc());
+
+        if(attraction.getTags_json() != null){
+            attractionResp.setTags(Arrays.stream((new Gson()).fromJson(attraction.getTags_json(),EnumTags[].class)).map(e->e.name()).toList());
+
+        }else{
+            attractionResp.setTags(Arrays.asList());
+
+        }
+
+        if(attraction.getKnowfors().isEmpty()){
+            KnowforResp knowforResp = new KnowforResp();
+            knowforResp.setKnownfor_text(EnumKnownfor.History.toString());
+            knowforResp.setText(EnumKnownfor.History.toString());
+
+            attractionResp.setKnowfors(Arrays.asList(knowforResp));
+
+        }else{
+            attractionResp.setKnowfors(attraction.getKnowfors().stream().map(e->{
+                KnowforResp knowforResp = KnowforResp.from(e);
+                return knowforResp;
+            }).collect(Collectors.toList()));
+        }
+/*        attractionResp.setKnowfors(attraction.getKnowfors().stream().map(e->{
+            KnowforResp knowforResp = KnowforResp.from(e);
+            return knowforResp;
+        }).collect(Collectors.toList()));*/
+        attractionResp.setThumbnail_image(photoResp);
+
+        attractionResp.setStatus_text(attraction.getStatus().toString());
+        attractionResp.setThumbnail_image(photoResp);
+        return attractionResp;
+/*        attractionResp.setThumbnail_image(photoResp);
+
+        return attractionResp;*/
     }
 
 
@@ -189,11 +309,11 @@ public class AttractionResp {
         return products;
     }
 
-    public void setVisible(boolean visible) {
+    public void setVisible(Boolean visible) {
         this.visible = visible;
     }
 
-    public boolean getVisible() {
+    public Boolean getVisible() {
         return visible;
     }
 
@@ -219,5 +339,143 @@ public class AttractionResp {
 
     public LocationResp getLocation() {
         return location;
+    }
+
+    public void setKnowBeforeYouGo(List<AttributeResp> knowBeforeYouGo) {
+        this.knowBeforeYouGo = knowBeforeYouGo;
+    }
+
+    public List<AttributeResp> getKnowBeforeYouGo() {
+        return knowBeforeYouGo;
+    }
+
+    public  void setGettingThere(List<AttributeResp> gettingThere) {
+        this.gettingThere = gettingThere;
+    }
+
+    public List<AttributeResp> getGettingThere() {
+        return gettingThere;
+    }
+
+    public  void setHoursOfOperation(List<AttributeResp> hoursOfOperation) {
+        this.hoursOfOperation = hoursOfOperation;
+    }
+
+    public List<AttributeResp> getHoursOfOperation() {
+        return hoursOfOperation;
+    }
+
+    public <V, K> void setSelfGuidedTour(Map selfGuidedTour) {
+        this.selfGuidedTour = selfGuidedTour;
+    }
+
+    public Map getSelfGuidedTour() {
+        return selfGuidedTour;
+    }
+
+    public void setSelfGuided(Boolean selfGuided) {
+        this.selfGuided = selfGuided;
+    }
+
+    public Boolean isSelfGuided() {
+        return selfGuided;
+    }
+
+    public <T> void setAssets(EntityModel assets) {
+        this.assets = assets;
+    }
+
+    public EntityModel getAssets() {
+        return assets;
+    }
+
+    public void setAssetMap(Map assetMap) {
+        this.assetMap = assetMap;
+    }
+
+    public Map getAssetMap() {
+        return assetMap;
+    }
+
+    public void setAssetList(List assetList) {
+        this.assetList = assetList;
+    }
+
+    public List getAssetList() {
+        return assetList;
+    }
+
+    public void withAbout(List<Attribute> bookingRuleList) {
+
+        this.setKnowBeforeYouGo(bookingRuleList.stream()
+                .filter(e->"knowBeforeYouGo".equals(e.getKey()))
+                .map(e->{
+                    AttributeResp attributeEditReq = new AttributeResp();
+                    attributeEditReq.setName(e.getName());
+                    attributeEditReq.setDescription(e.getDescription());
+                    attributeEditReq.setType(FeatureTagResp.from(e.getFeatureType()));
+                    return attributeEditReq;
+
+                }).collect(Collectors.toList()));
+        this.setGettingThere(bookingRuleList.stream()
+                .filter(e->"gettingThere".equals(e.getKey()))
+                .map(e->{
+                    AttributeResp attributeEditReq = new AttributeResp();
+                    attributeEditReq.setName(e.getName());
+                    attributeEditReq.setDescription(e.getDescription());
+                    attributeEditReq.setType(FeatureTagResp.from(e.getFeatureType()));
+                    return attributeEditReq;
+
+                }).collect(Collectors.toList()));
+        this.setHoursOfOperation(bookingRuleList.stream()
+                .filter(e->"hoursOfOperation".equals(e.getKey()))
+                .map(e->{
+                    AttributeResp attributeEditReq = new AttributeResp();
+                    attributeEditReq.setName(e.getName());
+                    attributeEditReq.setDescription(e.getDescription());
+                    attributeEditReq.setType(FeatureTagResp.from(e.getFeatureType()));
+                    return attributeEditReq;
+
+                }).collect(Collectors.toList()));
+    }
+
+    public void setStatus(EnumProductStatus status) {
+        this.status = status;
+    }
+
+    public EnumProductStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus_text(String status_text) {
+        this.status_text = status_text;
+    }
+
+    public String getStatus_text() {
+        return status_text;
+    }
+
+    public void setThumb(PhotoResp thumb) {
+        this.thumb = thumb;
+    }
+
+    public PhotoResp getThumb() {
+        return thumb;
+    }
+
+    public <R> void setKnowfors(List knowfors) {
+        this.knowfors = knowfors;
+    }
+
+    public List getKnowfors() {
+        return knowfors;
+    }
+
+    public void setPrivacyLevel_text(String privacyLevel_text) {
+        this.privacyLevel_text = privacyLevel_text;
+    }
+
+    public String getPrivacyLevel_text() {
+        return privacyLevel_text;
     }
 }

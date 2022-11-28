@@ -1,15 +1,23 @@
 package com.lt.dom.otcReq;
 
+import com.lt.dom.otcenum.EnumSeatTier;
 import com.lt.dom.otcenum.EnumSeatType;
+
+import javax.validation.constraints.NotNull;
 
 public class SeatPojo {
 
 
+
+    @NotNull
     private int row;//	The seat's row
+    @NotNull
     private int column;//	The seat's column
-    private int seatName;//	The displayable seat name
+
+    private String seatName;//	The displayable seat name
+    @NotNull
     private EnumSeatType type;//
-    private String seatTier;//	The tier a seat is targeted at.
+    private EnumSeatTier seatTier;//	The tier a seat is targeted at.
 
     public int getRow() {
         return row;
@@ -27,11 +35,11 @@ public class SeatPojo {
         this.column = column;
     }
 
-    public int getSeatName() {
+    public String getSeatName() {
         return seatName;
     }
 
-    public void setSeatName(int seatName) {
+    public void setSeatName(String seatName) {
         this.seatName = seatName;
     }
 
@@ -43,11 +51,11 @@ public class SeatPojo {
         this.type = type;
     }
 
-    public String getSeatTier() {
+    public EnumSeatTier getSeatTier() {
         return seatTier;
     }
 
-    public void setSeatTier(String seatTier) {
+    public void setSeatTier(EnumSeatTier seatTier) {
         this.seatTier = seatTier;
     }
 }

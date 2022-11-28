@@ -155,7 +155,7 @@ public class 授信ServiceImpl {
             MerchantsSettledReq requestMerchants_settled =  gson.fromJson(request.getAdditional_info(), MerchantsSettledReq.class);
 
 
-            marchertSettledService.merchants_settled(requestMerchants_settled,request.getOwner());
+            //marchertSettledService.merchants_settled(requestMerchants_settled,request.getOwner());
         }
 
         request.setStatus(EnumRequestStatus.APPROVE);
@@ -243,13 +243,13 @@ public class 授信ServiceImpl {
             MerchantsSettledReq merchantsSettledReq = gson.fromJson(request.getAdditional_info(), MerchantsSettledReq.class);
 
 
-            Map<EnumDocumentType,TempDocument> enumDocumentTypeTempDocumentMap = fileStorageService.loadTempDocument(Arrays.asList(
+/*            Map<EnumDocumentType,TempDocument> enumDocumentTypeTempDocumentMap = fileStorageService.loadTempDocument(Arrays.asList(
                     Pair.with(EnumDocumentType.business_license,merchantsSettledReq.getBussiness_license()),
                     Pair.with(EnumDocumentType.license,merchantsSettledReq.getLicense_image()),
                     Pair.with(EnumDocumentType.liability_insurance,merchantsSettledReq.getLiability_insurance_image()),
                     Pair.with(EnumDocumentType.license_for_opening_bank_account,merchantsSettledReq.getLicense_for_opening_bank_account())
-            ));
-            MerchantsSettledReqResp merchantsSettledReqResp1 = MerchantsSettledReqResp.from(merchantsSettledReq, enumDocumentTypeTempDocumentMap);
+            ));*/
+            MerchantsSettledReqResp merchantsSettledReqResp1 = MerchantsSettledReqResp.from(merchantsSettledReq);
 
 
             RequestResp requestResp = RequestResp.fromWithMearchantSettled(request, reviewers,merchantsSettledReqResp1);
@@ -349,15 +349,17 @@ public class 授信ServiceImpl {
     RequestResp Merchants_settled_images(Request request,List<Reviewer> reviewers){
         MerchantsSettledReq merchantsSettledReq = MerchantsSettledReqResp.fromJsonString(request.getAdditional_info());
 
+/*
         Map<EnumDocumentType,TempDocument> enumDocumentTypeTempDocumentMap = fileStorageService.loadTempDocument(Arrays.asList(
                 Pair.with(EnumDocumentType.business_license,merchantsSettledReq.getBussiness_license()),
                 Pair.with(EnumDocumentType.license,merchantsSettledReq.getLicense_image()),
                 Pair.with(EnumDocumentType.liability_insurance,merchantsSettledReq.getLiability_insurance_image()),
                 Pair.with(EnumDocumentType.license_for_opening_bank_account,merchantsSettledReq.getLicense_for_opening_bank_account())
         ));
+*/
 
 
-        MerchantsSettledReqResp merchantsSettledReqResp1 = MerchantsSettledReqResp.from(merchantsSettledReq, enumDocumentTypeTempDocumentMap);
+        MerchantsSettledReqResp merchantsSettledReqResp1 = MerchantsSettledReqResp.from(merchantsSettledReq);
         RequestResp requestResp = RequestResp.fromWithMearchantSettled(request,reviewers,merchantsSettledReqResp1);
         merchantsSettledReq.setUser_phone("");
         merchantsSettledReq.setUser_name("");

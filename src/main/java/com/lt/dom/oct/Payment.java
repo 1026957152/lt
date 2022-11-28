@@ -1,22 +1,14 @@
 package com.lt.dom.oct;
 
-import com.lt.dom.otcenum.EnumPayChannel;
-import com.lt.dom.otcenum.EnumPaymentFlow;
-import com.lt.dom.otcenum.EnumPaymentOption;
-import com.lt.dom.otcenum.EnumPaymentStatus;
+import com.lt.dom.otcenum.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-public class Payment {
-    @Version
-    private Integer version;
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    private long id;//	integer	The payment’s unique ID
-    
+public class Payment extends Base{
+
 //##@Column(unique=true) 
 private String code;//	string	Object type, payment
 
@@ -42,8 +34,26 @@ private String code;//	string	Object type, payment
 
     private String payment_method_json;
 
-    @Transient
-    private List<EnumPayChannel> payment_method;
+
+    private EnumPayChannel payment_method;
+
+
+    private EnumPaymentSourceType sourceType;
+    private long booking;
+    private EnumIdType log_customer_id_type;
+    private String log_customer_phone;
+    private String log_customer_id_number;
+    private String log_customer_name;
+
+    public EnumPaymentSourceType getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(EnumPaymentSourceType sourceType) {
+        this.sourceType = sourceType;
+    }
+
+    @Enumerated(EnumType.STRING)
     private EnumPaymentStatus status;
     private EnumPaymentFlow payment_flow;
     private boolean split;
@@ -57,13 +67,7 @@ private String code;//	string	Object type, payment
         this.code = code;
     }
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public String getObject() {
         return object;
@@ -217,13 +221,7 @@ private String code;//	string	Object type, payment
         return recipient;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
 
     public String getPayment_method_json() {
         return payment_method_json;
@@ -233,13 +231,6 @@ private String code;//	string	Object type, payment
         this.payment_method_json = payment_method_json;
     }
 
-    public List<EnumPayChannel> getPayment_method() {
-        return payment_method;
-    }
-
-    public void setPayment_method(List<EnumPayChannel> payment_method) {
-        this.payment_method = payment_method;
-    }
 
     public void setStatus(EnumPaymentStatus status) {
         this.status = status;
@@ -272,5 +263,55 @@ private String code;//	string	Object type, payment
 
     public LocalDateTime getExpireTime() {
         return expireTime;
+    }
+
+    public void setPayment_method(EnumPayChannel payment_method) {
+
+        this.payment_method = payment_method;
+    }
+
+    public EnumPayChannel getPayment_method() {
+        return payment_method;
+    }
+
+    public long getBooking() {
+        return booking;
+    }
+
+    public void setBooking(long booking) {
+        this.booking = booking;
+    }
+
+    public void setLog_customer_id_type(EnumIdType log_customer_id_type) {
+
+        this.log_customer_id_type = log_customer_id_type;
+    }
+
+    public EnumIdType getLog_customer_id_type() {
+        return log_customer_id_type;
+    }
+
+    public void setLog_customer_phone(String log_customer_phone) {
+        this.log_customer_phone = log_customer_phone;
+    }
+
+    public String getLog_customer_phone() {
+        return log_customer_phone;
+    }
+
+    public void setLog_customer_id_number(String log_customer_id_number) {
+        this.log_customer_id_number = log_customer_id_number;
+    }
+
+    public String getLog_customer_id_number() {
+        return log_customer_id_number;
+    }
+
+    public void setLog_customer_name(String log_customer_name) {
+        this.log_customer_name = log_customer_name;
+    }
+
+    public String getLog_customer_name() {
+        return log_customer_name;
     }
 }

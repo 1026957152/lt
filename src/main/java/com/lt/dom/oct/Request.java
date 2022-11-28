@@ -10,14 +10,23 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-public class Request {
-    @Version
-    private Integer version;
+public class Request extends Base{
+
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
     private long owner;
+    @NotNull
+    private Boolean active;
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
     @Size(max = 10000)
     private String additional_info;
@@ -36,7 +45,7 @@ private String code;
         this.additional_info = additional_info;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
@@ -44,7 +53,10 @@ private String code;
         this.id = id;
     }
 
+
+    @Enumerated(EnumType.STRING)
     private EnumRequestType type;
+
     private String idId;
     private String url;
     private long source;

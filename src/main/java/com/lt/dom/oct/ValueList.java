@@ -14,20 +14,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Entity
-public class ValueList {
-    @Version
-    private Integer version;
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
+public class ValueList extends Base{
+
 
 
     private String alias;
     private String name;
     private EnumValueListItemType item_type;
     private LocalDateTime created;
-    private String created_by;
+
 
     private String metadata;
     
@@ -39,6 +34,7 @@ private String code;
     private String type_text;
     private EnumValueType item_value_type;
     private LocalDateTime update_at;
+    private boolean sortable;
 
 
     public static List List(List<ValueList> componentRightMap) {
@@ -52,13 +48,7 @@ private String code;
         }).collect(Collectors.toList());
     }
 
-    public Integer getVersion() {
-        return version;
-    }
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
 
     public EnumLogicalType getLogical_type() {
         return logical_type;
@@ -68,13 +58,7 @@ private String code;
         this.logical_type = logical_type;
     }
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public String getAlias() {
         return alias;
@@ -108,13 +92,6 @@ private String code;
         this.created = created;
     }
 
-    public String getCreated_by() {
-        return created_by;
-    }
-
-    public void setCreated_by(String created_by) {
-        this.created_by = created_by;
-    }
 
     public String getMetadata() {
         return metadata;
@@ -162,5 +139,13 @@ private String code;
 
     public void setUpdate_at(LocalDateTime update_at) {
         this.update_at = update_at;
+    }
+
+    public void setSortable(boolean sortable) {
+        this.sortable = sortable;
+    }
+
+    public boolean isSortable() {
+        return sortable;
     }
 }

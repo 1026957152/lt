@@ -3,31 +3,32 @@ package com.lt.dom.serviceOtc;
 
 import com.lt.dom.OctResp.AssetResp;
 import com.lt.dom.config.LtConfig;
-import com.lt.dom.config.WxPayConfig;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumAssetType;
 import com.lt.dom.repository.AssetRepository;
-import com.lt.dom.repository.BookingRuleRepository;
+import com.lt.dom.util.ZxingBarcodeGenerator;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
+import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Service
 public class AssetServiceImpl {
 
     @Autowired
     private LtConfig ltConfig;
-
     @Autowired
     private AssetRepository assetRepository;
+    @Autowired
+    private IdGenServiceImpl idGenService;
 
-    public Asset newQr(Campaign campaign) {
+    public Asset getWithNew(Campaign campaign) {
 
         Asset asset = new Asset();
         asset.setType(EnumAssetType.qr);
@@ -40,9 +41,18 @@ public class AssetServiceImpl {
     }
 
 
+    @Transactional
+    public Asset regenerate(Asset asset) {
 
 
-    public Asset newQr(Supplier supplier) {
+    //    Asset asset = new Asset();
+        asset.setType(EnumAssetType.unvalid);
+        asset = assetRepository.save(asset);
+
+        return asset;
+    }
+
+    public Asset getWithNew(Supplier supplier) {
 
         Asset asset = new Asset();
         asset.setType(EnumAssetType.qr);
@@ -69,7 +79,7 @@ public class AssetServiceImpl {
 
         return assetRepository.saveAll(assets);
     }
-    public List<Asset> newQr(List<Voucher> vouchers) {
+    public List<Asset> getWithNew(List<Voucher> vouchers) {
 
         List<Asset> assets = vouchers.stream().map(x->{
             Asset asset = new Asset();
@@ -113,25 +123,50 @@ public class AssetServiceImpl {
         return assets;
     }
 
-    public Asset newQr(User user) {
+    public Asset getWithNew(User user) {
 
-        return newQr(user.getCode(),user.getId());
+        return getWithNew(user.getCode(),user.getId());
 
     }
 
-    public Asset newQr(String code,long id) {
+    public Asset getWithNew(String code, long id) {
         Asset asset = new Asset();
         asset.setType(EnumAssetType.qr);
         asset.setSource(id);
         asset.setIdId(code);
         asset.setUrl(ltConfig.getUrl()+"/q/"+asset.getIdId());
+
+
         asset = assetRepository.save(asset);
 
         return asset;
     }
 
-    public Asset newQr(TourBooking tourBooking) {
-        return newQr(tourBooking.getCode(),tourBooking.getId());
+    public Asset getWithNew(String code, Long id, EnumAssetType type) {
+
+        Optional<Asset> assets = assetRepository.findByTypeAndIdId(type,code);
+
+        if(assets.isEmpty()){
+            Asset asset = new Asset();
+            asset.setType(type);
+            asset.setCode(idGenService.nextId(""));
+            asset.setSource(id);
+            asset.setIdId(code);
+            asset.setUrl(ltConfig.getUrl()+"/q/"+asset.getIdId());
+
+            asset = assetRepository.save(asset);
+/*            asset.setLinkCode(asset.getId()+"");
+            asset = assetRepository.save(asset);*/
+            return asset;
+        }
+
+
+        return assets.get();
+    }
+
+
+    public Asset getWithNew(TourBooking tourBooking) {
+        return getWithNew(tourBooking.getCode(),tourBooking.getId());
     }
 
 

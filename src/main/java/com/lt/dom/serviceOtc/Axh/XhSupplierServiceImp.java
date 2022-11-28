@@ -108,10 +108,10 @@ public class XhSupplierServiceImp {
         supplier.setLocality(pojo.getLocality());
         supplier.setRegion(pojo.getRegion());
         supplier.setState(pojo.getState());*/
-        supplier.setLocation(pojo.getLocation());
+     //   supplier.setLocation(pojo.getLocation());
         supplier.setLocationName(pojo.getLocationName());
-        supplier.setLatitude(Float.valueOf(pojo.getLat()));
-        supplier.setLongitude(Float.valueOf(pojo.getLng()));
+        supplier.setLatitude(Double.valueOf(pojo.getLat()));
+        supplier.setLongitude(Double.valueOf(pojo.getLng()));
 
         supplier.setName(pojo.getSupplierName());
         supplier.setCode(idGenService.supplierNo());

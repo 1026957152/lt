@@ -6,35 +6,43 @@ import javax.persistence.Id;
 import javax.persistence.Version;
 
 @Entity
-public class Partner {
-    @Version
-    private Integer version;
-    @Id
-    private long id;
-    private long supplierId;
-    private long partnerId;
+public class Partner extends Base{
 
-    public long getId() {
-        return id;
+    private long supplier;
+    private long partner;
+    private String code;
+    private String shareCode;
+
+
+    public long getSupplier() {
+        return supplier;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setSupplier(long supplierId) {
+        this.supplier = supplierId;
     }
 
-    public long getSupplierId() {
-        return supplierId;
+    public long getPartner() {
+        return partner;
     }
 
-    public void setSupplierId(long supplierId) {
-        this.supplierId = supplierId;
+    public void setPartner(long partnerId) {
+        this.partner = partnerId;
     }
 
-    public long getPartnerId() {
-        return partnerId;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public void setPartnerId(long partnerId) {
-        this.partnerId = partnerId;
+    public String getCode() {
+        return code;
+    }
+
+    public void setShareCode(String shareCode) {
+        this.shareCode = shareCode;
+    }
+
+    public String getShareCode() {
+        return shareCode;
     }
 }

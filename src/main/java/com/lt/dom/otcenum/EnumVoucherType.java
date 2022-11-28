@@ -7,6 +7,14 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 public enum EnumVoucherType {
+    TICKET(""),
+    VOUCHER(""),
+
+    TICKET_THEATRE(""),
+    TICKET_BUS(""),
+    Multi_Ticket(""),
+
+
 
     GIFT_VOUCHER(""),
     DISCOUNT_VOUCHER(""),

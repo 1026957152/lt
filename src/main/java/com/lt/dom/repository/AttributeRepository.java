@@ -10,5 +10,5 @@ public interface AttributeRepository extends JpaRepository<Attribute
 			, Long> {
 
 
-
+    List<Attribute> findAllByObjectCode(String code);
 }

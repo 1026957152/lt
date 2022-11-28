@@ -1,7 +1,7 @@
 package com.lt.dom.oct;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.otcenum.*;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -10,26 +10,35 @@ import java.util.List;
 
 
 @Entity
-public class Reservation {
-    @Version
-    private Integer version;
-
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
+public class Reservation extends Base{
+    @Enumerated(EnumType.STRING)
     private EnumProductType productType;
     
 //##@Column(unique=true) 
 private String code;
 
     private String additional_info;
-    @NotNull
+
     private Long user;
     private boolean paymentSplit;
     private String paymentSplitCode;
     private String paymentMethods_json;
+    @Enumerated(EnumType.STRING)
     private EnumPayChannel paymentMethod;
+
+
+    @Enumerated(EnumType.STRING)
+    private EnumPayment_behavior payment_behavior;
+    private String trackingId;
+
+    public EnumPayment_behavior getPayment_behavior() {
+        return payment_behavior;
+    }
+
+    public void setPayment_behavior(EnumPayment_behavior payment_behavior) {
+        this.payment_behavior = payment_behavior;
+    }
+
     private String note;
 
     private Integer hold_time_seconds;
@@ -39,14 +48,62 @@ private String code;
 
     private LocalDateTime expiresAt;
 
+    private String contact_fullName;
+    private String contact_emailAddress;
+    private String contact_phoneNumber;
 
+    @Enumerated(EnumType.STRING)
+    private EnumShippingAddressCollection shippingAddressCollection;
+
+    @Length(max = 1000)
+    private String shipingAddress_json;
+    private Long shippingRate;
+    private String log_buyer_name;
+    private String log_buyer_phone;
+
+
+    @Enumerated(EnumType.STRING)
+    private EnumIdType log_buyer_id_ntype;
+    private String log_buyer_id_number;
+    private EnumPlatform platform;
+
+    public String getContact_fullName() {
+        return contact_fullName;
+    }
+
+    public void setContact_fullName(String contact_fullName) {
+        this.contact_fullName = contact_fullName;
+    }
+
+    public String getContact_emailAddress() {
+        return contact_emailAddress;
+    }
+
+    public void setContact_emailAddress(String contact_emailAddress) {
+        this.contact_emailAddress = contact_emailAddress;
+    }
+
+    public String getContact_phoneNumber() {
+        return contact_phoneNumber;
+    }
+
+    public void setContact_phoneNumber(String contact_phoneNumber) {
+        this.contact_phoneNumber = contact_phoneNumber;
+    }
+
+    /*    contact
+    The customer contact details. These values are set in the booking confirmation step.
+            contact.fullName
+    The full name of the guest
+    contact.emailAddress
+    The email of the guest
+    contact.phoneNumber
+    The phone number of the guest*/
 
     private LocalDateTime confirmedAt;
     private LocalDateTime cancelled_at;
 
 
-    @NotNull
-    private LocalDateTime created_at;
 
     public LocalDateTime getExpiresAt() {
         return expiresAt;
@@ -71,13 +128,17 @@ private String code;
     public void setHold_time_seconds(Integer hold_time_seconds) {
         this.hold_time_seconds = hold_time_seconds;
     }
+    @Enumerated(EnumType.STRING)
 
     @NotNull
     private EnumFulfillment_behavior fulfillment_behavior;
+    @Enumerated(EnumType.STRING)
 
 
     @NotNull
     private EnumValidateWay setValidate_way;
+    @Enumerated(EnumType.STRING)
+
     private EnumValidationStatus validationStatus;
 
 
@@ -89,18 +150,12 @@ private String code;
     private long dineInDetails;
 
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
     @Transient
     List<RoomStay> roomStays; // 表示库存 多久的库存。
 
 
+    @Enumerated(EnumType.STRING)
 
     @NotNull
     EnumBookingType type;
@@ -164,6 +219,7 @@ private String code;
 
 
 
+    @Enumerated(EnumType.STRING)
 
     @NotNull
     private EnumBookingStatus status;
@@ -197,15 +253,15 @@ private String code;
 
 
     @Transient
-    List<BookingProductFuck> products;
+    List<LineItem> products;
     @Transient
     List<BookingPayment> payments;
 
-    public List<BookingProductFuck> getProducts() {
+    public List<LineItem> getProducts() {
         return products;
     }
 
-    public void setProducts(List<BookingProductFuck> products) {
+    public void setProducts(List<LineItem> products) {
         this.products = products;
     }
 
@@ -388,11 +444,76 @@ private String code;
         return validationStatus;
     }
 
-    public LocalDateTime getCreated_at() {
-        return created_at;
+
+    public void setShippingAddressCollection(EnumShippingAddressCollection shippingAddressCollection) {
+        this.shippingAddressCollection = shippingAddressCollection;
     }
 
-    public void setCreated_at(LocalDateTime created_at) {
-        this.created_at = created_at;
+    public EnumShippingAddressCollection getShippingAddressCollection() {
+        return shippingAddressCollection;
+    }
+
+    public void setShipingAddress_json(String shipingAddress_json) {
+        this.shipingAddress_json = shipingAddress_json;
+    }
+
+    public String getShipingAddress_json() {
+        return shipingAddress_json;
+    }
+
+    public void setShippingRate(Long shippingRate) {
+        this.shippingRate = shippingRate;
+    }
+
+    public Long getShippingRate() {
+        return shippingRate;
+    }
+
+    public void setLog_buyer_name(String log_buyer_name) {
+        this.log_buyer_name = log_buyer_name;
+    }
+
+    public String getLog_buyer_name() {
+        return log_buyer_name;
+    }
+
+    public void setLog_buyer_phone(String log_buyer_phone) {
+        this.log_buyer_phone = log_buyer_phone;
+    }
+
+    public String getLog_buyer_phone() {
+        return log_buyer_phone;
+    }
+
+    public void setLog_buyer_id_ntype(EnumIdType log_buyer_id_ntype) {
+        this.log_buyer_id_ntype = log_buyer_id_ntype;
+    }
+
+    public EnumIdType getLog_buyer_id_ntype() {
+        return log_buyer_id_ntype;
+    }
+
+    public void setLog_buyer_id_number(String log_buyer_id_number) {
+        this.log_buyer_id_number = log_buyer_id_number;
+    }
+
+    public String getLog_buyer_id_number() {
+        return log_buyer_id_number;
+    }
+
+    public void setPlatform(EnumPlatform platform) {
+        this.platform = platform;
+    }
+
+    public EnumPlatform getPlatform() {
+        return platform;
+    }
+
+    public void setTrackingId(String tracking_id) {
+        this.trackingId = tracking_id;
+    }
+
+    public String getTrackingId() {
+        return trackingId;
     }
 }

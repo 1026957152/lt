@@ -3,6 +3,8 @@ package com.lt.dom.OctResp.home;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.otcenum.EnumLayoutFeatured;
+import com.lt.dom.otcenum.EnumLayoutFeaturedFuction;
+import com.lt.dom.otcenum.EnumLayoutFeaturedOther;
 import com.lt.dom.otcenum.Enumfeatured;
 
 
@@ -12,13 +14,33 @@ public class FeatureResp {
 
     private String title;
     private String Display_name;
-    private PhotoResp feature_image;
+    private String feature_image;
 
     private String url;
     private String icon;
     private Enumfeatured type;
     private String path;
     private boolean show = true;
+    public static FeatureResp from(EnumLayoutFeaturedFuction e) {
+        FeatureResp featureResp = new FeatureResp();
+
+        featureResp.setTitle(e.getTitle());
+        featureResp.setDisplay_name(e.getTitle());
+        featureResp.setIcon(e.getIcon());
+        featureResp.setUrl(e.getUrl());
+        return featureResp;
+    }
+
+
+    public static FeatureResp from(EnumLayoutFeaturedOther e) {
+        FeatureResp featureResp = new FeatureResp();
+
+        featureResp.setTitle(e.getTitle());
+        featureResp.setDisplay_name(e.getTitle());
+        featureResp.setIcon(e.getIcon());
+        featureResp.setUrl(e.getUrl());
+        return featureResp;
+    }
 
     public boolean isShow() {
         return show;
@@ -42,7 +64,7 @@ public class FeatureResp {
         //featureResp.setType(e);
         featureResp.setTitle(e.getTitle());
        // featureResp.setDisplay_name(e.getTitle());
-        featureResp.setIcon(e.getIcon());
+        featureResp.setIcon(e.getFeature_image());
         featureResp.setUrl(e.getUrl());
         return featureResp;
     }
@@ -62,11 +84,11 @@ public class FeatureResp {
         Display_name = display_name;
     }
 
-    public PhotoResp getFeature_image() {
+    public String getFeature_image() {
         return feature_image;
     }
 
-    public void setFeature_image(PhotoResp feature_image) {
+    public void setFeature_image(String feature_image) {
         this.feature_image = feature_image;
     }
 

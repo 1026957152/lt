@@ -1,6 +1,9 @@
 package com.lt.dom.controllerOct.Axh.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.otcenum.enum_.EnumClinchPayWay还款方式;
+import com.lt.dom.otcenum.enum_.EnumGuarantyWay担保方式;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -22,9 +25,9 @@ public class AddClinchInfoReq {
 
 
     //@JsonProperty("businessType")
-    private Integer businessType_业务类型; //业务类型
+  //  private Integer businessType_业务类型; //业务类型
     //@JsonProperty("clinchGuarantyWay")
-    private Integer clinchGuarantyWay_担保方式; //担保方式
+    private EnumGuarantyWay担保方式 clinchGuarantyWay_担保方式; //担保方式
 
 
 
@@ -40,14 +43,14 @@ public class AddClinchInfoReq {
     private Integer clinchLoanRate_贷款年化利率; //贷款年化利率(%)：
     //@JsonProperty("clinchPayWay")
   //  @NotNull
-    private Integer clinchPayWay_还款方式; //还款方式
+    private EnumClinchPayWay还款方式 clinchPayWay_还款方式; //还款方式
 
 
     //@JsonProperty("clinchTime")
     @NotNull
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-
-    private LocalDate clinchTime_成交时间;  //成交时间： yyyy-MM-dd
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime clinchTime_成交时间;  //成交时间： yyyy-MM-dd
 
 
 
@@ -63,19 +66,12 @@ public class AddClinchInfoReq {
         this.attachment放款证明或其他补充资料 = attachment放款证明或其他补充资料;
     }
 
-    public Integer getBusinessType_业务类型() {
-        return businessType_业务类型;
-    }
 
-    public void setBusinessType_业务类型(Integer businessType_业务类型) {
-        this.businessType_业务类型 = businessType_业务类型;
-    }
-
-    public Integer getClinchGuarantyWay_担保方式() {
+    public EnumGuarantyWay担保方式 getClinchGuarantyWay_担保方式() {
         return clinchGuarantyWay_担保方式;
     }
 
-    public void setClinchGuarantyWay_担保方式(Integer clinchGuarantyWay_担保方式) {
+    public void setClinchGuarantyWay_担保方式(EnumGuarantyWay担保方式 clinchGuarantyWay_担保方式) {
         this.clinchGuarantyWay_担保方式 = clinchGuarantyWay_担保方式;
     }
 
@@ -103,19 +99,19 @@ public class AddClinchInfoReq {
         this.clinchLoanRate_贷款年化利率 = clinchLoanRate_贷款年化利率;
     }
 
-    public Integer getClinchPayWay_还款方式() {
+    public EnumClinchPayWay还款方式 getClinchPayWay_还款方式() {
         return clinchPayWay_还款方式;
     }
 
-    public void setClinchPayWay_还款方式(Integer clinchPayWay_还款方式) {
+    public void setClinchPayWay_还款方式(EnumClinchPayWay还款方式 clinchPayWay_还款方式) {
         this.clinchPayWay_还款方式 = clinchPayWay_还款方式;
     }
 
-    public LocalDate getClinchTime_成交时间() {
+    public LocalDateTime getClinchTime_成交时间() {
         return clinchTime_成交时间;
     }
 
-    public void setClinchTime_成交时间(LocalDate clinchTime_成交时间) {
+    public void setClinchTime_成交时间(LocalDateTime clinchTime_成交时间) {
         this.clinchTime_成交时间 = clinchTime_成交时间;
     }
 

@@ -12,10 +12,14 @@ public enum EnumValueListItemType {
     case_sensitive_string("case_sensitive_string"),
     customer_id("customer_id"),
     supplier_id("supplier_id"),
+    attraction_id("supplier_id"),
+    media_id("media_id"),
+
+    comment_id("comment_id"),
 
 
     product("product"),
-
+    movie_id("comment_id"),
     ;
 
 

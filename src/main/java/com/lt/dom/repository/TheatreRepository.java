@@ -10,4 +10,5 @@ public interface TheatreRepository extends JpaRepository<Theatre
 			, Long> {
 
 
+    List<Theatre> findAllBySupplier(long id);
 }

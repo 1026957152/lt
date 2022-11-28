@@ -13,4 +13,5 @@ public interface PricingTypeRepository extends JpaRepository<PricingType
 
     List<PricingType> findByProductIdIn(List<Long> collect);
 
+    void deleteAllByProductId(long id);
 }

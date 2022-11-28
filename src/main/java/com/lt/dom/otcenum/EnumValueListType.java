@@ -13,6 +13,22 @@ public enum EnumValueListType {
     home_page_attraction_recommendation("home_page_attraction_recommendation"),
 
 
+    hero_pass("city_pass_inspired"),
+    hero_pass_inspired("city_pass_inspired"),
+    hero_pass_travelers_reviews("city_pass_travelers_reviews"),
+
+    city_pass("city_pass_inspired"),
+
+
+    mini_app_carousel("mini_app_carousel"),
+
+
+    high_value_customer("high_value_customer"),
+
+
+    mini_app_movie_recommendation("mini_app_movie_recommendation"),
+
+
     ;
 
 
@@ -33,6 +49,8 @@ public enum EnumValueListType {
 
         String displayStatusString = resourceBundle.getString("page.systemadministration.valuelist.type."
                 + this.name());
+
+
         return displayStatusString;
     }
 }

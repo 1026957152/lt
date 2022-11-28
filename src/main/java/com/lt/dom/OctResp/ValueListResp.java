@@ -19,12 +19,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class ValueListResp {
+public class ValueListResp extends BaseResp{
 
     private String alias;
     private String name;
     private EnumValueListItemType item_type;
-    private LocalDateTime created;
+
     private String created_by;
 
     private String metadata;
@@ -35,7 +35,8 @@ private String code;
     private List<ValueListItem> items;
     private EnumValueListType type;
     private String type_text;
-    private LocalDateTime update_at;
+    private String status;
+
 
     public static ValueListResp from(ValueList user, List<ValueListItem> valueListItems) {
 
@@ -45,12 +46,13 @@ private String code;
         valueListResp.setMetadata(user.getMetadata());
         valueListResp.setName(user.getName());
         valueListResp.setItem_type(user.getItem_type());
-        valueListResp.setCreated(user.getCreated());
-        valueListResp.setCreated_by(user.getCreated_by());
+
+        valueListResp.setStatus("测试");
         valueListResp.setNumber(valueListItems.size());
         valueListResp.setType(user.getType());
         valueListResp.setType_text(user.getType().toString());
-        valueListResp.setUpdate_at(user.getUpdate_at());
+        valueListResp.setCreatedDate(user.getCreatedDate());
+        valueListResp.setModifiedDate(user.getModifiedDate());
         valueListResp.setItems(valueListItems);
         return valueListResp;
     }
@@ -82,13 +84,7 @@ private String code;
         this.item_type = item_type;
     }
 
-    public LocalDateTime getCreated() {
-        return created;
-    }
 
-    public void setCreated(LocalDateTime created) {
-        this.created = created;
-    }
 
     public String getCreated_by() {
         return created_by;
@@ -146,11 +142,11 @@ private String code;
         return type_text;
     }
 
-    public void setUpdate_at(LocalDateTime update_at) {
-        this.update_at = update_at;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public LocalDateTime getUpdate_at() {
-        return update_at;
+    public String getStatus() {
+        return status;
     }
 }

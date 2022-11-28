@@ -9,6 +9,8 @@ import java.util.ResourceBundle;
 public enum EnumRefundStatus {
     pending("barcode"),
     succeeded("succeeded"),
+    partial_succeeded("succeeded"),
+
     failed("failed"),
 
 
@@ -17,7 +19,7 @@ public enum EnumRefundStatus {
     canceled("canceled"),
 
 
-
+   // PENDING, COMPLETED, REJECTED, or FAILED.
 
 //    pending, succeeded, or failed. For other types of refunds, it can be pending, requires_action, succeeded, failed, or canceled
 

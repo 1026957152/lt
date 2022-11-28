@@ -20,6 +20,16 @@ public class XydToXhPushRequestJsonFit {
     private ProductInfoDTO productInfo;
     @JsonProperty("instInfo")
     private InstInfoDTO instInfo;
+    @JsonProperty("crAmount")
+    private Float crAmount;
+
+    public Float getCrAmount() {
+        return crAmount;
+    }
+
+    public void setCrAmount(Float crAmount) {
+        this.crAmount = crAmount;
+    }
 
     public BaseInfoDTO getBaseInfo() {
         return baseInfo;
@@ -202,7 +212,7 @@ public class XydToXhPushRequestJsonFit {
         }
     }
     @NoArgsConstructor
-    @Data
+
     public static class ProductInfoDTO {
         @JsonProperty("applyCount")
         private String applyCount;
@@ -256,6 +266,214 @@ public class XydToXhPushRequestJsonFit {
         private Long userId;
         @JsonProperty("verifyTime")
         private String verifyTime;
+
+        public String getApplyCount() {
+            return applyCount;
+        }
+
+        public void setApplyCount(String applyCount) {
+            this.applyCount = applyCount;
+        }
+
+        public String getCreateBy() {
+            return createBy;
+        }
+
+        public void setCreateBy(String createBy) {
+            this.createBy = createBy;
+        }
+
+        public Long getCreateTime() {
+            return createTime;
+        }
+
+        public void setCreateTime(Long createTime) {
+            this.createTime = createTime;
+        }
+
+        public Integer getDisabled() {
+            return disabled;
+        }
+
+        public void setDisabled(Integer disabled) {
+            this.disabled = disabled;
+        }
+
+        public String getGuarantyWay() {
+            return guarantyWay;
+        }
+
+        public void setGuarantyWay(String guarantyWay) {
+            this.guarantyWay = guarantyWay;
+        }
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public Integer getInstitutionId() {
+            return institutionId;
+        }
+
+        public void setInstitutionId(Integer institutionId) {
+            this.institutionId = institutionId;
+        }
+
+        public String getLiaison() {
+            return liaison;
+        }
+
+        public void setLiaison(String liaison) {
+            this.liaison = liaison;
+        }
+
+        public String getLoanAmountHigh() {
+            return loanAmountHigh;
+        }
+
+        public void setLoanAmountHigh(String loanAmountHigh) {
+            this.loanAmountHigh = loanAmountHigh;
+        }
+
+        public String getLoanAmountLow() {
+            return loanAmountLow;
+        }
+
+        public void setLoanAmountLow(String loanAmountLow) {
+            this.loanAmountLow = loanAmountLow;
+        }
+
+        public String getLoanLimitLong() {
+            return loanLimitLong;
+        }
+
+        public void setLoanLimitLong(String loanLimitLong) {
+            this.loanLimitLong = loanLimitLong;
+        }
+
+        public String getLoanLimitShort() {
+            return loanLimitShort;
+        }
+
+        public void setLoanLimitShort(String loanLimitShort) {
+            this.loanLimitShort = loanLimitShort;
+        }
+
+        public Double getLoanRateHigh() {
+            return loanRateHigh;
+        }
+
+        public void setLoanRateHigh(Double loanRateHigh) {
+            this.loanRateHigh = loanRateHigh;
+        }
+
+        public Double getLoanRateLow() {
+            return loanRateLow;
+        }
+
+        public void setLoanRateLow(Double loanRateLow) {
+            this.loanRateLow = loanRateLow;
+        }
+
+        public String getProductDetails() {
+            return productDetails;
+        }
+
+        public void setProductDetails(String productDetails) {
+            this.productDetails = productDetails;
+        }
+
+        public String getProductLogo() {
+            return productLogo;
+        }
+
+        public void setProductLogo(String productLogo) {
+            this.productLogo = productLogo;
+        }
+
+        public String getProductName() {
+            return productName;
+        }
+
+        public void setProductName(String productName) {
+            this.productName = productName;
+        }
+
+        public String getProductType() {
+            return productType;
+        }
+
+        public void setProductType(String productType) {
+            this.productType = productType;
+        }
+
+        public String getPublishTime() {
+            return publishTime;
+        }
+
+        public void setPublishTime(String publishTime) {
+            this.publishTime = publishTime;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public String getTelephone() {
+            return telephone;
+        }
+
+        public void setTelephone(String telephone) {
+            this.telephone = telephone;
+        }
+
+        public Integer getTenantId() {
+            return tenantId;
+        }
+
+        public void setTenantId(Integer tenantId) {
+            this.tenantId = tenantId;
+        }
+
+        public String getUpdateBy() {
+            return updateBy;
+        }
+
+        public void setUpdateBy(String updateBy) {
+            this.updateBy = updateBy;
+        }
+
+        public Long getUpdateTime() {
+            return updateTime;
+        }
+
+        public void setUpdateTime(Long updateTime) {
+            this.updateTime = updateTime;
+        }
+
+        public Long getUserId() {
+            return userId;
+        }
+
+        public void setUserId(Long userId) {
+            this.userId = userId;
+        }
+
+        public String getVerifyTime() {
+            return verifyTime;
+        }
+
+        public void setVerifyTime(String verifyTime) {
+            this.verifyTime = verifyTime;
+        }
     }
 
     @NoArgsConstructor

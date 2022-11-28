@@ -2,26 +2,48 @@ package com.lt.dom.oct;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.otcenum.EnumInvitateRequestType;
 import com.lt.dom.otcenum.EnumInvitationStatus;
 import com.lt.dom.otcenum.EnumInvitationType;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
-public class Invitation {
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Id
-    @JsonProperty("id")
-    private long id;
+public class Invitation extends Base{
 
+
+    private String code;
+
+    @Enumerated(EnumType.STRING)
+    private EnumInvitateRequestType invitateRequestType;
+    private String groupId;
+    private long partner;
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 
     private String info;
-    private long supplierId;
+    private long supplier;
+
+    @Enumerated(EnumType.STRING)
     private EnumInvitationType type;
 
+    private String partnerName;
+
+    public String getPartnerName() {
+        return partnerName;
+    }
+
+    public void setPartnerName(String partner_name) {
+        this.partnerName = partner_name;
+    }
+
+    private EnumInvitationType invitationType;
     public String getInfo() {
         return info;
     }
@@ -39,7 +61,7 @@ public class Invitation {
     private String  tasks_project_id;//	integer
 
 
-
+    @Enumerated(EnumType.STRING)
     private EnumInvitationStatus status;//	integer
 
     public EnumInvitationStatus getStatus() {
@@ -64,12 +86,12 @@ public class Invitation {
         return new Invitation(firstName, lastName, seatNumber);
     }
 
-    public void setSupplierId(long supplierId) {
-        this.supplierId = supplierId;
+    public void setSupplier(long supplierId) {
+        this.supplier = supplierId;
     }
 
-    public long getSupplierId() {
-        return supplierId;
+    public long getSupplier() {
+        return supplier;
     }
 
     public void setType(EnumInvitationType type) {
@@ -78,5 +100,31 @@ public class Invitation {
 
     public EnumInvitationType getType() {
         return type;
+    }
+
+    public void setInvitateRequestType(EnumInvitateRequestType invitateRequestType) {
+        this.invitateRequestType = invitateRequestType;
+    }
+
+    public EnumInvitateRequestType getInvitateRequestType() {
+        return invitateRequestType;
+    }
+
+
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setPartner(long partner) {
+        this.partner = partner;
+    }
+
+    public long getPartner() {
+        return partner;
     }
 }

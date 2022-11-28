@@ -15,4 +15,7 @@ public interface RefundRepository extends JpaRepository<Refund
 
     List<Refund> findAllByChargeIn(List<Long> collect);
 
+    List<Refund> findAllByCharge(long id);
+
+    List<Refund> findAllByBooking(long id);
 }

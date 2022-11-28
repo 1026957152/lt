@@ -3,11 +3,18 @@ package com.lt.dom.OctResp;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.controllerOct.AssetRestController;
 import com.lt.dom.oct.Asset;
+import com.lt.dom.otcenum.EnumAssetType;
+import org.javatuples.Pair;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.swing.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -36,6 +43,98 @@ public class AssetResp  {
         this.barcode = barcode;
     }
 
+    public static EntityModel from( List<Asset> assets) {
+
+
+        Map map  = assets.stream().map(asset->{
+            EnumAssetType type = asset.getType();
+
+            Item item = new Item();
+            item.setId(asset.getIdId());
+            item.setUrl(asset.getUrl());
+            item.setType(asset.getType());
+            item.setType_text(asset.getType().toString());
+
+            EntityModel entityModel = EntityModel.of(item);
+            try {
+                entityModel.add(linkTo(methodOn(AssetRestController.class).downloadAsset(asset.getId())).withRel("download_url"));
+
+                entityModel.add(linkTo(methodOn(AssetRestController.class).getAsset(asset.getId())).withRel("download___url"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return Map.entry(type.name,entityModel);
+
+        }).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+
+
+
+
+        return EntityModel.of(map);
+    }
+
+    public static List toList( List<Asset> assets) {
+
+
+        List list  = assets.stream().map(asset->{
+
+
+            Item item = new Item();
+            item.setId(asset.getId()+"");
+
+            item.setType(asset.getType());
+            item.setType_text(asset.getType().toString());
+
+            EntityModel entityModel = EntityModel.of(item);
+            try {
+                String url = linkTo(methodOn(AssetRestController.class).downloadAsset(asset.getId())).withRel("regenerate").getHref();
+
+                item.setUrl(url);
+
+                entityModel.add(linkTo(methodOn(AssetRestController.class).downloadAsset(asset.getId())).withRel("download_url"));
+                entityModel.add(linkTo(methodOn(AssetRestController.class).regenerate(asset.getId())).withRel("regenerate"));
+                entityModel.add(linkTo(methodOn(AssetRestController.class).getAsset(asset.getId())).withRel("download___url"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return entityModel;
+
+        }).collect(Collectors.toList());
+
+        return list;
+    }
+
+    public static Map toMap( List<Asset> assets) {
+
+
+        Map map  = assets.stream().map(asset->{
+            EnumAssetType type = asset.getType();
+
+            Item item = new Item();
+            item.setId(asset.getIdId());
+            item.setUrl(asset.getUrl());
+            item.setType(asset.getType());
+            item.setType_text(asset.getType().toString());
+
+            EntityModel entityModel = EntityModel.of(item);
+            try {
+                entityModel.add(linkTo(methodOn(AssetRestController.class).downloadAsset(asset.getId())).withRel("download_url"));
+                entityModel.add(linkTo(methodOn(AssetRestController.class).regenerate(asset.getId())).withRel("regenerate"));
+                String url = linkTo(methodOn(AssetRestController.class).downloadAsset(asset.getId())).withRel("regenerate").getHref();
+
+                item.setUrl(url);
+                entityModel.add(linkTo(methodOn(AssetRestController.class).getAsset(asset.getId())).withRel("download___url"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return Map.entry(type.name,entityModel);
+
+        }).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+
+
+
+        return map;
+    }
     public static EntityModel<AssetResp> from(Asset asset) {
         AssetResp assetResp = new AssetResp();
         Item item = new Item();
@@ -65,6 +164,8 @@ public class AssetResp  {
     public static class Item {
         private String id;
         private String url;
+        private EnumAssetType type;
+        private String type_text;
 
         public String getId() {
             return id;
@@ -80,6 +181,22 @@ public class AssetResp  {
 
         public void setUrl(String url) {
             this.url = url;
+        }
+
+        public EnumAssetType getType() {
+            return type;
+        }
+
+        public void setType(EnumAssetType type) {
+            this.type = type;
+        }
+
+        public void setType_text(String type_text) {
+            this.type_text = type_text;
+        }
+
+        public String getType_text() {
+            return type_text;
         }
     }
 

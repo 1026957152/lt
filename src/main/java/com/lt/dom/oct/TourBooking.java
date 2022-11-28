@@ -13,17 +13,14 @@ import java.util.List;
 
 
 @Entity
-public class TourBooking {
+public class TourBooking extends Base {
     @Column(name = "when_")
 
     private final Date when
             ;
-    @Version
-    private Integer version;
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
+
+
+    @Enumerated(EnumType.STRING)
     private EnumProductType productType;
     
 //##@Column(unique=true) 
@@ -89,13 +86,7 @@ private String code;
         this.created_at = created_at;
     }
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     @Transient
     List<RoomStay> roomStays; // 表示库存 多久的库存。
@@ -151,6 +142,7 @@ private String code;
 
 
 
+    @Enumerated(EnumType.STRING)
 
     private EnumTourBookingStatus status;
 
@@ -183,15 +175,15 @@ private String code;
 
 
     @Transient
-    List<BookingProductFuck> products;
+    List<LineItem> products;
     @Transient
     List<BookingPayment> payments;
 
-    public List<BookingProductFuck> getProducts() {
+    public List<LineItem> getProducts() {
         return products;
     }
 
-    public void setProducts(List<BookingProductFuck> products) {
+    public void setProducts(List<LineItem> products) {
         this.products = products;
     }
 

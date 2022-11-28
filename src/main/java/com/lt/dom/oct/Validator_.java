@@ -7,27 +7,22 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import javax.persistence.*;
 
 @Entity
-public class Validator_ {  // 这个就是机器了啊
+public class Validator_  extends Base{  // 这个就是机器了啊
 
-    @Version
-    private Integer version;
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @JsonProperty("id")
-    private long id;
     private Long user;
 
-    private long device;
-    private long role;
+    private Long device;
+    private Long role;
+    private Boolean active;
 
-    public long getDevice() {
+    public Long getDevice() {
         return device;
     }
 
-    public void setDevice(long equipmentId) {
+    public void setDevice(Long equipmentId) {
         this.device = equipmentId;
     }
-
+    @Enumerated(EnumType.STRING)
     private EnumValidatorType type; //指定人工，机器, 所有人工
 
     public EnumValidatorType getType() {
@@ -38,11 +33,11 @@ public class Validator_ {  // 这个就是机器了啊
         this.type = type;
     }
 
-    public long getUser() {
+    public Long getUser() {
         return user;
     }
 
-    public void setUser(long userId) {
+    public void setUser(Long userId) {
         this.user = userId;
     }
     private String name;
@@ -73,19 +68,12 @@ public class Validator_ {  // 这个就是机器了啊
         this.componentRightId = componentRightId;
     }
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public long getValidatorGroupId() {
+    public Long getValidatorGroupId() {
         return validatorGroupId;
     }
 
-    public void setValidatorGroupId(long validatorGroupId) {
+    public void setValidatorGroupId(Long validatorGroupId) {
         this.validatorGroupId = validatorGroupId;
     }
 
@@ -101,11 +89,19 @@ public class Validator_ {  // 这个就是机器了啊
         return ReflectionToStringBuilder.toString(this);
     }
 
-    public long getRole() {
+    public Long getRole() {
         return role;
     }
 
-    public void setRole(long role) {
+    public void setRole(Long role) {
         this.role = role;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public Boolean isActive() {
+        return active;
     }
 }

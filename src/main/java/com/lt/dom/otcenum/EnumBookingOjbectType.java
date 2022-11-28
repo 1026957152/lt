@@ -34,13 +34,13 @@ public enum EnumBookingOjbectType {
         this.name = name;
     }
 
-    @Override
+/*    @Override
     public String toString() {
 
         String displayStatusString = resourceBundle.getString("page.systemadministration.broadcastmail.status."
                 + this.name);
         return displayStatusString;
-    }
+    }*/
 
 
 }

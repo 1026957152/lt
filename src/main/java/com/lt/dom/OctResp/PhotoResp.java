@@ -1,6 +1,8 @@
 package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.lt.dom.oct.Media;
+import org.springframework.security.core.parameters.P;
 
 import javax.persistence.Column;
 
@@ -9,18 +11,46 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PhotoResp {
 
+    private String thumbnail;
+    private Integer index;
 
+    public static PhotoResp from(Media componentRightList) {
+        PhotoResp photoResp = new PhotoResp();
+        photoResp.setUrl(componentRightList.getHref());
+        return photoResp;
+
+    }
+
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
 
     private String url_thumbnail;
     private String url;
     private String url_large;
     private String url_xlarge;
     private String url_original;
+
+    private String caption;
+
+    public String getCaption() {
+        return caption;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
     private String desc;
     
 //##@Column(unique=true)
 private String code;
-    private boolean visiable;
+    private Boolean visiable;
+    private String fileName;
 
 
     public void setUrl_thumbnail(String url_thumbnail) {
@@ -79,11 +109,27 @@ private String code;
         return code;
     }
 
-    public void setVisiable(boolean visiable) {
+    public void setVisiable(Boolean visiable) {
         this.visiable = visiable;
     }
 
-    public boolean getVisiable() {
+    public Boolean getVisiable() {
         return visiable;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public Integer getIndex() {
+        return index;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
     }
 }

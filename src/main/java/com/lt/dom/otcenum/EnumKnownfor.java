@@ -1,11 +1,13 @@
 package com.lt.dom.otcenum;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 public enum EnumKnownfor {
-    barcode("barcode"),
-    reference_number("reference number"),
-    Barcodescan("Barcode scan"),
-    FacialRecognition("Facial Recognition"),
-    NFCtap("NFC tap"),
+
 
     Charming("NFC tap"),
     Foodie("NFC tap"),
@@ -30,8 +32,22 @@ public enum EnumKnownfor {
 
     ;
 
-
     EnumKnownfor(String barcode) {
 
+    }
+    private static ResourceBundle resourceBundle = ResourceBundle.getBundle("messages",
+            Locale.getDefault());
+
+    public String name;
+
+    @Autowired
+    private MessageSource messageSource;
+
+   @Override
+    public String toString() {
+
+        String displayStatusString = resourceBundle.getString("page.systemadministration.tag.knowfor."
+                + this.name());
+        return displayStatusString;
     }
 }

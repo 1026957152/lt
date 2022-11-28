@@ -19,6 +19,13 @@ public interface PassRepository extends JpaRepository<Pass
 
     Page<Pass> findAllByUser(long user_id, Pageable pageable);
 
-    Optional<Pass> findByUser(long id);
+    List<Pass> findByUser(long id);
 
+    Page<Pass> findAllByBulkIssuanceId(long id, Pageable pageable);
+
+    Optional<Pass> findByNumber(String passNumber);
+
+    List<Pass> findByBooking(long id);
+
+    Page<Pass> findAllByOwner(long user_id, Pageable pageable);
 }

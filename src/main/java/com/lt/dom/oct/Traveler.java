@@ -1,25 +1,23 @@
 package com.lt.dom.oct;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.lt.dom.otcenum.EnumIdType;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 
 @Entity
-public class Traveler {
-    @Version
-    private Integer version;
+public class Traveler extends Base{
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    private long id;
+    private String referSku;
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
+
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name="lineItem", nullable=false)
+    private LineItem lineItem;
 
     private String title;
 
@@ -65,6 +63,7 @@ public class Traveler {
     private String nok_contact;//	Emergency contact other note (can be multi-line)
     private String agent_customer_ref;//	A travel agent reference number / ID for this customer, e.g. perhaps the ID for this customer in their own system
     private long booking;
+    private EnumIdType idType;
 
     public void setBooking(long booking) {
         this.booking = booking;
@@ -141,5 +140,29 @@ public class Traveler {
 
     public void setTel_home(String tel_home) {
         this.tel_home = tel_home;
+    }
+
+    public void setReferSku(String referSku) {
+        this.referSku = referSku;
+    }
+
+    public String getReferSku() {
+        return referSku;
+    }
+
+    public void setIdType(EnumIdType idType) {
+        this.idType = idType;
+    }
+
+    public EnumIdType getIdType() {
+        return idType;
+    }
+
+    public void setLineItem(LineItem lineItem) {
+        this.lineItem = lineItem;
+    }
+
+    public LineItem getLineItem() {
+        return lineItem;
     }
 }

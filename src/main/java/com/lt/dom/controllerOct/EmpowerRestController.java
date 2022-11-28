@@ -11,19 +11,25 @@ import com.lt.dom.config.WxConfig;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.minapp.CommonUtil;
 import com.lt.dom.minapp.Token;
+import com.lt.dom.minapp.UserService;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.EmpowerGetPhoneReq;
 import com.lt.dom.otcReq.OpenidResp;
+import com.lt.dom.otcReq.UserPojo;
 import com.lt.dom.otcReq.WxloginReq;
+import com.lt.dom.otcenum.EnumIdentityType;
+import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.OpenidRepository;
 import com.lt.dom.repository.UserRepository;
 import com.lt.dom.serviceOtc.OpenidServiceImpl;
+import com.lt.dom.serviceOtc.UserServiceImpl;
 import com.lt.dom.util.RestTemplateUtil;
 import org.apache.commons.collections.map.HashedMap;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -56,6 +62,10 @@ public class EmpowerRestController {
     @Autowired
     private OpenidServiceImpl openidService;
     @Autowired
+    private UserServiceImpl userService;
+
+
+    @Autowired
     private OpenidRepository openidRepository;
 
     @Autowired
@@ -63,6 +73,41 @@ public class EmpowerRestController {
 
     @Autowired
     AuthenticationTokenProvider authenticationTokenProvider;
+
+
+
+    /*
+     * 微信授权（登录）
+     * @param code 状态码
+     * @param rawData 原始数据
+     * @return
+     */
+    @PostMapping(value = "/wxlogout/{OPEN_ID}", produces = "application/json")// consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Object wxlogout(@PathVariable String OPEN_ID){ //,
+
+        Optional<Openid> optional = openidRepository.findByOpenid(OPEN_ID);
+
+        if(optional.isEmpty()) {
+
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到openid ");
+
+        }
+
+        Openid openid = optional.get();
+
+
+        openidService.unLinkUser(openid);
+
+
+        UserResp openidResp = UserResp.from(openid);
+
+        EntityModel entityModel = EntityModel.of(openidResp);
+
+        entityModel.add(linkTo(methodOn(EmpowerRestController.class).mini_getPhone(null)).withRel("getPhone"));
+
+        return entityModel;
+
+    }
 
 
 
@@ -194,7 +239,7 @@ public class EmpowerRestController {
 
 
 
-    /**
+    /*
      * 微信授权（登录）
      * @param code 状态码
      * @param rawData 原始数据
@@ -292,8 +337,19 @@ public class EmpowerRestController {
 
             openid1 = openidService.create(openid,nickName,gender,avatarUrl);
 
+    /*
+            UserPojo userPojo = new UserPojo();
+            //userPojo.setFirst_name(wxlinkUserReq.getFirst_name());
+            //userPojo.setLast_name(wxlinkUserReq.getLast_name());
+            userPojo.setUsername(openid1.getOpenid());
+         //   userPojo.setPhone(realnameAuthsReq.getPhone());
+            userPojo.setPassword("wxlinkUserReq.getUser_password()");
+            userPojo.setRoles(Arrays.asList("ROLE_ADMIN"));
+
+            User user = userService.createUser(userPojo,Arrays.asList(Pair.with(EnumIdentityType.weixin,openid)));
 
 
+            openidService.linkUser(openid1,user);*/
 
 
         }else{
@@ -312,9 +368,11 @@ public class EmpowerRestController {
 
                // openidResp.add(linkTo(methodOn(PublicationRestController.class).pageUserPublicationResp(optionalUser.get().getId(),null,null,null)).withRel("getVoucherList"));
 
-                openidResp.add(linkTo(methodOn(PublicationRestController.class).getVoucherList(optionalUser.get().getId(),null,null,null)).withRel("getVoucherList"));
+                EntityModel entityModel = EntityModel.of(openidResp);
 
-                openidResp.add(linkTo(methodOn(UserRestController.class).getCurrent()).withRel("getCurrent"));
+                entityModel.add(linkTo(methodOn(PublicationRestController.class).getVoucherList(optionalUser.get().getId(),null,null,null)).withRel("getVoucherList"));
+
+                entityModel.add(linkTo(methodOn(UserRestController.class).getCurrent()).withRel("getCurrent"));
 
                 return openidResp;
             }
@@ -328,11 +386,16 @@ public class EmpowerRestController {
        // openidResp.add(linkTo(methodOn(OpenidRestController.class).linkUser(openid1.getOpenid(),null)).withRel("link_user_url"));
        // openidResp.add(linkTo(methodOn(OpenidRestController.class).merchants_settled(openid1.getOpenid(),null)).withRel("merchants_settled_url"));
         //openidResp.add(linkTo(methodOn(OpenidRestController.class).createUser(openid1.getOpenid(),null)).withRel("register_url"));
+        EntityModel entityModel = EntityModel.of(openidResp);
 
+        entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).postRealnameAuths(null)).withRel("realnameAuth"));
+        entityModel.add(linkTo(methodOn(EmpowerRestController.class).mini_getPhone(null)).withRel("getPhone"));
 
-        openidResp.add(linkTo(methodOn(RealnameAuthRestController.class).postRealnameAuths(null)).withRel("realnameAuth"));
-        openidResp.add(linkTo(methodOn(EmpowerRestController.class).mini_getPhone(null)).withRel("getPhone"));
+        entityModel.add(linkTo(methodOn(LoginController.class).Page_smsLogin(openid)).withRel("Page_phoneLogin"));
 
+        entityModel.add(linkTo(methodOn(LoginController.class).login_send_code(null)).withRel("send_verification_code"));
+
+        entityModel.add(linkTo(methodOn(LoginController.class).login_sms_confirm(openid,null)).withRel("login"));
 
 
 /*        Authentication authentication = authenticationTokenProvider.authenticate(
@@ -345,7 +408,7 @@ public class EmpowerRestController {
 
         System.out.println("====================:"+openid);
         System.out.println("====================:"+jwt);
-        return openidResp;
+        return entityModel;
 
     }
 

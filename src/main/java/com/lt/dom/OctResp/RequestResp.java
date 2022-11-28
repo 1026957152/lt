@@ -87,7 +87,7 @@ private String code;
             MerchantsSettledReq max = gson.fromJson(request.getAdditional_info(), MerchantsSettledReq.class);
             max.setUser_password("");
 
-            requestResp.setMerchantsSettledReq(MerchantsSettledReqResp.from(max,new HashedMap()));
+            requestResp.setMerchantsSettledReq(MerchantsSettledReqResp.from(max));
         }
 
 

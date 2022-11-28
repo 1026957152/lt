@@ -23,4 +23,8 @@ public interface ValidatorRepository extends JpaRepository<Validator_
     List<Validator_> findAllByComponentRightIdIn(List<Long> collect);
 
     List<Validator_> findAllByTypeAndUser(EnumValidatorType 特定的人员, Long user_id);
+
+    void deleteAllByDevice(long id);
+
+    Page<Validator_> findAllByTypeAndUser(EnumValidatorType 特定的人员, long id, Pageable pageable);
 }

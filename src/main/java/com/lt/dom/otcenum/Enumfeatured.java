@@ -1,11 +1,35 @@
 package com.lt.dom.otcenum;
-
+//https://pic.c-ctrip.com/pic/platform/bbz/h5/h5home/v1/nav/main/flight_package.png
 public enum Enumfeatured {
-    barcode("线路旅游","周边有","image","icon"),
-    city_hero("城市主人卡","周边有","image","icon"),
-    Barcodescan("租车服务","周边有","image","icon"),
-    FacialRecognition("导游服务","周边有","image","icon"),
-    bigdata("文旅大数据","周边有","image","icon"),
+
+    city_hero("城市主人卡","周边有",
+            "http://yulinmei.cn:8080/oct/files/hero.png","icon"),
+    city_pass("榆林PASS","周边有",
+            "http://yulinmei.cn:8080/oct/files/citypass.png","icon"),
+    tours("线路旅游","周边有",
+            "http://yulinmei.cn:8080/oct/files/tours.png","icon"),
+
+
+    activity("活动","周边有",
+            "http://yulinmei.cn:8080/oct/files/activity.jpg","icon"),
+    rentcars("租车服务","周边有",
+            "http://yulinmei.cn:8080/oct/files/rentcar.png","icon"),
+    导游("导游服务","周边有",
+            "https://pic.c-ctrip.com/pic/platform/bbz/h5/h5home/v1/nav/main/weekend.png","icon"),
+    bigdata("文旅大数据","周边有",
+            "http://yulinmei.cn:8080/oct/files/bigdata.png","icon"),
+
+
+    City_walk("City walk","周边有",
+            "http://yulinmei.cn:8080/oct/files/walk.png","icon"),
+
+    线上博物馆("线上博物馆","周边有",
+            "http://yulinmei.cn:8080/oct/files/广东省博物馆.png","icon"),
+    信用榆林("信用榆林","周边有",
+            "http://yulinmei.cn:8080/oct/files/信用榆林.png","icon"),
+
+    驼城小易("驼城小易","驼城小易",
+            "http://yulinmei.cn:8080/oct/files/bus.png","icon"),
 
     ;
 

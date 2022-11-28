@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 @Service
@@ -101,7 +100,7 @@ public class VoucherAsyncServiceImpl {
         vouchers = voucherRepository.saveAll(voucherList);
 
 
-        List<Asset> assets = assetService.newQr(vouchers);
+        List<Asset> assets = assetService.getWithNew(vouchers);
 
         assets = assetRepository.saveAll(assets);
 

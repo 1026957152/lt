@@ -9,12 +9,8 @@ import java.time.LocalDateTime;
 
 
 @Entity
-public class RedemptionEntry {
-    @Version
-    private Integer version;
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    private long id;
+public class RedemptionEntry extends Base{
+
 
 
     @NotNull
@@ -49,13 +45,6 @@ public class RedemptionEntry {
     private String written_off_staff_id;
 
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
     @NotNull
     private long voucher;

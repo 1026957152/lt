@@ -9,6 +9,7 @@ public class PhoneAuth {
     private String idCardName;// String 否 身份证姓名
     private String idCardNo;// String 否 身份证号码
     private String phoneNo;// String 否 手机号码
+    private String referTraveler;
 
     public String getIdCardName() {
         return idCardName;
@@ -32,5 +33,13 @@ public class PhoneAuth {
 
     public void setPhoneNo(String phoneNo) {
         this.phoneNo = phoneNo;
+    }
+
+    public void setReferTraveler(String referTraveler) {
+        this.referTraveler = referTraveler;
+    }
+
+    public String getReferTraveler() {
+        return referTraveler;
     }
 }

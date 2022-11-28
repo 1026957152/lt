@@ -16,6 +16,7 @@ public class Document {
     @Id
     private long id;
     @NotNull
+    @Enumerated(EnumType.STRING)
     private EnumDocumentType type;
 
     @NotEmpty
@@ -47,7 +48,8 @@ private String code;
     private Integer index;
     @Column(name = "desc_")
     private String desc;
-    private boolean visiable;
+    private Boolean visiable;
+    private String caption;
 
     public long getSize() {
         return size;
@@ -178,11 +180,19 @@ private String code;
         return desc;
     }
 
-    public void setVisiable(boolean visiable) {
+    public void setVisiable(Boolean visiable) {
         this.visiable = visiable;
     }
 
-    public boolean getVisiable() {
+    public Boolean getVisiable() {
         return visiable;
+    }
+
+    public String getCaption() {
+        return caption;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
     }
 }

@@ -13,4 +13,6 @@ public interface ChargeRepository extends JpaRepository<Charge
 
 
     Optional<Charge> findByCode(String out_trade_no);
+
+    List<Charge> findByBooking(long id);
 }

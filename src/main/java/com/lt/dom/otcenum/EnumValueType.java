@@ -7,6 +7,7 @@ public enum EnumValueType {
     float_("Facial Recognition"),
     list_("Facial Recognition"),
 
+    image_("Barcode scan"),
 
     ;
 

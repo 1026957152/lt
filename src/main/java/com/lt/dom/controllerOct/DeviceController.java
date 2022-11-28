@@ -2,6 +2,7 @@ package com.lt.dom.controllerOct;
 //https://developer.tuya.com/en/docs/cloud/52d5df4241?id=Kbn026xsi0cab
 
 import com.lt.dom.OctResp.AssetDeviceResp;
+import com.lt.dom.OctResp.ComponentRightResp;
 import com.lt.dom.OctResp.DeviceResp;
 import com.lt.dom.OctResp.EnumResp;
 import com.lt.dom.error.BookNotFoundException;
@@ -10,11 +11,15 @@ import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
+import com.lt.dom.serviceOtc.ComponentRightServiceImpl;
 import com.lt.dom.serviceOtc.DeviceService;
+import com.lt.dom.serviceOtc.ValidatorServiceImpl;
 import com.lt.dom.vo.AssetNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -54,6 +59,14 @@ public class DeviceController {
     @Autowired
     private AssetDeviceRepository assetDeviceRepository;
 
+    @Autowired
+    private ValidatorRepository validatorRepository;
+
+    @Autowired
+    private ValidatorServiceImpl validatorService;
+
+    @Autowired
+    private ComponentRightRepository componentRightRepository;
 
 
     @GetMapping(value = "/devices/page",produces = "application/json")
@@ -174,7 +187,6 @@ public class DeviceController {
 
         Optional<Device> validatorOptional = deviceRepository.findById(device_id);
         if(validatorOptional.isPresent()){
-
 
         }
         Device device = validatorOptional.get();
@@ -392,33 +404,69 @@ public class DeviceController {
     public  List<Device> getAssetDeviceList(@PathVariable long asset_id) {
 
 
-
         Optional<AssetDevice> validatorOptional = assetDeviceRepository.findById(asset_id);
         if(validatorOptional.isEmpty()) {
-
             throw new BookNotFoundException(Enumfailures.not_found,"找不到企业");
-
         }
-
-
 
 
         AssetDevice assetDevice = validatorOptional.get() ;
 
-
         List<Device> deviceList = deviceRepository.findByAssetId(assetDevice.getId());
 
-
         return deviceList;
-
 
     }
 
 
 
 
+
+
+
+
+
+    @GetMapping(value = "/devices/{device_id}/component_vouchers", produces = "application/json")
+    public PagedModel getDeviceList(@PathVariable long device_id,
+                                    @PageableDefault(sort = {"createdDate", "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
+
+
+                                    PagedResourcesAssembler<EntityModel<DeviceResp>> assembler) {
+
+
+        Optional<Device> validatorOptional = deviceRepository.findById(device_id);
+        if(validatorOptional.isEmpty()){
+            System.out.println("抛出异常");
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到设备");
+        }
+        Device device = validatorOptional.get();
+
+
+        Page<ComponentVounchValidatorRecord> componentVounchValidatorRecords =
+                componentVounchValidatorRecordRepository.findAllByValidatorTypeAndDevice(EnumValidatorType.特定机器,device.getId(),pageable);
+
+
+
+        return assembler.toModel(componentVounchValidatorRecords.map(x->{
+
+            //   DeviceResp deviceResp = DeviceResp.from(x);
+
+
+            EntityModel entityModel = EntityModel.of(x);
+
+   /*         entityModel.add(linkTo(methodOn(DeviceController.class).getDevice(x.getId())).withSelfRel());
+
+            entityModel.add(linkTo(methodOn(DeviceController.class).delete(x.getId())).withRel("delete"));*/
+
+            return entityModel;
+        }));
+
+    }
+
+
+
     // TODO 这里 是 把资产 赋值给了，   用户（公司或个人）
-    @GetMapping(value = "/users/{uid}/assets", produces = "application/json")
+    @GetMapping(value = "/supplier/{uid}/assets", produces = "application/json")
     public  List<AssetDeviceResp> getAuthorizeAssetList(@PathVariable long uid) {
 
 
@@ -469,7 +517,7 @@ public class DeviceController {
 
 
 
-    @PostMapping(value = "devices/{device_id}", produces = "application/json")
+    @GetMapping(value = "/devices/{device_id}", produces = "application/json")
     public EntityModel getDevice(@PathVariable long device_id) {
 
         Optional<Device> validatorOptional = deviceRepository.findById(device_id);
@@ -478,16 +526,66 @@ public class DeviceController {
             throw new BookNotFoundException(Enumfailures.not_found,"找不到设备");
         }
 
-
         Device device = validatorOptional.get();
-
-        DeviceResp deviceResp = DeviceResp.from(device);
-
+        Optional<Supplier> optionalSupplier = supplierRepository.findById(device.getId() );
 
 
-        DeviceResp.Info info = new DeviceResp.Info();
+        DeviceEditResp deviceResp = DeviceEditResp.from(device);
+
+        deviceResp.withSupplier(optionalSupplier);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        DeviceEditResp.Info info = new DeviceEditResp.Info();
         info.setLine(DeviceService.deveceInfo.getOrDefault(device.getId(), EnumDeviceOnline.offline));
         deviceResp.setLive_info(info);
+
+
+
+        DeviceEditResp.ComponentRightTab componentRightTab = new DeviceEditResp.ComponentRightTab();
+
+        List<ComponentRight> componentRights = componentRightRepository.findAll();
+        componentRightTab.setParameterList(
+                Map.of(
+                        "right_list",ComponentRight.List( componentRights)
+                ));
+        EntityModel entityModel_componentRightTab =  EntityModel.of(componentRightTab);
+        entityModel_componentRightTab.add(linkTo(methodOn(DeviceController.class).updateValidator(device.getId(),null)).withRel("edit"));
+
+        deviceResp.setComponentRightTab(entityModel_componentRightTab);
+
+
+
+
+
+        List<Validator_> validator_s = validatorRepository.findAllByTypeAndDevice(EnumValidatorType.特定机器,device.getId());
+
+        List<Long> triplet来自设备 =
+                validator_s.stream().map(e->e.getComponentRightId()).collect(Collectors.toList());
+
+        List<ComponentRight> componentRights1 = componentRightRepository.findAllById(triplet来自设备);
+
+        List<ComponentRightResp> componentRightRespList = componentRights1.stream().map(e->{
+            ComponentRightResp componentRightResp = ComponentRightResp.from(e);
+            return componentRightResp;
+        }).collect(Collectors.toList());
+
+        deviceResp.setAllowed(componentRightRespList);
+
+        componentRightTab.setRightIds(componentRights1.stream().map(e->e.getId()).collect(Collectors.toList()));
 
 
         EntityModel entityModel =  EntityModel.of(deviceResp);
@@ -501,13 +599,32 @@ public class DeviceController {
     }
 
 
+    @PutMapping(value = "/devices/{device_id}/validators",produces = "application/json")
+    public List<Validator_>  updateValidator(@PathVariable Long device_id,@RequestBody DeviceEditResp.ComponentRightTab pojo) {
+
+        Optional<Device> validatorOptional = deviceRepository.findById(device_id);
+        if(validatorOptional.isEmpty()){
+            System.out.println("抛出异常");
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到设备");
+        }
+        Device device = validatorOptional.get();
+
+
+        List<ComponentRight> componentRights = componentRightRepository.findAllById(pojo.getRightIds());
+
+        return validatorService.newValidatorForDevice(device,componentRights);
+
+    }
 
 
 
 
 
 
-    @GetMapping(value = "/devices/{device_id}/component_vouchers", produces = "application/json")
+
+
+
+/*    @GetMapping(value = "/devices/{device_id}/component_vouchers", produces = "application/json")
     public PagedModel getDeviceList(@PathVariable long device_id,Pageable pageable, PagedResourcesAssembler<EntityModel<DeviceResp>> assembler) {
 
 
@@ -531,13 +648,13 @@ public class DeviceController {
 
             EntityModel entityModel = EntityModel.of(x);
 
-   /*         entityModel.add(linkTo(methodOn(DeviceController.class).getDevice(x.getId())).withSelfRel());
+   *//*         entityModel.add(linkTo(methodOn(DeviceController.class).getDevice(x.getId())).withSelfRel());
 
-            entityModel.add(linkTo(methodOn(DeviceController.class).delete(x.getId())).withRel("delete"));*/
+            entityModel.add(linkTo(methodOn(DeviceController.class).delete(x.getId())).withRel("delete"));*//*
 
             return entityModel;
         }));
 
-    }
+    }*/
 
 }

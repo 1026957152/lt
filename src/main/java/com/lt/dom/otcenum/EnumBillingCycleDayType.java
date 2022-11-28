@@ -1,0 +1,35 @@
+package com.lt.dom.otcenum;
+
+import com.lt.dom.OctResp.EnumResp;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public enum EnumBillingCycleDayType {
+    DefaultFromCustomerAccount("barcode"),
+    SpecificDayOfMonth("reference number"),
+    SubscriptionStartDay("Barcode scan"),
+    ChargeTriggerDay("Facial Recognition"),
+    SpecificDayOfWeek("NFC tap"),
+
+
+    ;
+
+
+    EnumBillingCycleDayType(String barcode) {
+
+    }
+
+
+    public static List<EnumResp> from() {
+        return Arrays.asList(EnumBillingCycleDayType.values()).stream().map(x->{
+            EnumResp enumResp = new EnumResp();
+            enumResp.setId(x.name());
+            //  enumResp.setName(x.name());
+            enumResp.setText(x.toString());
+
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
+}

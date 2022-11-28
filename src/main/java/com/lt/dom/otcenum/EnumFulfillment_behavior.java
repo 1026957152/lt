@@ -2,6 +2,10 @@ package com.lt.dom.otcenum;
 
 public enum EnumFulfillment_behavior {
     Create_pass("Create_pass"),
+    Create_voucher("Create_pass"),
+
+ //   Create_voucher("Create_pass"),
+
     Universal("Universal"),
 
     Free_ticket("Universal"),

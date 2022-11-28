@@ -102,7 +102,7 @@ public class XhSupplierRestController {
 
     @Operation(summary = "1、获得")
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}", produces = "application/json")
-    public EntityModel<SupplierResp> getSupplier(@PathVariable  long SUPPLIER_ID) {
+    public EntityModel<EntityModel> getSupplier(@PathVariable  long SUPPLIER_ID) {
         Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
         if(supplierOptional.isEmpty()) {
             throw new BookNotFoundException("没有找到供应商","没找到");
@@ -118,20 +118,25 @@ public class XhSupplierRestController {
 
         supplierResp.setBalance(EntityModel.of(BalanceResp.from(balance)));
 
+        EntityModel entityModel = EntityModel.of(supplierResp);
 
-            supplierResp.add(linkTo(methodOn(RequestFuckRestController.class).approveRequest(supplier.getId(),null)).withRel("upload_file_url"));
-            supplierResp.add(linkTo(methodOn(RedemptionRestController.class).validateVoucherByCode(null)).withRel("redeem_url"));
-            supplierResp.add(linkTo(methodOn(ProductRestController.class).createProduct(supplier.getId(),null)).withRel("create_product_url"));
-            supplierResp.add(linkTo(methodOn(BookingRestController.class).createBooking(null)).withRel("booking_url"));
+        entityModel.add(linkTo(methodOn(RequestFuckRestController.class).approveRequest(supplier.getId(),null)).withRel("upload_file_url"));
+        entityModel.add(linkTo(methodOn(RedemptionRestController.class).validateVoucherByCode(null)).withRel("redeem_url"));
+        entityModel.add(linkTo(methodOn(ProductRestController.class).createProduct(supplier.getId(),null)).withRel("create_product_url"));
+        entityModel.add(linkTo(methodOn(BookingRestController.class).createBooking_sku(null)).withRel("booking_url"));
 
-            return EntityModel.of(supplierResp);
+            return EntityModel.of(entityModel);
 
 
     }
 
     @Operation(summary = "1、获得")
     @GetMapping(value = "/suppliers", produces = "application/json")
-    public PagedModel pageSupplier(@PageableDefault(size = 20) final Pageable pageable,PagedResourcesAssembler<EntityModel<SupplierResp>> assembler) {
+    public PagedModel pageSupplier(       @PageableDefault(sort = {"createdDate",
+            "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
+
+
+                                          PagedResourcesAssembler<EntityModel<SupplierResp>> assembler) {
 
         System.out.println("=============="+ pageable.getPageSize());
         System.out.println("=============="+ pageable.getPageNumber());
@@ -215,7 +220,7 @@ public class XhSupplierRestController {
 
     @Operation(summary = "2、新建")
     @PostMapping(value = "/suppliers", produces = "application/json")
-    public ResponseEntity<SupplierResp> createSupplier(@RequestBody SupplierPojo pojo) {
+    public ResponseEntity<EntityModel> createSupplier(@RequestBody SupplierPojo pojo) {
 
 
 /*        ExampleMatcher modelMatcher = ExampleMatcher.matching()
@@ -241,15 +246,18 @@ public class XhSupplierRestController {
 
 
                 SupplierResp supplierResp = SupplierResp.from(supplier, Arrays.asList());
-                supplierResp.add(linkTo(methodOn(XhSupplierRestController.class).createSupplier(null)).withSelfRel());
-                supplierResp.add(linkTo(methodOn(XhSupplierRestController.class).updateSupplier(supplier.getId(),null)).withRel("update_url"));
 
-                supplierResp.add(linkTo(methodOn(ProductRestController.class).createProduct(supplier.getId(),null)).withRel("add_product_url"));
-                supplierResp.add(linkTo(methodOn(FileUploadController.class).upload(null)).withRel("upload_file_url"));
+        EntityModel entityModel = EntityModel.of(supplierResp);
+
+        entityModel.add(linkTo(methodOn(XhSupplierRestController.class).createSupplier(null)).withSelfRel());
+        entityModel.add(linkTo(methodOn(XhSupplierRestController.class).updateSupplier(supplier.getId(),null)).withRel("update_url"));
+
+        entityModel.add(linkTo(methodOn(ProductRestController.class).createProduct(supplier.getId(),null)).withRel("add_product_url"));
+        entityModel.add(linkTo(methodOn(FileUploadController.class).upload(null)).withRel("upload_file_url"));
 
 
 
-                return ResponseEntity.ok(supplierResp);
+                return ResponseEntity.ok(entityModel);
 
 
 

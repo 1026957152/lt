@@ -1057,7 +1057,7 @@ public class TourCampaignRestController {
         Optional<Supplier> optionalSupplier = supplierRepository.findById(tourBooking.getRedeemer());
 
 
-        applyForApprovalService.create(EnumRequestType.tour_approve,tourBooking,user);
+        applyForApprovalService.update(EnumRequestType.tour_approve,tourBooking,user);
 
         tourBooking.setStatus(EnumTourBookingStatus.Pending);
         tourBooking = tourBookingRepository.save(tourBooking);
@@ -1092,7 +1092,7 @@ public class TourCampaignRestController {
 
 
 
-        applyForApprovalService.create(EnumRequestType.tour_approve,tourBooking,user);
+        applyForApprovalService.update(EnumRequestType.tour_approve,tourBooking,user);
         if(reviewReq.getType().equals(EnumRequestApproveReject.Approve)){
             tourBooking.setStatus(EnumTourBookingStatus.AwaitingBill_photo_image);
             tourBooking = tourBookingRepository.save(tourBooking);

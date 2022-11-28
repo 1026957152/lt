@@ -13,7 +13,7 @@ public class FileUploadConfiguration implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        fileStorageService.clear();
-        fileStorageService.init();
+    //    fileStorageService.clear();
+      //  fileStorageService.init();
     }
 }

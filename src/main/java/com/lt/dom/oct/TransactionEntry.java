@@ -8,11 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Version;
 
 @Entity
-public class TransactionEntry {  //余额结算
-    @Version
-    private Integer version;
-    @Id
-    private long id; // 用户余额转账对象 ID，由Ping++ 生成。
+public class TransactionEntry extends Base{  //余额结算
 
     private boolean livemode; //是否是 live 模式。
 
@@ -27,13 +23,7 @@ public class TransactionEntry {  //余额结算
     private long user;//转出方的 user 对象的 id。
     private long balance;
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public boolean isLivemode() {
         return livemode;

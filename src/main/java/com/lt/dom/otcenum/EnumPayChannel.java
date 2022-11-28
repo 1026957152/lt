@@ -58,6 +58,10 @@ public enum EnumPayChannel {
     paypal("PayPal"),
     balance("余额"),
     free("免费"),
+    hero_card("hero_card"),
+    cash("cash"),
+    check("cash"),
+    bank_transfer("bank transfer"),
 
     ;
 

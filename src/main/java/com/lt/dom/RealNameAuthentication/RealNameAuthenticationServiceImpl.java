@@ -1,8 +1,6 @@
 package com.lt.dom.RealNameAuthentication;
 
 
-import com.lt.dom.error.BookNotFoundException;
-import com.lt.dom.error.ExistException;
 import com.lt.dom.error.User_realname_auth_failureException;
 import com.lt.dom.oct.MemberCertification;
 import com.lt.dom.oct.Openid;
@@ -15,6 +13,7 @@ import com.lt.dom.repository.OpenidRepository;
 import com.lt.dom.repository.UserRepository;
 import com.lt.dom.serviceOtc.OpenidServiceImpl;
 import com.lt.dom.serviceOtc.UserServiceImpl;
+import com.lt.dom.vo.UserVo;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -161,18 +160,18 @@ public class RealNameAuthenticationServiceImpl {
         auth.setIdCardNo(realnameAuthsReq.getId_card());
        // auth.setPhoneNo(realnameAuthsReq.get());
 
-        if(!realnameAuthsReq.isLive_mode() || checkRealname(auth)){
-
+        if(true || !realnameAuthsReq.isLive_mode() || checkRealname(auth)){
             user = setRealname(user,realnameAuthsReq.getReal_name(),realnameAuthsReq.getId_card());
             return user;
         }else{
-
             throw new User_realname_auth_failureException(user.getId(),User.class.getSimpleName(),"用户实名认证失败");
         }
-
-
-
     }
+
+
+
+
+
 
     private User setRealname(User user,String real_name, String id_card){
         user.setRealName(real_name);
@@ -191,7 +190,15 @@ public class RealNameAuthenticationServiceImpl {
         return user;
 
     }
+    public User postWxRealnameAuths_for_real_name(UserVo userVo, RealnameAuthsReq realnameAuthsReq) {
 
+        User user = userRepository.findById(userVo.getUser_id()).get();
+
+        user = setRealname(user,realnameAuthsReq.getReal_name(),realnameAuthsReq.getId_card());
+
+        return user;
+
+    }
 
 
     public User setupData(User user,String real_name, String id_card) {

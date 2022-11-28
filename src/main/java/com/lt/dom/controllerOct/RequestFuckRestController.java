@@ -17,6 +17,8 @@ import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -152,17 +154,26 @@ public class RequestFuckRestController {
 
             MerchantsSettledReq merchantsSettledReq = MerchantsSettledReqResp.fromJsonString(request.getAdditional_info());
 
-            Map<EnumDocumentType,TempDocument> enumDocumentTypeTempDocumentMap = fileStorageService.loadTempDocument(Arrays.asList(
+/*            Map<EnumDocumentType,TempDocument> enumDocumentTypeTempDocumentMap = fileStorageService.loadTempDocument(Arrays.asList(
                     Pair.with(EnumDocumentType.business_license,merchantsSettledReq.getBussiness_license()),
                     Pair.with(EnumDocumentType.license,merchantsSettledReq.getLicense_image()),
                     Pair.with(EnumDocumentType.liability_insurance,merchantsSettledReq.getLiability_insurance_image()),
                     Pair.with(EnumDocumentType.license_for_opening_bank_account,merchantsSettledReq.getLicense_for_opening_bank_account())
-            ));
+            ));*/
 
             Gson gson = new Gson();
             MerchantsSettledReq max = gson.fromJson(request.getAdditional_info(), MerchantsSettledReq.class);
-            MerchantsSettledReqResp merchantsSettledReqResp1 = MerchantsSettledReqResp.from(max, enumDocumentTypeTempDocumentMap);
-            requestResp = RequestResp.fromWithMearchantSettled(request,reviewers,merchantsSettledReqResp1);
+            MerchantsSettledReqResp merchantsSettledReqResp = MerchantsSettledReqResp.from(max);
+
+
+            merchantsSettledReqResp.setLiability_insurance_image(fileStorageService.loadDocumentWithDefault(EnumDocumentType.liability_insurance,request.getCode()));
+            merchantsSettledReqResp.setLicense_image(fileStorageService.loadDocumentWithDefault(EnumDocumentType.license,request.getCode()));
+            merchantsSettledReqResp.setBussiness_license(fileStorageService.loadDocumentWithDefault(EnumDocumentType.business_license,request.getCode()));
+            merchantsSettledReqResp.setLicense_for_opening_bank_account(fileStorageService.loadDocumentWithDefault(EnumDocumentType.license_for_opening_bank_account,request.getCode()));
+
+
+
+            requestResp = RequestResp.fromWithMearchantSettled(request,reviewers,merchantsSettledReqResp);
 
 
         }
@@ -334,7 +345,11 @@ public class RequestFuckRestController {
 
 
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/requests", produces = "application/json")
-    public PagedModel getRequestList(@PathVariable long SUPPLIER_ID, Pageable pageable, PagedResourcesAssembler<EntityModel<Request>> assembler) {
+    public PagedModel getRequestList(@PathVariable long SUPPLIER_ID,
+                                     @PageableDefault(sort = {"createdDate", "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
+
+
+                                     PagedResourcesAssembler<EntityModel<Request>> assembler) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
 

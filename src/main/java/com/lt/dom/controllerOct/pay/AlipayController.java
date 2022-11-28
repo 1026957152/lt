@@ -13,7 +13,7 @@ import com.lt.dom.oct.Product;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.PaymentRepository;
 import com.lt.dom.repository.ReservationRepository;
-import com.lt.dom.serviceOtc.AliPaymentServiceImpl;
+import com.lt.dom.serviceOtc.pay.AliPaymentServiceImpl;
 import com.lt.dom.serviceOtc.AuthenticationFacade;
 import com.lt.dom.serviceOtc.IdGenServiceImpl;
 import com.lt.dom.serviceOtc.PaymentServiceImpl;

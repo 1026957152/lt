@@ -13,6 +13,6 @@ public interface PaymentRepository extends JpaRepository<Payment
 			, Long> , JpaSpecificationExecutor<Payment> {
 
 
-    Optional<Payment> findByReference(String orderId);
+    List<Payment> findByReference(String orderId);
     Optional<Payment> findByCode(String orderId);
 }

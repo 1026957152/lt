@@ -1,6 +1,6 @@
 MYSQL_HOST: 10.0.0.50
 setupdata:
-  alreadySetup: false
+  alreadySetup: true
 feign:
   client:
     config:
@@ -16,7 +16,7 @@ server:
 
 spring:
   rabbitmq:
-    host: 10.0.0.50  #mq服务器ip,默认为localhost
+    host: 10.0.0.41  #mq服务器ip,默认为localhost
     listener:
       simple:
         acknowledge-mode: manual #开启手动Ack
@@ -41,15 +41,15 @@ spring:
   h2:
     console.enabled: true
   datasource:
-    url: jdbc:h2:mem:mydb
-    username: sa
-    password: 123
+#    url: jdbc:h2:mem:mydb
+#    username: sa
+#    password: 123
    # url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/db_example
-#    url: jdbc:mysql://10.0.0.50:33306/db_example?createDatabaseIfNotExist=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
-#
-#    username: root
-#    password: 123456
-#    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://10.0.0.41:3306/db_example?createDatabaseIfNotExist=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
+
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
 #
 
 
@@ -58,19 +58,19 @@ spring:
       hibernate:
         jdbc.batch_size: 30
         order_inserts: true
-        dialect: org.hibernate.dialect.H2Dialect
-        #dialect: org.hibernate.dialect.MySQL5Dialect
+        #dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.MySQL5Dialect
     show-sql: true
 
-#    generate-ddl: true  # 这个
-#    hibernate.ddl-auto: update #create-drop
+    generate-ddl: true  # 这个
+    hibernate.ddl-auto: update #create-drop
 #    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
 
   mvc:
     static-path-pattern: /oct/files/**
   web:
     resources:
-      static-locations: classpath:/images/,file:E://work//dom//fileStorage//,classpath:/static,classpath:/public
+      static-locations: classpath:/images/,file:C://Users//1//IdeaProjects//lt//fileStorage//,classpath:/static,classpath:/public
 lt:
   url: http://localhost:8080
 
@@ -97,6 +97,9 @@ alipay:
   # 商户的 key（私钥）
   key: bitqqf8cie5mia20fb0yugc3m715v2eo
 
+tenmap:
+  key: H5BBZ-4Q5CX-THQ4S-7R2GW-4B4ME-NRBLJ
+
 
 # 服务商 AppID
 wxpay:
@@ -108,7 +111,7 @@ wxpay:
   # 商户的 key（私钥）
   key: bitqqf8cie5mia20fb0yugc3m715v2eo
   # 证书地址
-  cert_path: E:\work\dom\src\main\resources\apiclient_cert.p12
+  cert_path: C:\\Users\\1\\IdeaProjects\\lt\\src\\main\\resources\\apiclient_cert.p12
   # API 支付请求地址
   pay_url: https://api.mch.weixin.qq.com/pay/unifiedorder
   # API 查询请求地址
@@ -118,12 +121,12 @@ wxpay:
 
 
   # 回调地址
-  tenpay_order_callback: http://39.106.34.220:8082/oct/xxxxxx
+  tenpay_order_callback: http://yulinmei.cn:8080/oct/xxxxxx
   # 交易类型
   trade_type_app: JSAPI
   #APP
 
-  refundNotifyUrl: http://39.106.34.220:8082/oct/wechat/pay/refund_notify
+  refundNotifyUrl: http://39.106.34.220:8080/oct/wechat/pay/refund_notify
 
 
 
@@ -187,7 +190,7 @@ yunpian_sms:
 #      variable-names: customerId, creditScore # only fetch these two variables
 #      process-definition-key: loan_process
 
-logging.level.org.camunda.bpm.client: DEBUG # increase the log level of the application
+# logging.level.org.camunda.bpm.client: DEBUG # increase the log level of the application
 
 
 

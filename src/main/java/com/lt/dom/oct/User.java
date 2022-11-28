@@ -2,6 +2,8 @@ package com.lt.dom.oct;
 
 
 import com.lt.dom.otcenum.EnumCapabilities;
+import com.lt.dom.otcenum.EnumPreferenceSpace;
+import com.lt.dom.otcenum.EnumUserStatus;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -23,20 +25,9 @@ public class User extends Base{
 
 
 
-
-    @Version
-    private Integer version;
     private String nick_name;
     private String openid;
     private boolean openidLink;
-
-    public Integer getVersion() {
-        return version;
-    }
-
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
 
 
 
@@ -45,6 +36,7 @@ public class User extends Base{
 private String code;//	string	The ID of the user
     private String password;//	string	The ID of the user
     boolean isAccountNonExpired;
+    private EnumPreferenceSpace preferenceSpace;
 
     public String getPassword() {
         return password;
@@ -133,7 +125,7 @@ private String code;//	string	The ID of the user
 
     private String gender;//	string	The user’s gender*
     private String supplier_id;;//	string	The company name*
-    private String status;//	string	The user status
+    private EnumUserStatus status;//	string	The user status
     private String wishlist;//	object	Object containing items added to the user’s wishlist
 
     @Transient
@@ -247,11 +239,13 @@ private String code;//	string	The ID of the user
     }
 
     public boolean getEnabled() {
-        return enabled;
+        return true;
+       // return enabled;
     }
 
     public boolean isEnabled() {
-        return enabled;
+        return true;
+        //return enabled;
     }
 
     @Override
@@ -281,5 +275,21 @@ private String code;//	string	The ID of the user
 
     public boolean getOpenidLink() {
         return openidLink;
+    }
+
+    public EnumUserStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EnumUserStatus status) {
+        this.status = status;
+    }
+
+    public EnumPreferenceSpace getPreferenceSpace() {
+        return preferenceSpace;
+    }
+
+    public void setPreferenceSpace(EnumPreferenceSpace preferenceSpace) {
+        this.preferenceSpace = preferenceSpace;
     }
 }

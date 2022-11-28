@@ -10,27 +10,40 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
-public class Cardholder {
-    @Version
-    private Integer version;
+public class Cardholder extends Base{
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String identity;
 
-    @Id
-    private long id;
 
-    public long getId() {
-        return id;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "identification", referencedColumnName = "id")
+    private Identification identification;
+    private String uuid;
+
+
+    @OneToOne(mappedBy = "cardholder")
+    private Pass pass;
+
+    public Pass getPass() {
+        return pass;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setPass(Pass pass) {
+        this.pass = pass;
     }
 
+    public Identification getIdentification() {
+        return identification;
+    }
 
-    private long company;
+    public void setIdentification(Identification identification) {
+        this.identification = identification;
+    }
 
-    private long user;
+    private Long company;
+
+    private Long user;
 
 
     @JsonProperty("created")
@@ -60,27 +73,21 @@ public class Cardholder {
     private EnumCardholderStatus status;
     private EnumCardholderType type;
 
-    public Integer getVersion() {
-        return version;
-    }
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
 
-    public long getCompany() {
+    public Long getCompany() {
         return company;
     }
 
-    public void setCompany(long company) {
+    public void setCompany(Long company) {
         this.company = company;
     }
 
-    public long getUser() {
+    public Long getUser() {
         return user;
     }
 
-    public void setUser(long user) {
+    public void setUser(Long user) {
         this.user = user;
     }
 
@@ -132,5 +139,22 @@ public class Cardholder {
 
     public void setType(EnumCardholderType type) {
         this.type = type;
+    }
+
+    public void setIdentity(String identity) {
+
+        this.identity = identity;
+    }
+
+    public String getIdentity() {
+        return identity;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 }

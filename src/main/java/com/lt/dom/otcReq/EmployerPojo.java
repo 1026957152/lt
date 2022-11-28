@@ -21,14 +21,14 @@ public class EmployerPojo {
     private String first_name;
  //   @NotEmpty
     private String last_name;
-    @NotEmpty
+   // @NotEmpty
     private String name;
     @NotEmpty
     private String phone;
 
     @Size(min = 1)
     private List<String> roles;
-    @NotEmpty
+   // @NotEmpty
     private String password;
 
     public String getFirst_name() {

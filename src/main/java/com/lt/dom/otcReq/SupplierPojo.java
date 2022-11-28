@@ -22,8 +22,8 @@ public class SupplierPojo {
    // private String location;//  运营商， 售票者
     private String shortDesc;//	string	The user’s first name
     private String desc;
-    private float lat;
-    private float lng;
+    private Double lat;
+    private Double lng;
     private String region;
     private String state;
     private String locality;
@@ -90,19 +90,19 @@ public class SupplierPojo {
         this.desc = desc;
     }
 
-    public float getLat() {
+    public Double getLat() {
         return lat;
     }
 
-    public void setLat(float lat) {
+    public void setLat(Double lat) {
         this.lat = lat;
     }
 
-    public float getLng() {
+    public Double getLng() {
         return lng;
     }
 
-    public void setLng(float lng) {
+    public void setLng(Double lng) {
         this.lng = lng;
     }
 

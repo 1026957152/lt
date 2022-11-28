@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-@Component
-@ExternalTaskSubscription("loanGranter") // create a subscription for this topic name
+//@Component
+//@ExternalTaskSubscription("loanGranter") // create a subscription for this topic name
 public class GrantLoanHandler implements ExternalTaskHandler {
 
   @Override

@@ -26,9 +26,9 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
 
 
     private Long component;
-    private long royaltyRuleId;
+    private Long royaltyRuleId;
     private String code;
-    private long reservationId;
+    private Long reservationId;
 
 
     private EnumDuration duration;
@@ -41,24 +41,26 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
     private String status_text;
     private String duration_text;
     private String name_long;
-    private String long_desc;
+    private String Long_desc;
     private String supplier_code;
-    private long remaining;
+    private Long remaining;
 
     private String name;
     private String code_url;
     private String code_base64_src;
+    private String title;
+    private String componentRightCode;
 
     public static ComponentVounchResp from(ComponentVounch e) {
         ComponentVounchResp componentVounchResp = new ComponentVounchResp();
         componentVounchResp.setComponent(e.getComponent());
         componentVounchResp.setComponentRight(e.getComponentRight());
 
-        componentVounchResp.setCount(e.getCount());
+        componentVounchResp.setLimit(e.getLimit());
         componentVounchResp.setStatus(e.getStatus());
         componentVounchResp.setDuration(e.getDuration());
-        componentVounchResp.setRedeemed_quantity(e.getRedeemed_quantity());
-        componentVounchResp.setRemaining (e.getCount() - e.getRedeemed_quantity());
+        componentVounchResp.setRedeemed(e.getRedeemed_quantity());
+        componentVounchResp.setRemaining (e.getLimit() - e.getRedeemed_quantity());
 
         componentVounchResp.setReservationId(e.getReservation());
         componentVounchResp.setRoyaltyRule(e.getRoyaltyRule());
@@ -102,6 +104,15 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
         return componentVounchResp;
     }
 
+    public static ComponentVounchResp Simplefrom(ComponentVounch e, ComponentRight componentRight) {
+        ComponentVounchResp componentVounchResp = new ComponentVounchResp();
+        componentVounchResp.setTitle(componentRight.getName());
+        componentVounchResp.setLimit(e.getLimit());
+        componentVounchResp.setRedeemed(e.getRedeemed_quantity());
+        componentVounchResp.setRemaining(e.getLimit()-e.getRedeemed_quantity());
+        return componentVounchResp;
+    }
+
     public RoyaltyRule getRoyaltyRule() {
         return royaltyRule;
     }
@@ -111,13 +122,13 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
     }
 
 
-    private long componentRight;
+    private Long componentRight;
 
-    public long getComponentRight() {
+    public Long getComponentRight() {
         return componentRight;
     }
 
-    public void setComponentRight(long componentRightId) {
+    public void setComponentRight(Long componentRightId) {
         this.componentRight = componentRightId;
     }
 
@@ -134,13 +145,13 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
     private String redeem_voucher_key;
 
     private Voucher voucher;
-    private long voucherId;
+    private Long voucherId;
 
-    public long getVoucherId() {
+    public Long getVoucherId() {
         return voucherId;
     }
 
-    public void setVoucherId(long voucherId) {
+    public void setVoucherId(Long voucherId) {
         this.voucherId = voucherId;
     }
 
@@ -151,28 +162,28 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
     private String note;
 
 
-    private Long redeemed_quantity;// (integer, required) - How many times a voucher has already been redeemed.
+    private Long redeemed;// (integer, required) - How many times a voucher has already been redeemed.
 
     private Integer redeemed_amount;// (integer) - Total Amount redeemed by the voucher. Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 balance is written as 10000.
 
 
 
-    private Long count;  //一次， 无数次，  五次，
+    private Long limit;  //一次， 无数次，  五次，
 
-    public Long getCount() {
-        return count;
+    public Long getLimit() {
+        return limit;
     }
 
-    public Long getRedeemed_quantity() {
-        return redeemed_quantity;
+    public Long getRedeemed() {
+        return redeemed;
     }
 
-    public void setRedeemed_quantity(Long redeemed_quantity) {
-        this.redeemed_quantity = redeemed_quantity;
+    public void setRedeemed(Long redeemed) {
+        this.redeemed = redeemed;
     }
 
-    public void setCount(Long count) {
-        this.count = count;
+    public void setLimit(Long limit) {
+        this.limit = limit;
     }
 
     public void setComponent(Long componentId) {
@@ -183,20 +194,20 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
         return component;
     }
 
-    public void setRoyaltyRuleId(long royaltyRuleId) {
+    public void setRoyaltyRuleId(Long royaltyRuleId) {
         this.royaltyRuleId = royaltyRuleId;
     }
 
-    public long getRoyaltyRuleId() {
+    public Long getRoyaltyRuleId() {
         return royaltyRuleId;
     }
 
 
-    public void setReservationId(long reservationId) {
+    public void setReservationId(Long reservationId) {
         this.reservationId = reservationId;
     }
 
-    public long getReservationId() {
+    public Long getReservationId() {
         return reservationId;
     }
 
@@ -253,12 +264,12 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
         return name_long;
     }
 
-    public void setLong_desc(String long_desc) {
-        this.long_desc = long_desc;
+    public void setLong_desc(String Long_desc) {
+        this.Long_desc = Long_desc;
     }
 
     public String getLong_desc() {
-        return long_desc;
+        return Long_desc;
     }
 
     public void setSupplier_code(String supplier_code) {
@@ -269,11 +280,11 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
         return supplier_code;
     }
 
-    public void setRemaining(long remaining) {
+    public void setRemaining(Long remaining) {
         this.remaining = remaining;
     }
 
-    public long getRemaining() {
+    public Long getRemaining() {
         return remaining;
     }
 
@@ -308,5 +319,22 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
 
     public String getCode_base64_src() {
         return code_base64_src;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setComponentRightCode(String componentRightCode) {
+
+        this.componentRightCode = componentRightCode;
+    }
+
+    public String getComponentRightCode() {
+        return componentRightCode;
     }
 }

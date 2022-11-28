@@ -70,7 +70,33 @@ public class XhToYxdService {
     @Autowired
     FileStorageServiceImpl fileStorageService;
 
+    public XhToYxdLoginResponse loginRecent(){
 
+
+        String url = String.format("%s/back-center/login",baseUrl);
+
+
+        // 发送请求参数
+        Map<String,Object> paramJson = new HashMap<>();
+        //  paramJson.put("username","admin111");
+        //  paramJson.put("password","admin123");
+        paramJson.put("username",username);
+        paramJson.put("password",password);
+        RestTemplate restTemplate = new RestTemplate();
+
+
+
+        System.out.println("url :"+ url);
+
+        ResponseEntity<XhToYxdLoginResponse> responseEntity = restTemplate.postForEntity(url,paramJson, XhToYxdLoginResponse.class);
+        System.out.println("getStatusCode"+responseEntity.getStatusCode());
+        XhToYxdLoginResponse buffer = responseEntity.getBody();
+        System.out.println("登录获得的 accessToken"+buffer.getAccessToken());
+        older_token = buffer;
+
+        return buffer;
+
+    }
 
 
     public XhToYxdLoginResponse login(){
@@ -110,7 +136,71 @@ public class XhToYxdService {
     }
 
 
+    public YxdToXHResponse creditWaitConfirmVO(CreditWaitConfirmVO code, String accessToken){
 
+
+        if(!isLoging()){
+
+            login();
+
+        }
+
+
+
+        String url = String.format("%s/xydfinanceproductorderinfo/creditWaitConfirm",baseUrl);
+
+        System.out.println("url 我的:"+ url);
+        System.out.println("url 我的:"+ accessToken);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        headers.set("Authorization","bearer "+accessToken );
+
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<CreditWaitConfirmVO> entity = new HttpEntity<CreditWaitConfirmVO>(code,headers);
+
+
+
+        try{
+            ResponseEntity<YxdToXHResponse> responseEntity = restTemplate.postForEntity(url,entity, YxdToXHResponse.class);
+            System.out.println("getStatusCode"+responseEntity.getStatusCode());
+
+
+            if(responseEntity.getStatusCode() == HttpStatus.OK){
+
+
+                YxdToXHResponse buffer = responseEntity.getBody();
+                System.out.println(buffer);
+                if(buffer.getRespCode() == 0){
+
+                    System.out.println("状态改变成功"+ buffer.getRespMsg());
+                }else{
+                    System.out.println("状态改变失败"+ buffer.getRespMsg());
+                    throw new BookNotFoundException(Enumfailures.not_found,"状态改变失败:"+ buffer.getRespMsg());
+
+                }
+                return buffer;
+
+            }else{
+
+                throw new BookNotFoundException(Enumfailures.not_found,"请求信易贷操作失败");
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+
+            if(e instanceof HttpClientErrorException.Unauthorized){
+                login();
+
+            }else{
+            }
+            throw e;
+
+        }
+
+
+    }
 
     public YxdToXHResponse creditWaitConfirmVO(PullFromYxdRequest xydToXhPushRequest, @RequestBody CreditWaitConfirmVO code, String accessToken){
 
@@ -192,13 +282,8 @@ public class XhToYxdService {
 
     public YxdToXHResponse insReject(PullFromYxdRequest xydToXhPushRequest,@RequestBody InsReject code){
 
+        XhToYxdLoginResponse xhToYxdLoginResponse =     loginRecent();
 
-
-        if(!isLoging()){
-
-            login();
-
-        }
 
 
         String url = String.format("%s/xydfinanceproductorderinfo/insReject",baseUrl);
@@ -209,7 +294,7 @@ public class XhToYxdService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         //headers.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
         //  headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-        headers.set("Authorization","bearer "+older_token.getAccessToken() );
+        headers.set("Authorization","bearer "+xhToYxdLoginResponse.getAccessToken() );
 
 
         HttpEntity<InsReject> entity = new HttpEntity<InsReject>(code,headers);
@@ -261,6 +346,67 @@ public class XhToYxdService {
 
     }
 
+    public YxdToXHResponse insReject(InsReject code){
+
+
+
+
+        XhToYxdLoginResponse xhToYxdLoginResponse =     loginRecent();
+
+
+
+        String url = String.format("%s/xydfinanceproductorderinfo/insReject",baseUrl);
+
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        headers.set("Authorization","bearer "+xhToYxdLoginResponse.getAccessToken() );
+
+
+        HttpEntity<InsReject> entity = new HttpEntity<InsReject>(code,headers);
+
+
+
+        try{
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            ResponseEntity<YxdToXHResponse> responseEntity = restTemplate.postForEntity(url,entity, YxdToXHResponse.class);
+            System.out.println("getStatusCode"+responseEntity.getStatusCode());
+
+            if(responseEntity.getStatusCode() == HttpStatus.OK){
+
+
+                YxdToXHResponse buffer = responseEntity.getBody();
+                System.out.println(buffer);
+                if(buffer.getRespCode() == 0){
+
+
+                    System.out.println("状态改变成功"+ buffer.getRespMsg());
+                }else{
+                    System.out.println("状态改变失败"+ buffer.getRespMsg());
+
+                }
+                return buffer;
+
+            }else{
+
+                throw new BookNotFoundException(Enumfailures.not_found,"请求信易贷操作失败");
+
+            }
+        }catch (Exception e){
+
+            e.printStackTrace();
+
+            throw e;
+        }
+
+
+
+    }
+
     private boolean isLoging() {
 
         if(token_time.isAfter(LocalDateTime.now())){
@@ -277,11 +423,10 @@ public class XhToYxdService {
         String url = String.format("%s/xydfinanceproductorderinfo/addClinchInfo",baseUrl);
 
 
-        if(!isLoging()){
 
-            login();
 
-        }
+        XhToYxdLoginResponse xhToYxdLoginResponse =    loginRecent();
+
 
 
 
@@ -290,7 +435,7 @@ public class XhToYxdService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization","bearer "+older_token.getAccessToken() );
+        headers.set("Authorization","bearer "+xhToYxdLoginResponse.getAccessToken() );
         HttpEntity<AddClinchInfoVO> entity = new HttpEntity<AddClinchInfoVO>(code,headers);
 
 
@@ -301,6 +446,7 @@ public class XhToYxdService {
             RestTemplate restTemplate = new RestTemplate();
 
             ResponseEntity<YxdToXHResponse> responseEntity = restTemplate.postForEntity(url,entity, YxdToXHResponse.class);
+
             System.out.println("getStatusCode"+responseEntity.getStatusCode());
 
 
@@ -372,15 +518,15 @@ public class XhToYxdService {
         String url = String.format("%s/xydfinanceproductorderinfo/list",baseUrl);
 
 
-        if(!isLoging()){
-            login();
-        }
+
+        XhToYxdLoginResponse xhToYxdLoginResponse =     loginRecent();
+
 
 
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization","bearer "+older_token.getAccessToken() );
+        headers.set("Authorization","bearer "+xhToYxdLoginResponse.getAccessToken() );
       //  HttpEntity<AddClinchInfoVO> entity = new HttpEntity<AddClinchInfoVO>(code,headers);
 
         RestTemplate restTemplate = new RestTemplate();

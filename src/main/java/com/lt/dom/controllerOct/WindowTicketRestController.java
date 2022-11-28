@@ -18,6 +18,7 @@ import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.SupplierRepository;
 import com.lt.dom.requestvo.BookingTypeTowhoVo;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.serviceOtc.pay.WeixinPaymentServiceImpl;
 import com.lt.dom.vo.ChargeMetadataVo;
 import com.lt.dom.vo.QrcodeReaderResult;
 import com.lt.dom.vo.UserVo;
@@ -97,7 +98,7 @@ public class WindowTicketRestController {
 
             productResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.product_photos,e.getCode()));
 
-            productResp.setThumbnail_image(fileStorageService.loadDocument(EnumDocumentType.product_thumb,e.getCode()));
+            productResp.setThumbnail_image(fileStorageService.loadDocumentWithDefault(EnumDocumentType.product_thumb,e.getCode()));
 
             return productResp;
         }).collect(Collectors.toList()));
@@ -366,7 +367,7 @@ public class WindowTicketRestController {
 
 
 
-        Pair<Reservation, List<BookingTypeTowhoVo>> booking =bookingService.booking(list, pojo);
+        Pair<Reservation, List<BookingTypeTowhoVo>> booking =bookingService.bookingOnlySku(list, pojo);
 
         pojo.setReservation(booking.getValue0());
 

@@ -4,33 +4,40 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumComponentStatus;
 import com.lt.dom.otcenum.EnumDuration;
+import com.lt.dom.otcenum.EnumPrivacyLevel;
 import com.lt.dom.otcenum.EnumProductComponentSource;
 
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ComponentRightResp {
+public class ComponentRightResp extends  BaseResp{
     private EnumComponentStatus status;
     private String status_text;
     private EnumDuration duration;
     private Long quantity;
     private String duration_text;
     private long id;
+    private EnumPrivacyLevel privacy_level;
+    private String code;
 
 
     public static ComponentRightResp from(ComponentRight componentRight) {
 
         ComponentRightResp componentRightResp = new ComponentRightResp();
         componentRightResp.setName(componentRight.getName());
+        componentRightResp.setCode(componentRight.getCode());
+
         componentRightResp.setSupplierId(componentRight.getSupplier());
         componentRightResp.setNote(componentRight.getNote());
         componentRightResp.setStatus(componentRight.getStatus());
         componentRightResp.setStatus_text(componentRight.getStatus().toString());
         componentRightResp.setDuration(componentRight.getDuration());
-        componentRightResp.setQuantity(componentRight.getQuantity());
+        componentRightResp.setQuantity(componentRight.getLimit_quantity());
         componentRightResp.setDuration_text(componentRight.getDuration().toString());
         componentRightResp.setId(componentRight.getId());
-
+        componentRightResp.setPrivacy_level(componentRight.getPrivacy_level());
+        componentRightResp.setCreatedDate(componentRight.getCreatedDate());
+        componentRightResp.setModifiedDate(componentRight.getModifiedDate());
 
         return componentRightResp;
     }   // 这个是 下单的时候， 从 product 中生成 的
@@ -50,7 +57,7 @@ public class ComponentRightResp {
         componentRightResp.setStatus(componentRight.getStatus());
         componentRightResp.setStatus_text(componentRight.getStatus().toString());
         componentRightResp.setDuration(componentRight.getDuration());
-        componentRightResp.setQuantity(componentRight.getQuantity());
+        componentRightResp.setQuantity(componentRight.getLimit_quantity());
         componentRightResp.setDuration_text(componentRight.getDuration().toString());
         componentRightResp.setId(componentRight.getId());
 
@@ -92,6 +99,21 @@ public class ComponentRightResp {
         return id;
     }
 
+    public void setPrivacy_level(EnumPrivacyLevel privacy_level) {
+        this.privacy_level = privacy_level;
+    }
+
+    public EnumPrivacyLevel getPrivacy_level() {
+        return privacy_level;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
 
 
     public static class ComponentRightOption {

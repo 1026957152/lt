@@ -33,6 +33,11 @@ public class IntoOnecodeServiceImpl {
     @Autowired
     private IntoOnecodeRepository intoOnecodeRepository;
 
+    @Autowired
+    private IdGenServiceImpl idGenService;
+
+
+
     public IntoOnecode getAvailability(User user)  {
 
         Optional<IntoOnecode> intoOnecodeOptional = intoOnecodeRepository.findByUser(user.getId());
@@ -42,7 +47,7 @@ public class IntoOnecodeServiceImpl {
         if(intoOnecodeOptional.isEmpty()){
             intoOnecode = new IntoOnecode();
             intoOnecode.setType(EnumAssetType.qr);
-            intoOnecode.setIdId(UUID.randomUUID().toString());
+            intoOnecode.setIdId(idGenService.oneCodeNo());
             intoOnecode.setUser(user.getId());
             intoOnecode = intoOnecodeRepository.save(intoOnecode);
 

@@ -1,6 +1,7 @@
 package com.lt.dom.OctResp;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.Balance;
 import com.lt.dom.otcenum.EnumFinancialAccountStatus;
 import com.lt.dom.otcenum.EnumUserType;
@@ -8,6 +9,7 @@ import com.lt.dom.otcenum.EnumUserType;
 import javax.persistence.*;
 
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BalanceResp {
 
 

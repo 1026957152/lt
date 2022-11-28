@@ -14,9 +14,12 @@ public class ComponentResp{
     private String source_text;
     private String long_name;
     private String long_desc;
+    private String code;
+    private String componentRightCode;
 
     public static ComponentResp from(Component x) {
         ComponentResp componentResp = new ComponentResp();
+
         componentResp.setComponentRight(x.getComponentRightId());
         componentResp.setDuration(x.getDuration());
         componentResp.setDuration_text(x.getDuration().toString());
@@ -46,7 +49,7 @@ public class ComponentResp{
         ComponentResp componentResp = ComponentResp.from(x);
         componentResp.setLong_name(componentRight.getName_long());
         componentResp.setLong_desc(componentRight.getLong_desc());
-        return null;
+        return componentResp;
     }
 
     public EnumProductComponentSource getSource() {
@@ -223,5 +226,22 @@ public class ComponentResp{
 
     public String getLong_desc() {
         return long_desc;
+    }
+
+    public void setCode(String code) {
+
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setComponentRightCode(String componentRightCode) {
+        this.componentRightCode = componentRightCode;
+    }
+
+    public String getComponentRightCode() {
+        return componentRightCode;
     }
 }

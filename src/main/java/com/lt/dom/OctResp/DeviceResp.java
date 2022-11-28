@@ -1,15 +1,19 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.Device;
+import com.lt.dom.oct.Supplier;
 import com.lt.dom.otcenum.EnumDeviceOnline;
 import com.lt.dom.otcenum.EnumDeviceStatus;
 import com.lt.dom.otcenum.EnumDeviceType;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
-
-public class DeviceResp {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class DeviceResp extends BaseResp {
 
     private String name;
     private String serialNumber;
@@ -48,6 +52,8 @@ public class DeviceResp {
     private String status_text;
 
 private String code;
+    private SupplierResp supplier;
+    private List<ComponentRightResp> allowed;
 
     public static DeviceResp from(Device device) {
         DeviceResp deviceResp = new DeviceResp();
@@ -65,6 +71,8 @@ private String code;
         deviceResp.setProject_id(device.getProject_id());
         deviceResp.setType_text(device.getType().toString());
 
+        deviceResp.setCreatedDate(device.getCreatedDate());
+        deviceResp.setModifiedDate(device.getModifiedDate());
         return deviceResp;
     }
 
@@ -209,6 +217,33 @@ private String code;
 
     public String getCode() {
         return code;
+    }
+
+    public void withSupplier(Optional<Supplier> optionalSupplier) {
+
+        if(optionalSupplier.isEmpty()){
+            Supplier supplier = optionalSupplier.get();
+
+            this.setSupplier(SupplierResp.from(supplier));
+
+        }
+
+    }
+
+    public void setSupplier(SupplierResp supplier) {
+        this.supplier = supplier;
+    }
+
+    public SupplierResp getSupplier() {
+        return supplier;
+    }
+
+    public void setAllowed(List<ComponentRightResp> allowed) {
+        this.allowed = allowed;
+    }
+
+    public List<ComponentRightResp> getAllowed() {
+        return allowed;
     }
 
     public static class Info {

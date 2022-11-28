@@ -10,11 +10,10 @@ import com.google.gson.Gson;
 import com.lt.dom.config.WxPayConfig;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
-import com.lt.dom.error.PaymentException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcenum.EnumRefundReason;
-import com.lt.dom.otcenum.EnumRefundStatus;
-import com.lt.dom.otcenum.Enumfailures;
+import com.lt.dom.otcReq.ChargeReq;
+import com.lt.dom.otcReq.RefundReq;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
 import com.lt.dom.util.HttpUtils;
@@ -33,6 +32,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,7 +42,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @RestController
@@ -87,12 +86,12 @@ public class PaymentRestController {
 
 
     @GetMapping(value = "/payments", produces = "application/json")
-    public ResponseEntity<PagedModel> listCampaigns(Pageable pageable, PagedResourcesAssembler<EntityModel<Payment>> assembler) {
+    public ResponseEntity<PagedModel> listPayment(Pageable pageable, PagedResourcesAssembler<EntityModel<Payment>> assembler) {
             Page<Payment> documents = paymentRepository.findAll(pageable);
             return ResponseEntity.ok(assembler.toModel(documents.map(x->{
                 EntityModel entityModel = EntityModel.of(x);
 
-             entityModel.add(linkTo(methodOn(PaymentRestController.class).refund(x.getId(),null)).withRel("createRufund"));
+        //     entityModel.add(linkTo(methodOn(PaymentRestController.class).refund(x.getId(),null,null)).withRel("createRufund"));
 
                 return entityModel;
             })));
@@ -121,7 +120,6 @@ public class PaymentRestController {
         Optional<Payment> optionalReservation = paymentRepository.findById(PAYMENT_ID);
 
         if(optionalReservation.isEmpty()){
-            System.out.println("找不到产品");
             throw new BookNotFoundException(PAYMENT_ID,Product.class.getSimpleName());
         }
 
@@ -155,7 +153,8 @@ public class PaymentRestController {
         chargeMetadataVo.setPayer(userVo.getUser_id());
        // chargeMetadataVo.setBooking(reservation.getId());
         String metadata = new Gson().toJson(chargeMetadataVo);
-        Map  charge = paymentService.createCharge(ip,payment.getCode(),reservation.getId(),payment.getAmount(),optional.get().getOpenid(),userVo,metadata);
+        Map  charge = paymentService.createCharge(ip,payment.getCode(),reservation,payment.getAmount(),
+                optional.get().getOpenid(),userVo,metadata,payment);
 
 
 
@@ -164,6 +163,79 @@ public class PaymentRestController {
     }
 
 
+
+    @PostMapping(value = "/payments/{PAYMENT_ID}/charges")
+    public Object createCharge(@PathVariable long PAYMENT_ID, @RequestParam EnumPayChannel channel, HttpServletRequest request, ChargeReq chargeReq) {
+
+
+        System.out.println("----------------- chanel"+channel);
+        String ip = HttpUtils.getRequestIP(request);
+
+        Optional<Payment> optionalReservation = paymentRepository.findById(PAYMENT_ID);
+
+        if(optionalReservation.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到支付对象");
+        }
+
+
+
+        Payment payment = optionalReservation.get();
+
+
+        if(!payment.getStatus().equals(EnumPaymentStatus.PENDING)){
+            throw new BookNotFoundException(Enumfailures.not_found,"已支付，无需添加支付");
+        }
+        Authentication authentication = authenticationFacade.getAuthentication();
+
+        UserVo userVo = authenticationFacade.getUserVo(authentication);
+
+
+        Optional<Openid> optional = openidRepository.findByUserIdAndLink(userVo.getUser_id(),true);
+        if(optional.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到 openId");
+        }
+
+        Optional<Reservation> optionalReservation1 = reservationRepository.findById(payment.getBooking());
+
+        ChargeMetadataVo chargeMetadataVo = new ChargeMetadataVo();
+        //  chargeMetadataVo.setCampaign(campaign.getId());
+        //   chargeMetadataVo.setCampaign_code(campaign.getCode());
+        //   chargeMetadataVo.setVolume_up_voucher(voucher.getId());
+        chargeMetadataVo.setPayer(userVo.getUser_id());
+        // chargeMetadataVo.setBooking(reservation.getId());
+        String metadata = new Gson().toJson(chargeMetadataVo);
+
+
+        switch (channel) {
+            case cash: {
+                String chargeCode = idGenService.chargeCode();
+                Charge  charge = paymentService.createCharge(chargeCode, channel,ip,payment,userVo,metadata);
+                if(channel.equals(EnumPayChannel.cash)){
+                    Optional<Reservation> reservation = reservationRepository.findByCode(payment.getReference());
+                    paymentService.successCharge(charge,reservation.get(),payment);
+                    return charge;
+                }
+            }
+            break;
+
+            case wx: {
+                // double totalAmount = 0.01;
+                int totalAmount = payment.getAmount();
+                // 微信的支付单位是分所以要转换一些单位
+                long  totalproce =Long.parseUnsignedLong(totalAmount+"");//Long.parseUnsignedLong(totalAmount*100+"");
+
+                Reservation reservation = optionalReservation1.get();
+                Map  charge = paymentService.createCharge(ip,payment.getCode(),reservation,totalproce,optional.get().getOpenid(),userVo,metadata, payment);
+
+                return charge;
+            }
+        }
+
+        throw new BookNotFoundException(Enumfailures.not_found,"不支持的支付方式");
+
+
+
+    }
 
 
     @PostMapping(value = "/xxxxxx")
@@ -201,6 +273,8 @@ public class PaymentRestController {
             return result;
         }
     }
+
+
 
 
 
@@ -315,9 +389,9 @@ public class PaymentRestController {
      *
      * @param CHARGE_ID
      */
-    @PostMapping(value = "/payments/{CHARGE_ID}/refunds")
-    public ResponseEntity<Void> refund(@PathVariable long CHARGE_ID,
-                       HttpServletRequest request) {
+    @PostMapping(value = "/charges/{CHARGE_ID}/refunds")
+    public ResponseEntity<Refund> refund(@PathVariable long CHARGE_ID,
+                                       HttpServletRequest request, @RequestBody @Valid RefundReq refundReq) {
         // totalFee 必须要以分为单位,退款的价格可以这里只做的全部退款
 
         Optional<Charge> optionalCharge = chargeRepository.findById(CHARGE_ID);
@@ -326,7 +400,11 @@ public class PaymentRestController {
             throw new BookNotFoundException(CHARGE_ID,Product.class.getSimpleName());
         }
         Charge charge = optionalCharge.get();
-        if(charge.getRefunded()){
+
+        if(!charge.getStatus().equals(EnumChargeStatus.succeeded)){
+            throw new ExistException(Enumfailures.general_exists_error,"支付未成功，不能退款");
+        }
+        if(charge.getAmountRefunded() >= charge.getAmount()){
             throw new ExistException(Enumfailures.general_exists_error,"已经退款，无需退款");
         }
 
@@ -336,31 +414,34 @@ public class PaymentRestController {
         Optional<Payment> payment = paymentRepository.findById(optionalCharge.get().getPayment());
         Optional<Reservation> reservation = reservationRepository.findById(optionalCharge.get().getBooking());
 
+        String refundCode = idGenService.refundCode();
 
 
+        switch (charge.getChannel()){
+            case cash:{
+                Refund refund = paymentService.createRefund(refundCode,charge,reservation.get(),refundReq);
+                return ResponseEntity.ok(refund);
+            }
+
+            case wx : {
+
+                String tradeNo = charge.getCode();///transaction_id;
+                Integer totalFee = charge.getAmount();//
 
 
+                MyConfig wxPayConfig = null;
+                try {
+                    wxPayConfig = new MyConfig();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-
-
-
-        String tradeNo = charge.getCode();///transaction_id;
-        Integer totalFee = charge.getAmount();//
-
-
-        MyConfig wxPayConfig = null;
-        try {
-            wxPayConfig = new MyConfig();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        WXPay wxpay = null;
-        try {
-            wxpay = new WXPay(wxPayConfig);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                WXPay wxpay = null;
+                try {
+                    wxpay = new WXPay(wxPayConfig);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
 
 /*        WxPayRefundRequest wxPayRefundRequest = new WxPayRefundRequest();
@@ -370,11 +451,19 @@ public class PaymentRestController {
         wxPayRefundRequest.setRefundFee(totalFee);
         wxPayRefundRequest.setNotifyUrl(wxPayConfig.getRefundNotifyUrl());*/
 
-        String out_trade_no = "";   //退款订单
-        int   all_total_fee = 100;    //订单金额(这里是按分来计算的)
-        int      refund_fee = 0;      //退款金额(这里是按分来计算的)
+                String out_trade_no = "";   //退款订单
+                int   all_total_fee = 100;    //订单金额(这里是按分来计算的)
 
-        Map<String, String> paramesMap = new HashMap<>();
+                Integer      refund_fee = null;      //退款金额(这里是按分来计算的)
+
+                if(refundReq.getRefund_fee()== null){
+                    refund_fee = charge.getAmount();      //退款金额(这里是按分来计算的)
+
+                }else{
+                    refund_fee = refundReq.getRefund_fee();
+                }
+
+                Map<String, String> paramesMap = new HashMap<>();
 /*        paramesMap.put("out_trade_no",charge.getCode());
         paramesMap.put("all_total_fee", charge.getAmount()+"");//"2016090910595900000012"
         paramesMap.put("refund_fee", charge.getAmount()+"");*/
@@ -384,7 +473,7 @@ public class PaymentRestController {
         data.put("trade_type", "JSAPI");  // 此处指定为扫码支付
         data.put("product_id", "12");
         data.put("openid", openid);*/
-        try {
+
 
    /*         dataMap.put("appid","wx#################");
 
@@ -408,44 +497,70 @@ public class PaymentRestController {
         //    SortedMap<String, Object> paramesMap = new TreeMap<>();
 */
 
-            String refundCode = idGenService.refundCode();
 
 
 
 
 
-         paramesMap.put("appid", wxPayConfig.getAppID());
-            paramesMap.put("mch_id", wxPayConfig.getMchID());
-            paramesMap.put("nonce_str", "date");
-            paramesMap.put("out_trade_no", tradeNo);//商户订单号，也可用微信的订单号，二选已，具体看文档
-            paramesMap.put("out_refund_no", refundCode);//商户退款单号，商户方自己生成
-            paramesMap.put("total_fee", charge.getAmount()+"");//订单总金额
-            paramesMap.put("refund_fee", charge.getAmount()+"");//退款金额
-            paramesMap.put("refund_desc","退款");
-            paramesMap.put("notify_url","http://39.106.34.220:8080/oct/wechat/pay/refund_notify");
 
-            String sign = WXPayUtil.generateSignature(paramesMap,wxPayConfig.getKey(),wxPayConfig.getSignType());
+                    paramesMap.put("appid", wxPayConfig.getAppID());
+                    paramesMap.put("mch_id", wxPayConfig.getMchID());
+                    paramesMap.put("nonce_str", "date");
+                    paramesMap.put("out_trade_no", tradeNo);//商户订单号，也可用微信的订单号，二选已，具体看文档
+                    paramesMap.put("out_refund_no", refundCode);//商户退款单号，商户方自己生成
+                    paramesMap.put("total_fee", charge.getAmount()+"");//订单总金额
+                    paramesMap.put("refund_fee", refund_fee+"");//退款金额
+                    paramesMap.put("refund_desc","退款");
+                    paramesMap.put("notify_url","http://39.106.34.220:8080/oct/wechat/pay/refund_notify");
 
-            paramesMap.put("sign",sign);//签名，同支付签名一样*/
+                String sign = null;
+                try {
+                    sign = WXPayUtil.generateSignature(paramesMap,wxPayConfig.getKey(),wxPayConfig.getSignType());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
 
-       //
-            Map<String, String> map = wxpay.refund(paramesMap);
-       //     WxPayRefundResult refund = null;//wxPayService().refundV2(wxPayRefundRequest);
-          //  if (refund.getReturnCode().equals("SUCCESS") && refund.getResultCode().equals("SUCCESS")) {
+                paramesMap.put("sign",sign);//签名，同支付签名一样*/
 
-            System.out.println("=================这里是退款的返回细腻些"+ map);
-                if (map.get("return_code").equals("SUCCESS") && map.get("return_code").equals("SUCCESS")) {
+                    //
+                Map<String, String> map = null;
+                try {
+                    map = wxpay.refund(paramesMap);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                //     WxPayRefundResult refund = null;//wxPayService().refundV2(wxPayRefundRequest);
+                    //  if (refund.getReturnCode().equals("SUCCESS") && refund.getResultCode().equals("SUCCESS")) {
+
+                    System.out.println("=================这里是退款的返回细腻些"+ map);
+                    if (map.get("return_code").equals("SUCCESS")) {
+
+                        if(map.get("result_code").equals("SUCCESS")){
 
 
-                paymentService.createCharge(refundCode,charge,reservation.get());
+                            Map map_ = Map.of("refund_id",map.get("refund_id"),
+                                    // 微信退款单号
+                                    "transaction_id",map.get("transaction_id")
+                                    ); // 微信订单号
+
+                            Refund refund =  paymentService.createRefund(refundCode,charge,reservation.get(), refundReq);
+                            return ResponseEntity.ok(refund);
+                        }
+
+                    }else{
+                        throw new ExistException(Enumfailures.general_exists_error,"支付失败"+map.get("return_msg"));
+
+                    }
+
 
             }
-
-        } catch(Exception e) {// (WxPayException e) {
-            e.printStackTrace();
-
-
         }
+
+
+
+
+
+
 
 
         return ResponseEntity.ok().build();
@@ -520,7 +635,7 @@ public class PaymentRestController {
                 refund1.setCreated(LocalDateTime.now());
                 refund1.setStatus(EnumRefundStatus.pending);
                 refund1.setCharge(payment.getId());
-                paymentService.createCharge(null,new Charge(),null);
+                paymentService.createRefund(null,new Charge(),null, null);
 
 
                 //  WxPayRefundResult refund

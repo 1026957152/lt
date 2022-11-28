@@ -7,8 +7,14 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 public enum EnumAssetType {
+    unvalid("unvalid"),
+
     qr("qr"),
     barcode("barcode"),
+
+    tour_qr("tour_qr"),
+    booking_qr("booking_qr"),
+    supplier_qr("supplier_qr"),
 
 
 

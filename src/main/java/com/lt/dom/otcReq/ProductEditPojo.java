@@ -1,11 +1,9 @@
 package com.lt.dom.otcReq;
 
 import com.lt.dom.OctResp.AttributeResp;
+import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.otcReq.product.ProductGiftVoucherPojo;
-import com.lt.dom.otcenum.EnumAvailabilityType;
-import com.lt.dom.otcenum.EnumProductPricingType;
-import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
-import com.lt.dom.otcenum.EnumProductType;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.vo.ByHour;
 import com.lt.dom.vo.ByItem;
 import com.lt.dom.vo.ByPerson;
@@ -13,13 +11,21 @@ import com.lt.dom.vo.Fixed;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
 
 public class ProductEditPojo {
 
+    private List<FeatureTagReq> featureTags;
+
+    public List<FeatureTagReq> getFeatureTags() {
+        return featureTags;
+    }
+
+    public void setFeatureTags(List<FeatureTagReq> featureTags) {
+        this.featureTags = featureTags;
+    }
 
     @Size(max = 50)
     private String name;
@@ -27,10 +33,110 @@ public class ProductEditPojo {
 
     private EnumAvailabilityType availability;
 
+    public String getDesc_short() {
+        return desc_short;
+    }
+
+    public void setDesc_short(String desc_short) {
+        this.desc_short = desc_short;
+    }
+
     @Size(max = 100)
     private String name_long;
+    private String desc_long;
+    private String desc_short;
+    private String note;
+    private Boolean show_note;
+    private Boolean free;
+    private EnumAvailabilityType availabilityType;
+    private EnumPrivacyLevel privacyLevel;
+    private List<EnumTags> tags;
 
 
+    private List<PhotoResp> images;
+
+    private PhotoResp thumb;
+    private PhotoResp video;
+
+    public PhotoResp getVideo() {
+        return video;
+    }
+
+    public PhotoResp getThumb() {
+        return thumb;
+    }
+
+    public void setThumb(PhotoResp thumb) {
+        this.thumb = thumb;
+    }
+
+    public void setVideo(PhotoResp video) {
+        this.video = video;
+    }
+
+    public void setImages(List<PhotoResp> images) {
+        this.images = images;
+    }
+
+    public EnumAvailabilityType getAvailability() {
+        return availability;
+    }
+
+    public void setAvailability(EnumAvailabilityType availability) {
+        this.availability = availability;
+    }
+
+    public String getDesc_long() {
+        return desc_long;
+    }
+
+    public void setDesc_long(String desc_long) {
+        this.desc_long = desc_long;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public Boolean getShow_note() {
+        return show_note;
+    }
+
+    public void setShow_note(Boolean show_note) {
+        this.show_note = show_note;
+    }
+
+    public Boolean getFree() {
+        return free;
+    }
+
+    public void setFree(Boolean free) {
+        this.free = free;
+    }
+
+    public EnumAvailabilityType getAvailabilityType() {
+        return availabilityType;
+    }
+
+    public List<PhotoResp> getImages() {
+        return images;
+    }
+
+    public void setAvailabilityType(EnumAvailabilityType availabilityType) {
+        this.availabilityType = availabilityType;
+    }
+
+    public ProductGiftVoucherPojo getPojo() {
+        return pojo;
+    }
+
+    public void setPojo(ProductGiftVoucherPojo pojo) {
+        this.pojo = pojo;
+    }
 
     private ProductGiftVoucherPojo pojo;
 
@@ -38,15 +144,6 @@ public class ProductEditPojo {
     private List<Price> prices;
 
 
-    private List<String> images;
-
-    public List<String> getImages() {
-        return images;
-    }
-
-    public void setImages(List<String> images) {
-        this.images = images;
-    }
 
     public List<Price> getPrices() {
         return prices;
@@ -64,6 +161,21 @@ public class ProductEditPojo {
         this.name_long = name_long;
     }
 
+    public EnumPrivacyLevel getPrivacyLevel() {
+        return privacyLevel;
+    }
+
+    public void setPrivacyLevel(EnumPrivacyLevel privacyLevel) {
+        this.privacyLevel = privacyLevel;
+    }
+
+    public List<EnumTags> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<EnumTags> tags) {
+        this.tags = tags;
+    }
 
 
     public static class Price {

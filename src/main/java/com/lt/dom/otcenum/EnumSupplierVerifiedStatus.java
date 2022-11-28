@@ -5,6 +5,7 @@ public enum EnumSupplierVerifiedStatus {
     completed(-1),
     rejected(-1),
     pending(-1),
+    none(-1),
 
     ;
 

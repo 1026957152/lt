@@ -86,8 +86,6 @@ public class XhController {
 
 
 
-
-
         Page<RequestCredit> validatorOptional = request授信Repository.findAll(pageable);
 
         List<Credit_信合_税票信息>  list = _信合_税票信息Repository.findAllById(validatorOptional.stream().map(x->x.getId()).collect(Collectors.toList()));
@@ -284,7 +282,7 @@ public class XhController {
      //   code.setCreateBy("");
       //  code.setCreateTime("");
         code.setCreditAmount_授信额度(creditWaitConfirmReq.getCreditAmount_授信额度());
-        code.setDisabled(0);
+      //  code.setDisabled(0);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         code.setEndTime_授信额度有效期至(creditWaitConfirmReq.getEndTime_授信额度有效期至().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
@@ -299,14 +297,15 @@ public class XhController {
 
       //  code.setInstName("");
 
-       // code.setLoanLimit_贷款期限(20);
-       // code.setLoanRate_贷款年化利率(10);
+        code.setLoanLimit_贷款期限(creditWaitConfirmReq.getClinchLoanLimit_贷款期限());
+        code.setLoanRate_贷款年化利率(creditWaitConfirmReq.getClinchLoanRate_贷款年化利率());
        // code.setOrderId_申请id(xydToXhPushRequest.getOrderIdX申请id());
        // code.setOtherFee_担保服务费(0);
 
 
 
-        //code.setPayWay_还款方式(EnumClinchPayWay还款方式.信用.getId());
+        code.setPayWay_还款方式(creditWaitConfirmReq.getClinchPayWay_还款方式().getId());
+        code.setGuarantyWay_担保方式(creditWaitConfirmReq.getClinchGuarantyWay_担保方式().getId());
         //code.setPayWayDisplay("");
 
        // code.setStartTime("");
@@ -319,7 +318,7 @@ public class XhController {
 
         System.out.println("=====ddd===="+code.toString());
 
-
+        System.out.println("请求信易贷："+new Gson().toJson(code));
         YxdToXHResponse yxdToXHResponse =  xhToYxdService.creditWaitConfirmVO(xydToXhPushRequest,code,XhToYxdService.older_token.getAccessToken());
 
         if(yxdToXHResponse != null){
@@ -372,6 +371,7 @@ public class XhController {
         InsReject code = new InsReject();
 
         code.setOrderId_申请id(xydToXhPushRequest.getIdX());
+
         code.setMsg(insReject.getMsg());
 
         System.out.println("我的请求参数是"+(new Gson().toJson(code).toString()));
@@ -433,7 +433,7 @@ public class XhController {
        // code.setBackMoneyTypeDisplay("");
 
       //  code.setBusinessType_业务类型(EnumBusinessType业务类型.直租.getId());
-       // code.setClinchGuarantyWay_担保方式(EnumGuarantyWay担保方式.保证.getId());
+        code.setClinchGuarantyWay_担保方式(addClinchInfoReq.getClinchGuarantyWay_担保方式().getId());
        // code.setClinchGuarantyWayDisplay("");
 
         code.setClinchLoanAmount_实际放款金额(addClinchInfoReq.getClinchLoanAmount_实际放款金额());
@@ -443,9 +443,9 @@ public class XhController {
         code.setClinchLoanRate_贷款年化利率(addClinchInfoReq.getClinchLoanRate_贷款年化利率());
 
 
-      //  code.setClinchPayWay_还款方式(EnumClinchPayWay还款方式.保证.getId());
+       code.setClinchPayWay_还款方式(addClinchInfoReq.getClinchPayWay_还款方式().getId());
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
         //  code.setEndTime_授信额度有效期至(formatter.format(LocalDateTime.now().plusYears(1)));
@@ -457,14 +457,14 @@ public class XhController {
       //  code.setCreateTime("");
        // code.setCreditType("");
        // code.setDisabled(0);
-        //code.setEntId_企业ID(xydToXhPushRequest.getBaseInfo企业信息().getId());
+        code.setEntId_企业ID(xydToXhPushRequest.getEntId());
       //  code.setEntId_企业ID(-1);
         // code.setGuarantySubEnt_担保主体企业(xydToXhPushRequest.getBaseInfo企业信息().getEntName());
 
      //   code.setGuarantySubEnt_担保主体企业("");
 
       //  code.setId(0);
-      //  code.setInstId_机构id(-1);
+        code.setInstId_机构id(9);
 
         //  code.setInstId_机构id(xydToXhPushRequest.getInstInfo金融机构().getIdX());
      //   code.setInstName("");
@@ -529,6 +529,7 @@ public class XhController {
 
         return assembler.toModel(userList.map(e->{
 
+            System.out.println(e.getStatus_xh()+"看一看状态");
             XydToXhPushRequestJsonFit xydToXhPushRequestJsonFit = new Gson().fromJson(e.getJson(),XydToXhPushRequestJsonFit.class);
             EntityModel entityModel = EntityModel.of(xydToXhPushRequestJsonFit);
 
@@ -647,7 +648,6 @@ public class XhController {
 
         entityModel.add(linkTo(methodOn(XhController.class).insReject(Long.valueOf(pullFromYxdRequest.getId()).intValue(),null)).withRel("拒绝操作"));
         entityModel.add(linkTo(methodOn(XhController.class).放款通知(Long.valueOf(pullFromYxdRequest.getId()).intValue(),null)).withRel("放款通知"));
-
 
         return entityModel;
     }

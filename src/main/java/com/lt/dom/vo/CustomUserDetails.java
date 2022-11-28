@@ -2,6 +2,7 @@ package com.lt.dom.vo;
 
 
 import com.lt.dom.oct.Supplier;
+import com.lt.dom.oct.UserAuthority;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -12,7 +13,7 @@ public class CustomUserDetails implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
 
     private String email;
-
+    private UserAuthority userAuthority;
     private String displayName;
 
     private String password;
@@ -30,6 +31,26 @@ public class CustomUserDetails implements UserDetails {
     private boolean employee;
     private Supplier supplier;
 
+    public UserAuthority getUserAuthority() {
+        return userAuthority;
+    }
+
+    public void setUserAuthority(UserAuthority userAuthority) {
+        this.userAuthority = userAuthority;
+    }
+
+    public CustomUserDetails(UserAuthority email, String username, String password, boolean enabled, boolean accountNonExpired, boolean accountNonLocked, boolean credentialsNonExpired, Collection<? extends GrantedAuthority> authorities) {
+        this.authorities = authorities;
+        this.userAuthority = email;
+
+        this.password = password;
+        this.username = username;
+        this.enabled = enabled;
+        this.accountNonExpired = accountNonExpired;
+        this.accountNonLocked = accountNonLocked;
+        this.credentialsNonExpired = credentialsNonExpired;
+    }
+
     public Supplier getSupplier() {
         return supplier;
     }
@@ -37,7 +58,7 @@ public class CustomUserDetails implements UserDetails {
     public void setSupplier(Supplier supplier) {
         this.supplier = supplier;
     }
-
+/*
     public CustomUserDetails(String email, String displayName, String username, String password, Boolean enabled, Collection<? extends GrantedAuthority> authorities) {
         this.email = email;
         this.displayName = displayName;
@@ -60,7 +81,7 @@ public class CustomUserDetails implements UserDetails {
         this.accountNonExpired = accountNonExpired;
         this.accountNonLocked = accountNonLocked;
         this.credentialsNonExpired = credentialsNonExpired;
-    }
+    }*/
 
     public String getEmail() {
         return email;
@@ -100,17 +121,17 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return accountNonLocked;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return credentialsNonExpired;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return enabled;
     }
 }
 

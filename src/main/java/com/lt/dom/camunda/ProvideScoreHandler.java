@@ -12,8 +12,8 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Component
-@ExternalTaskSubscription("scoreProvider") // create a subscription for this topic name
+//@Component
+//@ExternalTaskSubscription("scoreProvider") // create a subscription for this topic name
 public class ProvideScoreHandler implements ExternalTaskHandler {
 
   @Override
