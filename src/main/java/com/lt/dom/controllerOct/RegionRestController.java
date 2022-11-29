@@ -10,6 +10,7 @@ import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import com.lt.dom.serviceOtc.RegionServiceImpl;
 
+import com.lt.dom.serviceOtc.TripServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,13 +50,17 @@ public class RegionRestController {
     private RegionServiceImpl regionService;
 
     @Autowired
-    private MuseumRepository museumRepository;
+    private TripServiceImpl tripService;
 
     @Autowired
     private FileStorageServiceImpl fileStorageService;
 
     @Autowired
     private AttractionRepository attractionRepository;
+    @Autowired
+    private PlaceRepository placeRepository;
+
+
 
 
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/regions", produces = "application/json")
@@ -248,6 +253,57 @@ public class RegionRestController {
 
 
 
+    @GetMapping(value = "/regionPlace/{Museum_ID}", produces = "application/json")
+    public EntityModel getRegionPlace(@PathVariable long Museum_ID) {
+
+        Optional<Place> validatorOptional = placeRepository.findById(Museum_ID);
+        if(validatorOptional.isEmpty()){
+
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到产品");
+
+        }
+
+
+        Place region = validatorOptional.get();
+        RegionResp museumResp = RegionResp.from(region);
+
+
+
+        museumResp.setPhoto(fileStorageService.loadDocumentWithDefault(EnumDocumentType.place_photo,region.getCode()));
+
+        List<Attraction>  attractionList  = attractionRepository.findAll();
+
+
+        //  List<Attraction> attractionList = attractionRepository.findAll();
+        museumResp.setRecommend_attractions(attractionList.stream().map(e->{
+
+
+
+
+            AttractionResp attractionResp = AttractionResp.simpleFrom(e,fileStorageService.loadDocumentWithDefault(EnumDocumentType.attraction_thumb,e.getCode()));
+
+            attractionResp.setTags(Arrays.asList(EnumKnownfor.Architecture.toString()));
+
+
+
+
+            EntityModel attractionEntityModel = EntityModel.of(attractionResp);
+            attractionEntityModel.add(linkTo(methodOn(AttractionRestController.class).getAttraction(e.getId(), EnumUrlSourceType.normal)).withSelfRel());
+
+            return attractionEntityModel;
+        }).collect(Collectors.toList()));
+
+
+
+        EntityModel entityModel = EntityModel.of(museumResp);
+        entityModel.add(linkTo(methodOn(RegionRestController.class).getMuseum(region.getId())).withSelfRel());
+
+        return entityModel;
+
+    }
+
+
+
 
 
 
@@ -370,5 +426,43 @@ public class RegionRestController {
 
     }
 */
+
+
+
+
+    @PostMapping(value = "/regions/transfer", produces = "application/json")
+    public EntityModel<Region> transfer() {
+
+
+
+        List<Region> regions = regionRepository.findAll();
+
+        Supplier supplier1 = supplierRepository.findById(3l).get();
+
+        regions.stream().forEach(e->{
+
+
+
+
+
+            PlaceReq movieReq = new PlaceReq();
+            movieReq.setName(e.getName());
+            Description description = new Description();
+            description.setText(e.getDescription());
+            movieReq.setDescription(description);
+            movieReq.setLevel(EnumPlaceLevel.country);
+            movieReq.setType(EnumPlaceTyp.region);
+
+            movieReq.setPhoto(fileStorageService.loadDocumentWithCodeEdit(EnumDocumentType.region_photo,e.getCode()));
+            tripService.createPlace(supplier1,movieReq);
+
+        });
+
+
+        EntityModel entityModel = EntityModel.of(regions);
+
+        return entityModel;
+
+    }
 
 }

@@ -100,6 +100,10 @@ public class ProductRestController {
     private AttributeRepository attributeRepository;
 
     @Autowired
+    private ContactServiceImpl contactService;
+
+
+    @Autowired
     private PassProductRepository passProductRepository;
 
     @Autowired
@@ -621,13 +625,23 @@ public class ProductRestController {
 
 
         List<Attribute> attributeList = attributeRepository.findAllByObjectCode(product.getCode());
-        ProductEditResp.AboutTap aboutTap = ProductEditResp.AboutTap.from(attributeList);
 
-        aboutTap.setParameterList(
+
+
+        ProductEditResp.CrossSellTab aboutTab = ProductEditResp.CrossSellTab.from(product.getCrossSells());
+        Optional<Contact> contactOptional = contactService.find(EnumRelatedObjectType.product,product.getId());
+
+        if(contactOptional.isPresent()){
+            aboutTab.setContacts(contactOptional.get().getIdentifiers()
+                    .stream().map(e->{
+                        return IdentifierReq.from(e);
+                    }).collect(Collectors.toList()));
+        }
+        aboutTab.setParameterList(
                 Map.of(
                         "feature_tag_list",EnumFeatureTag.List()
                 ));
-        EntityModel entityModel_aboutTap = EntityModel.of(aboutTap);
+        EntityModel entityModel_aboutTap = EntityModel.of(aboutTab);
         entityModel_aboutTap.add(linkTo(methodOn(ProductRestController.class).editProductAboutTab(product.getId(),null)).withRel("edit"));
         productResp.setAboutTab(entityModel_aboutTap);
 
@@ -991,11 +1005,11 @@ public class ProductRestController {
 
         Map<EnumTermType,TermResp> termMap = termService.getMapResp(product);
         TermResp term = termMap.get(EnumTermType.booking);
-        Term term1 = new Term();
-        term1.setText("测试");
-        term1.setRequiresExplicitConsent(false);
-        term1.setType(EnumTermType.TermsOfUse);
-        productResp.setBooking(EntityModel.of(Map.of("termsOfService",TermResp.fromToFront(term1),
+     //   Term term1 = new Term();
+      //  term1.setText(term.);
+     //   term1.setRequiresExplicitConsent(false);
+    //    term1.setType(EnumTermType.TermsOfUse);
+        productResp.setBooking(EntityModel.of(Map.of("termsOfService",term,
                 "terms",termMap,
                 "terms_of_sevice",true,
                 "Restriction",restriction1
@@ -1769,7 +1783,7 @@ public class ProductRestController {
     }
 
     @PutMapping(value = "/products/{PRODUCT_ID}/aboutTab", produces = "application/json")
-    public ResponseEntity<ProductResp> editProductAboutTab(@PathVariable long PRODUCT_ID,@RequestBody @Valid ProductEditAboutTabPojo pojo) {
+    public ResponseEntity<ProductResp> editProductAboutTab(@PathVariable long PRODUCT_ID,@RequestBody @Valid ProductEditResp.AboutTab pojo) {
 
         System.out.println("---------------"+ pojo.toString());
         Optional<Product> validatorOptional = productRepository.findById(PRODUCT_ID);

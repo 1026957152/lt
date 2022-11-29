@@ -1,6 +1,7 @@
 package com.lt.dom.OctResp;
 
 
+import com.lt.dom.oct.Place;
 import com.lt.dom.oct.Region;
 
 import java.util.List;
@@ -32,6 +33,15 @@ public class RegionResp {
 
     }
 
+
+    public static RegionResp from(Place region) {
+        RegionResp resp = new RegionResp();
+        resp.setName(region.getName());
+        resp.setCode(region.getCode());
+        resp.setDescription(region.getDescription_text());
+        return resp;
+
+    }
     public String getName() {
         return name;
     }

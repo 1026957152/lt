@@ -110,6 +110,8 @@ public enum EnumDocumentType {
     car_photo("campaign_logo"),
     car_brand_logo("campaign_logo"),
 
+
+    author_avatar("campaign_logo"),
     ;
 
 

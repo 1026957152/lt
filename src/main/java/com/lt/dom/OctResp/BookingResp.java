@@ -29,6 +29,7 @@ public class BookingResp extends BaseResp {
     private Shipping shipping;
     private String platform_text;
     private Fulfillment fulfillment;
+    private EnumPlatform platform;
 
     public void setContact(Contact contact) {
         this.contact = contact;
@@ -92,6 +93,14 @@ public class BookingResp extends BaseResp {
 
     public String getPlatform_text() {
         return platform_text;
+    }
+
+    public void setPlatform(EnumPlatform platform) {
+        this.platform = platform;
+    }
+
+    public EnumPlatform getPlatform() {
+        return platform;
     }
 
     public static class Contact {
@@ -423,6 +432,7 @@ public class BookingResp extends BaseResp {
         reservationResp.setType_text(booking.getType().toString());
         reservationResp.setNote(booking.getNote());
         reservationResp.setPlatform_text(booking.getPlatform().toString());
+        reservationResp.setPlatform(booking.getPlatform());
 
         reservationResp.setCreatedDate(booking.getCreatedDate());
         reservationResp.setModifiedDate(booking.getModifiedDate());

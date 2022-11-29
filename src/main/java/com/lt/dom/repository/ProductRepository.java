@@ -8,6 +8,7 @@ import com.lt.dom.otcenum.EnumPrivacyLevel;
 import com.lt.dom.otcenum.EnumProductStatus;
 import com.lt.dom.otcenum.EnumProductType;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -36,4 +37,6 @@ public interface ProductRepository extends JpaRepository<Product
     Optional<Product> findByCode(String item_id);
 
     List<Product> findAllByStatusAndPrivacyLevel(EnumProductStatus active, EnumPrivacyLevel public_);
+
+    Page<Product> findAllByIdIn(List<Long> list, Pageable of);
 }

@@ -85,6 +85,11 @@ public class ProductServiceImpl {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private ContactServiceImpl contactService;
+
+
     @Autowired
     private AttributeRepository attributeRepository;
 
@@ -863,7 +868,7 @@ public class ProductServiceImpl {
 
     }
     @Transactional
-    public Product editProductAboutTab(Product product, ProductEditAboutTabPojo pojo) {
+    public Product editProductAboutTab(Product product, ProductEditResp.AboutTab pojo) {
 
 
         List<Long> has = pojo.getAttributes().stream().map(e->e.getId()).collect(Collectors.toList());
@@ -884,6 +889,13 @@ public class ProductServiceImpl {
             return attribute;
 
         }).collect(Collectors.toList());
+
+        if(pojo.getContacts() != null ){
+            contactService.create(product,pojo.getContacts());
+
+        }
+
+
 
 
         attributeRepository.saveAll(attributeList);

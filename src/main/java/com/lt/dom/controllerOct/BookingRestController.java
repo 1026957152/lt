@@ -15,12 +15,18 @@ import com.lt.dom.requestvo.BookingTypeTowhoVoSku;
 import com.lt.dom.serviceOtc.*;
 import com.lt.dom.serviceOtc.pay.BalancePaymentServiceImpl;
 import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
+import com.lt.dom.specification.BookingQueryfieldsCriteria;
+import com.lt.dom.specification.BookingSpecification;
+import com.lt.dom.specification.TourBookingQueryfieldsCriteria;
+import com.lt.dom.specification.TourBookingSpecification;
 import com.lt.dom.util.HttpUtils;
 import com.lt.dom.vo.*;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.javatuples.Triplet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +49,7 @@ import java.util.stream.Collectors;
 import static com.lt.dom.serviceOtc.JsonParse.GSON;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.groupingBy;
+import static org.springframework.data.jpa.domain.Specification.where;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -51,6 +58,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 @RequestMapping("/oct")
 public class BookingRestController {
+    Logger logger = LoggerFactory.getLogger(BookingRestController.class);
 
     @Autowired
     private DocumentRepository documentRepository;
@@ -722,13 +730,14 @@ public class BookingRestController {
         Supplier supplier = supplierOptional.get();
 
 
-        Map map = Map.of("status_list", EnumBookingStatus.from());
+        Map map = Map.of("status_list", EnumBookingStatus.from(),
+                "platform_list", EnumPlatform.List());
 
 
         EntityModel entityModel = EntityModel.of(map);
 
 
-        entityModel.add(linkTo(methodOn(BookingRestController.class).getPcBookingList(null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(BookingRestController.class).getPcBookingList(null,null,null)).withRel("list"));
 
 
         return entityModel;
@@ -878,12 +887,19 @@ public class BookingRestController {
     @Operation(summary = "1、获得订购")
     @GetMapping(value = "/bookings/pc", produces = "application/json")
     public ResponseEntity<PagedModel> getPcBookingList(
+            BookingQueryfieldsCriteria searchQuery,
             @PageableDefault(sort = {"createdDate",
                     "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
                                                        PagedResourcesAssembler<EntityModel<BookingResp>>assembler) {
 
 
-        Page<Reservation> optionalProduct = reservationRepository.findAll(pageable);
+        logger.debug("搜索参数： {}",searchQuery.toString());
+
+        BookingSpecification spec =
+                new BookingSpecification(searchQuery);
+
+
+        Page<Reservation> optionalProduct = reservationRepository.findAll(where(spec),pageable);
 
         Page<EntityModel<BookingResp>> page =  optionalProduct.map(x->{
 
@@ -910,18 +926,7 @@ public class BookingRestController {
 
                 bookingResp.setPayment(entityModel_payment);
             }
- /*
-                Optional<Product> product = productRepository.findById(x.getProductId());
 
-                List<Traveler> travelers = travelerRepository.findAllByBooking(x.getId());
-                List<Document> documents = documentRepository.findAllByRaletiveId(x.getId());
-
-                BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
-                bookingTypeTowhoVo.setProduct(product.get());
-                bookingTypeTowhoVo.setToWhoTyp(EnumBookingOjbectType.Product);
-                BookingResp resp = BookingResp.toResp(Quartet.with(x,bookingTypeTowhoVo,travelers,documents));
-
-                */
             EntityModel entityModel = EntityModel.of(bookingResp);
             entityModel.add(linkTo(methodOn(BookingRestController.class).getBookingEdit(x.getId())).withSelfRel());
 

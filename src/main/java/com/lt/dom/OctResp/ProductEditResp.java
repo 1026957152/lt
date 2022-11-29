@@ -920,17 +920,25 @@ private String code;
 
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class AboutTap {
+    public static class AboutTab {
 
+        List<IdentifierReq> contacts;
 
+        public List<IdentifierReq> getContacts() {
+            return contacts;
+        }
+
+        public void setContacts(List<IdentifierReq> contacts) {
+            this.contacts = contacts;
+        }
         private Map parameterList;
 
         private List tips;
         private List<AttributeEditReq> attributes;
 
 
-        public static AboutTap from(List<Attribute> bookingRuleList) {
-            AboutTap availability = new AboutTap();
+        public static AboutTab from(List<Attribute> bookingRuleList) {
+            AboutTab availability = new AboutTab();
 
             availability.setAttributes(bookingRuleList.stream().map(e->{
                 AttributeEditReq attributeEditReq = new AttributeEditReq();
@@ -1312,4 +1320,87 @@ private String code;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class CrossSellTab {
+
+        List<IdentifierReq> contacts;
+
+        public List<IdentifierReq> getContacts() {
+            return contacts;
+        }
+
+        public void setContacts(List<IdentifierReq> contacts) {
+            this.contacts = contacts;
+        }
+        private Map parameterList;
+
+        private List tips;
+        private List<CrossSellReq> crossSells;
+
+
+        public static CrossSellTab from(List<CrossSell> crossSells) {
+            CrossSellTab availability = new CrossSellTab();
+
+            availability.setCrossSells(crossSells.stream().map(e->{
+                CrossSellReq attributeEditReq = new CrossSellReq();
+                attributeEditReq.setCode(e.getCode());
+                attributeEditReq.setTitle(e.getProduct().getName());
+
+                attributeEditReq.setId(e.getProduct().getId());
+                return attributeEditReq;
+
+            }).collect(Collectors.toList()));
+/*            availability.setComponents(bookingRuleList.stream().map(e->{
+                return ComponentResp.from(e);
+            }).collect(Collectors.toList()));*/
+
+            return availability;
+        }
+
+
+        public <V, K> void setParameterList(Map parameterList) {
+            this.parameterList = parameterList;
+        }
+
+        public Map getParameterList() {
+            return parameterList;
+        }
+
+
+        public <T> void setTips(List tips) {
+            this.tips = tips;
+        }
+
+        public List getTips() {
+            return tips;
+        }
+
+
+        public void setCrossSells(List<CrossSellReq> crossSells) {
+            this.crossSells = crossSells;
+        }
+
+        public List<CrossSellReq> getCrossSells() {
+            return crossSells;
+        }
+    }
 }

@@ -30,7 +30,7 @@ import java.util.List;
             @JsonProperty("idcard_limit")
             private String idcardLimit_身份证限制规则;//身份证限制规则
             @JsonProperty("idcard_limit_type")
-            private String idcardLimitType_身份证限制类型; //身份证限制类型，1：允许，2：禁止
+            private Integer idcardLimitType_身份证限制类型; //身份证限制类型，1：允许，2：禁止
             @JsonProperty("lng_lat")
             private String lngLat_产品经纬度; //产品经纬度（经度纬度英文逗号分隔）
             @JsonProperty("map_num")
@@ -212,11 +212,11 @@ import java.util.List;
         this.idcardLimit_身份证限制规则 = idcardLimit_身份证限制规则;
     }
 
-    public String getIdcardLimitType_身份证限制类型() {
+    public Integer getIdcardLimitType_身份证限制类型() {
         return idcardLimitType_身份证限制类型;
     }
 
-    public void setIdcardLimitType_身份证限制类型(String idcardLimitType_身份证限制类型) {
+    public void setIdcardLimitType_身份证限制类型(Integer idcardLimitType_身份证限制类型) {
         this.idcardLimitType_身份证限制类型 = idcardLimitType_身份证限制类型;
     }
 

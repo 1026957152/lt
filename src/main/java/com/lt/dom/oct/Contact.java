@@ -1,10 +1,24 @@
 package com.lt.dom.oct;
 
 
+import com.lt.dom.otcenum.EnumRelatedObjectType;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.OneToMany;
+import java.util.List;
 
 @Entity
 public class Contact extends Base {
+
+
+
+
+        @OneToMany(mappedBy="contact",
+                cascade = CascadeType.ALL,
+                orphanRemoval = true)
+        List<Identifier> identifiers;
+
 
         private String website;
 
@@ -15,6 +29,36 @@ public class Contact extends Base {
 
         private String name;
         private String title;
+
+
+
+        private EnumRelatedObjectType relatedObjectType;
+
+        private Long relatedObjectId;
+
+        public List<Identifier> getIdentifiers() {
+                return identifiers;
+        }
+
+        public void setIdentifiers(List<Identifier> identifiers) {
+                this.identifiers = identifiers;
+        }
+
+        public EnumRelatedObjectType getRelatedObjectType() {
+                return relatedObjectType;
+        }
+
+        public void setRelatedObjectType(EnumRelatedObjectType relatedObjectType) {
+                this.relatedObjectType = relatedObjectType;
+        }
+
+        public Long getRelatedObjectId() {
+                return relatedObjectId;
+        }
+
+        public void setRelatedObjectId(Long relatedObjectId) {
+                this.relatedObjectId = relatedObjectId;
+        }
 
         public String getWebsite() {
                 return website;

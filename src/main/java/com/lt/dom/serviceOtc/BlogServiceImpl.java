@@ -4,6 +4,7 @@ package com.lt.dom.serviceOtc;
 import com.lt.dom.oct.Blog;
 import com.lt.dom.oct.Comment;
 import com.lt.dom.oct.Product;
+import com.lt.dom.otcReq.BlogEditReq;
 import com.lt.dom.otcReq.BlogReq;
 import com.lt.dom.otcReq.CommentReq;
 import com.lt.dom.otcenum.EnumDocumentType;
@@ -65,17 +66,26 @@ public class BlogServiceImpl {
     }
 
 
-    public Blog edit(Blog theatre, BlogReq blogReq) {
+    public Blog edit(Blog theatre, BlogEditReq.EditReq blogReq) {
 
 
-        theatre.setUser(blogReq.getUser());
+       // theatre.setUser(blogReq.getUser());
 
         theatre.setTitle(blogReq.getTitle());
+        theatre.setSlug(blogReq.getSlug());
+        theatre.setPinned(blogReq.getPinned());
+
         theatre.setContentText(blogReq.getContentText());
         theatre.setMinutesToRead(blogReq.getMinutesToRead());
+        theatre.setCommentingEnabled(blogReq.getCommentingEnabled());
+        theatre.setAuthor_DisplayName(blogReq.getAuthor().getDisplayName());
+
 
         theatre = blogRepository.save(theatre);
 
+        if(blogReq.getAuthor().getImage()!= null){
+            fileStorageService.updateFromTempDocument(theatre.getCode(),blogReq.getAuthor().getImage(), EnumDocumentType.author_avatar);
+        }
 
         if(blogReq.getCoverMedia().getCode()!= null){
             fileStorageService.updateFromTempDocument(theatre.getCode(),blogReq.getCoverMedia(), EnumDocumentType.blog_cover);
@@ -89,13 +99,13 @@ public class BlogServiceImpl {
         Blog theatre = new Blog();
         theatre.setCode(idGenService.nextId("blog_"));
         theatre.setTitle(blogReq.getTitle());
-        theatre.setContentText(blogReq.getContentText());
+      //  theatre.setContentText(blogReq.getContentText());
         theatre.setMinutesToRead(blogReq.getMinutesToRead());
         theatre.setUser(userVo.getUser_id());
 
         theatre = blogRepository.save(theatre);
 
-        if(blogReq.getCoverMedia().getCode()!= null){
+        if(blogReq.getCoverMedia()!= null && blogReq.getCoverMedia().getCode()!= null){
             fileStorageService.updateFromTempDocument(theatre.getCode(),blogReq.getCoverMedia(), EnumDocumentType.blog_cover);
         }
         return theatre;

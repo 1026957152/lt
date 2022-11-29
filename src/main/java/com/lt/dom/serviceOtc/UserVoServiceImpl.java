@@ -257,6 +257,9 @@ public class UserVoServiceImpl {
 
             supplierRespEntityModel.add(linkTo(methodOn(ExtraRestController.class).Page_listExtra(employee.getSuplierId())).withRel("Page_listExtra"));
 
+            supplierRespEntityModel.add(linkTo(methodOn(BlogRestController.class).Page_listBlog(employee.getSuplierId())).withRel("Page_listBlog"));
+
+
 
 
 

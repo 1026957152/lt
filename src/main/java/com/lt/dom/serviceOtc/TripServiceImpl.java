@@ -87,6 +87,12 @@ public class TripServiceImpl {
 //        showtime.setVisibilityDateTime(movieReq.getVisibilityDateTime());
 //        showtime.setShowDateTime(movieReq.getShowDateTime());
         showtime = placeRepository.save(showtime);
+
+        if(placeReq.getPhoto()!=null){
+
+            fileStorageService.updateFromTempDocument(showtime.getCode(),placeReq.getPhoto(), EnumDocumentType.place_photo);
+
+        }
         return showtime;
     }
 

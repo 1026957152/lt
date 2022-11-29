@@ -4,6 +4,7 @@ package com.lt.dom.thirdTS;
 import cn.gjing.EncryptionUtil;
 import com.beust.jcommander.internal.Lists;
 import com.lt.dom.OctResp.TermResp;
+import com.lt.dom.controllerOct.BookingRestController;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.BookingSkuPojo;
@@ -20,8 +21,9 @@ import com.lt.dom.vo.PlatUserVo;
 import org.apache.commons.lang3.StringUtils;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.threeten.bp.LocalDate;
@@ -34,10 +36,12 @@ import java.util.stream.Collectors;
 @Service
 public class TsToLtServiceImpl {
 
+    Logger logger = LoggerFactory.getLogger(BookingRestController.class);
 
-    String baseUrl_请求地址 = "baseUrl_请求地址";//
-    String 合作伙伴ID = "合作伙伴ID";//
-    String 授权编码 = "授权编码";//
+    String baseUrl_请求地址 = "http://yllt.sjdzp.com/Api/LocalCom/api.json?g_cid=95029";//
+    String 合作伙伴ID = "0912719100LV20221125";//
+    String 授权编码 = "lt0912";//
+
 
     @Autowired
     private ProductRepository productRepository;
@@ -66,6 +70,8 @@ public class TsToLtServiceImpl {
     private TermServiceImpl termService;
     @Autowired
     private PriceServiceImpl priceService;
+    @Autowired
+    private ContactServiceImpl contactService;
 
 
     @Autowired
@@ -147,21 +153,17 @@ public class TsToLtServiceImpl {
         }
 
 
+
+    //    thirdPartyService.findAll(EnumThirdParty.TS, data.getKey_word(), PageRequest.of(data.getPage(), data.getSize()));
+
+
         List<Product> products = new ArrayList<>();
 
         if(data.getItem_id()!= null){
+            products.addAll(thirdPartyService.findAll(EnumThirdParty.TS,data.getItem_id().longValue()));
 
-            Optional<Product> optional = productRepository.findById(data.getItem_id().longValue());
-
-            if(optional.isPresent()){
-                products.add(optional.get());
-
-            }
         }else{
-            Page<Product> productPage = productRepository.findAll(PageRequest.of(data.getPage(),data.getSize()));
-
-
-            products.addAll(productPage.getContent());
+            products.addAll(thirdPartyService.findAll(EnumThirdParty.TS,data.getKey_word(),PageRequest.of(data.getPage(),data.getSize())));
         }
 
 
@@ -195,6 +197,8 @@ public class TsToLtServiceImpl {
 
             }
             PricingType pricingType = optionalPricingType.get();
+
+
             ListDTO listDTO = get(e,pricingType);
 
             listDTO.setDatePrices(dateDatePricesDTOMap);
@@ -225,10 +229,32 @@ public class TsToLtServiceImpl {
 
             //TODO 增加Param Object
             ParamsDTO paramsDTO = new ParamsDTO();
-            paramsDTO.setBookingReading_预约须知("城市主人卡");
+
+            TermResp term = termService.getMapResp(e).get(EnumTermType.booking);
+            if(term != null){
+                paramsDTO.setBookingReading_预约须知(term.getText());
+                listDTO.setParams(paramsDTO);
+            }
+
+            Optional<Contact> contact =  contactService.find(EnumRelatedObjectType.product,e.getId());
+            if(contact.isPresent()){
+
+                Optional<Identifier> identifierOptional = contact.get().getIdentifiers().stream().filter(identifier->identifier.getType().equals(EnumIdentifiersType.phone)).findAny();
+
+                if(identifierOptional.isPresent()){
+                    paramsDTO.setContactNumber_商家电话(identifierOptional.get().getLinkId());
+
+                }
+
+
+            }
+
+            if(e.getRestriction_passenger_identity_documents_required()){
+                paramsDTO.setIdcardLimit_身份证限制规则("6127241984");
+                paramsDTO.setIdcardLimitType_身份证限制类型(1); //身份证限制类型，1：允许，2：禁止
+            }
+
             listDTO.setParams(paramsDTO);
-
-
 
             //TODO 增加规格 Arrays
             SpecTypeListDTO specTypeListDTO = new SpecTypeListDTO();
@@ -278,13 +304,17 @@ public class TsToLtServiceImpl {
         }
 
 
+
         if(e.getRefund()!= null && !e.getRefund()){
             listDTO.setRefundType_退票类型(2); //"退票类型：1：允许退票；2：不可退票；3：管理员审核",
 
         }else{
             listDTO.setRefundType_退票类型(1); //"退票类型：1：允许退票；2：不可退票；3：管理员审核",
             listDTO.setRefundMessage_退款说明(e.getRefund_note());
+
         }
+
+
 
 
         listDTO.setAmount_门票数量_总库存(1000);  //必须

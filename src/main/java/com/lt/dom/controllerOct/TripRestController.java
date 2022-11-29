@@ -14,6 +14,8 @@ import com.lt.dom.serviceOtc.TripServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -204,7 +206,11 @@ public class TripRestController {
 
 
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/places", produces = "application/json")
-    public PagedModel listPlaces(@PathVariable long SUPPLIER_ID  ,Pageable pageable, PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
+    public PagedModel listPlaces(@PathVariable long SUPPLIER_ID  ,
+
+                                 @PageableDefault(sort = {"createdDate", "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable,
+
+                                 PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
 
         Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
         if(supplierOptional.isEmpty()) {

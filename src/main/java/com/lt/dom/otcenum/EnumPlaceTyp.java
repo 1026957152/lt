@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum EnumPlaceTyp {
+    region,
+
     accounting,
     airport,
             amusement_park,

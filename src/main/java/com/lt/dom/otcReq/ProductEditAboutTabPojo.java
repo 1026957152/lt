@@ -12,6 +12,7 @@ public class ProductEditAboutTabPojo {
     List<AttributeEditReq> attributes;
 
 
+
     public List<AttributeEditReq> getAttributes() {
         return attributes;
     }

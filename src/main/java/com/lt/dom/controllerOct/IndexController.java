@@ -96,6 +96,8 @@ public class IndexController {
     @Autowired
     private RegionRepository regionRepository;
 
+    @Autowired
+    private PlaceRepository placeRepository;
 
     @Autowired
     private MovieRepository movieRepository;
@@ -228,16 +230,17 @@ public class IndexController {
 
 */
 
-        List<Region> regionList = regionRepository.findAll();
+      //  List<Region> regionList = regionRepository.findAll();
 
+        List<Place> regionList = placeRepository.findAllByType(EnumPlaceTyp.region);
 
         homeResp.setGreatYulin(regionList.stream().map(e->{
 
-            RegionResp resp = RegionResp.simpleFrom(e);
-            resp.setPhoto(fileStorageService.loadDocumentWithDefault(EnumDocumentType.region_photo,e.getCode()));
+            RegionResp resp = RegionResp.from(e);
+            resp.setPhoto(fileStorageService.loadDocumentWithDefault(EnumDocumentType.place_photo,e.getCode()));
 
             EntityModel entityModel1 = EntityModel.of(resp);
-            entityModel1.add(linkTo(methodOn(RegionRestController.class).getMuseum(e.getId())).withSelfRel());
+            entityModel1.add(linkTo(methodOn(RegionRestController.class).getRegionPlace(e.getId())).withSelfRel());
 
 
             return entityModel1;

@@ -5,6 +5,7 @@ import com.lt.dom.OctResp.PhoneResp;
 import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.BlogEditReq;
 import com.lt.dom.otcReq.BlogReq;
 import com.lt.dom.otcReq.CommentReq;
 import com.lt.dom.otcenum.EnumBookingStatus;
@@ -65,10 +66,17 @@ public class BlogRestController {
     private OpenidRepository openidRepository;
 
 
-    @GetMapping(value = "/Page_listBlog", produces = "application/json")
-    public EntityModel<Media> Page_listBlog( ) {
 
 
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/Page_listBlog", produces = "application/json")
+    public EntityModel<Media> Page_listBlog(@PathVariable long SUPPLIER_ID ) {
+
+
+            Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
+            if(supplierOptional.isEmpty()) {
+                throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到 商户"+SUPPLIER_ID);
+            }
+            Supplier supplier = supplierOptional.get();
 
 
 
@@ -78,7 +86,8 @@ public class BlogRestController {
         EntityModel entityModel = EntityModel.of(map);
 
 
-        entityModel.add(linkTo(methodOn(BlogRestController.class).listBlog(null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(BlogRestController.class).listBlog_PC(null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(BlogRestController.class).createBlog(null)).withRel("create"));
 
 
         return entityModel;
@@ -131,6 +140,75 @@ public class BlogRestController {
 
     }
 
+    @GetMapping(value = "/blogs/{INVOICE_ID}/edit", produces = "application/json")
+    public EntityModel getblogEidt(@PathVariable long INVOICE_ID) {
+
+        Optional<Blog> validatorOptional = blogRepository.findById(INVOICE_ID);
+
+        if(validatorOptional.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到产品");
+        }
+
+        Blog blog = validatorOptional.get();
+
+        BlogResp blogResp = BlogResp.from(blog);
+        User user = userRepository.findById(blog.getUser()).get();
+
+        BlogResp.Author author = BlogResp.Author.from(user);
+
+        BlogEditReq blogEditReq = new BlogEditReq();
+
+
+        PhotoResp resp = new PhotoResp();
+
+
+
+        Optional<Openid> optional = openidRepository.findByUserId(blog.getUser()).stream().findAny();
+        if(optional.isPresent()){
+            Openid openid = optional.get();
+
+            resp.setUrl(openid.getOpenid_image());
+            author.setImage(resp);
+            author.setDisplayName(openid.getOpenid_name());
+        }else{
+
+            author.setImage(fileStorageService.loadDocumentWithDefault(EnumDocumentType.user_avatar,user.getCode()));
+        }
+
+
+
+
+
+        blogResp.setAuthor(author);
+
+
+        blogResp.setCoverMedia(fileStorageService.loadDocumentWithDefault(EnumDocumentType.blog_cover,blog.getCode()));
+
+
+        blogEditReq.setInfo(blogResp);
+
+
+
+        PhotoResp authImage = fileStorageService.loadDocumentWithDefault(EnumDocumentType.blog_cover,blog.getCode());
+        BlogEditReq.EditReq blogEditReq1 = BlogEditReq.EditReq.from(blog,authImage);
+
+
+        EntityModel entityModeledit = EntityModel.of(blogEditReq1);
+        blogEditReq1.setCoverMedia(fileStorageService.loadDocumentWithDefault(EnumDocumentType.blog_cover,blog.getCode()));
+
+        entityModeledit.add(linkTo(methodOn(BlogRestController.class).editblog(blog.getId(),null)).withRel("edit"));
+
+        blogEditReq.setEditReq(entityModeledit);
+
+
+        EntityModel entityModel = EntityModel.of(blogEditReq);
+
+        entityModel.add(linkTo(methodOn(BlogRestController.class).getblogEidt(blog.getId())).withSelfRel());
+
+        return entityModel;
+
+    }
+
 
     @GetMapping(value = "/blogs", produces = "application/json")
     public PagedModel listBlog(Pageable pageable, PagedResourcesAssembler<EntityModel<Blog>> assembler) {
@@ -177,6 +255,49 @@ public class BlogRestController {
 
 
 
+    @GetMapping(value = "/blogs/pc", produces = "application/json")
+    public PagedModel listBlog_PC(Pageable pageable, PagedResourcesAssembler<EntityModel<Blog>> assembler) {
+
+
+        Page<Blog> validatorOptional = blogRepository.findAll(pageable);
+
+
+        return assembler.toModel(validatorOptional.map(e->{
+
+            BlogResp invoiceResp = BlogResp.Pcfrom(e);
+
+            User user = userRepository.findById(e.getUser()).get();
+            BlogResp.Author author = BlogResp.Author.from(user);
+
+            PhotoResp resp = new PhotoResp();
+            Optional<Openid> optional = openidRepository.findByUserId(e.getUser()).stream().findAny();
+            if(optional.isPresent()){
+                Openid openid = optional.get();
+
+                resp.setUrl(openid.getOpenid_image());
+                author.setImage(resp);
+                author.setDisplayName(openid.getOpenid_name());
+            }else{
+
+                author.setImage(fileStorageService.loadDocumentWithDefault(EnumDocumentType.user_avatar,user.getCode()));
+            }
+
+
+
+
+
+            invoiceResp.setAuthor(author);
+
+
+            invoiceResp.setCoverMedia(fileStorageService.loadDocumentWithDefault(EnumDocumentType.blog_cover,e.getCode()));
+
+            EntityModel entityModel = EntityModel.of(invoiceResp);
+            entityModel.add(linkTo(methodOn(BlogRestController.class).getblog(e.getId())).withSelfRel());
+            return entityModel;
+        }));
+
+    }
+
 
     @PostMapping(value = "/blogs", produces = "application/json")
     public ResponseEntity<EntityModel> createBlog(@RequestBody @Valid BlogReq subscriptionResp) {
@@ -199,7 +320,7 @@ public class BlogRestController {
 
 
     @PutMapping(value = "/blogs/{INVOICE_ID}", produces = "application/json")
-    public EntityModel editblog(@PathVariable long INVOICE_ID,@RequestBody @Valid BlogReq subscriptionResp) {
+    public EntityModel editblog(@PathVariable long INVOICE_ID,@RequestBody @Valid BlogEditReq.EditReq subscriptionResp) {
 
         Optional<Blog> validatorOptional = blogRepository.findById(INVOICE_ID);
 

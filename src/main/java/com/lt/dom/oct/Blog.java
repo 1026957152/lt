@@ -85,6 +85,7 @@ public class Blog extends Base {
     private MetricsDTO metrics;
     private String code;
     private Long user;
+    private String author_DisplayName;
 
     public void setCode(String code) {
         this.code = code;
@@ -101,6 +102,15 @@ public class Blog extends Base {
 
     public Long getUser() {
         return user;
+    }
+
+    public String getAuthor_DisplayName() {
+
+        return author_DisplayName;
+    }
+
+    public void setAuthor_DisplayName(String author_displayName) {
+        this.author_DisplayName = author_displayName;
     }
 
     @NoArgsConstructor

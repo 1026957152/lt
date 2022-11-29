@@ -20,7 +20,7 @@ import java.util.List;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BlogResp  {
+public class BlogResp extends BaseResp  {
 
 
     private String idX;
@@ -42,6 +42,7 @@ public class BlogResp  {
   //  private CoverMediaDTO coverMedia;
 
     private PhotoResp coverMedia;
+    private String code;
 
     public PhotoResp getCoverMedia() {
         return coverMedia;
@@ -96,6 +97,35 @@ public class BlogResp  {
         metricsDTO.setViews(10);
         blogResp.setMetrics(metricsDTO);
         return blogResp;
+    }
+
+    public static BlogResp Pcfrom(Blog e) {
+        BlogResp blogResp = new BlogResp();
+        blogResp.setCode(e.getCode());
+
+     //   blogResp.setContentText(e.getContentText());
+        blogResp.setMinutesToRead(e.getMinutesToRead());
+        blogResp.setTitle(e.getTitle());
+        blogResp.setExcerpt(e.getExcerpt());
+
+        MetricsDTO metricsDTO = new MetricsDTO();
+        metricsDTO.setComments(10);
+        metricsDTO.setLikes(10);
+        metricsDTO.setViews(10);
+        blogResp.setMetrics(metricsDTO);
+
+        blogResp.setCreatedDate(e.getCreatedDate());
+        blogResp.setModifiedDate(e.getModifiedDate());
+
+        return blogResp;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
     }
 
 
