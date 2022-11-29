@@ -8,6 +8,7 @@ import com.lt.dom.otcReq.ComponentRightPojo;
 import com.lt.dom.otcReq.ProductPojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import com.lt.dom.vo.CompoentRightAssigtToTargeVo;
 import com.lt.dom.vo.ValidatedByTypeVo;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -506,7 +507,7 @@ public class ComponentRightServiceImpl {
 
 
 
-    public void assingtoTicket(VoucherTicket voucherTicket , List<Component>  components, Long limit) {
+    public void assingtoTicket(VoucherTicket voucherTicket, List<Component>  components, Long limit) {
 
 
         System.out.println("这里给 VOUcherTicket 复议权益呀啊啊");
@@ -574,6 +575,74 @@ public class ComponentRightServiceImpl {
     }
 
 
+
+
+    public void assingtoTicket(CompoentRightAssigtToTargeVo voucherTicket, List<Component>  components, Long limit) {
+
+
+        System.out.println("这里给 VOUcherTicket 复议权益呀啊啊");
+        // componentRepository.deleteAllByProduct(product.getId());
+
+        List<ComponentVounch> list =  components.stream().map(right->{
+
+            ComponentVounch component = new ComponentVounch();
+            component.setCode(idGenService.componentVouncherCode());
+
+            component.setName(right.getName());
+
+            component.setProduct(voucherTicket.getPass().getId());
+            component.setSupplier(right.getSupplier());
+
+
+            component.setComponentRight(right.getComponentRightId());
+
+
+            component.setReference(voucherTicket.getPass().getCode());
+            component.setStatus(EnumComponentVoucherStatus.NotRedeemed);
+
+
+
+            //    component.setRatePlan(EnumReferralEvents.);
+            component.setSource(right.getSource());
+            if(right.getSource().equals(EnumProductComponentSource.partner)){
+                Assert.notNull(right.getSubscription(), "系统已有 componment Right 不能为空，当前空，新建 component 失败");
+                Assert.notNull(right.getRatePlan(), "系统已有 componment RatePlan 不能为空，当前空，新建 component 失败");
+                component.setRatePlan(right.getRatePlan());
+
+                component.setSubscription(right.getSubscription());
+            }
+
+            component.setVoucherId(voucherTicket.getPass().getId());
+            component.setLimit(limit);
+            component.setTry_(1l);
+            component.setRedeemed_quantity(0l);
+            component.setUnit_off(right.getUnit_off());
+            component.setDuration(right.getDuration());
+            component.setReservation(voucherTicket.getPass().getBooking());
+
+
+            component.setRoyalty_mode(right.getRoyalty_mode());
+            component.setValidate_way(right.getValidate_way());
+            component.setSupplier(right.getSupplier());
+/*            component.setRoyaltyPercent(right.getValue());
+            component.setRoyaltyAmount(right.getValue());
+            component.setRoyaltyAmount(right.getValue());
+            component.setCollection_method(royalty.getCollection_method());
+            component.setValidate_way(royalty.getValidate_way());
+
+            component.setRoyaltyPercent(royalty.getPercent());*/
+            return component;
+        }).collect(Collectors.toList());
+
+        list = componentVounchRepository.saveAll(list);
+
+
+
+
+
+
+
+    }
 
 
 

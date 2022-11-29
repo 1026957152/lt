@@ -80,7 +80,7 @@ public class ComponentRightResolveServiceImpl {
     public void resolve_foreach_sku(Reservation reservation) {
 
 
-        System.out.println("-------------看看fulfillment ----------- 不知道是在哪里啊啊啊啊 ");
+        System.out.println("-------------看看fulfillment ----------- 不知道是在哪里啊啊啊啊 "+reservation.getPlatform());
 
         PlatUserVo platUserVo = new PlatUserVo();
         platUserVo.setPlatform(reservation.getPlatform());
@@ -88,7 +88,9 @@ public class ComponentRightResolveServiceImpl {
 
         if(reservation.getPlatform().equals(EnumPlatform.TS)){
 
-        }else{
+        }
+        if(reservation.getPlatform().equals(EnumPlatform.LT)){
+
             Optional<User> objectUser = userRepository.findById(reservation.getUser());
 
             platUserVo.setUser(objectUser.get());

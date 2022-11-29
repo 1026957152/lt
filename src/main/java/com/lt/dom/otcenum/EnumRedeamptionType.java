@@ -8,7 +8,10 @@ import java.util.ResourceBundle;
 
 public enum EnumRedeamptionType {
     TICKET(""),
-    VOUCHER("");
+    VOUCHER(""),
+    PASS("")
+
+            ;
 
 
 

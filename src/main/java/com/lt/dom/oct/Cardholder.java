@@ -20,12 +20,20 @@ public class Cardholder extends Base{
     @JoinColumn(name = "identification", referencedColumnName = "id")
     private Identification identification;
     private String uuid;
+    private String code;
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 
     @OneToOne(mappedBy = "cardholder")
     private Pass pass;
 
-    public Pass getPass() {
+   public Pass getPass() {
         return pass;
     }
 
@@ -69,8 +77,10 @@ public class Cardholder extends Base{
     private Card.SpendingControlsDTO spendingControls;
 */
 
-
+@Enumerated(EnumType.STRING)
     private EnumCardholderStatus status;
+
+    @Enumerated(EnumType.STRING)
     private EnumCardholderType type;
 
 

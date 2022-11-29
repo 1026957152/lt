@@ -275,7 +275,7 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
     }
 
-    CodeConfig passfig = new CodeConfig(20,NUMBERS,null,null,"###################");
+    CodeConfig passfig = new CodeConfig(20,NUMBERS,null,null,"pass_###################");
     public String passCode(){
 
         String no = VoucherCodes.generate(passfig);

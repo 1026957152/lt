@@ -13,6 +13,7 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
 import com.lt.dom.serviceOtc.product.MultiTicketServiceImpl;
 import com.lt.dom.vo.CodeWithLatLngVo;
 import com.lt.dom.vo.UserVo;
@@ -60,6 +61,9 @@ public class RedemptionRestController {
     @Autowired
     private MultiTicketServiceImpl multiTicketService;
 
+
+    @Autowired
+    private CityPassServiceImpl cityPassService;
 
 
 
@@ -466,6 +470,12 @@ public class RedemptionRestController {
         EntityModel entityModel = multiTicketService.validate(code,userVo);
         if(entityModel != null){
             return entityModel;
+        }
+
+
+        EntityModel entityModel_city = cityPassService.validate(code,userVo);
+        if(entityModel_city != null){
+            return entityModel_city;
         }
 
         if(code.getCode().startsWith("TT-NI")){

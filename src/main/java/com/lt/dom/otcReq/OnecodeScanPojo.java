@@ -3,6 +3,15 @@ package com.lt.dom.otcReq;
 public class OnecodeScanPojo {
 
     private String code;
+    private String id;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getCode() {
         return code;

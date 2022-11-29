@@ -37,7 +37,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/oct")
 public class HandSetController {
 
-
+    @Autowired
+    private CardholderRepository cardholderRepository;
     @Autowired
     private AuthenticationFacade authenticationFacade;
 
@@ -142,4 +143,54 @@ public class HandSetController {
 
 
 
+
+
+
+
+
+
+
+
+    //TODO 这里有点问题
+    @PostMapping(value = "/handset/redeamById", produces = "application/json")
+    public Object redeemVonchorByIdentity(@RequestBody OnecodeScanPojo pojo___) {
+
+
+        //  User user_文旅码用户 = intoOnecodeService.byCode(pojo___.getCode());
+
+
+        Authentication authentication = authenticationFacade.getAuthentication();
+
+        UserVo userOv_景区检票员 = authenticationFacade.getUserVo(authentication);
+
+
+        Supplier supplier = userOv_景区检票员.getSupplier();
+
+
+
+        List<Cardholder> cardholderList = cardholderRepository.findByIdentity(pojo___.getId());
+
+
+
+
+        Optional<ComponentVounch> componentVounchList = componentVounchRepository.findByCode(pojo___.getCode());
+
+        if(componentVounchList.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到这个权益券 "+pojo___.getCode());
+
+        }
+
+        Optional<User> user_文旅码用户 = userRepository.findById(componentVounchList.get().getUser());
+
+
+        List<Validator_> validator_s = validatorRepository.findAllByTypeAndUser(EnumValidatorType.特定的人员,userOv_景区检票员.getUser_id());
+
+        if(validator_s.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"职工得 核销分配 对象 为空，请添加"+userOv_景区检票员.getPhone());
+        }
+
+        return  validateService.人员扫码(userOv_景区检票员,user_文旅码用户.get(),validator_s,
+                Arrays.asList(componentVounchList.get()));
+
+    }
 }

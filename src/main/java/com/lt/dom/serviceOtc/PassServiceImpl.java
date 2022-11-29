@@ -288,8 +288,16 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
 
         Pass pass = create_virtual_witoutUser(product,cardholder,duration);
 
+        pass.setCardholder(cardholder);
         pass.setUser(user);
         pass.setOwner(user);
+
+        cardholder.setPass(pass);
+
+
+        pass = passRepository.save(pass);
+
+
 
         return pass;
     }
@@ -315,7 +323,9 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
         Pass pass =  new Pass();
 
 
-        pass.setCardholder(cardholder);
+
+
+
         pass.setCode(idGenService.passCode());
         pass.setSupplier(product.getSupplier());
 
@@ -343,7 +353,7 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
         String generatedString = RandomStringUtils.randomNumeric(4);
         pass.setPin(generatedString);
 
-        pass.setActive(false);
+        pass.setActive(true);
         pass.setStatus(EnumCardStatus.inactive);
         pass.setShipping_statis(EnumPassShippingStatus.delivered);
 
