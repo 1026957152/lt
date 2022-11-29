@@ -9,6 +9,7 @@ import com.lt.dom.serviceOtc.*;
 import com.lt.dom.specification.*;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
@@ -33,6 +34,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/oct")
 public class SearchRestController {
 
+
+    @Value("${miniapp_release}")
+    boolean miniapp_release ;
 
     @Autowired
     private ProductRepository productRepository;
@@ -595,6 +599,13 @@ public class SearchRestController {
                 new ProductSpecification(searchQuery); //, "code", "claim_note"
         Page<Product> productList = productRepository.findAll(where(spec),pageable);
 
+
+        List<Product> productList1 = productRepository.findAllByType(EnumProductType.Showtime);
+
+        if(miniapp_release){
+            productList1 = Arrays.asList();
+
+        }
 /*
 
         List<Product>  productList  = productRepository

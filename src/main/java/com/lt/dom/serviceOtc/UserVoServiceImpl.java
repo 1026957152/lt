@@ -14,6 +14,7 @@ import com.lt.dom.vo.GuideSummaryVo;
 import com.lt.dom.vo.UserVo;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class UserVoServiceImpl {
 
 
-
+    @Value("${miniapp_release}")
+    boolean miniapp_release ;
 
     @Autowired
     private RequestRepository requestRepository;

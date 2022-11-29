@@ -12,6 +12,7 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.CityWalkRepository;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 public class FeatureServiceImpl {
 
+    @Value("${miniapp_release}")
+    boolean miniapp_release ;
     @Autowired
     private CityWalkRepository cityWalkRepository;
 
@@ -284,9 +287,13 @@ public class FeatureServiceImpl {
       List companyAllowed = Arrays.asList(EnumLayoutFeatured.核销列表,EnumLayoutFeatured.商户首页,EnumLayoutFeatured.核销详情,EnumLayoutFeatured.职工列表,EnumLayoutFeatured.授权核销);
 
 
+      List<EnumLayoutFeatured> enumLayoutFeatureds = Arrays.stream(EnumLayoutFeatured.values()).collect(Collectors.toList());
+if(miniapp_release){
+    enumLayoutFeatureds = new ArrayList<>();
+}
 
         Map<String,Object> map =
-                Arrays.stream(EnumLayoutFeatured.values()).filter(e->{
+                enumLayoutFeatureds.stream().filter(e->{
                           //  return !companyAllowed.contains(e);
                     if(companyAllowed.contains(e)){
 

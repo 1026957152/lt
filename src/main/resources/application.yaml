@@ -1,4 +1,8 @@
 MYSQL_HOST: 10.0.0.50
+
+miniapp_release: true
+
+
 setupdata:
   alreadySetup: true
 feign:
@@ -15,8 +19,8 @@ server:
   port: 8080
 
 #server:
-#  port: 8443
-#  http.port: 8080
+#  port: 443
+#  http.port: 80
 #  ssl:
 #    key-store: src/main/resources/ssl/springboot_letsencrypt.p12
 #    key-store-password: 0912lt
@@ -75,8 +79,9 @@ spring:
     hibernate.ddl-auto: update #create-drop
 #    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
 
-  mvc:
-    static-path-pattern: /oct/files/**
+  #mvc:
+ #   static-path-pattern: /oct/files/**
+
   web:
     resources:
       static-locations: classpath:/images/,file:C://Users//1//IdeaProjects//lt//fileStorage//,classpath:/static,classpath:/public

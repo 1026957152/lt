@@ -22,6 +22,7 @@ import com.lt.dom.vo.UserVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,6 +47,11 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 @RequestMapping("/oct")
 public class IndexController {
+
+
+    @Value("${miniapp_release}")
+    boolean miniapp_release ;
+
 
     @Autowired
     private AttractionRepository attractionRepository;
@@ -320,10 +326,13 @@ public class IndexController {
         List<ValueListItem> valueListItems_movie = valueListService.getByName(EnumValueListDefault.mini_app_movie_recommendation);
         System.out.println("剧目  "+ valueListItems_movie.toString());
 
-        List<Long> sortList_movie = valueListItems_movie.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList());
-
-
+    //    List<Long> sortList_movie = valueListItems_movie.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList());
         List<Product> productList1 = productRepository.findAllByType(EnumProductType.Showtime);
+
+        if(miniapp_release){
+            productList1 = Arrays.asList();
+
+        }
 
 
    List<MovieProduct> movieProductList = movieProductRepository.findAllByProductIn(productList1.stream().map(e->e.getId()).collect(Collectors.toList()));

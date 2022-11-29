@@ -53,6 +53,9 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     public static final Path path = Paths.get("fileStorage");
 
+
+    //public static final String static_path ="files/";
+    public static final String static_path ="";
     @Autowired
     private DocumentRepository documentRepository;
     @Autowired
@@ -483,7 +486,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public static String url(Document x) {
 
 
-       return  linkTo(FileUploadController.class).slash("files/"+x.getFileName()).toUriComponentsBuilder().build().toString();
+       return  linkTo(FileUploadController.class).slash(static_path+x.getFileName()).toUriComponentsBuilder().build().toString();
 
 /*        String url = MvcUriComponentsBuilder
                 .fromMethodName(FileUploadController.class,
@@ -515,11 +518,11 @@ public class FileStorageServiceImpl implements FileStorageService {
         String filename = tempDocument.getFileName();
         PhotoResp photoResp = new PhotoResp();
 
-        photoResp.setUrl_thumbnail(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
-        photoResp.setUrl(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
-        photoResp.setUrl_large(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
-        photoResp.setUrl_xlarge(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
-        photoResp.setUrl_original(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl_thumbnail(linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl(linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl_large(linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl_xlarge(linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl_original(linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString());
 
         photoResp.setDesc("tempDocument.getNote()");
 
@@ -540,23 +543,23 @@ public class FileStorageServiceImpl implements FileStorageService {
         PhotoResp photoResp = new PhotoResp();
 
         if(enumPhotosList.contains(EnumPhotos.thumb)){
-            photoResp.setUrl_thumbnail(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+            photoResp.setUrl_thumbnail(linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString());
 
         }
         if(enumPhotosList.contains(EnumPhotos.large)){
-            photoResp.setUrl_xlarge(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+            photoResp.setUrl_xlarge(linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString());
 
         }
         if(enumPhotosList.contains(EnumPhotos.medium)){
-            photoResp.setUrl_large(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+            photoResp.setUrl_large(linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString());
 
         }
         if(enumPhotosList.contains(EnumPhotos.full)){
-            photoResp.setUrl(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+            photoResp.setUrl(linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString());
 
         }
         if(enumPhotosList.contains(EnumPhotos.original)){
-            photoResp.setUrl_original(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+            photoResp.setUrl_original(linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString());
 
         }
 
@@ -613,7 +616,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         String filename = document.getFileName();
         PhotoResp photoResp = new PhotoResp();
 
-        photoResp.setUrl(linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString());
+        photoResp.setUrl(linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString());
         photoResp.setDesc(document.getDesc()==null?"":document.getDesc());
         photoResp.setCode(document.getTempDocumentCode());
         photoResp.setCaption(document.getCaption()==null?"":document.getCaption());
@@ -634,7 +637,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     public static String url(String filename) {
 
-        return  linkTo(FileUploadController.class).slash("files/"+filename).toUriComponentsBuilder().build().toString();
+        return  linkTo(FileUploadController.class).slash(static_path+filename).toUriComponentsBuilder().build().toString();
 
 /*        String url = MvcUriComponentsBuilder
                 .fromMethodName(FileUploadController.class,
@@ -649,7 +652,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     public static Link url_static(String filename, String name) {
 
-        return  linkTo(FileUploadController.class).slash("files/"+filename).withRel(name);
+        return  linkTo(FileUploadController.class).slash(static_path+filename).withRel(name);
 
 /*        String url = MvcUriComponentsBuilder
                 .fromMethodName(FileUploadController.class,
