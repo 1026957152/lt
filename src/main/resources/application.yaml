@@ -3,6 +3,7 @@ MYSQL_HOST: 10.0.0.50
 miniapp_release: true
 
 
+
 setupdata:
   alreadySetup: true
 feign:
