@@ -1,6 +1,7 @@
 package com.lt.dom.controllerOct;
 
 import com.lt.dom.OctResp.InvoiceResp;
+import com.lt.dom.credit.EnumActionType;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.InvoiceReq;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -57,7 +59,7 @@ public class InvoiceRestController {
     private HistoryServiceImpl historyService;
 
 
-    @GetMapping(value = "/invoices", produces = "application/json")
+    @PostMapping(value = "/suppliers/{SUPPLIER_ID}/invoices", produces = "application/json")
     public EntityModel create(@PathVariable long SUPPLIER_ID, @RequestBody @Valid InvoiceReq invoiceResp) {
         Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
         if(supplierOptional.isEmpty()) {
@@ -67,7 +69,7 @@ public class InvoiceRestController {
         Supplier supplier = supplierOptional.get();
 
 
-        Invoice subscription = invoiceService.create(supplier,null);
+        Invoice subscription = invoiceService.create(supplier, EnumActionType.invoice_created,invoiceResp);
         InvoiceResp resp = InvoiceResp.from(subscription);
 
         resp.withRateplans(subscription);
@@ -119,6 +121,10 @@ public class InvoiceRestController {
 
         entityModel.add(linkTo(methodOn(InvoiceRestController.class).listInvoices(supplier.getId(),null,null)).withRel("list"));
 
+        entityModel.add(linkTo(methodOn(InvoiceRestController.class).Trial(supplier.getId(),null)).withRel("trial"));
+
+        entityModel.add(linkTo(methodOn(InvoiceRestController.class).run(supplier.getId(),null)).withRel("run"));
+
 
         return entityModel;
 
@@ -146,6 +152,9 @@ public class InvoiceRestController {
         }));
 
     }
+
+
+
 
 
 
@@ -254,6 +263,50 @@ public class InvoiceRestController {
     }
 
 
+
+
+
+
+    @PostMapping(value = "/suppliers/{SUPPLIER_ID}/invoices/trial", produces = "application/json")
+    public EntityModel Trial(@PathVariable long SUPPLIER_ID, @RequestBody @Valid InvoiceReq invoiceResp) {
+        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
+
+        Supplier supplier = supplierOptional.get();
+
+
+        InvoiceResp subscription = invoiceService.Trial(supplier, LocalDateTime.now().minusDays(1));
+
+        EntityModel entityModel = EntityModel.of(subscription);
+        entityModel.add(linkTo(methodOn(InvoiceRestController.class).Trial(supplier.getId(),null)).withRel("trial"));
+
+        return entityModel;
+
+    }
+
+
+
+
+
+
+    @PostMapping(value = "/suppliers/{SUPPLIER_ID}/invoices/run", produces = "application/json")
+    public EntityModel run(@PathVariable long SUPPLIER_ID, @RequestBody @Valid InvoiceReq invoiceResp) {
+        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
+
+        Supplier supplier = supplierOptional.get();
+        Invoice subscription = invoiceService.processing(supplier, LocalDateTime.now().minusDays(1));
+
+        EntityModel entityModel = EntityModel.of(subscription);
+        entityModel.add(linkTo(methodOn(InvoiceRestController.class).Trial(supplier.getId(),null)).withRel("trial"));
+
+        return entityModel;
+
+    }
 
 
 }

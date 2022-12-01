@@ -24,7 +24,7 @@ public class MenuRestController {
 
 
 
-    @GetMapping(value = "menus", produces = "application/json")
+    @GetMapping(value = "/menus", produces = "application/json")
     public List<MenuResp> listAvailability() {
 
         List<MenuResp> menuRespList = new ArrayList<>();
@@ -37,11 +37,41 @@ public class MenuRestController {
         menuRespList.add(menuResp);
 
 
+
+
+
+
+        //todo
+
+        MenuResp menuResp_device =new MenuResp("Device",
+                "device",
+                new MenuResp.Meta( "设备管理", "el-icon-film",Arrays.asList("ROLE_ADMIN"))
+        );
+
+        menuResp_device.getChildren().add(new MenuResp("/device/index","IndexDevice",
+                new MenuResp.Meta( "设备列表", "el-icon-film")
+        ));
+        menuResp_device.getChildren().add(new MenuResp("/device/detail","DetailDevice",
+                new MenuResp.Meta( "设备详情", "el-icon-film")
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_device));
+
+
+
+
+
+
+
+
+
+
+
+
+
         //todo
         MenuResp menuResp_settings = MenuResp.from(EnumMenu.settings);
         MenuResp menuResp_settings_index = MenuResp.from(EnumMenu.settings_index,isLeaf);
         menuResp_settings.getChildren().add(menuResp_settings_index);
-
         menuRespList.addAll(Arrays.asList(menuResp_settings));
 
 

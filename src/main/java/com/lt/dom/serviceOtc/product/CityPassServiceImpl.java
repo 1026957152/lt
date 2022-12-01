@@ -310,7 +310,7 @@ public class CityPassServiceImpl {
 
 
           //  bookingProduct.setCVC(idGenService.nextId(""));
-            lineItem.setStatus(EnumLineItemStatus.Complete);
+            lineItem.setStatus(EnumLineItemStatus.SentToBilling);
             lineItemRepository.save(lineItem);
 
 

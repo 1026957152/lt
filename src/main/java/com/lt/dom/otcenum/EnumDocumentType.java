@@ -112,6 +112,10 @@ public enum EnumDocumentType {
 
 
     author_avatar("campaign_logo"),
+
+    category_image("license_for_opening_bank_account"),
+    category_icon("license_for_opening_bank_account"),
+
     ;
 
 

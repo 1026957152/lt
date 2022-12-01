@@ -85,7 +85,7 @@ spring:
 
   web:
     resources:
-      static-locations: classpath:/images/,file:C://Users//1//IdeaProjects//lt//fileStorage//,classpath:/static,classpath:/public
+      static-locations: classpath:/images/,file:fileStorage//,classpath:/static,classpath:/public
 lt:
   url: http://localhost:8080
 

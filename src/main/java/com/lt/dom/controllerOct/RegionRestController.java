@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -56,10 +57,17 @@ public class RegionRestController {
     private FileStorageServiceImpl fileStorageService;
 
     @Autowired
+    private CategoryRepository categoryRepository;
+
+
+    @Autowired
     private AttractionRepository attractionRepository;
     @Autowired
     private PlaceRepository placeRepository;
-
+    @Autowired
+    private CityWalkRepository cityWalkRepository;
+    @Autowired
+    private WayPointRepository wayPointRepository;
 
 
 
@@ -268,6 +276,19 @@ public class RegionRestController {
         RegionResp museumResp = RegionResp.from(region);
 
 
+        List<Category> bookingRuleList = categoryRepository.findAll();
+
+        museumResp.setCategories(bookingRuleList.stream().map(e->{
+            CategoryResp categoryResp = CategoryResp.simpleFrom(e);
+            categoryResp.setIcon(fileStorageService.loadDocumentWithDefault(EnumDocumentType.category_icon,e.getCode()));
+
+            EntityModel entityModel = EntityModel.of(categoryResp);
+            entityModel.add(linkTo(methodOn(SearchRestController.class).Page_searchProduct(EnumUrlSourceType.search)).withRel("Page_searchProduct"));
+
+            return entityModel;
+        }).collect(Collectors.toList()));
+
+
 
         museumResp.setPhoto(fileStorageService.loadDocumentWithDefault(EnumDocumentType.place_photo,region.getCode()));
 
@@ -293,6 +314,39 @@ public class RegionRestController {
             return attractionEntityModel;
         }).collect(Collectors.toList()));
 
+
+
+        Optional<CityWalk> optionalCityWalk = cityWalkRepository.findById(7l);
+        if(validatorOptional.isEmpty()){
+
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到产品");
+
+        }
+
+        CityWalk cityWalk = optionalCityWalk.get();
+
+        CityWalkResp cityWalkResp = CityWalkResp.simplefrom(cityWalk);
+        List<WayPoint> wayPoints = wayPointRepository.findAll();
+
+
+
+        cityWalkResp.setWay_points(IntStream.range(0,wayPoints.size()).mapToObj(i->{
+            WayPoint e = wayPoints.get(i);
+            WayPointResp wayPointResp = WayPointResp.locationFrom(e);
+            EntityModel entityModel = EntityModel.of(wayPointResp);
+            return entityModel;
+        }).collect(Collectors.toList()));
+
+        ViewPortResp viewPortResp = new ViewPortResp();
+        viewPortResp.setBtmRightPoint(ViewPortResp.PointDTO.from());
+        viewPortResp.setTopLeftPoint(ViewPortResp.PointDTO.from());
+        cityWalkResp.setViewPort(viewPortResp);
+
+
+        EntityModel entityModel_city = EntityModel.of(cityWalkResp);
+        entityModel_city.add(linkTo(methodOn(AudioGuideRestController.class).getCityWalk(cityWalk.getId(), null)).withSelfRel());
+
+        museumResp.setCityWalk(entityModel_city);
 
 
         EntityModel entityModel = EntityModel.of(museumResp);

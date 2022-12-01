@@ -37,7 +37,7 @@ public class WayPointResp {
     private List<MuseumReq.MediaReq> medias;
     private String title;
     private String intro;
-    private int seq;
+    private Integer seq;
     private LocationResp location;
 
     public List<MuseumReq.MediaReq> getMedias() {
@@ -59,9 +59,21 @@ public class WayPointResp {
         wayPointResp.setWalk_to_next_distance(place.getWalk_to_next_distance());
         wayPointResp.setWalk_to_next_duration(place.getWalk_to_next_duration());
 
+
+
         return wayPointResp;
     }
+    public static WayPointResp locationFrom(WayPoint place) {
 
+        WayPointResp wayPointResp = new WayPointResp();
+        wayPointResp.setTitle(place.getTitle());
+        wayPointResp.setCode(place.getCode());
+        wayPointResp.setLocation(LocationResp.latLngFrom(place.getLocation()));
+        wayPointResp.setLocation_lat(place.getLocation_lat());
+        wayPointResp.setLocation_lng(place.getLocation_lng());
+
+        return wayPointResp;
+    }
     public static WayPointResp from(WayPoint e, Place place) {
         WayPointResp wayPointResp = WayPointResp.from(e);
 
@@ -70,7 +82,12 @@ public class WayPointResp {
 
         return wayPointResp;
     }
+    public static WayPointResp from(WayPoint e,CitywalkLatLngPojo pojo, Place place) {
+        WayPointResp wayPointResp = WayPointResp.from(e);
 
+        wayPointResp.setPlace(PlaceResp.from(place));
+        return wayPointResp;
+    }
     public Long getWalk_to_next_duration() {
         return walk_to_next_duration;
     }
@@ -160,11 +177,11 @@ public class WayPointResp {
         return intro;
     }
 
-    public void setSeq(int seq) {
+    public void setSeq(Integer seq) {
         this.seq = seq;
     }
 
-    public int getSeq() {
+    public Integer getSeq() {
         return seq;
     }
 

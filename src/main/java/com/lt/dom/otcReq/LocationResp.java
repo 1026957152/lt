@@ -89,7 +89,7 @@ public class LocationResp {
 
         LocationResp productResp = new LocationResp();
         if(location != null){
-            productResp.setAddress(location.getAddressLine1()== null?"":location.getAddressLine1());
+            productResp.setAddress(location.getAddressLine1());
             productResp.setLatitude(location.getLatitude());
             productResp.setLongitude(location.getLongitude());
 

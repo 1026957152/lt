@@ -8,7 +8,7 @@ public class LtReqTs退单审核通知 {
     private String method ;//:接口方法名,固定值：item_list
 
 
-    public static class ToLtReqTs验证核销通知 {
+    public static class ToLtReqTs退单审核通知 {
 
 
         private String serial_no;//退票记录id（申请退票有传此数据时，会返回申请退票时传入的流水号）

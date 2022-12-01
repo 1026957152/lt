@@ -4,12 +4,8 @@ package com.lt.dom.controllerOct;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.LocationResp;
-import com.lt.dom.otcReq.WayPointEditReq;
-import com.lt.dom.otcReq.WayPointReq;
-import com.lt.dom.otcReq.WayPointResp;
+import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.EnumDocumentType;
-import com.lt.dom.otcenum.EnumModeOfTransport;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.CityWalkRepository;
 import com.lt.dom.repository.PlaceRepository;
@@ -18,11 +14,7 @@ import com.lt.dom.repository.WayPointRepository;
 import com.lt.dom.serviceOtc.CityWalkServiceImpl;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -66,7 +58,7 @@ public class AudioGuideRestController {
 
 
     @GetMapping(value = "/audio_guide/{CityWalk_ID}", produces = "application/json")
-    public EntityModel<CityWalkResp> getCityWalk(@PathVariable long CityWalk_ID) {
+    public EntityModel<CityWalkResp> getCityWalk(@PathVariable long CityWalk_ID, CitywalkLatLngPojo o) {
 
         Optional<CityWalk> validatorOptional = cityWalkRepository.findById(CityWalk_ID);
         if(validatorOptional.isEmpty()){
@@ -116,7 +108,7 @@ public class AudioGuideRestController {
             WayPoint e = wayPoints.get(i);
             Place place = places.get(e.getPlace());
 
-            WayPointResp wayPointResp = WayPointResp.from(e,place);
+            WayPointResp wayPointResp = WayPointResp.from(e,o,place);
             wayPointResp.setSeq(i+1);
 
             EntityModel entityModel = EntityModel.of(wayPointResp);
@@ -140,7 +132,7 @@ public class AudioGuideRestController {
 
       //  CityWalkResp.setHeaderImage(fileStorageService.loadDocumentWithCode(EnumDocumentType.CityWalk_thumbnail,CityWalk.getCode()).getUrl_thumbnail());
         EntityModel entityModel = EntityModel.of(cityWalkResp);
-        entityModel.add(linkTo(methodOn(AudioGuideRestController.class).getCityWalk(cityWalk.getId())).withRel("createCityWalk"));
+        entityModel.add(linkTo(methodOn(AudioGuideRestController.class).getCityWalk(cityWalk.getId(),null)).withRel("createCityWalk"));
 
 
        // entityModel.add(linkTo(methodOn(AudioGuideRestController.class).createWaypoints(cityWalk.getId(),null)).withRel("createWaypoint"));

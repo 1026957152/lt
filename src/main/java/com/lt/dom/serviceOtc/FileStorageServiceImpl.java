@@ -51,11 +51,11 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @Service("fileStorageService")
 public class FileStorageServiceImpl implements FileStorageService {
 
-    public static final Path path = Paths.get("fileStorage");
+    public static final Path path = Paths.get("fileStorage/static");
 
 
     //public static final String static_path ="files/";
-    public static final String static_path ="";
+    public static final String static_path ="static/";
     @Autowired
     private DocumentRepository documentRepository;
     @Autowired
@@ -250,7 +250,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
 
-   // @Override
+    // @Override
 /*    public List<Document> saveFromTempDocumentWithDetail(String code, List<Pair<EnumDocumentType, TempDocument>> fileNames, PhoneResp) {
 
 
@@ -486,7 +486,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public static String url(Document x) {
 
 
-       return  linkTo(FileUploadController.class).slash(static_path+x.getFileName()).toUriComponentsBuilder().build().toString();
+        return  linkTo(FileUploadController.class).slash(static_path+x.getFileName()).toUriComponentsBuilder().build().toString();
 
 /*        String url = MvcUriComponentsBuilder
                 .fromMethodName(FileUploadController.class,
@@ -501,7 +501,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                 ).build().toString();*/
 
 
-      //  return url;
+        //  return url;
 
     }
 
@@ -564,7 +564,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
 
         photoResp.setDesc(tempDocument.getDesc());
-      //  photoResp.setVisiable(tempDocument.getVisiable());
+        //  photoResp.setVisiable(tempDocument.getVisiable());
         //dyrttphotoResp.setCode(tempDocument.getTempDocumentCode());
         return photoResp;
 
@@ -583,7 +583,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
         String link =  linkTo(FileUploadController.class).slash("/files/"+"default_logo.jpg").toUriComponentsBuilder().build().toString();
 
-    //    String link = "https://www.baidu.com/img/flexible/logo/pc/result.png";
+        //    String link = "https://www.baidu.com/img/flexible/logo/pc/result.png";
         if(enumPhotosList.contains(EnumPhotos.thumb)){
             photoResp.setUrl_thumbnail(link);
 
@@ -733,12 +733,12 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     public PhotoResp loadDocumentWithCode(EnumDocumentType type, String code) {
 
-            List<Document> documentOptional = documentRepository.findAllByTypeAndReference(type,code);
+        List<Document> documentOptional = documentRepository.findAllByTypeAndReference(type,code);
 
-            if(documentOptional.size() > 0 ){
-                return url_rangeWithCode(documentOptional.get(0));
-            }
-            return null;
+        if(documentOptional.size() > 0 ){
+            return url_rangeWithCode(documentOptional.get(0));
+        }
+        return null;
     }
 
     @Override
@@ -837,12 +837,12 @@ public class FileStorageServiceImpl implements FileStorageService {
     public Document saveFromTempDocumentWithRich(String objectCode, ImageVo imageVo, EnumDocumentType type, TempDocument tempDocCode) {
 
 
-            Document documents = saveFromTempDocumentWithRichi(
-                    objectCode,
-                    imageVo,
-                    Pair.with(type,tempDocCode));
+        Document documents = saveFromTempDocumentWithRichi(
+                objectCode,
+                imageVo,
+                Pair.with(type,tempDocCode));
 
-            return documents;
+        return documents;
 
 
     }
@@ -870,7 +870,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         Map<String, List<Document>>  stringListMap =  documents.stream().collect(Collectors.groupingBy(e->e.getReference()));
 
 
-       return stringListMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(x->{
+        return stringListMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(x->{
             return FileStorageServiceImpl.url_rangeWithCode(x);
 
         }).collect(Collectors.toList())));

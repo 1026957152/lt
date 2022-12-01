@@ -19,9 +19,17 @@ import java.util.Objects;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CityWalkResp extends BaseResp {
 
+    public ViewPortResp getViewPort() {
+        return viewPort;
+    }
 
+    public void setViewPort(ViewPortResp viewPort) {
+        this.viewPort = viewPort;
+    }
 
+    private ViewPortResp viewPort;
 
+    private LocationResp position;
 
     private Long walk_duration;
 
@@ -44,7 +52,19 @@ public class CityWalkResp extends BaseResp {
     private String cityRegion;
     private String[] majorLandmarks;
     private String status_text;
+    public static CityWalkResp simplefrom(CityWalk e) {
 
+        CityWalkResp cityWalkResp = new CityWalkResp();
+        //cityWalkResp.setAddress();
+        cityWalkResp.setTitle(e.getTitle());
+        cityWalkResp.setCityRegion(e.getCityRegion());
+
+        cityWalkResp.setCode(e.getCode());
+
+
+
+        return cityWalkResp;
+    }
     public static CityWalkResp from(CityWalk e) {
 
         CityWalkResp cityWalkResp = new CityWalkResp();

@@ -8,6 +8,7 @@ import com.lt.dom.error.ExistException;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.UserRepository;
+import com.lt.dom.vo.CustomUserDetails;
 import com.lt.dom.vo.UserVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -83,7 +84,7 @@ public class AuthenticationFacade implements IAuthenticationFacade {
             // throw new ExistException("错误返回");
             if (authentication != null && authentication.isAuthenticated()) {
 
-                UserDetails user_ = (UserDetails) authentication.getPrincipal();
+                CustomUserDetails user_ = (CustomUserDetails) authentication.getPrincipal();
 
  /*               if(authentication instanceof AuthenticationToken){
                     List<User> optionalUser = userRepository.findByOpenid(user_.getUsername());
@@ -95,16 +96,18 @@ public class AuthenticationFacade implements IAuthenticationFacade {
 
                 }else {*/
 
-                List<User> optionalUser = userRepository.findByOpenid(user_.getUsername());
+//                user_.getUserAuthority().getUser_id();
+//
+//                List<User> optionalUser = userRepository.findByOpenid(user_.getUsername());
+//
+//                if (!optionalUser.isEmpty()) {
+//                    // throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到用户");
+//                    return userService.getInverUser(optionalUser.get(0));
+//
+//                }
+//                System.out.println("=============不是匿名用户----- " + user_.getUsername());
 
-                if (!optionalUser.isEmpty()) {
-                    // throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到用户");
-                    return userService.getInverUser(optionalUser.get(0));
-
-                }
-                System.out.println("=============不是匿名用户----- " + user_.getUsername());
-
-                Optional<User> optional = userRepository.findByPhone(user_.getUsername());
+                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUser_id());
                 if (!optional.isEmpty()) {
                     return userService.getInverUser(optional.get());
                 }

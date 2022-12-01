@@ -470,7 +470,7 @@ public class AttractionRestController {
 
             CityWalkResp cityWalkResp = CityWalkResp.fromSnip(cityWalk);
 
-            String link_city = linkTo(methodOn(AudioGuideRestController.class).getCityWalk(cityWalk.getId())).withSelfRel().getHref();
+            String link_city = linkTo(methodOn(AudioGuideRestController.class).getCityWalk(cityWalk.getId(), null)).withSelfRel().getHref();
 
             attractionResp.setSelfGuidedTour(Map.of("name","自助旅行","url",link_city,
                     "path",EnumMiniappPagePath.audio_guide.getPath()+"?url="+link_city,"tour",cityWalkResp));

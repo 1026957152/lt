@@ -38,7 +38,7 @@ public class TsToLtServiceImpl {
 
     Logger logger = LoggerFactory.getLogger(BookingRestController.class);
 
-    String baseUrl_请求地址 = "http://yllt.sjdzp.com/Api/LocalCom/api.json?g_cid=95029";//
+    String baseUrl_请求地址 = "http://ylltjs.sjdzp.com/Api/LocalCom/api.json?g_cid=95029";//
     String 合作伙伴ID = "0912719100LV20221125";//
     String 授权编码 = "lt0912";//
 

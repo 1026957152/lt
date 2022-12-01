@@ -17,6 +17,10 @@ public class Invoice extends Base{
     @NotNull
     @Enumerated(EnumType.STRING)
     private EnumInvoiceTypes type;
+    private Long supplier;
+    private Double totalAmount;
+    private Double taxAmount;
+    private Double amountDue;
 
     public EnumInvoiceTypes getType() {
         return type;
@@ -36,10 +40,19 @@ public class Invoice extends Base{
     private LocalDateTime postedOn;
     private Long subscription;
 
+    private Boolean allow_partial_payments;
+
+    public Boolean getAllow_partial_payments() {
+        return allow_partial_payments;
+    }
+
+    public void setAllow_partial_payments(Boolean allow_partial_payments) {
+        this.allow_partial_payments = allow_partial_payments;
+    }
+
+    private Double total;
     @NotNull
-    private Float total;
-    @NotNull
-    private Float subTotal;
+    private Double subTotal;
     private String pdf_url;
 
     @OneToMany(mappedBy="invoice",
@@ -48,10 +61,42 @@ public class Invoice extends Base{
     private List<InvoiceItem> items;
 
 
+
+    @OneToMany(mappedBy="invoice",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<CreditNote> creditNotes;
+
+
+
+
+    @OneToMany(mappedBy="invoice",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<LinkedTxn> linkedTxns;
+
+    public List<LinkedTxn> getLinkedTxns() {
+        return linkedTxns;
+    }
+
+    public void setLinkedTxns(List<LinkedTxn> linkedTxns) {
+        this.linkedTxns = linkedTxns;
+    }
+
     private Boolean autopay;
     private Boolean paid;
     private LocalDate date;
     private String code;
+
+    private String privateNote;
+
+    public String getPrivateNote() {
+        return privateNote;
+    }
+
+    public void setPrivateNote(String privateNote) {
+        this.privateNote = privateNote;
+    }
 
     public EnumInvoiceStatus getStatus() {
         return status;
@@ -85,19 +130,19 @@ public class Invoice extends Base{
         this.subscription = subscription;
     }
 
-    public Float getTotal() {
+    public Double getTotal() {
         return total;
     }
 
-    public void setTotal(Float total) {
+    public void setTotal(Double total) {
         this.total = total;
     }
 
-    public Float getSubTotal() {
+    public Double getSubTotal() {
         return subTotal;
     }
 
-    public void setSubTotal(Float subTotal) {
+    public void setSubTotal(Double subTotal) {
         this.subTotal = subTotal;
     }
 
@@ -148,5 +193,37 @@ public class Invoice extends Base{
 
     public String getCode() {
         return code;
+    }
+
+    public void setSupplier(Long supplier) {
+        this.supplier = supplier;
+    }
+
+    public Long getSupplier() {
+        return supplier;
+    }
+
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public Double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTaxAmount(Double taxAmount) {
+        this.taxAmount = taxAmount;
+    }
+
+    public Double getTaxAmount() {
+        return taxAmount;
+    }
+
+    public void setAmountDue(Double amountDue) {
+        this.amountDue = amountDue;
+    }
+
+    public Double getAmountDue() {
+        return amountDue;
     }
 }

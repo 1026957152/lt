@@ -3,6 +3,7 @@ package com.lt.dom.OctResp;
 
 import com.lt.dom.oct.Place;
 import com.lt.dom.oct.Region;
+import org.springframework.hateoas.EntityModel;
 
 import java.util.List;
 
@@ -15,6 +16,8 @@ public class RegionResp {
     private String code;
     private List recommend_attractions;
     private String description;
+    private EntityModel cityWalk;
+    private List categories;
 
     public static RegionResp simpleFrom(Region region) {
         RegionResp resp = new RegionResp();
@@ -80,5 +83,21 @@ public class RegionResp {
 
     public String getDescription() {
         return description;
+    }
+
+    public void setCityWalk(EntityModel cityWalk) {
+        this.cityWalk = cityWalk;
+    }
+
+    public EntityModel getCityWalk() {
+        return cityWalk;
+    }
+
+    public <T> void setCategories(List categories) {
+        this.categories = categories;
+    }
+
+    public List getCategories() {
+        return categories;
     }
 }

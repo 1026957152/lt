@@ -18,6 +18,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -66,6 +68,25 @@ public class BlogRestController {
     private OpenidRepository openidRepository;
 
 
+
+    @GetMapping(value = "/Page_listBlog", produces = "application/json")
+    public EntityModel<Media> Page_listBlog_miniapp( ) {
+
+
+
+        Map map = Map.of("text","大家秀");
+
+
+        EntityModel entityModel = EntityModel.of(map);
+
+
+        entityModel.add(linkTo(methodOn(BlogRestController.class).listBlog(null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(BlogRestController.class).createBlog(null)).withRel("create"));
+
+
+        return entityModel;
+
+    }
 
 
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/Page_listBlog", produces = "application/json")
@@ -211,7 +232,9 @@ public class BlogRestController {
 
 
     @GetMapping(value = "/blogs", produces = "application/json")
-    public PagedModel listBlog(Pageable pageable, PagedResourcesAssembler<EntityModel<Blog>> assembler) {
+    public PagedModel listBlog(
+            @PageableDefault(sort = {"createdDate", "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable,
+            PagedResourcesAssembler<EntityModel<Blog>> assembler) {
 
 
         Page<Blog> validatorOptional = blogRepository.findAll(pageable);
@@ -256,7 +279,9 @@ public class BlogRestController {
 
 
     @GetMapping(value = "/blogs/pc", produces = "application/json")
-    public PagedModel listBlog_PC(Pageable pageable, PagedResourcesAssembler<EntityModel<Blog>> assembler) {
+    public PagedModel listBlog_PC(
+            @PageableDefault(sort = {"createdDate", "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable,
+                                  PagedResourcesAssembler<EntityModel<Blog>> assembler) {
 
 
         Page<Blog> validatorOptional = blogRepository.findAll(pageable);

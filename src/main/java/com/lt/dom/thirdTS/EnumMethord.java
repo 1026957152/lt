@@ -15,10 +15,12 @@ public enum EnumMethord {
     item_orders_modify("Order.ApiCancel"),
 
 
+    refundResult("退单审核通知(第三方通知天时同城)"),
 
     validate("验证核销通知(第三方通知天时同城)"),
+    send("码号推送通知：send（发送）或unsend（拒绝发送）"),
 
-
+    goods("产品信息变更通知"),
 
             ;
 

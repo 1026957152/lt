@@ -19,64 +19,101 @@ import java.util.List;
 public class InvoiceReq extends BaseResp {
 
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    private EnumInvoiceStatus status;
 
-    @NotNull
+
     private LocalDateTime generatdOn;
 
     private LocalDateTime postedOn;
     private Long subscription;
 
-    @NotNull
-    private Float total;
-    @NotNull
-    private Float subTotal;
-    private String pdf_url;
+    private String privateNote;
 
-    @OneToMany(mappedBy="invoice",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
-    private List<InvoiceItem> items;
+    public String getPrivateNote() {
+        return privateNote;
+    }
+
+    public void setPrivateNote(String privateNote) {
+        this.privateNote = privateNote;
+    }
+
+    public List<LinkedTxnReq> getLinkedTxns() {
+        return linkedTxns;
+    }
+
+    public void setLinkedTxns(List<LinkedTxnReq> linkedTxns) {
+        this.linkedTxns = linkedTxns;
+    }
+
+    private List<LinkedTxnReq> linkedTxns;
+
+
+
+
+    private Double subTotal;
+    private Double taxAmount;
+    private Double totalAmount;
+    private Double amountDue;
+
+    public void setSubTotal(Double subTotal) {
+        this.subTotal = subTotal;
+    }
+
+    public Double getTaxAmount() {
+        return taxAmount;
+    }
+
+    public void setTaxAmount(Double taxAmount) {
+        this.taxAmount = taxAmount;
+    }
+
+    public Double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public Double getAmountDue() {
+        return amountDue;
+    }
+
+    public void setAmountDue(Double amountDue) {
+        this.amountDue = amountDue;
+    }
+
+    private String pdf_url;
 
 
     private Boolean autopay;
     private Boolean paid;
     private LocalDate date;
-    private String status_text;
-    private String code;
+
+
     private String customer;
-    private List histories;
+
 
     public static InvoiceReq from(Invoice subscription) {
 
         InvoiceReq invoiceResp = new InvoiceReq();
         invoiceResp.setAutopay(subscription.getAutopay());
         invoiceResp.setDate(subscription.getDate());
-        invoiceResp.setItems(subscription.getItems());
-        invoiceResp.setStatus(subscription.getStatus());
-        invoiceResp.setStatus_text(subscription.getStatus().toString());
+
+
         invoiceResp.setGeneratdOn(subscription.getGeneratdOn());
-        invoiceResp.setTotal(subscription.getTotal());
+
         invoiceResp.setPdf_url(subscription.getPdf_url());
         invoiceResp.setSubscription(subscription.getSubscription());
         invoiceResp.setSubTotal(subscription.getSubTotal());
         invoiceResp.setPostedOn(subscription.getPostedOn());
         invoiceResp.setCreatedDate(subscription.getCreatedDate());
-        invoiceResp.setCode(subscription.getCode());
+
         invoiceResp.setCustomer("subscription.getCustomer()");
 
         return invoiceResp;
     }
 
-    public EnumInvoiceStatus getStatus() {
-        return status;
-    }
 
-    public void setStatus(EnumInvoiceStatus status) {
-        this.status = status;
-    }
 
     public LocalDateTime getGeneratdOn() {
         return generatdOn;
@@ -102,20 +139,9 @@ public class InvoiceReq extends BaseResp {
         this.subscription = subscription;
     }
 
-    public Float getTotal() {
-        return total;
-    }
 
-    public void setTotal(Float total) {
-        this.total = total;
-    }
-
-    public Float getSubTotal() {
+    public Double getSubTotal() {
         return subTotal;
-    }
-
-    public void setSubTotal(Float subTotal) {
-        this.subTotal = subTotal;
     }
 
     public String getPdf_url() {
@@ -126,13 +152,7 @@ public class InvoiceReq extends BaseResp {
         this.pdf_url = pdf_url;
     }
 
-    public List<InvoiceItem> getItems() {
-        return items;
-    }
 
-    public void setItems(List<InvoiceItem> items) {
-        this.items = items;
-    }
 
     public Boolean getPaid() {
         return paid;
@@ -158,26 +178,8 @@ public class InvoiceReq extends BaseResp {
         return date;
     }
 
-    public void withRateplans(Invoice subscription) {
 
-        this.setItems(subscription.getItems());
-    }
 
-    public void setStatus_text(String status_text) {
-        this.status_text = status_text;
-    }
-
-    public String getStatus_text() {
-        return status_text;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getCode() {
-        return code;
-    }
 
     public void setCustomer(String customer) {
         this.customer = customer;
@@ -187,18 +189,6 @@ public class InvoiceReq extends BaseResp {
         return customer;
     }
 
-    public void withHistory(List list) {
-
-        this.setHistories(list);
-
-    }
 
 
-    public void setHistories(List histories) {
-        this.histories = histories;
-    }
-
-    public List<History> getHistories() {
-        return histories;
-    }
 }

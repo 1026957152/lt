@@ -16,20 +16,49 @@ import java.util.List;
 public class InvoiceResp extends BaseResp {
 
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
     private EnumInvoiceStatus status;
 
-    @NotNull
+
     private LocalDateTime generatdOn;
 
     private LocalDateTime postedOn;
     private Long subscription;
 
-    @NotNull
-    private Float total;
-    @NotNull
-    private Float subTotal;
+
+    private Double total;
+
+    private Double subTotal;
+
+
+
+    private Double taxAmount;
+    private Double totalAmount;
+    private Double amountDue;
+
+    public Double getTaxAmount() {
+        return taxAmount;
+    }
+
+    public void setTaxAmount(Double taxAmount) {
+        this.taxAmount = taxAmount;
+    }
+
+    public Double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public Double getAmountDue() {
+        return amountDue;
+    }
+
+    public void setAmountDue(Double amountDue) {
+        this.amountDue = amountDue;
+    }
+
     private String pdf_url;
 
     @OneToMany(mappedBy="invoice",
@@ -58,7 +87,7 @@ public class InvoiceResp extends BaseResp {
         invoiceResp.setTotal(subscription.getTotal());
         invoiceResp.setPdf_url(subscription.getPdf_url());
         invoiceResp.setSubscription(subscription.getSubscription());
-        invoiceResp.setSubTotal(subscription.getSubTotal());
+        invoiceResp.setSubTotal(subscription.getSubTotal().doubleValue()+0d);
         invoiceResp.setPostedOn(subscription.getPostedOn());
         invoiceResp.setCreatedDate(subscription.getCreatedDate());
         invoiceResp.setCode(subscription.getCode());
@@ -99,19 +128,19 @@ public class InvoiceResp extends BaseResp {
         this.subscription = subscription;
     }
 
-    public Float getTotal() {
+    public Double getTotal() {
         return total;
     }
 
-    public void setTotal(Float total) {
+    public void setTotal(Double total) {
         this.total = total;
     }
 
-    public Float getSubTotal() {
+    public Double getSubTotal() {
         return subTotal;
     }
 
-    public void setSubTotal(Float subTotal) {
+    public void setSubTotal(Double subTotal) {
         this.subTotal = subTotal;
     }
 

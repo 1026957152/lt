@@ -1,40 +1,22 @@
 package com.lt.dom.controllerOct.third;
 
-import com.lt.dom.OctResp.BlogResp;
-import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.error.BookNotFoundException;
-import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.BlogReq;
-import com.lt.dom.otcReq.CommentReq;
-import com.lt.dom.otcenum.EnumBookingStatus;
-import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.AuthenticationFacade;
 import com.lt.dom.serviceOtc.BlogServiceImpl;
 import com.lt.dom.serviceOtc.CommentServiceImpl;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
+import com.lt.dom.thirdTS.LtToTsServiceImpl;
 import com.lt.dom.thirdTS.TsToLtServiceImpl;
+import com.lt.dom.thirdTS.domainLtToTs.*;
 import com.lt.dom.thirdTS.domainTsToLt.*;
-import com.lt.dom.vo.UserVo;
-import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/third")
@@ -50,7 +32,8 @@ public class TSRestController {
     private FileStorageServiceImpl fileStorageService;
     @Autowired
     private CommentRepository commentRepository;
-
+    @Autowired
+    private LtToTsServiceImpl ltToTsService;
     @Autowired
     private TsToLtServiceImpl tsToLtService;
     @Autowired
@@ -168,6 +151,127 @@ public class TSRestController {
         return ltRespToTs产品列表;
 
     }
+
+
+
+    @GetMapping(value = "/refundResult", produces = "application/json")
+    public TsRespLt退单审核通知 getLtReqTs退单审核通知(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
+
+
+        if(tsReqLt产品列表.get_pid().equals("dddddd")){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
+        }
+
+        LtReqTs退单审核通知.ToLtReqTs退单审核通知 toLtReqTs退单审核通知 = new LtReqTs退单审核通知.ToLtReqTs退单审核通知();
+
+
+
+        toLtReqTs退单审核通知.setType(4); //审核结果： 3退票成功，4退票不通过
+        toLtReqTs退单审核通知.setSerial_no(""); //退票记录id（申请退票有传此数据时，会返回申请退票时传入的流水号）
+        toLtReqTs退单审核通知.setMessage("ddd"); ;//本平台订单ID（天时同城）
+        toLtReqTs退单审核通知.setOrders_id("ddd");  //管理员审核备注/说明
+        TsRespLt退单审核通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs退单审核通知(toLtReqTs退单审核通知);
+
+        return ltReqTs退单审核通知;
+
+    }
+
+
+
+    @GetMapping(value = "/item_orders_modify", produces = "application/json")
+    public TsRespLt验证核销通知 ltReqTs验证核销通知(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
+
+
+        if(tsReqLt产品列表.get_pid().equals("dddddd")){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
+        }
+
+        LtReqTs验证核销通知.ToLtReqTs验证核销通知 ltReqTs验证核销通知 = new LtReqTs验证核销通知.ToLtReqTs验证核销通知();
+
+
+
+
+        ltReqTs验证核销通知.setAmount(4);//:当前使用数量
+        ltReqTs验证核销通知.setAmount_used(1);//:累计使用数量(包含本次)
+        ltReqTs验证核销通知.setAnother_orders_id("ddd"); //:本平台订单ID（天时同城）
+        ltReqTs验证核销通知.setMy_orders_id("ddd"); //:第三方订单ID
+        ltReqTs验证核销通知.setCodes(""); //:使用码号,多个','分割
+
+
+        TsRespLt验证核销通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs验证核销通知(ltReqTs验证核销通知);
+
+        return ltReqTs退单审核通知;
+
+    }
+
+
+
+
+
+
+
+
+
+
+    @GetMapping(value = "/send", produces = "application/json")
+    public TsRespLt码号推送通知 ltReqTs码号推送通知(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
+
+
+        if(tsReqLt产品列表.get_pid().equals("dddddd")){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
+        }
+
+        LtReqTs码号推送通知.ToLtReqTs码号推送通知 toLtReqTs码号推送通知 = new LtReqTs码号推送通知.ToLtReqTs码号推送通知();
+
+
+
+        toLtReqTs码号推送通知.setOrders_id("this.orders_id");//本平台订单ID（天时同城）
+        toLtReqTs码号推送通知.setOut_orders_id("this.out_orders_id");//out_orders_id:第三方平台订单ID
+        toLtReqTs码号推送通知.setOut_code("this.out_code");//out_code:码号，存在多个码号时默认展示第一个
+        toLtReqTs码号推送通知.setOut_codes("this.out_codes");//out_codes:多个码号时以英文逗号分隔(,)
+
+        toLtReqTs码号推送通知.setQrcode_images("this.qrcode_images");//qrcode_images:二维码图片，多个用英文逗号(,)分隔
+        toLtReqTs码号推送通知.setQrcode_image("this.qrcode_image");//qrcode_image:二维码图片
+        toLtReqTs码号推送通知.setQrcode_href("this.qrcode_href");////qrcode_href:二维码链接
+
+        toLtReqTs码号推送通知.setQrcode("this.qrcode");//qrcode:二维码数据(用于生成二维码图片)
+
+        toLtReqTs码号推送通知.setOut_money_send("this.out_money_send");//out_money_send:采购发送费
+        toLtReqTs码号推送通知.setOut_money_one("this.out_money_one");//out_money_one:采购单价
+        toLtReqTs码号推送通知.setOut_send_content("this.out_send_content");//out_send_content:发送内容
+        toLtReqTs码号推送通知.setIs_real_code("this.is_real_code");//is_real_code:是否真实码号
+
+
+        TsRespLt码号推送通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs码号推送通知(toLtReqTs码号推送通知);
+
+        return ltReqTs退单审核通知;
+
+    }
+
+    @GetMapping(value = "/goods", produces = "application/json")
+    public TsRespLt产品信息变更通知 ltReqTs产品信息变更通知(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
+
+
+        if(tsReqLt产品列表.get_pid().equals("dddddd")){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
+        }
+
+        LtReqTs产品信息变更通知.ToLtReqTs产品信息变更通知 toLtReqTs码号推送通知 = new LtReqTs产品信息变更通知.ToLtReqTs产品信息变更通知();
+
+
+
+        LtReqTs产品信息变更通知 ltReqTs验证核销通知 = new LtReqTs产品信息变更通知();
+        ltReqTs验证核销通知.setStatus(1); //产品状态（1：正常，12：下架）
+        ltReqTs验证核销通知.setSeller_code("this.seller_code"); //产品ID
+
+
+        TsRespLt产品信息变更通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs产品信息变更通知(toLtReqTs码号推送通知);
+
+        return ltReqTs退单审核通知;
+
+    }
+
+
 
 
 

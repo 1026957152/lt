@@ -3,27 +3,15 @@ package com.lt.dom.oct;
 import javax.persistence.*;
 
 @Entity
-public class Category {
-    @Version
-    private Integer version;
+public class Category extends Base {
 
-
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    private long id;
     private String category;
     
 //##@Column(unique=true) 
 private String code;
     private String name;
+    private Long parent_category_id;
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public String getCategory() {
         return category;
@@ -47,5 +35,13 @@ private String code;
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Long getParent_category_id() {
+        return parent_category_id;
+    }
+
+    public void setParent_category_id(Long parent_category_id) {
+        this.parent_category_id = parent_category_id;
     }
 }

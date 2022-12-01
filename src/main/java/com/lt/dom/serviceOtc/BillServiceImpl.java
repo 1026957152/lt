@@ -209,9 +209,8 @@ public class BillServiceImpl {
         invoiceItem.setInvoice(invoice);
 
         invoice.setItems(Arrays.asList(invoiceItem));
-        invoice.setTotal(total.floatValue());
-        invoice.setSubTotal(total.floatValue());
-
+        invoice.setTotal(total.doubleValue());
+        invoice.setSubTotal(total.doubleValue());
         invoice.setGeneratdOn(LocalDateTime.now());
 
 

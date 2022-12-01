@@ -29,6 +29,17 @@ public class MenuResp {
 
     private List<MenuResp> children;
 
+    public MenuResp(String path, String name, Meta meta) {
+        this.path = path;
+        this.name = name;
+        this.meta = meta;
+    }
+
+    public MenuResp() {
+
+
+    }
+
     public static MenuResp from(EnumMenu root,boolean isLeaf) {
         MenuResp menuResp = new MenuResp();
         menuResp.setName(root.getName());
@@ -81,10 +92,20 @@ public class MenuResp {
             this.icon = icon;
             this.affix = affix;
         }
+        public Meta(String title, String icon, List<String> roles) {
+            this.title = title;
+            this.icon = icon;
+            this.roles = roles;
+        }
 
         public Meta(String title) {
             this.title = title;
         }
+
+        public Meta() {
+
+        }
+
         public static Meta from(EnumMenu.Meta meta) {
             Meta meta1 = new Meta(meta.getClass().getName());
             meta1.setAffix(meta.isAffix());

@@ -190,6 +190,7 @@ public class SecurityConfig {
                 "/h2-console/**",
                 "/oct/files/*",
                 "/third/**",
+                "/static/**",
                 "/oct/documents",
                 "/oct/getPhone");
     }
