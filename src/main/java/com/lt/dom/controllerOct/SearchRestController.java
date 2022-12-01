@@ -599,13 +599,17 @@ public class SearchRestController {
                 new ProductSpecification(searchQuery); //, "code", "claim_note"
         Page<Product> productList = productRepository.findAll(where(spec),pageable);
 
+        if(miniapp_release){
+            productList =  productRepository.findAllByIdIn(Arrays.asList(),pageable);
 
-        List<Product> productList1 = productRepository.findAllByType(EnumProductType.Showtime);
+        }
+
+/*        List<Product> productList1 = productRepository.findAllByType(EnumProductType.Showtime);
 
         if(miniapp_release){
             productList1 = Arrays.asList();
 
-        }
+        }*/
 /*
 
         List<Product>  productList  = productRepository

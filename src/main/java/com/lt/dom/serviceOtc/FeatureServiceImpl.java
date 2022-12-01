@@ -38,7 +38,13 @@ public class FeatureServiceImpl {
 
 
     public void fill(HomeResp homeResp) {
-        homeResp.setFeatures(Arrays.stream(Enumfeatured.values()).map(e->{
+
+        List<Enumfeatured> enumfeatureds = Arrays.stream(Enumfeatured.values()).collect(Collectors.toList());
+        if(miniapp_release){
+            enumfeatureds = new ArrayList<>();
+        }
+
+        homeResp.setFeatures(enumfeatureds.stream().map(e->{
 
             FeatureResp resp = FeatureResp.from(e);
             EntityModel<FeatureResp> entityModel1 = EntityModel.of(resp);

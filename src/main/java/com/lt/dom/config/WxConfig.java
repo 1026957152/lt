@@ -6,6 +6,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class WxConfig {
+
+    @Value("${miniapp_release}")
+    boolean miniapp_release ;
+
     // 服务商 AppID
     @Value("${wx.app_id}")
     private String appId;
@@ -38,7 +42,12 @@ public class WxConfig {
     }
 
     public String getAppId() {
-        return appId;
+        if(miniapp_release){
+            return appId;
+        }else{
+            return wxmerchant_appId;
+        }
+
     }
 
     public void setAppId(String appId) {
@@ -46,7 +55,12 @@ public class WxConfig {
     }
 
     public String getSecret() {
-        return secret;
+        if(miniapp_release){
+            return secret;
+        }else{
+            return wxmerchant_secret;
+        }
+
     }
 
     public void setSecret(String secret) {

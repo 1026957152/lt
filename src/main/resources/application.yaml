@@ -1,6 +1,6 @@
 MYSQL_HOST: 10.0.0.50
 
-miniapp_release: true
+miniapp_release: false
 
 
 

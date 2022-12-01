@@ -7,6 +7,7 @@ import com.lt.dom.serviceOtc.AuthenticationFacade;
 import com.lt.dom.serviceOtc.BlogServiceImpl;
 import com.lt.dom.serviceOtc.CommentServiceImpl;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
+import com.lt.dom.thirdTS.EnumMethord;
 import com.lt.dom.thirdTS.LtToTsServiceImpl;
 import com.lt.dom.thirdTS.TsToLtServiceImpl;
 import com.lt.dom.thirdTS.domainLtToTs.*;
@@ -52,7 +53,125 @@ public class TSRestController {
     private OpenidRepository openidRepository;
 
 
+    @PostMapping(value = "", produces = "application/json")
+    public Object jk(@RequestBody TsReqLtBase tsReqLt产品列表) {
 
+        System.out.println("dddddddddddd"+tsReqLt产品列表.toString());
+        if(!tsReqLt产品列表.getFormat().equals("json")){
+            throw new BookNotFoundException(Enumfailures.not_found,"请求 format 需要json 格式");
+
+        }
+
+
+
+
+
+        if (tsReqLt产品列表 instanceof TsReqLt产品列表){
+            if(tsReqLt产品列表.get_pid().equals("dddddd")){
+                throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
+            }
+
+            TsReqLt产品列表 tsReqLt产品列表1 = (TsReqLt产品列表) tsReqLt产品列表;
+
+            System.out.println("TsReqLt产品列表dddddddddddd"+tsReqLt产品列表1.toString());
+            LtRespToTs产品列表 ltRespToTs产品列表 = tsToLtService.getTsReqLt产品列表(tsReqLt产品列表1);
+
+            return ltRespToTs产品列表;
+        }
+        if (tsReqLt产品列表 instanceof TsReqLt下单接口){
+            if(tsReqLt产品列表.get_pid().equals("dddddd")){
+                throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
+            }
+
+            TsReqLt下单接口 tsReqLt产品列表1 = (TsReqLt下单接口) tsReqLt产品列表;
+
+            System.out.println("TsReqLt下单接口dddddddddddd"+tsReqLt产品列表1.toString());
+            try{
+                if(tsReqLt产品列表.get_pid().equals("dddddd")){
+                    throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
+                }
+                LtRespToTs下单接口.InfoDTO infoDTO  = tsToLtService.getTsReqLt下单接口(tsReqLt产品列表1);
+                LtRespToTs下单接口 ltRespToTs产品列表 = new LtRespToTs下单接口();
+
+                ltRespToTs产品列表.setInfo(infoDTO);
+                ltRespToTs产品列表.setSuccess(true);
+                ltRespToTs产品列表.setMessage("成功");
+                return ltRespToTs产品列表;
+            }catch (Exception e){
+
+                e.printStackTrace();
+
+                LtRespToTs下单接口 ltRespToTs产品列表 = new LtRespToTs下单接口();
+                ltRespToTs产品列表.setSuccess(false);
+                ltRespToTs产品列表.setMessage(e.toString());
+                return ltRespToTs产品列表;
+            }
+
+        }
+
+
+
+
+
+        if (tsReqLt产品列表 instanceof TsReqLt退单接口){
+            if(tsReqLt产品列表.get_pid().equals("dddddd")){
+                throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
+            }
+
+            TsReqLt退单接口 tsReqLt产品列表1 = (TsReqLt退单接口) tsReqLt产品列表;
+
+            System.out.println("TsReqLt退单接口dddddddddddd"+tsReqLt产品列表1.toString());
+            TsReqLt退单接口 tsReqLt退单接口 =new TsReqLt退单接口();// tsToLtService.getTsReqLt产品列表(tsReqLt产品列表1);
+
+            try{
+                if(tsReqLt产品列表.get_pid().equals("dddddd")){
+                    throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
+                }
+                LtRespToTs退单接口.InfoDTO infoDTO = tsToLtService.getTsReqLt退单接口(tsReqLt退单接口);
+
+
+                LtRespToTs退单接口 ltRespToTs产品列表 = new LtRespToTs退单接口();
+
+                ltRespToTs产品列表.setInfo(infoDTO);
+                ltRespToTs产品列表.setSuccess(true);
+                ltRespToTs产品列表.setMessage("成功");
+                return ltRespToTs产品列表;
+
+
+            }catch (Exception e){
+
+                e.printStackTrace();
+
+                LtRespToTs退单接口 ltRespToTs产品列表 = new LtRespToTs退单接口();
+
+                ltRespToTs产品列表.setSuccess(false);
+                ltRespToTs产品列表.setMessage("失败"+ e.toString());
+                return ltRespToTs产品列表;
+            }
+        }
+
+
+
+
+
+
+        if (tsReqLt产品列表 instanceof TsReqLt重发接口_修改订单.ToTsReqLt重发接口_修改订单){
+            if(tsReqLt产品列表.get_pid().equals("dddddd")){
+                throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
+            }
+
+            TsReqLt重发接口_修改订单.ToTsReqLt重发接口_修改订单 tsReqLt产品列表1 = (TsReqLt重发接口_修改订单.ToTsReqLt重发接口_修改订单) tsReqLt产品列表;
+
+            System.out.println("TsReqLt重发接口_修改订单dddddddddddd"+tsReqLt产品列表1.toString());
+            LtRespToTs产品列表 ltRespToTs产品列表 =new LtRespToTs产品列表();// tsToLtService.getTsReqLt产品列表(tsReqLt产品列表1);
+
+            return ltRespToTs产品列表;
+        }
+        return null;
+
+
+
+    }
 
     @PostMapping(value = "/item_list", produces = "application/json")
     public LtRespToTs产品列表 item_list(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
@@ -140,13 +259,33 @@ public class TSRestController {
 
 
     @PostMapping(value = "/item_orders_modify", produces = "application/json")
-    public LtRespToTs产品列表 item_orders_modify(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
+    public LtRespToTs重发接口_修改订单 item_orders_modify(@RequestBody TsReqLt重发接口_修改订单 tsReqLt产品列表) {
 
 
         if(tsReqLt产品列表.get_pid().equals("dddddd")){
             throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
         }
-        LtRespToTs产品列表 ltRespToTs产品列表 = tsToLtService.getTsReqLt产品列表(tsReqLt产品列表);
+
+        EnumMethord enumMethord = EnumMethord.valueOf(tsReqLt产品列表.getMethod());
+
+
+        if(!enumMethord.equals(EnumMethord.item_orders)){
+            return null;
+        }
+
+        if(!tsReqLt产品列表.getFormat().equals("json")){
+            return null;
+        }
+
+
+        TsReqLt重发接口_修改订单.ToTsReqLt重发接口_修改订单 toTsReqLt重发接口_修改订单 = new TsReqLt重发接口_修改订单.ToTsReqLt重发接口_修改订单();
+
+        toTsReqLt重发接口_修改订单.setName("4"); //审核结果： 3退票成功，4退票不通过
+  //      toTsReqLt重发接口_修改订单.setSerial_no(""); //退票记录id（申请退票有传此数据时，会返回申请退票时传入的流水号）
+  //     toTsReqLt重发接口_修改订单.setMessage("ddd"); ;//本平台订单ID（天时同城）
+        toTsReqLt重发接口_修改订单.setOrders_id(1);  //管理员审核备注/说明
+
+        LtRespToTs重发接口_修改订单 ltRespToTs产品列表 = tsToLtService.getTsReqLt重发接口_修改订单(toTsReqLt重发接口_修改订单);
 
         return ltRespToTs产品列表;
 

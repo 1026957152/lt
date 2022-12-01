@@ -23,10 +23,13 @@ import com.lt.dom.repository.OpenidRepository;
 import com.lt.dom.repository.UserRepository;
 import com.lt.dom.serviceOtc.OpenidServiceImpl;
 import com.lt.dom.serviceOtc.UserServiceImpl;
+import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
 import com.lt.dom.util.RestTemplateUtil;
 import org.apache.commons.collections.map.HashedMap;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.hateoas.EntityModel;
@@ -53,6 +56,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 @RequestMapping("/oct")
 public class EmpowerRestController {
+    Logger logger = LoggerFactory.getLogger(EmpowerRestController.class);
 
     @Autowired
     private WxConfig wxConfig;
@@ -85,6 +89,8 @@ public class EmpowerRestController {
     @PostMapping(value = "/wxlogout/{OPEN_ID}", produces = "application/json")// consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Object wxlogout(@PathVariable String OPEN_ID){ //,
 
+
+        System.out.println("微信login");
         Optional<Openid> optional = openidRepository.findByOpenid(OPEN_ID);
 
         if(optional.isEmpty()) {
@@ -122,6 +128,8 @@ public class EmpowerRestController {
 
  //   public EmpowerResp mini_getPhone(@RequestParam(value = "code",required = true) String code)
     {
+
+        System.out.println("mini_getPhone");
         ///     POST https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=ACCESS_TOKEN
         Token accessToken = null;
         if(code.getType() == 2){
@@ -188,7 +196,7 @@ public class EmpowerRestController {
     {
    ///     POST https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=ACCESS_TOKEN
 
-
+        System.out.println("mini_getPhone");
         EmpowerResp resultPO = new EmpowerResp();
         JSONObject obj=getPhoneNumber(session_key,encryptedData,iv);//解密电话号码
         String sphone=obj.get("phoneNumber").toString();
@@ -254,8 +262,13 @@ public class EmpowerRestController {
                               @RequestParam(value = "signature",required = false) String signature) {*/
 //		登录凭证校验。通过 wx.login 接口获得临时登录凭证 code 后传到开发者服务器调用此接口完成登录流程
 
+
+
+
+        System.out.println("/wxLogin");
         String code = wxloginReq.getCode();
 
+        logger.debug("微信登录，code {}",code);
         String openid = null;
         if(ObjectUtils.isEmpty(wxloginReq.getOpenid())){
 
@@ -276,12 +289,16 @@ public class EmpowerRestController {
 
 
                 if( forObject.containsKey("errcode") && !forObject.getInteger("errcode").equals(0)){
+                    logger.error("请求微信 jscode2session 服务报错 {}",forObject);
+
                     throw new BookNotFoundException("","请求微信 s/jscode2session 错我"+forObject);
 
                 }
 
 
             } catch(HttpStatusCodeException e) {
+
+                logger.error("请求微信 服务报错 {}",e.getMessage());
 
                 throw new BookNotFoundException("","请求微信 服务报错"+e.getMessage());
 

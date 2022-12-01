@@ -133,11 +133,24 @@ public class TsToLtServiceImpl {
 
 
 
-    public   LtRespToTs产品列表 getTsReqLt产品列表( TsReqLt产品列表 data){
+    public   LtRespToTs重发接口_修改订单 getTsReqLt重发接口_修改订单( TsReqLt重发接口_修改订单.ToTsReqLt重发接口_修改订单 data) {
 
 
 
-        EnumMethord enumMethord = EnumMethord.valueOf(data.getMethod());
+  //      ToTsReqLt重发接口_修改订单 toTsReqLt重发接口_修改订单 = new ToTsReqLt重发接口_修改订单();
+
+
+        LtRespToTs重发接口_修改订单 ltRespToTs重发接口_修改订单 = new LtRespToTs重发接口_修改订单();
+        return ltRespToTs重发接口_修改订单;
+
+    }
+
+
+        public   LtRespToTs产品列表 getTsReqLt产品列表( TsReqLt产品列表 data){
+
+
+
+        EnumMethord enumMethord =data.getMethod();
 
 
         if(!enumMethord.equals(EnumMethord.item_list)){
@@ -163,7 +176,7 @@ public class TsToLtServiceImpl {
             products.addAll(thirdPartyService.findAll(EnumThirdParty.TS,data.getItem_id().longValue()));
 
         }else{
-            products.addAll(thirdPartyService.findAll(EnumThirdParty.TS,data.getKey_word(),PageRequest.of(data.getPage(),data.getSize())));
+            products.addAll(thirdPartyService.findAll(EnumThirdParty.TS,data.getKey_word(),PageRequest.of(data.getPage()-1,data.getSize())));
         }
 
 
@@ -479,14 +492,11 @@ public class TsToLtServiceImpl {
     public   LtRespToTs退单接口.InfoDTO getTsReqLt退单接口( TsReqLt退单接口 data){
 
 
-        EnumMethord enumMethord = EnumMethord.valueOf(data.getMethod());
+
 
 
         data.getSerial_no(); // //退票流水号，如传此字段时，审核通知会返回对应的流水号
 
-        if(!enumMethord.equals(EnumMethord.item_refund)){
-            throw new BookNotFoundException(Enumfailures.resource_not_found,"方法名称错误 item_refund");
-        }
 
         if(!data.getFormat().equals("json")){
             throw new BookNotFoundException(Enumfailures.resource_not_found,"格式 json");
@@ -537,17 +547,6 @@ public class TsToLtServiceImpl {
     public   LtRespToTs下单接口.InfoDTO  getTsReqLt下单接口(TsReqLt下单接口 data){
 
 
-
-        EnumMethord enumMethord = EnumMethord.valueOf(data.getMethod());
-
-
-        if(!enumMethord.equals(EnumMethord.item_orders)){
-            return null;
-        }
-
-        if(!data.getFormat().equals("json")){
-            return null;
-        }
 
 
 

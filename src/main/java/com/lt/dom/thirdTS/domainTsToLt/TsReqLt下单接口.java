@@ -6,10 +6,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class TsReqLt下单接口 {
-
-    @NotNull
-    private String method ;//:接口方法名,固定值：item_list
+public class TsReqLt下单接口 extends TsReqLtBase {
 
 
 
@@ -243,49 +240,4 @@ public class TsReqLt下单接口 {
 
 
 
-
-
-
-    @NotNull
-    private String _sig;//:请求签名，见说明文档
-
-    @NotNull
-    private String _pid;//:合作伙伴id
-
-    @NotNull
-    private String format;//:返回数据格式，json
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-
-
-    public String get_sig() {
-        return _sig;
-    }
-
-    public void set_sig(String _sig) {
-        this._sig = _sig;
-    }
-
-    public String get_pid() {
-        return _pid;
-    }
-
-    public void set_pid(String _pid) {
-        this._pid = _pid;
-    }
-
-    public String getFormat() {
-        return format;
-    }
-
-    public void setFormat(String format) {
-        this.format = format;
-    }
 }

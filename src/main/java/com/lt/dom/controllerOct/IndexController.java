@@ -177,23 +177,23 @@ public class IndexController {
                 .findAllByIdInAndPrivacyLevel(sortList,EnumPrivacyLevel.public_).stream().collect(Collectors.toMap(e->e.getId(), e->e));
 
 
-      //  List<Attraction> attractionList = attractionRepository.findAll();
-        homeResp.setRecommend_attractions(sortList.stream().map(i->{
+        if(!miniapp_release) {
 
-            Attraction e = attractionList.get(i);
+            //  List<Attraction> attractionList = attractionRepository.findAll();
+            homeResp.setRecommend_attractions(sortList.stream().map(i -> {
 
-            System.out.println("stream里的顺序 "+ e.getId());
-            Pair<Boolean,String> stringPair =    policyNoteShowService.getQr(EnumNoteShowWhereAndWhen.home_page);
+                Attraction e = attractionList.get(i);
 
-           HomeResp.noteShow(homeResp,stringPair);
+                System.out.println("stream里的顺序 " + e.getId());
+                Pair<Boolean, String> stringPair = policyNoteShowService.getQr(EnumNoteShowWhereAndWhen.home_page);
 
-            AttractionResp attractionResp = AttractionResp.simpleFrom(e,fileStorageService.loadDocumentWithDefault(Arrays.asList(EnumPhotos.full),EnumDocumentType.attraction_thumb,e.getCode()));
-         //   attractionResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.attraction_photos,e.getCode()));
+                HomeResp.noteShow(homeResp, stringPair);
+
+                AttractionResp attractionResp = AttractionResp.simpleFrom(e, fileStorageService.loadDocumentWithDefault(Arrays.asList(EnumPhotos.full), EnumDocumentType.attraction_thumb, e.getCode()));
+                //   attractionResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.attraction_photos,e.getCode()));
 
 
-
-
-            attractionResp.setTags(Arrays.asList(EnumKnownfor.Architecture.toString()));
+                attractionResp.setTags(Arrays.asList(EnumKnownfor.Architecture.toString()));
 
 /*
             Optional<Supplier> supplierOptional = supplierRepository.findById(e.getSupplier());
@@ -208,14 +208,14 @@ public class IndexController {
 */
 
 
-            EntityModel attractionEntityModel = EntityModel.of(attractionResp);
-            attractionEntityModel.add(linkTo(methodOn(AttractionRestController.class).getAttraction(e.getId(),null)).withSelfRel().expand());
+                EntityModel attractionEntityModel = EntityModel.of(attractionResp);
+                attractionEntityModel.add(linkTo(methodOn(AttractionRestController.class).getAttraction(e.getId(), null)).withSelfRel().expand());
 
-            return attractionEntityModel;
-        }).collect(Collectors.toList()));
+                return attractionEntityModel;
+            }).collect(Collectors.toList()));
 
 
-
+        }
 /*
 
         Map<Long,List<Campaign>> longListMap =  campaignList.stream().collect(Collectors.groupingBy(e->e.getScenario()));
@@ -306,8 +306,11 @@ public class IndexController {
             return productRespEntityModel;
         }).collect(Collectors.toList());
 
-        homeResp.setRecommend_products(productRespList);
+        if(!miniapp_release){
 
+            homeResp.setRecommend_products(productRespList);
+
+        }
 
         List<ValueListItem> valueListItems_carousel = valueListService.getByName(EnumValueListDefault.mini_app_carousel);
 
@@ -377,8 +380,14 @@ public class IndexController {
 
 
 
+        if(!miniapp_release){
 
-        passService.withMe(homeResp);
+            passService.withMe(homeResp);
+
+        }
+
+
+
 
         return entityModel;
 
