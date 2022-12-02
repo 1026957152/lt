@@ -53,7 +53,7 @@ public class FeatureServiceImpl {
            // resp.setFeature_image(fileStorageService.loadDocument(Arrays.asList(EnumPhotos.thumb),EnumDocumentType.home_page_feature_logo,e.name()));
             resp.setFeature_image(e.getFeature_image());
             if(e.equals(Enumfeatured.tours)){
-                String link = linkTo(methodOn(IndexController.class).activities(null)).withSelfRel().getHref();
+                String link = linkTo(methodOn(TripRestController.class).Page_listTrip()).withSelfRel().getHref();
                 //  entityModel1.add(linkTo(methodOn(BookingMakeplanController.class).getGuideList(3,null,null)).withSelfRel());
                 resp.setPath("/pages/tours/list?url="+link);
             }

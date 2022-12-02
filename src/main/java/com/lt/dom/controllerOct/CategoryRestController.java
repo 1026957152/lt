@@ -2,6 +2,7 @@ package com.lt.dom.controllerOct;
 
 import com.lt.dom.OctResp.BookingResp;
 import com.lt.dom.OctResp.CategoryResp;
+import com.lt.dom.OctResp.ProductResp;
 import com.lt.dom.OctResp.RegionResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
@@ -101,7 +102,7 @@ public class CategoryRestController {
     public EntityModel<Category> createCategory(@RequestBody @Valid CategoryPojo pojo) {
 
 
-        Optional<Category> optionalProduct = categoryRepository.findByCategory(pojo.getCategory());
+        Optional<Category> optionalProduct = categoryRepository.findByName(pojo.getName());
 
         if(optionalProduct.isPresent()) {
             System.out.println("找不到产品");
@@ -114,5 +115,25 @@ public class CategoryRestController {
 
 
     }
+
+    @PutMapping(value = "/categories/{ID}", produces = "application/json")
+    public EntityModel<Category> editCategory(@PathVariable long ID,@RequestBody @Valid CategoryPojo pojo) {
+
+
+        Optional<Category> optionalProduct = categoryRepository.findById(ID);
+
+        if(optionalProduct.isEmpty()) {
+
+            throw new ExistException(Enumfailures.general_exists_error,"已经存在");
+        }
+        Category category = optionalProduct.get();
+
+        category = categoryService.edit(category,pojo);
+
+        return EntityModel.of(categoryRepository.save(category));
+
+
+    }
+
 
 }

@@ -1,29 +1,18 @@
 package com.lt.dom.serviceOtc;
 
 
-import com.lt.dom.oct.Blog;
 import com.lt.dom.oct.Category;
-import com.lt.dom.oct.Comment;
-import com.lt.dom.oct.Product;
-import com.lt.dom.otcReq.BlogEditReq;
-import com.lt.dom.otcReq.BlogReq;
 import com.lt.dom.otcReq.CategoryPojo;
-import com.lt.dom.otcReq.CommentReq;
 import com.lt.dom.otcenum.EnumDocumentType;
-import com.lt.dom.repository.BlogRepository;
 import com.lt.dom.repository.CategoryRepository;
-import com.lt.dom.repository.CommentRepository;
-import com.lt.dom.vo.UserVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class CategoryServiceImpl {
 
     @Autowired
-    private CategoryRepository commentRepository;
+    private CategoryRepository categoryRepository;
 
 
 
@@ -43,8 +32,9 @@ public class CategoryServiceImpl {
 
         category.setCode(idGenService.nextId("category_"));
 
+        category.setCategory(categoryPojo.getCategory());
         category.setName(categoryPojo.getName());
-        category = commentRepository.save(category);
+        category = categoryRepository.save(category);
         return category;
 
 
@@ -56,7 +46,8 @@ public class CategoryServiceImpl {
     public Category edit(Category theatre, CategoryPojo blogReq) {
 
         theatre.setName(blogReq.getName());
-        theatre = commentRepository.save(theatre);
+        theatre.setCategory(blogReq.getCategory());
+        theatre = categoryRepository.save(theatre);
 
 
         if(blogReq.getImages() != null){

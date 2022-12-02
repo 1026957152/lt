@@ -5,6 +5,7 @@ import com.github.wxpay.sdk.WXPay;
 import com.github.wxpay.sdk.WXPayUtil;
 import com.google.gson.Gson;
 import com.lt.dom.OctResp.PaymentMethodResp;
+import com.lt.dom.config.WxConfig;
 import com.lt.dom.controllerOct.*;
 import com.lt.dom.controllerOct.pay.AlipayController;
 import com.lt.dom.error.BookNotFoundException;
@@ -27,6 +28,8 @@ import com.lt.dom.vo.UserVo;
 import com.lt.dom.vo.VoucherPublicationPaymentVo;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.EntityModel;
@@ -42,7 +45,10 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class PaymentServiceImpl {
+    Logger logger = LoggerFactory.getLogger(PaymentServiceImpl.class);
 
+    @Autowired
+    private WxConfig wxConfig;
     @Autowired
     private com.lt.dom.config.WxPayConfig wxPayConfig;
 
@@ -162,7 +168,7 @@ public class PaymentServiceImpl {
 
         MyConfig myConfig = null;
         try {
-            myConfig = new MyConfig();
+            myConfig = new MyConfig(wxConfig);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -196,6 +202,10 @@ public class PaymentServiceImpl {
         try {
             Map<String, String> resp_wx = wxpay.unifiedOrder(data);
 
+
+            if(resp_wx.get("return_code").equals("FAIL")){
+                logger.error("微信支付调用 unifiedOrder 报错 ",resp_wx.get("return_msg"));
+            }
 
          //resp_wx;
 

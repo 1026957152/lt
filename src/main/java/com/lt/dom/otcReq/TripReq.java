@@ -1,5 +1,6 @@
 package com.lt.dom.otcReq;
 
+import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.oct.Base;
 import com.lt.dom.otcenum.EnumPrivacyLevel;
 
@@ -31,6 +32,10 @@ public class TripReq {
     private LocalDate starts_on;
     private LocalDate ends_on;
     private Integer day_count;
+    private PhotoResp tripCover;
+    private String name_long;
+    private String desc_short;
+    private String desc_long;
 
     public String getName() {
         return name;
@@ -78,5 +83,37 @@ public class TripReq {
 
     public void setDay_count(Integer day_count) {
         this.day_count = day_count;
+    }
+
+    public PhotoResp getTripCover() {
+        return tripCover;
+    }
+
+    public void setTripCover(PhotoResp tripCover) {
+        this.tripCover = tripCover;
+    }
+
+    public String getName_long() {
+        return name_long;
+    }
+
+    public void setName_long(String name_long) {
+        this.name_long = name_long;
+    }
+
+    public String getDesc_short() {
+        return desc_short;
+    }
+
+    public void setDesc_short(String desc_short) {
+        this.desc_short = desc_short;
+    }
+
+    public String getDesc_long() {
+        return desc_long;
+    }
+
+    public void setDesc_long(String desc_long) {
+        this.desc_long = desc_long;
     }
 }

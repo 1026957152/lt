@@ -1,11 +1,15 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.otcenum.EnumCatetory;
+
 import javax.persistence.*;
 
 @Entity
 public class Category extends Base {
 
-    private String category;
+
+    @Enumerated(EnumType.STRING)
+    private EnumCatetory category;
     
 //##@Column(unique=true) 
 private String code;
@@ -13,11 +17,11 @@ private String code;
     private Long parent_category_id;
 
 
-    public String getCategory() {
+    public EnumCatetory getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(EnumCatetory category) {
         this.category = category;
     }
 

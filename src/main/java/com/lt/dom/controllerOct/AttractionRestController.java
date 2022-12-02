@@ -8,6 +8,7 @@ import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.AttractionReq;
 import com.lt.dom.otcReq.ImageReq;
 import com.lt.dom.otcReq.LocationResp;
+import com.lt.dom.otcReq.WayPointResp;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.AssetServiceImpl;
@@ -37,6 +38,7 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -72,6 +74,8 @@ public class AttractionRestController {
     private CityWalkRepository cityWalkRepository;
     @Autowired
     private AttributeRepository attributeRepository;
+    @Autowired
+    private WayPointRepository wayPointRepository;
 
 
     @Autowired
@@ -465,15 +469,47 @@ public class AttractionRestController {
         String url_with_link = String.format(EnumReferralType.fill_up_passager_info.getUrl(),link);
 
         if(attraction.getSelfGuided()!= null){
+
+
             Optional<CityWalk> cityWalks = cityWalkRepository.findById(attraction.getSelfGuided());
             CityWalk cityWalk = cityWalks.get();
 
-            CityWalkResp cityWalkResp = CityWalkResp.fromSnip(cityWalk);
+ /*           CityWalkResp cityWalkResp = CityWalkResp.fromSnip(cityWalk);
+
+
+*/
+
+            CityWalkResp cityWalkResp = CityWalkResp.simplefrom(cityWalk);
+            List<WayPoint> wayPoints = wayPointRepository.findAll();
+
+
+
+            cityWalkResp.setWay_points(IntStream.range(0,wayPoints.size()).mapToObj(i->{
+                WayPoint e = wayPoints.get(i);
+                WayPointResp wayPointResp = WayPointResp.locationFrom(e);
+                EntityModel entityModel_ = EntityModel.of(wayPointResp);
+                return entityModel_;
+            }).collect(Collectors.toList()));
+
+            ViewPortResp viewPortResp = new ViewPortResp();
+            viewPortResp.setBtmRightPoint(ViewPortResp.PointDTO.from());
+            viewPortResp.setTopLeftPoint(ViewPortResp.PointDTO.from());
+            cityWalkResp.setViewPort(viewPortResp);
+
+
+            EntityModel entityModel_city = EntityModel.of(cityWalkResp);
+            entityModel_city.add(linkTo(methodOn(AudioGuideRestController.class).getCityWalk(cityWalk.getId(), null)).withSelfRel());
 
             String link_city = linkTo(methodOn(AudioGuideRestController.class).getCityWalk(cityWalk.getId(), null)).withSelfRel().getHref();
 
-            attractionResp.setSelfGuidedTour(Map.of("name","自助旅行","url",link_city,
-                    "path",EnumMiniappPagePath.audio_guide.getPath()+"?url="+link_city,"tour",cityWalkResp));
+            cityWalkResp.setName(cityWalk.getTitle());
+            cityWalkResp.setUrl(link_city);
+            cityWalkResp.setPath(EnumMiniappPagePath.audio_guide.getPath()+"?url="+link_city);//,"tour",cityWalkResp);
+
+
+            EntityModel entityModel1 = EntityModel.of(cityWalkResp);
+
+            attractionResp.setSelfGuidedTour(entityModel1);
 
             attractionResp.setSelfGuided(true);
         }else{

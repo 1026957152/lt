@@ -18,6 +18,25 @@ import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CityWalkResp extends BaseResp {
+    private String path;
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    private String name;
+    private String url;
+
+    public static CityWalkResp from() {
+        CityWalkResp cityWalkResp = new CityWalkResp();
+        return cityWalkResp;
+
+
+    }
 
     public ViewPortResp getViewPort() {
         return viewPort;
@@ -229,4 +248,22 @@ public class CityWalkResp extends BaseResp {
     public String getStatus_text() {
         return status_text;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+
 }

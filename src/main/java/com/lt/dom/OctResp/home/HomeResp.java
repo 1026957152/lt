@@ -27,6 +27,7 @@ public class HomeResp {
     private List movies;
     private List greatYulin;
     private Map cityPass;
+    private EntityModel pickupDropoff;
 
     public static void noteShow(HomeResp homeResp, Pair<Boolean, String> stringPair) {
 
@@ -118,5 +119,13 @@ public class HomeResp {
 
     public Map getCityPass() {
         return cityPass;
+    }
+
+    public void setPickupDropoff(EntityModel pickupDropoff) {
+        this.pickupDropoff = pickupDropoff;
+    }
+
+    public EntityModel getPickupDropoff() {
+        return pickupDropoff;
     }
 }

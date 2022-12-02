@@ -21,6 +21,7 @@ public enum EnumMiniappPagePath {
     city_walk("/pages/citywalk/show"),
     user_allowed_component_right("/pages/admin/writeoff/auth"),
 
+    nearby_car_rent("/pages/rentcars/list2"),
 
 
 

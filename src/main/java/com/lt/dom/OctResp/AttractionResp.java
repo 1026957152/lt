@@ -36,7 +36,7 @@ public class AttractionResp extends BaseResp {
     private List<AttributeResp> knowBeforeYouGo;
     private List<AttributeResp> gettingThere;
     private List<AttributeResp> hoursOfOperation;
-    private Map selfGuidedTour;
+    private EntityModel selfGuidedTour;
     private Boolean selfGuided;
 
     private EntityModel<AssetResp> tourLink;
@@ -365,11 +365,11 @@ public class AttractionResp extends BaseResp {
         return hoursOfOperation;
     }
 
-    public <V, K> void setSelfGuidedTour(Map selfGuidedTour) {
+    public <V, K> void setSelfGuidedTour(EntityModel selfGuidedTour) {
         this.selfGuidedTour = selfGuidedTour;
     }
 
-    public Map getSelfGuidedTour() {
+    public EntityModel getSelfGuidedTour() {
         return selfGuidedTour;
     }
 

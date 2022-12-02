@@ -10,7 +10,9 @@ import com.lt.dom.otcReq.PlaceReq;
 import com.lt.dom.otcReq.TripReq;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import com.lt.dom.serviceOtc.TripServiceImpl;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,8 +24,14 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.format.TextStyle;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -47,6 +55,86 @@ public class TripRestController {
 
     @Autowired
     private TripRepository tripRepository;
+
+    @Autowired
+    private FileStorageServiceImpl fileStorageService;
+
+
+
+    @GetMapping(value = "/Page_listTrip", produces = "application/json")
+    public EntityModel<Trip> Page_listTrip( ) {
+
+
+
+/*
+        Map map = Map.of(   "place_level_list", EnumPlaceLevel.List(),
+                "place_type_list", EnumPlaceTyp.List(),
+                "category_list",EnumPlaceCategories.List());*/
+
+
+
+
+
+        List<Trip> bookingRuleList = tripRepository.findAll();
+
+
+        Map<Month, List<EntityModel> > listMap = bookingRuleList.stream().map(e->{
+            TripResp movieResp = TripResp.from(e);
+
+
+            movieResp.setTripCover(fileStorageService.loadDocumentWithDefault(EnumDocumentType.trip_cover,e.getCode()));
+
+
+            EntityModel entityModel = EntityModel.of(movieResp);
+            entityModel.add(linkTo(methodOn(TripRestController.class).getTrip(e.getId())).withSelfRel());
+
+
+            return Pair.with(e.getStarts_on(),entityModel);
+        }).collect(Collectors.groupingBy(e->e.getValue0().getMonth(),Collectors.collectingAndThen(
+                Collectors.toList(),
+                sysDeparts -> sysDeparts.stream().map(e->e.getValue1()).collect(Collectors.toList()))))
+
+                ;
+
+
+        Map map = Map.of("title","最近活动","groups",listMap.entrySet().stream().map(e->{
+            return Map.of("name",e.getKey().getDisplayName(TextStyle.SHORT, Locale.CHINA),"trips",e.getValue());
+
+        }).collect(Collectors.toList()));
+
+        EntityModel entityModel = EntityModel.of(map);
+
+        entityModel.add(linkTo(methodOn(TripRestController.class).listUpcommingTrip(null,null)).withRel("list"));
+
+
+        return entityModel;
+
+    }
+
+
+    @GetMapping(value = "/trips", produces = "application/json")
+    public PagedModel listUpcommingTrip(Pageable pageable, PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
+
+
+
+        Page<Trip> bookingRuleList = tripRepository.findAll(pageable);
+
+        return assembler.toModel(bookingRuleList.map(e->{
+
+            TripResp movieResp = TripResp.from(e);
+
+
+            movieResp.setTripCover(fileStorageService.loadDocumentWithDefault(EnumDocumentType.trip_cover,e.getCode()));
+
+
+            EntityModel entityModel = EntityModel.of(movieResp);
+            entityModel.add(linkTo(methodOn(TripRestController.class).getTrip(e.getId())).withSelfRel());
+
+
+            return entityModel;
+        }));
+
+    }
 
 
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/trips", produces = "application/json")

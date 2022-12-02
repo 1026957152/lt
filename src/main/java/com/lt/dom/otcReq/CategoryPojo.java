@@ -1,6 +1,7 @@
 package com.lt.dom.otcReq;
 
 import com.lt.dom.OctResp.PhotoResp;
+import com.lt.dom.otcenum.EnumCatetory;
 import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
 
 import javax.validation.Valid;
@@ -12,12 +13,16 @@ import java.util.List;
 
 public class CategoryPojo {
 
+    private EnumCatetory category;
+
+    public void setCategory(EnumCatetory category) {
+        this.category = category;
+    }
 
     @NotNull
     private String name;//	The staff entered "pinned note" on the booking
 
 
-    private String category;
 
 
     private Long parent_category_id;
@@ -48,14 +53,8 @@ public class CategoryPojo {
         this.parent_category_id = parent_category_id;
     }
 
-    public String getCategory() {
+
+    public EnumCatetory getCategory() {
         return category;
     }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-
-
 }

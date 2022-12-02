@@ -387,6 +387,17 @@ public class IndexController {
         }
 
 
+        if(!miniapp_release){
+            String link = linkTo(methodOn(CarRestController.class).Page_car_nearby()).withSelfRel().getHref();
+
+            Map map = Map.of("text","去哪里",
+
+                    "path",EnumMiniappPagePath.nearby_car_rent.getPath()+"?url="+link
+                    );
+            EntityModel entityModel_pickup = EntityModel.of(map);
+            entityModel_pickup.add(linkTo(methodOn(CarRestController.class).Page_car_nearby()).withRel("Page_car_nearby"));
+            homeResp.setPickupDropoff(entityModel_pickup);
+        }
 
 
         return entityModel;

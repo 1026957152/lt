@@ -116,6 +116,10 @@ public enum EnumDocumentType {
     category_image("license_for_opening_bank_account"),
     category_icon("license_for_opening_bank_account"),
 
+    trip_cover("license_for_opening_bank_account"),
+
+
+
     ;
 
 

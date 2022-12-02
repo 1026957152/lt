@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.oct.Base;
 import com.lt.dom.oct.Car;
+import com.lt.dom.otcReq.LocationResp;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 import java.util.List;
+import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CarResp  {
@@ -109,6 +111,12 @@ public class CarResp  {
 
     private List carFeatures;
     private List tags;
+    private LocationResp location;
+
+    private Integer nearby_time;
+    private Float nearby_distance;
+    private Map nearby;
+    private Map renter;
 
     public static CarResp of(Car e) {
         CarResp carResp = new CarResp();
@@ -165,6 +173,48 @@ public class CarResp  {
 
     public List getTags() {
         return tags;
+    }
+
+    public void setLocation(LocationResp location) {
+        this.location = location;
+    }
+
+    public LocationResp getLocation() {
+        return location;
+    }
+
+
+
+    public void setNearby_time(Integer nearby_time) {
+        this.nearby_time = nearby_time;
+    }
+
+    public Integer getNearby_time() {
+        return nearby_time;
+    }
+
+    public void setNearby_distance(Float nearby_distance) {
+        this.nearby_distance = nearby_distance;
+    }
+
+    public Float getNearby_distance() {
+        return nearby_distance;
+    }
+
+    public <K, V> void setNearby(Map nearby) {
+        this.nearby = nearby;
+    }
+
+    public Map getNearby() {
+        return nearby;
+    }
+
+    public <K, V> void setRenter(Map renter) {
+        this.renter = renter;
+    }
+
+    public Map getRenter() {
+        return renter;
     }
 
 

@@ -1,12 +1,13 @@
 package com.lt.dom.OctResp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.Base;
 import com.lt.dom.oct.Trip;
 import com.lt.dom.otcenum.EnumPrivacyLevel;
 
 import javax.persistence.Entity;
 import java.time.LocalDate;
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TripResp {
 
 
@@ -23,9 +24,22 @@ public class TripResp {
     private Integer day_count;
     private long supplier;
     private String code;
+    private PhotoResp tripCover;
+    private String desc_short;
+    private String name_long;
+    private String desc_long;
 
     public static TripResp from(Trip trip) {
         TripResp tripResp = new TripResp();
+
+        tripResp.setStarts_on(trip.getStarts_on());
+        tripResp.setEnds_on(trip.getEnds_on());
+        tripResp.setDay_count(trip.getDay_count());
+        tripResp.setName(trip.getName());
+        tripResp.setName_long(trip.getName_long());
+        tripResp.setDesc_short(trip.getDesc_short());
+        tripResp.setDesc_long(trip.getDesc_long());
+
 
         return tripResp;
     }
@@ -92,5 +106,37 @@ public class TripResp {
 
     public String getCode() {
         return code;
+    }
+
+    public void setTripCover(PhotoResp tripCover) {
+        this.tripCover = tripCover;
+    }
+
+    public PhotoResp getTripCover() {
+        return tripCover;
+    }
+
+    public void setDesc_short(String desc_short) {
+        this.desc_short = desc_short;
+    }
+
+    public String getDesc_short() {
+        return desc_short;
+    }
+
+    public void setName_long(String name_long) {
+        this.name_long = name_long;
+    }
+
+    public String getName_long() {
+        return name_long;
+    }
+
+    public void setDesc_long(String desc_long) {
+        this.desc_long = desc_long;
+    }
+
+    public String getDesc_long() {
+        return desc_long;
     }
 }

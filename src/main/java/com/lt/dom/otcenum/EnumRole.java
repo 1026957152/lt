@@ -29,6 +29,26 @@ public enum EnumRole {
     ROLE_HEAD_OFFICE(" Voucher Redeemer"),
     ROLE_BRANCH(""),
     ROLE_BANK_STAFF(""),
+
+
+
+
+
+
+
+    //https://ordercloud.io/api-reference/authentication-and-authorization/security-profiles/list
+
+    FullAccess(""),
+    SupplierAdmin(""),
+    SupplierReader(""),
+    BuyerAdmin(""),
+    SecurityProfileAdmin(""),
+    SetSecurityProfile(""),
+            SecurityProfileReader(""),
+
+
+
+
     ;
 
 

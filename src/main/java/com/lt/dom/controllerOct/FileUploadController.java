@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * @Version since 1.0
  **/
 @RestController
-//@RequestMapping("/oct")
+@RequestMapping("/oct")
 
 public class FileUploadController {
     Logger logger = LoggerFactory.getLogger(FileUploadController.class);

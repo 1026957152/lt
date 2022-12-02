@@ -15,7 +15,33 @@ import java.util.List;
 public class Trip extends Base{
 
 
+    private String name_long;
+    private String desc_long;
+    private String desc_short;
 
+    public String getName_long() {
+        return name_long;
+    }
+
+    public void setName_long(String name_long) {
+        this.name_long = name_long;
+    }
+
+    public String getDesc_long() {
+        return desc_long;
+    }
+
+    public void setDesc_long(String desc_long) {
+        this.desc_long = desc_long;
+    }
+
+    public String getDesc_short() {
+        return desc_short;
+    }
+
+    public void setDesc_short(String desc_short) {
+        this.desc_short = desc_short;
+    }
 
     private String name;
     private Boolean is_deleted;//Trip was soft deleted and should not be displayed.

@@ -427,6 +427,392 @@ public class MenuRestController {
 
 
 
+
+
+        MenuResp menuResp_bookingservice =new MenuResp("/bookingservice",true,"/bookingservice/index",
+                "Bookingservice",
+                new MenuResp.Meta( "预约服务管理", "el-icon-film",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                ),true
+        );
+
+        menuResp_bookingservice.getChildren().add(new MenuResp("/bookingservice/index","IndexBookingservice",
+                new MenuResp.Meta( "服务列表", "el-icon-coordinate",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+        menuResp_bookingservice.getChildren().add(new MenuResp("/bookingservice/edit",true,"EditBookingservice",
+                new MenuResp.Meta( "编辑预约服务", "el-icon-coordinate",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+        menuResp_bookingservice.getChildren().add(new MenuResp("/bookingresource/index","IndexBookingresource",
+                new MenuResp.Meta( "资源列表", "el-icon-film",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_bookingservice));
+
+
+
+
+        MenuResp menuResp_bulkissuances =new MenuResp("/bulkissuances",true,"/bulkissuances",
+                "Bulkissuances",
+                new MenuResp.Meta( "城市主人卡管理", "el-icon-files",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                ),true
+        );
+
+        menuResp_bulkissuances.getChildren().add(new MenuResp("/passes/index","IndexPasses",
+                new MenuResp.Meta( "卡列表", "el-icon-copy-document",Arrays.asList("ROLE_ADMIN"))
+        ));
+        menuResp_bulkissuances.getChildren().add(new MenuResp("/bulkissuances/index","IndexBulkissuances",
+                new MenuResp.Meta( "批量卡列表","el-icon-files", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+        menuResp_bulkissuances.getChildren().add(new MenuResp("/bookingresource/detail",true,"DetailBulkissuances",
+                new MenuResp.Meta( "批量卡详情", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_bulkissuances));
+
+
+
+
+
+
+        MenuResp menuResp_invoice =new MenuResp("/invoice",true,"/Invoice",
+                "Bulkissuances",
+                new MenuResp.Meta( "发票管理", "el-icon-menu",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                ),true
+        );
+
+        menuResp_invoice.getChildren().add(new MenuResp("/invoice/index","IndexInvoice",
+                new MenuResp.Meta( "票据管理", "el-icon-menu",Arrays.asList("ROLE_ADMIN"))
+        ));
+        menuResp_invoice.getChildren().add(new MenuResp("/invoice/detail",true,"DetailInvoice",
+                new MenuResp.Meta( "发票详情","el-icon-menu", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_invoice));
+
+
+
+
+        MenuResp menuResp_subscribe =new MenuResp("/subscribe",true,"/Invoice",
+                "Subscribe",
+                new MenuResp.Meta( "订阅管理", "el-icon-menu",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                ),true
+        );
+
+        menuResp_subscribe.getChildren().add(new MenuResp("/subscribe/index","IndexSubscribe",
+                new MenuResp.Meta( "订阅列表", "el-icon-menu",Arrays.asList("ROLE_ADMIN"))
+        ));
+        menuResp_subscribe.getChildren().add(new MenuResp("/subscribe/detail",true,"DetailSubscribe",
+                new MenuResp.Meta( "订阅详情","el-icon-menu", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_subscribe));
+
+
+
+
+
+
+
+
+        MenuResp menuResp_market =new MenuResp("/market",true,
+                "Market",
+                new MenuResp.Meta( "市场管理", "el-icon-s-flag",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                ),true
+        );
+
+        menuResp_market.getChildren().add(new MenuResp("/invitations/index","IndexInvitations",
+                new MenuResp.Meta( "邀请列表", "el-icon-thumb",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+        menuResp_market.getChildren().add(new MenuResp("/market/product/index",true,"MarketIndexProduct",
+                new MenuResp.Meta( "产品列表","el-icon-menu", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+
+        menuResp_market.getChildren().add(new MenuResp("/market/product/detail",true,"MarketDetailProduct",
+                new MenuResp.Meta( "产品详情", "el-icon-s-order",Arrays.asList("ROLE_ADMIN"))
+        ));
+        menuResp_market.getChildren().add(new MenuResp("/partners/index","IndexPartners",
+                new MenuResp.Meta( "合作方列表","el-icon-s-flag", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+
+        menuResp_market.getChildren().add(new MenuResp("/partners/detail",true,"DetailPartners",
+                new MenuResp.Meta( "合作方详情", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"))
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_market));
+
+
+
+
+
+
+
+        MenuResp menuResp_user =new MenuResp("/user",
+                "User",
+                new MenuResp.Meta( "用户管理", "el-icon-user-solid",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                )
+        );
+
+        menuResp_user.getChildren().add(new MenuResp("/user/index","IndexUser",
+                new MenuResp.Meta( "用户列表", "el-icon-user-solid",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+        menuResp_user.getChildren().add(new MenuResp("/user/detail",true,"DetailUser",
+                new MenuResp.Meta( "用户详情","el-icon-user-solid", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_user));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        MenuResp menuResp_order =new MenuResp("/order",
+                "Order",
+                new MenuResp.Meta( "订单管理", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                )
+        );
+        menuResp_order.getChildren().add(new MenuResp("/bookingtour/index",true,"IndexBookingtour",
+                new MenuResp.Meta( "团订单列表","el-icon-s-order", Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"))
+        ));
+
+
+
+        menuResp_order.getChildren().add(new MenuResp("/bookingtour/detail",true,"DetailBookingtour",
+                new MenuResp.Meta( "团订单详情", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"),true)
+        ));
+
+
+            menuResp_order.getChildren().add(new MenuResp("/booking/index","IndexBooking",
+                new MenuResp.Meta( "订单列表", "el-icon-s-order",Arrays.asList("ROLE_ADMIN"))
+        ));
+
+
+
+
+
+            menuResp_order.getChildren().add(new MenuResp("/booking/detail",true,"DetailBooking",
+                new MenuResp.Meta( "订单详情", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+            menuResp_order.getChildren().add(new MenuResp("/order/redemption","IndexRedemption",
+                new MenuResp.Meta( "核销记录","el-icon-document", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+
+
+
+        menuResp_order.getChildren().add(new MenuResp("/order/redemption","IndexRedemption",
+                new MenuResp.Meta( "订阅列表","el-icon-document", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+
+
+        menuResp_order.getChildren().add(new MenuResp("/order/create",true,"CreateOrder",
+                new MenuResp.Meta("下单领券", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+
+        menuResp_order.getChildren().add(new MenuResp("/voucher/index","IndexVoucher",
+                new MenuResp.Meta( "券列表", "el-icon-s-ticket",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"))
+        ));
+
+        menuResp_order.getChildren().add(new MenuResp("/voucher/detail",true,"DetailVoucher",
+                new MenuResp.Meta( "券详情", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT")),
+                true
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_order));
+
+
+
+
+
+
+
+
+        MenuResp menuResp_thirdplatform =new MenuResp("/thirdplatform",
+                "Order",
+                new MenuResp.Meta( "第三方平台", "el-icon-user-solid",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                )
+        );
+
+        menuResp_thirdplatform.getChildren().add(new MenuResp("/thirdplatform/index","IndexThirdplatform",
+                new MenuResp.Meta( "第三方平台", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+        menuResp_thirdplatform.getChildren().add(new MenuResp("/thirdplatform/product/index","IndexThirdplatformProduct",
+                new MenuResp.Meta( "产品列表","el-icon-s-order", Arrays.asList("ROLE_ADMIN"))
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_thirdplatform));
+
+
+
+
+
+
+
+
+
+        MenuResp menuResp_blog =new MenuResp("/blog",
+                "Blog",
+                new MenuResp.Meta( "社区与文案", "el-icon-s-opportunity",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                )
+        );
+
+        menuResp_blog.getChildren().add(new MenuResp("/blog/index","IndexBlog",
+                new MenuResp.Meta( "文案列表", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+        menuResp_blog.getChildren().add(new MenuResp("/blog/post",true,"PostBlog",
+                new MenuResp.Meta( "文案详情", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+
+
+        menuResp_blog.getChildren().add(new MenuResp("/community/index","IndexCommunity",
+                new MenuResp.Meta( "社区列表", "el-icon-s-opportunity",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+        menuResp_blog.getChildren().add(new MenuResp("/community/post",true,"PostBlog",
+                new MenuResp.Meta( "PostCommunity", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_blog));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        MenuResp menuResp_export =new MenuResp("/export");
+
+            menuResp_export.getChildren().add(new MenuResp("/export/index","IndexExport",
+                new MenuResp.Meta( "导出", "el-icon-upload",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT","ROLE_MERCHANT","ROLE_TRAVEL_AGENCY"))
+        ));
+
+
+        menuRespList.addAll(Arrays.asList(menuResp_export));
+
+
+
+
+
+
+        MenuResp menuResp_statistics =new MenuResp("/statistics",
+                "Statistics",
+                new MenuResp.Meta( "统计数据", "el-icon-s-data",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                )
+        );
+
+        menuResp_statistics.getChildren().add(new MenuResp("/statistics/index","IndexStatistics",
+                new MenuResp.Meta( "统计数据", "el-icon-s-data",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+
+
+        menuRespList.addAll(Arrays.asList(menuResp_statistics));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        MenuResp menuResp_settings =new MenuResp("/settings",
+                "Xtsettings",
+                new MenuResp.Meta( "系统设置", "el-icon-setting",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                )
+        );
+
+
+
+        menuResp_settings.getChildren().add(new MenuResp("/roles/index","IndexBroles",
+                new MenuResp.Meta( "角色列表", "el-icon-user-solid",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+
+
+
+        menuResp_settings.getChildren().add(new MenuResp("/roles/edit",true,"EditBroles",
+                new MenuResp.Meta( "编辑角色", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+
+
+
+
+
+
+        menuResp_settings.getChildren().add(new MenuResp("/settings/index","IndexXtsettings",
+                new MenuResp.Meta( "系统设置", "el-icon-setting",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+
+
+
+
+        menuResp_settings.getChildren().add(new MenuResp("/valuelist/index","IndexValuelist",
+                new MenuResp.Meta( "组列表", "el-icon-film",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+
+
+
+        menuResp_settings.getChildren().add(new MenuResp("/valuelist/edit",true,"EditValuelist",
+                new MenuResp.Meta( "编辑组", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+
+
+
+        menuResp_settings.getChildren().add(new MenuResp("/valuelist/create","CreateValuelist",
+                new MenuResp.Meta( "添加组", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+
+
+        menuResp_settings.getChildren().add(new MenuResp("/attachment/index","IndexAttachment",
+                new MenuResp.Meta( "附件管理","el-icon-folder-opened", Arrays.asList("ROLE_ADMIN"))
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_settings));
+
+
+
+
+
+
+
+
         return menuRespList;//Arrays.asList(menuResp,menuResp_settings,menuResp_roles,menuResp_campaigns);
 
     }

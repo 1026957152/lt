@@ -14,6 +14,11 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MenuResp {
 
+    public MenuResp(String s) {
+        this.children = new ArrayList<>();
+        this.name = s;
+    }
+
     public Boolean getNoCache() {
         return noCache;
     }
@@ -38,15 +43,17 @@ public class MenuResp {
         this.path = path;
         this.name = name;
         this.meta = meta;
+        this.children = new ArrayList<>();
     }
     public MenuResp(String path, String re,String name, Meta meta) {
         this.path = path;
         this.redirect = re;
         this.name = name;
         this.meta = meta;
+        this.children = new ArrayList<>();
     }
     public MenuResp() {
-
+        this.children = new ArrayList<>();
 
     }
     public MenuResp(String path,boolean hidden, String name, Meta meta) {
@@ -55,6 +62,7 @@ public class MenuResp {
 
         this.name = name;
         this.meta = meta;
+        this.children = new ArrayList<>();
     }
 
     public MenuResp(String path,boolean hidden, String redirect,String name, Meta meta) {
@@ -64,6 +72,7 @@ public class MenuResp {
 
         this.name = name;
         this.meta = meta;
+        this.children = new ArrayList<>();
     }
     public MenuResp(String path,boolean hidden, String redirect,String name, Meta meta,Boolean noCache) {
         this.path = path;
@@ -73,6 +82,7 @@ public class MenuResp {
         this.name = name;
         this.meta = meta;
         this.noCache = noCache;
+        this.children = new ArrayList<>();
     }
     public MenuResp(String path,boolean hidden,String name, Meta meta,Boolean noCache) {
         this.path = path;
@@ -82,6 +92,7 @@ public class MenuResp {
         this.name = name;
         this.meta = meta;
         this.noCache = noCache;
+        this.children = new ArrayList<>();
     }
     public static MenuResp from(EnumMenu root,boolean isLeaf) {
         MenuResp menuResp = new MenuResp();
@@ -157,6 +168,21 @@ public class MenuResp {
         public Meta(String title, boolean noCache) {
             this.title = title;
             this.noCache = noCache;
+        }
+
+
+        public Meta(String title, List<String> roles,Boolean noCache) {
+            this.title = title;
+
+            this.roles = roles;
+            this.noCache = true;
+        }
+
+        public Meta(String title, List<String> roles) {
+            this.title = title;
+
+            this.roles = roles;
+
         }
 
         public static Meta from(EnumMenu.Meta meta) {

@@ -80,8 +80,9 @@ spring:
     hibernate.ddl-auto: update #create-drop
 #    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
 
-  #mvc:
- #   static-path-pattern: /oct/files/**
+  mvc:
+    static-path-pattern: /oct/**
+    #/oct/files/**
 
   web:
     resources:
@@ -145,16 +146,56 @@ wxpay:
 
 
 
+
+
+
+
+# 服务商 AppID
+wxmerchant_wxpay:
+  app_id: wx56e4655ed33d5eca
+  # 商户号
+  mch_id: 1630279599
+  # 子商户号
+  sub_mch_id: 1326370001
+  # 商户的 key（私钥）
+  key: bitqqf8cie5mia20fb0yugc3m715v2eo
+  # 证书地址
+  cert_path: C:\\Users\\1\\IdeaProjects\\lt\\src\\main\\resources\\apiclient_cert.p12
+  # API 支付请求地址
+  pay_url: https://api.mch.weixin.qq.com/pay/unifiedorder
+  # API 查询请求地址
+  query_url: https://api.mch.weixin.qq.com/pay/orderquery
+  # package
+  package_value: Sign=WXPay
+
+
+  # 回调地址
+  tenpay_order_callback: http://yulinmei.cn:8080/oct/xxxxxx
+  # 交易类型
+  trade_type_app: JSAPI
+  #APP
+
+  refundNotifyUrl: http://39.106.34.220:8080/oct/wechat/pay/refund_notify
+
+
+
+
+
+
+
 wx:
   app_id: wx626ed6460e6dd971
   secret: 1f3055e00adf20e81f54d87b174a2b70
   app: wxada5ab1a8c131d85
   sec: bdde4cd0c7eff399037992a53dba9826
 
+  lbs_key: H5BBZ-4Q5CX-THQ4S-7R2GW-4B4ME-NRBLJ
+
 wxmerchant:
   app_id: wx56e4655ed33d5eca
   secret: 6304bf22f38b3bb4432eafb96be809f6
 
+  lbs_key: 7GGBZ-KJ6LD-PEG4M-HBN4Q-IGDUO-LVFXW
 
 jwt:
   secret: 123

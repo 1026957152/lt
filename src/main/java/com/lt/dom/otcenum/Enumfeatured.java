@@ -1,35 +1,38 @@
 package com.lt.dom.otcenum;
+
+import com.lt.dom.config.Constants;
+
 //https://pic.c-ctrip.com/pic/platform/bbz/h5/h5home/v1/nav/main/flight_package.png
 public enum Enumfeatured {
 
     city_hero("城市主人卡","周边有",
-            "http://yulinmei.cn:8080/oct/files/hero.png","icon"),
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/hero.png","icon"),
     city_pass("榆林PASS","周边有",
-            "http://yulinmei.cn:8080/oct/files/citypass.png","icon"),
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/citypass.png","icon"),
     tours("线路旅游","周边有",
-            "http://yulinmei.cn:8080/oct/files/tours.png","icon"),
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/tours.png","icon"),
 
 
     activity("活动","周边有",
-            "http://yulinmei.cn:8080/oct/files/activity.jpg","icon"),
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/activity.jpg","icon"),
     rentcars("租车服务","周边有",
-            "http://yulinmei.cn:8080/oct/files/rentcar.png","icon"),
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/rentcar.png","icon"),
     导游("导游服务","周边有",
             "https://pic.c-ctrip.com/pic/platform/bbz/h5/h5home/v1/nav/main/weekend.png","icon"),
     bigdata("文旅大数据","周边有",
-            "http://yulinmei.cn:8080/oct/files/bigdata.png","icon"),
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/bigdata.png","icon"),
 
 
     City_walk("City walk","周边有",
-            "http://yulinmei.cn:8080/oct/files/walk.png","icon"),
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/walk.png","icon"),
 
     线上博物馆("线上博物馆","周边有",
-            "http://yulinmei.cn:8080/oct/files/广东省博物馆.png","icon"),
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/广东省博物馆.png","icon"),
     信用榆林("信用榆林","周边有",
-            "http://yulinmei.cn:8080/oct/files/信用榆林.png","icon"),
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/信用榆林.png","icon"),
 
     驼城小易("驼城小易","驼城小易",
-            "http://yulinmei.cn:8080/oct/files/bus.png","icon"),
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/bus.png","icon"),
 
     ;
 

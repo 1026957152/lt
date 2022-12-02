@@ -34,27 +34,54 @@ public class TripServiceImpl {
         theatre.setName(theatreReq.getName());
 
         theatre.setSupplier(supplier.getId());
+        theatre.setName_long(theatreReq.getName_long());
+        theatre.setDesc_short(theatreReq.getDesc_short());
+        theatre.setDesc_long(theatreReq.getDesc_long());
 
-
-        theatre.setName(supplier.getName());
         theatre.setCode(idGenService.tripCode());
         theatre.setDay_count(theatreReq.getDay_count());
         theatre.setEnds_on(theatreReq.getEnds_on());
         theatre.setStarts_on(theatreReq.getStarts_on());
-
+        theatre.setPrivacy_level(theatreReq.getPrivacy_level());
 
         theatre = tripRepository.save(theatre);
 
 
+        if(theatreReq.getTripCover()!=null){
 
+            fileStorageService.updateFromTempDocument(theatre.getCode(),theatreReq.getTripCover(), EnumDocumentType.trip_cover);
+
+        }
 
         return theatre;
 
 
     }
 
-    public Trip update(Trip supplier, TripReq tripReq) {
-        return supplier;
+    public Trip update(Trip theatre, TripReq theatreReq) {
+
+        theatre.setName(theatreReq.getName());
+
+
+
+        theatre.setDay_count(theatreReq.getDay_count());
+        theatre.setEnds_on(theatreReq.getEnds_on());
+        theatre.setStarts_on(theatreReq.getStarts_on());
+
+        theatre.setPrivacy_level(theatreReq.getPrivacy_level());
+
+        theatre.setName_long(theatreReq.getName_long());
+        theatre.setDesc_short(theatreReq.getDesc_short());
+        theatre.setDesc_long(theatreReq.getDesc_long());
+
+        theatre = tripRepository.save(theatre);
+
+        if(theatreReq.getTripCover()!=null){
+
+            fileStorageService.updateFromTempDocument(theatre.getCode(),theatreReq.getTripCover(), EnumDocumentType.trip_cover);
+
+        }
+        return theatre;
     }
 
 

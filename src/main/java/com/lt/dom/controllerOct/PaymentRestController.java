@@ -7,6 +7,7 @@ import com.github.wxpay.sdk.WXPayUtil;
 
 
 import com.google.gson.Gson;
+import com.lt.dom.config.WxConfig;
 import com.lt.dom.config.WxPayConfig;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
@@ -48,6 +49,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @RequestMapping("/oct")
 public class PaymentRestController {
 
+
+    @Autowired
+    private WxConfig wxConfig;
     Logger logger = LoggerFactory.getLogger(PaymentRestController.class);
 
     @Autowired
@@ -283,7 +287,7 @@ public class PaymentRestController {
 
           MyConfig wxPayConfig = null;
           try {
-              wxPayConfig = new MyConfig();
+              wxPayConfig = new MyConfig(wxConfig);
           } catch (Exception e) {
               e.printStackTrace();
           }

@@ -21,10 +21,13 @@ public class CategoryResp {
 
     private List<PhotoResp> images;
     private PhotoResp icon;
+    private String keyword;
 
     public static CategoryResp simpleFrom(Category e) {
         CategoryResp categoryResp = new CategoryResp();
         categoryResp.setTitle(e.getName());
+        categoryResp.setKeyword(e.getName());
+
         categoryResp.setParent_category_id(e.getParent_category_id());
         return categoryResp;
     }
@@ -68,5 +71,13 @@ public class CategoryResp {
 
     public PhotoResp getIcon() {
         return icon;
+    }
+
+    public void setKeyword(String keyword) {
+        this.keyword = keyword;
+    }
+
+    public String getKeyword() {
+        return keyword;
     }
 }

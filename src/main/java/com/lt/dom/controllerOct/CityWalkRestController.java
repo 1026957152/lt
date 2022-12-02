@@ -380,14 +380,16 @@ public class CityWalkRestController {
     }
 
 
+
+
+
+
     @GetMapping(value = "/citywalks/{CityWalk_ID}", produces = "application/json")
     public EntityModel<CityWalkResp> getCityWalk(@PathVariable long CityWalk_ID) {
 
         Optional<CityWalk> validatorOptional = cityWalkRepository.findById(CityWalk_ID);
         if(validatorOptional.isEmpty()){
-
             throw new BookNotFoundException(Enumfailures.not_found,"找不到产品");
-
         }
 
 

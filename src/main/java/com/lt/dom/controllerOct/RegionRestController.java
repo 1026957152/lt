@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -280,7 +281,18 @@ public class RegionRestController {
 
         museumResp.setCategories(bookingRuleList.stream().map(e->{
             CategoryResp categoryResp = CategoryResp.simpleFrom(e);
-            categoryResp.setIcon(fileStorageService.loadDocumentWithDefault(EnumDocumentType.category_icon,e.getCode()));
+
+
+            if(e.getCategory()!= null){
+                PhotoResp photoResp = new PhotoResp();
+                photoResp.setUrl(e.getCategory().getFeature_image());
+                categoryResp.setIcon(photoResp);
+
+            }else{
+                categoryResp.setIcon(fileStorageService.loadDocumentWithDefault(EnumDocumentType.category_icon,e.getCode()));
+
+            }
+
 
             EntityModel entityModel = EntityModel.of(categoryResp);
             entityModel.add(linkTo(methodOn(SearchRestController.class).Page_searchProduct(EnumUrlSourceType.search)).withRel("Page_searchProduct"));

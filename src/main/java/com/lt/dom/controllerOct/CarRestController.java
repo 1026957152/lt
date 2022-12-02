@@ -20,11 +20,13 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -77,12 +79,109 @@ public class CarRestController {
     @Autowired
     private CarRepository carRepository
             ;
+    @Autowired
+    private AddressRepository addressRepository
+            ;
 
     @Autowired
     private FileStorageServiceImpl fileStorageService;
     @Autowired
     private AttributeRepository attributeRepository;
 
+
+
+
+
+
+
+    @GetMapping(value = "/Page_car_nearby", produces = "application/json")
+    public EntityModel<CityWalkResp> Page_car_nearby() {
+
+
+
+        List<Car> wayPoints = carRepository.findAll();
+
+        CityWalkResp cityWalkResp = CityWalkResp.from();
+
+
+        cityWalkResp.setWay_points(IntStream.range(0,wayPoints.size()).mapToObj(i->{
+
+            Car e = wayPoints.get(i);
+
+            CarResp wayPointResp = CarResp.of(e);
+
+
+            wayPointResp.setCarFeatures(e.getFeatures().stream().map(feature->{
+                CarFeatureResp carFeatureResp = CarFeatureResp.from(feature);
+                return carFeatureResp;
+            }).collect(Collectors.toList()));
+
+
+            Optional<Address> optionalAddress = addressRepository.findById(48l);
+            if(optionalAddress.isPresent()){
+
+                Address address = optionalAddress.get();
+                address.setLongitude(address.getLongitude()+random(0,1,1).doubleValue()/100);
+                address.setLatitude(address.getLatitude()+random(0,1,1).doubleValue()/100);
+                wayPointResp.setLocation(LocationResp.latLngFrom(address));
+            }
+
+
+
+            wayPointResp.setNearby(Map.of("location","榆阳区镇北台孵化基地",
+                    "time","12:32PM（最多20分钟）"));
+
+
+            wayPointResp.setRenter(Map.of("name","招远",
+                    "phone","13468801683","type","司机",
+                    "avatar",fileStorageService.loadDocumentWithDefault(EnumDocumentType.car_photo,e.getCode())));
+            wayPointResp.setNearby_distance(1f);
+
+            wayPointResp.setNearby_time(1);
+            wayPointResp.setNearby_distance(1f);
+
+
+            EntityModel entityModel = EntityModel.of(wayPointResp);
+
+            wayPointResp.setPhoto(fileStorageService.loadDocumentWithDefault(EnumDocumentType.car_photo,e.getCode()));
+            wayPointResp.setBrand_logo(fileStorageService.loadDocumentWithDefault(EnumDocumentType.car_brand_logo,e.getCode()));
+
+            return entityModel;
+        }).collect(Collectors.toList()));
+
+        EntityModel entityModel = EntityModel.of(cityWalkResp);
+
+        return entityModel;
+
+    }
+
+
+    public static void main(String[] args) {
+        test1(0,1,1);
+    }
+
+    /**
+     * 生成两个整数之间的随机小数
+     * @param min   最小值
+     * @param max   最大值
+     * @param num   保留小数点位数
+     */
+    public static void test1(int min, int max,int num){
+        Runnable a = () -> {
+            System.out.println(new BigDecimal(min+Math.random()*(max-min)).setScale(num,BigDecimal.ROUND_HALF_UP));
+        };
+        int i = 0;
+        while (i<100){
+            new Thread(a).start();
+            i++;
+        }
+    }
+
+    public static BigDecimal random(int min, int max,int num){
+
+        return new BigDecimal(min+Math.random()*(max-min)).setScale(num,BigDecimal.ROUND_HALF_UP);
+
+    }
 
 
     @GetMapping(value = "/Page_cars", produces = "application/json")
@@ -212,6 +311,14 @@ public class CarRestController {
         return assembler.toModel(bookingRuleList.map(e->{
 
             CarResp carResp = CarResp.of(e);
+
+
+            carResp.setCarFeatures(e.getFeatures().stream().map(feature->{
+                CarFeatureResp carFeatureResp = CarFeatureResp.from(feature);
+                return carFeatureResp;
+            }).collect(Collectors.toList()));
+
+
             carResp.setPhoto(fileStorageService.loadDocumentWithDefault(EnumDocumentType.car_photo,e.getCode()));
             carResp.setBrand_logo(fileStorageService.loadDocumentWithDefault(EnumDocumentType.car_brand_logo,e.getCode()));
 

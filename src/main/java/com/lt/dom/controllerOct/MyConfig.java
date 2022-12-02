@@ -3,6 +3,7 @@ package com.lt.dom.controllerOct;
 import com.github.wxpay.sdk.IWXPayDomain;
 import com.github.wxpay.sdk.WXPayConfig;
 import com.github.wxpay.sdk.WXPayConstants;
+import com.lt.dom.config.WxConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,10 +12,14 @@ import java.io.*;
 @Component
 public class MyConfig extends WXPayConfig {
 
+
+
     // 商户号
     @Value("${wxpay.cert_path}")
     private String certPath;
 
+
+    private WxConfig wxConfig;
     private byte[] certData;
 
     public MyConfig() throws Exception {
@@ -26,16 +31,35 @@ public class MyConfig extends WXPayConfig {
         certStream.close();
     }
 
+    public MyConfig(WxConfig wxConfig) throws Exception  {
+        this.wxConfig =  wxConfig;
+
+        String certPath =wxConfig.getWxpaycertPath();// ="C:\\Users\\1\\IdeaProjects\\lt\\src\\main\\resources\\apiclient_cert.p12";// "E:\\work\\dom\\src\\main\\resources\\apiclient_cert.p12";
+        File file = new File(certPath);
+        InputStream certStream = new FileInputStream(file);
+        this.certData = new byte[(int) file.length()];
+        certStream.read(this.certData);
+        certStream.close();
+        this.wxConfig =  wxConfig;
+    }
+
     public String getAppID() {
-        return "wx626ed6460e6dd971";
+
+        return wxConfig.getAppId();
+        //return "wx626ed6460e6dd971";
     }
 
     public String getMchID() {
-        return "1630279599";
+
+        return wxConfig.getWxpaymch_id();
+
+       // return "1630279599";
     }
 
     public String getKey() {
-        return "bitqqf8cie5mia20fb0yugc3m715v2eo";
+        return wxConfig.getWxpaykey();
+
+      //  return "bitqqf8cie5mia20fb0yugc3m715v2eo";
     }
 
     public InputStream getCertStream() {
