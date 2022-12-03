@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -59,6 +60,12 @@ public class UserServiceImpl {
     public User userAuth(User finalUser, List<Pair<EnumIdentityType,String>> enumIdentityTypes) {
 
 
+        enumIdentityTypes = enumIdentityTypes.stream().filter(e->{
+            Optional<UserAuthority> userAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(e.getValue0(),e.getValue1());
+
+            return userAuthority.isEmpty();
+
+        }).collect(Collectors.toList());
 
         enumIdentityTypes.forEach(x->{
             UserAuthority userAuthority = new UserAuthority();
