@@ -127,7 +127,7 @@ wxpay:
   # 商户的 key（私钥）
   key: bitqqf8cie5mia20fb0yugc3m715v2eo
   # 证书地址
-  cert_path: C:\\Users\\1\\IdeaProjects\\lt\\src\\main\\resources\\apiclient_cert.p12
+  cert_path: src\\main\\resources\\apiclient_cert.p12
   # API 支付请求地址
   pay_url: https://api.mch.weixin.qq.com/pay/unifiedorder
   # API 查询请求地址
@@ -145,38 +145,38 @@ wxpay:
   refundNotifyUrl: http://39.106.34.220:8080/oct/wechat/pay/refund_notify
 
 
-
-
-
-
-
-# 服务商 AppID
-wxmerchant_wxpay:
-  app_id: wx56e4655ed33d5eca
-  # 商户号
-  mch_id: 1630279599
-  # 子商户号
-  sub_mch_id: 1326370001
-  # 商户的 key（私钥）
-  key: bitqqf8cie5mia20fb0yugc3m715v2eo
-  # 证书地址
-  cert_path: C:\\Users\\1\\IdeaProjects\\lt\\src\\main\\resources\\apiclient_cert.p12
-  # API 支付请求地址
-  pay_url: https://api.mch.weixin.qq.com/pay/unifiedorder
-  # API 查询请求地址
-  query_url: https://api.mch.weixin.qq.com/pay/orderquery
-  # package
-  package_value: Sign=WXPay
-
-
-  # 回调地址
-  tenpay_order_callback: http://yulinmei.cn:8080/oct/xxxxxx
-  # 交易类型
-  trade_type_app: JSAPI
-  #APP
-
-  refundNotifyUrl: http://39.106.34.220:8080/oct/wechat/pay/refund_notify
-
+#
+#
+#
+#
+#
+## 服务商 AppID
+#wxmerchant_wxpay:
+#  app_id: wx56e4655ed33d5eca
+#  # 商户号
+#  mch_id: 1630279599
+#  # 子商户号
+#  sub_mch_id: 1326370001
+#  # 商户的 key（私钥）
+#  key: bitqqf8cie5mia20fb0yugc3m715v2eo
+#  # 证书地址
+#  cert_path: C:\\Users\\1\\IdeaProjects\\lt\\src\\main\\resources\\apiclient_cert.p12
+#  # API 支付请求地址
+#  pay_url: https://api.mch.weixin.qq.com/pay/unifiedorder
+#  # API 查询请求地址
+#  query_url: https://api.mch.weixin.qq.com/pay/orderquery
+#  # package
+#  package_value: Sign=WXPay
+#
+#
+#  # 回调地址
+#  tenpay_order_callback: http://yulinmei.cn:8080/oct/xxxxxx
+#  # 交易类型
+#  trade_type_app: JSAPI
+#  #APP
+#
+#  refundNotifyUrl: http://39.106.34.220:8080/oct/wechat/pay/refund_notify
+#
 
 
 
