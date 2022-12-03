@@ -60,6 +60,8 @@ public class IndexController {
 
 
 
+
+
     @Autowired
     private AttractionRepository attractionRepository;
     @Autowired
