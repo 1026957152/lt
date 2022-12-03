@@ -22,6 +22,7 @@ public class MyConfig extends WXPayConfig {
     private WxConfig wxConfig;
     private byte[] certData;
 
+/*
     public MyConfig() throws Exception {
    String certPath ="C:\\Users\\1\\IdeaProjects\\lt\\src\\main\\resources\\apiclient_cert.p12";// "E:\\work\\dom\\src\\main\\resources\\apiclient_cert.p12";
         File file = new File(certPath);
@@ -30,6 +31,7 @@ public class MyConfig extends WXPayConfig {
         certStream.read(this.certData);
         certStream.close();
     }
+*/
 
     public MyConfig(WxConfig wxConfig) throws Exception  {
         this.wxConfig =  wxConfig;

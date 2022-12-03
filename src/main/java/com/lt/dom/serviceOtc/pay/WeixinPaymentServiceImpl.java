@@ -3,6 +3,7 @@ package com.lt.dom.serviceOtc.pay;
 
 import com.github.wxpay.sdk.WXPay;
 import com.google.gson.Gson;
+import com.lt.dom.config.WxConfig;
 import com.lt.dom.controllerOct.MyConfig;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.Campaign_inactiveException;
@@ -33,7 +34,8 @@ import java.util.stream.Collectors;
 public class WeixinPaymentServiceImpl {
 
     org.slf4j.Logger logger = LoggerFactory.getLogger(WeixinPaymentServiceImpl.class);
-
+    @Autowired
+    private WxConfig wxConfig;
     @Autowired
     private IdGenServiceImpl idGenService;
 
@@ -94,7 +96,7 @@ public class WeixinPaymentServiceImpl {
 
         MyConfig wxPayConfig = null;
         try {
-            wxPayConfig = new MyConfig();
+            wxPayConfig = new MyConfig(wxConfig);
         } catch (Exception e) {
             e.printStackTrace();
         }

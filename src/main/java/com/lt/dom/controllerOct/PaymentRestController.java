@@ -435,7 +435,7 @@ public class PaymentRestController {
 
                 MyConfig wxPayConfig = null;
                 try {
-                    wxPayConfig = new MyConfig();
+                    wxPayConfig = new MyConfig(wxConfig);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

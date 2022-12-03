@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.lt.dom.OctResp.ProductResp;
 import com.lt.dom.OctResp.WindowTicketResp;
 import com.lt.dom.OctResp.WxPayOrderQueryResultResp;
+import com.lt.dom.config.WxConfig;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.WindowsTicketBookingPojo;
@@ -44,7 +45,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class WindowTicketRestController {
 
     Logger logger = LoggerFactory.getLogger(WeixinPaymentServiceImpl.class);
-
+    @Autowired
+    private WxConfig wxConfig;
     @Autowired
     private ProductRepository productRepository;
 
@@ -467,7 +469,7 @@ public class WindowTicketRestController {
 
         MyConfig wxPayConfig = null;
         try {
-            wxPayConfig = new MyConfig();
+            wxPayConfig = new MyConfig(wxConfig);
         } catch (Exception e) {
             e.printStackTrace();
         }
