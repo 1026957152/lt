@@ -133,8 +133,7 @@ public class EmpowerRestController {
         ///     POST https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=ACCESS_TOKEN
         Token accessToken = null;
         if(code.getType() == 2){
-            accessToken = CommonUtil.getToken(wxConfig.getWxmerchant_appId(), wxConfig.getWxmerchant_secret());
-        }else{
+
             accessToken = CommonUtil.getToken(wxConfig.getAppId(), wxConfig.getSecret());
 
         }
