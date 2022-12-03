@@ -16,17 +16,16 @@ camunda.bpm.client.base-url: http://localhost:8080/engine-rest
 queue:
   name: teste
 
-server:
-  port: 8080
 
-#server:
-#  port: 443
-#  http.port: 80
-#  ssl:
-#    key-store: src/main/resources/ssl/springboot_letsencrypt.p12
-#    key-store-password: 0912lt
-#    keyStoreType: PKCS12
-#    keyAlias: bootalias
+
+server:
+  port: 443
+  http.port: 80
+  ssl:
+    key-store: src/main/resources/ssl/springboot_letsencrypt.p12
+    key-store-password: 0912lt
+    keyStoreType: PKCS12
+    keyAlias: bootalias
 
 spring:
   rabbitmq:
