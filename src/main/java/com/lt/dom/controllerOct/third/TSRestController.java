@@ -1,27 +1,30 @@
 package com.lt.dom.controllerOct.third;
 
 import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.oct.Agent;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
-import com.lt.dom.serviceOtc.AuthenticationFacade;
-import com.lt.dom.serviceOtc.BlogServiceImpl;
-import com.lt.dom.serviceOtc.CommentServiceImpl;
-import com.lt.dom.serviceOtc.FileStorageServiceImpl;
+import com.lt.dom.serviceOtc.*;
 import com.lt.dom.thirdTS.EnumMethord;
 import com.lt.dom.thirdTS.LtToTsServiceImpl;
 import com.lt.dom.thirdTS.TsToLtServiceImpl;
 import com.lt.dom.thirdTS.domainLtToTs.*;
 import com.lt.dom.thirdTS.domainTsToLt.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/third")
 public class TSRestController {
+    Logger logger = LoggerFactory.getLogger(AgentServiceImpl.class);
 
     @Autowired
     private AuthenticationFacade authenticationFacade;
@@ -33,6 +36,10 @@ public class TSRestController {
     private FileStorageServiceImpl fileStorageService;
     @Autowired
     private CommentRepository commentRepository;
+
+
+    @Autowired
+    private AgentServiceImpl agentService;
     @Autowired
     private LtToTsServiceImpl ltToTsService;
     @Autowired
@@ -56,6 +63,8 @@ public class TSRestController {
     @PostMapping(value = "", produces = "application/json")
     public Object jk(@RequestBody TsReqLtBase tsReqLt产品列表) {
 
+
+
         System.out.println("dddddddddddd"+tsReqLt产品列表.toString());
         if(!tsReqLt产品列表.getFormat().equals("json")){
             throw new BookNotFoundException(Enumfailures.not_found,"请求 format 需要json 格式");
@@ -63,6 +72,22 @@ public class TSRestController {
         }
 
 
+        Optional<Agent> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
+
+
+        if(agentOptional.isEmpty()){
+
+            logger.info("天使同城接口调用， 找不到分销商id {}",tsReqLt产品列表.get_pid());
+            LtRespToTs下单接口 ltRespToTs产品列表 = new LtRespToTs下单接口();
+            ltRespToTs产品列表.setSuccess(false);
+            ltRespToTs产品列表.setMessage("找不到分销商id"+tsReqLt产品列表.get_pid());
+            return ltRespToTs产品列表;
+        }
+
+
+        Agent agent = agentOptional.get();
+        logger.info("天使同城接口调用 id {} 请求方法 {} 代理机构 {} 代理机构编码",tsReqLt产品列表.get_pid(),
+                tsReqLt产品列表.getMethod(),agent.getName(),agent.getCode());
 
 
 
@@ -74,7 +99,7 @@ public class TSRestController {
             TsReqLt产品列表 tsReqLt产品列表1 = (TsReqLt产品列表) tsReqLt产品列表;
 
             System.out.println("TsReqLt产品列表dddddddddddd"+tsReqLt产品列表1.toString());
-            LtRespToTs产品列表 ltRespToTs产品列表 = tsToLtService.getTsReqLt产品列表(tsReqLt产品列表1);
+            LtRespToTs产品列表 ltRespToTs产品列表 = tsToLtService.getTsReqLt产品列表(agent,tsReqLt产品列表1);
 
             return ltRespToTs产品列表;
         }
@@ -90,7 +115,7 @@ public class TSRestController {
                 if(tsReqLt产品列表.get_pid().equals("dddddd")){
                     throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
                 }
-                LtRespToTs下单接口.InfoDTO infoDTO  = tsToLtService.getTsReqLt下单接口(tsReqLt产品列表1);
+                LtRespToTs下单接口.InfoDTO infoDTO  = tsToLtService.getTsReqLt下单接口(agent,tsReqLt产品列表1);
                 LtRespToTs下单接口 ltRespToTs产品列表 = new LtRespToTs下单接口();
 
                 ltRespToTs产品列表.setInfo(infoDTO);
@@ -177,10 +202,26 @@ public class TSRestController {
     public LtRespToTs产品列表 item_list(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
 
 
+        Optional<Agent> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
+
+
+        if(agentOptional.isEmpty()){
+
+            logger.info("天使同城接口调用， 找不到分销商id {}",tsReqLt产品列表.get_pid());
+            LtRespToTs下单接口 ltRespToTs产品列表 = new LtRespToTs下单接口();
+            ltRespToTs产品列表.setSuccess(false);
+            ltRespToTs产品列表.setMessage("找不到分销商id"+tsReqLt产品列表.get_pid());
+            return null;//ltRespToTs产品列表;
+        }
+
+
+        Agent agent = agentOptional.get();
+
+
         if(tsReqLt产品列表.get_pid().equals("dddddd")){
             throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
         }
-        LtRespToTs产品列表 ltRespToTs产品列表 = tsToLtService.getTsReqLt产品列表(tsReqLt产品列表);
+        LtRespToTs产品列表 ltRespToTs产品列表 = tsToLtService.getTsReqLt产品列表(agent, tsReqLt产品列表);
 
         return ltRespToTs产品列表;
 
@@ -190,13 +231,26 @@ public class TSRestController {
     @PostMapping(value = "/item_orders", produces = "application/json")
     public LtRespToTs下单接口 item_orders(@RequestBody TsReqLt下单接口 tsReqLt产品列表) {
 
+        Optional<Agent> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
 
+
+        if(agentOptional.isEmpty()){
+
+            logger.info("天使同城接口调用， 找不到分销商id {}",tsReqLt产品列表.get_pid());
+            LtRespToTs下单接口 ltRespToTs产品列表 = new LtRespToTs下单接口();
+            ltRespToTs产品列表.setSuccess(false);
+            ltRespToTs产品列表.setMessage("找不到分销商id"+tsReqLt产品列表.get_pid());
+            return ltRespToTs产品列表;
+        }
+
+
+        Agent agent = agentOptional.get();
 
         try{
             if(tsReqLt产品列表.get_pid().equals("dddddd")){
                 throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
             }
-            LtRespToTs下单接口.InfoDTO infoDTO  = tsToLtService.getTsReqLt下单接口(tsReqLt产品列表);
+            LtRespToTs下单接口.InfoDTO infoDTO  = tsToLtService.getTsReqLt下单接口(agent, tsReqLt产品列表);
             LtRespToTs下单接口 ltRespToTs产品列表 = new LtRespToTs下单接口();
 
             ltRespToTs产品列表.setInfo(infoDTO);

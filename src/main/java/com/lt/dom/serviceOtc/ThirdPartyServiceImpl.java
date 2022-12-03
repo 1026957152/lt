@@ -144,7 +144,7 @@ public class ThirdPartyServiceImpl {
 
         List<Long> list = thirdParty.getProducts().stream().map(e->
                 e.getProduct().getId()).collect(Collectors.toList());
-        logger.error("第三方{}对接,目前产品有 ids {}",ts,list);
+        logger.info("第三方{}对接,目前产品有 ids {}",ts,list);
 
 
         Page<Product> optionalProduct = productRepository.findAllByIdIn(list,of);

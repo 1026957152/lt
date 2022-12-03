@@ -58,6 +58,11 @@ public class LineItem extends Base {
     private EnumLineItemCostType costType;
 
 
+  //  private Integer unitPrice;//
+
+
+
+
     @Enumerated(EnumType.STRING)
     private EnumDeliveryFormats deliveryFormats;
     private String metadata;

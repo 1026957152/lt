@@ -83,7 +83,7 @@ public class ProductAttraction {
     @Transient
     private Offer offer;
     @Transient
-    private PricingType pricingType;
+    private PricingRate pricingRate;
 
     @Transient
     private Supplier supplier;

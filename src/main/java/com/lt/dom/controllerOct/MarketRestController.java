@@ -3,7 +3,6 @@ package com.lt.dom.controllerOct;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
@@ -17,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -138,14 +136,14 @@ public class MarketRestController {
 
 
 
-            List<PricingType> pricingTypes = pricingTypeRepository.findByProductId(product.getId());
+            List<PricingRate> pricingRates = pricingTypeRepository.findByProductId(product.getId());
 
 
 
-            PricingType pricingType = pricingTypes.get(0);
-            productResp.setDefault_price(PricingTypeResp.from(pricingType));
+            PricingRate pricingRate = pricingRates.get(0);
+            productResp.setDefault_price(PricingTypeResp.from(pricingRate));
 
-            productResp.setPriceTypes(pricingTypes.stream().map(e->{
+            productResp.setPriceTypes(pricingRates.stream().map(e->{
 
                 PricingTypeResp pricingTypeResp = PricingTypeResp.from(e);
 

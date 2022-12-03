@@ -119,6 +119,7 @@ public enum EnumDocumentType {
     trip_cover("license_for_opening_bank_account"),
 
 
+    agent_logo("campaign_logo"),
 
     ;
 

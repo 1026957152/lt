@@ -1,6 +1,7 @@
 package com.lt.dom.controllerOct;
 
 
+import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.OctResp.PlaceResp;
 import com.lt.dom.OctResp.TripResp;
 import com.lt.dom.error.BookNotFoundException;
@@ -27,10 +28,7 @@ import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.TextStyle;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -251,6 +249,12 @@ public class TripRestController {
         }
         Trip Trip = validatorOptional.get();
         TripResp tripResp = TripResp.from(Trip);
+
+        tripResp.setItinerary(Arrays.asList().stream().map(e->{
+
+            return EntityModel.of("");
+        }).collect(Collectors.toList()));
+
         EntityModel entityModel = EntityModel.of(tripResp);
         entityModel.add(linkTo(methodOn(TripRestController.class).getTrip(Trip.getId())).withRel("createTrip"));
 

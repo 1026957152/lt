@@ -3,7 +3,7 @@ package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.oct.PricingType;
+import com.lt.dom.oct.PricingRate;
 import com.lt.dom.otcenum.EnumProductPricingType;
 import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
 import com.lt.dom.otcenum.EnumProductPricingTypeByPersonGroupType;
@@ -71,7 +71,7 @@ public class PricingTypeResp {
     }*/
 
 
-    public static PricingTypeResp from(PricingType e) {
+    public static PricingTypeResp from(PricingRate e) {
         PricingTypeResp pricingTypeResp = new PricingTypeResp();
 
 
@@ -119,7 +119,7 @@ public class PricingTypeResp {
 
 
 
-    public static PricingTypeResp sku(PricingType e) {
+    public static PricingTypeResp sku(PricingRate e) {
         PricingTypeResp pricingTypeResp = new PricingTypeResp();
 
 
@@ -163,7 +163,7 @@ public class PricingTypeResp {
         return pricingTypeResp;
     }
 
-    public static PricingTypeResp sku_simpleBooking(PricingType e) {
+    public static PricingTypeResp sku_simpleBooking(PricingRate e) {
         PricingTypeResp pricingTypeResp = new PricingTypeResp();
 
         pricingTypeResp.setOriginal(e.getPrice());
@@ -176,7 +176,7 @@ public class PricingTypeResp {
 
         return pricingTypeResp;
     }
-    public static PricingTypeResp sku_simple(PricingType e) {
+    public static PricingTypeResp sku_simple(PricingRate e) {
         PricingTypeResp pricingTypeResp = new PricingTypeResp();
 
         pricingTypeResp.setOriginal(e.getPrice());

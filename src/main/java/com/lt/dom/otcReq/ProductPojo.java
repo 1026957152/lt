@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.OctResp.AttributeResp;
 import com.lt.dom.OctResp.RestrictionResp;
-import com.lt.dom.oct.PricingType;
+import com.lt.dom.oct.PricingRate;
 import com.lt.dom.otcReq.product.ProductGiftVoucherPojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.vo.ByHour;
@@ -260,7 +260,7 @@ public class ProductPojo {
 
         private Long id;
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        public static Price from(PricingType e) {
+        public static Price from(PricingRate e) {
 
             Price price1 = new Price();
             price1.setName(e.getNick_name());

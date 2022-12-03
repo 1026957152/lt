@@ -277,7 +277,7 @@ public class MovieRestController {
         movieResp.setBlocks(skuList.stream().collect(Collectors.groupingBy(e->e.getZone())).entrySet().stream().map(e->{
            ZoneResp zoneResp = ZoneResp.from(zoneMap.get(e.getKey()));
 
-           Map<Long,PricingType> longPricingTypeMap = pricingTypeRepository.findAllById(e.getValue().stream().map(ex->ex.getPricingType()).collect(Collectors.toList()))
+           Map<Long, PricingRate> longPricingTypeMap = pricingTypeRepository.findAllById(e.getValue().stream().map(ex->ex.getPricingType()).collect(Collectors.toList()))
                    .stream().collect(Collectors.toMap(ee->ee.getId(),ee->ee));
 
            return Map.of("zone_name",zoneResp.getName(),
@@ -285,8 +285,8 @@ public class MovieRestController {
                    "remaining",100,
                    "skus",e.getValue().stream().map(ee-> {
 
-                       PricingType pricingType = longPricingTypeMap.get(ee.getPricingType());
-                       PricingTypeResp pricingTypeResp = PricingTypeResp.sku(pricingType);
+                       PricingRate pricingRate = longPricingTypeMap.get(ee.getPricingType());
+                       PricingTypeResp pricingTypeResp = PricingTypeResp.sku(pricingRate);
                        pricingTypeResp.setId(ee.getId());
                        return pricingTypeResp;
                    }).collect(Collectors.toList()));
@@ -346,7 +346,7 @@ public class MovieRestController {
                "blocks",skuList.stream().collect(Collectors.groupingBy(e->e.getZone())).entrySet().stream().map(e->{
             ZoneResp zoneResp = ZoneResp.from(zoneMap.get(e.getKey()));
 
-            Map<Long,PricingType> longPricingTypeMap = pricingTypeRepository.findAllById(e.getValue().stream().map(ex->ex.getPricingType()).collect(Collectors.toList()))
+            Map<Long, PricingRate> longPricingTypeMap = pricingTypeRepository.findAllById(e.getValue().stream().map(ex->ex.getPricingType()).collect(Collectors.toList()))
                     .stream().collect(Collectors.toMap(ee->ee.getId(),ee->ee));
 
             return Map.of(
@@ -358,8 +358,8 @@ public class MovieRestController {
 
                     "skus",e.getValue().stream().map(ee-> {
 
-                        PricingType pricingType = longPricingTypeMap.get(ee.getPricingType());
-                        PricingTypeResp pricingTypeResp = PricingTypeResp.sku(pricingType);
+                        PricingRate pricingRate = longPricingTypeMap.get(ee.getPricingType());
+                        PricingTypeResp pricingTypeResp = PricingTypeResp.sku(pricingRate);
                         pricingTypeResp.setId(ee.getId());
                         return pricingTypeResp;
                     }).collect(Collectors.toList()));

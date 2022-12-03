@@ -193,11 +193,11 @@ public class TourCampaignServiceImpl {
 
 
 
-    private List<PricingType> additional_info(Product product){
+    private List<PricingRate> additional_info(Product product){
 
-        List<PricingType> pricingTypes = pricingTypeRepository.findByProductId(product.getId());
+        List<PricingRate> pricingRates = pricingTypeRepository.findByProductId(product.getId());
 
-        return pricingTypes;
+        return pricingRates;
     }
 
 

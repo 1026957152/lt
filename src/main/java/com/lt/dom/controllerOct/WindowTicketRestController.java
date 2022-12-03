@@ -84,7 +84,7 @@ public class WindowTicketRestController {
         List<Product> productList = productRepository.findBySupplierId(supplier.getId());
 
 
-        Map<Long, List<PricingType>>  pricingType = pricingTypeRepository.findByProductIdIn(productList.stream().map(e->e.getId()).collect(Collectors.toList()))
+        Map<Long, List<PricingRate>>  pricingType = pricingTypeRepository.findByProductIdIn(productList.stream().map(e->e.getId()).collect(Collectors.toList()))
                 .stream().collect(Collectors.groupingBy(e->e.getProductId()));
 
 
@@ -92,9 +92,9 @@ public class WindowTicketRestController {
         WindowTicketResp windowTicketResp = new WindowTicketResp();
         windowTicketResp.setProducts(productList.stream().map(e->{
 
-            List<PricingType> pricingTypeList = pricingType.get(e.getId());
+            List<PricingRate> pricingRateList = pricingType.get(e.getId());
 
-            ProductResp productResp = ProductResp.from(e,pricingTypeList);
+            ProductResp productResp = ProductResp.from(e, pricingRateList);
 
             productResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.product_photos,e.getCode()));
 

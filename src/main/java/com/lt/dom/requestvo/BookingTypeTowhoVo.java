@@ -31,7 +31,7 @@ public class BookingTypeTowhoVo {
     @Valid
     @Size(min=0,max=200)
     private List<Sku> skus;
-    private PricingType sku;
+    private PricingRate sku;
     private NegotiatedPricingType negotiatedSku;
     private EnumDeliveryFormats deliveryFormat;
     private String remark;
@@ -44,11 +44,11 @@ public class BookingTypeTowhoVo {
         this.skus = skus;
     }
 
-    public void setSku(PricingType sku) {
+    public void setSku(PricingRate sku) {
         this.sku = sku;
     }
 
-    public PricingType getSku() {
+    public PricingRate getSku() {
         return sku;
     }
 
@@ -79,15 +79,15 @@ public class BookingTypeTowhoVo {
 
     public static class Sku {
         @NotEmpty
-        private PricingType id;
+        private PricingRate id;
         @NotNull
         private Integer quantity;
 
-        public PricingType getId() {
+        public PricingRate getId() {
             return id;
         }
 
-        public void setId(PricingType id) {
+        public void setId(PricingRate id) {
             this.id = id;
         }
 

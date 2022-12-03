@@ -1,17 +1,16 @@
 package com.lt.dom.repository;
 
-import com.lt.dom.oct.AccessValidator;
-import com.lt.dom.oct.PricingType;
+import com.lt.dom.oct.PricingRate;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface PricingTypeRepository extends JpaRepository<PricingType
+public interface PricingTypeRepository extends JpaRepository<PricingRate
 			, Long> {
 
-    List<PricingType> findByProductId(long id);
+    List<PricingRate> findByProductId(long id);
 
-    List<PricingType> findByProductIdIn(List<Long> collect);
+    List<PricingRate> findByProductIdIn(List<Long> collect);
 
     void deleteAllByProductId(long id);
 }

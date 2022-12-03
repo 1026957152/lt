@@ -146,16 +146,16 @@ public class ProductResp extends BaseResp{
 
 
 
-    public static ProductResp from(Product e, PricingType pricingType_default) {
+    public static ProductResp from(Product e, PricingRate pricingRate_default) {
 
-        ProductResp productResp = ProductResp.from(e,Arrays.asList(pricingType_default));
+        ProductResp productResp = ProductResp.from(e,Arrays.asList(pricingRate_default));
 
 
         return productResp;
     }
 
 
-    public static ProductResp from(Product e, List<PricingType> pricingTypeList) {
+    public static ProductResp from(Product e, List<PricingRate> pricingRateList) {
 
         ProductResp productResp = ProductResp.Simplefrom(e);
 
@@ -164,26 +164,26 @@ public class ProductResp extends BaseResp{
         }).collect(Collectors.toList()));*/
 
 
-        PricingType pricingType = pricingTypeList.get(0);
-        productResp.setDefault_sku(PricingTypeResp.sku(pricingType));
+        PricingRate pricingRate = pricingRateList.get(0);
+        productResp.setDefault_sku(PricingTypeResp.sku(pricingRate));
         return productResp;
     }
-    public static ProductResp Richfrom(Product e, List<PricingType> pricingTypeList) {
+    public static ProductResp Richfrom(Product e, List<PricingRate> pricingRateList) {
 
         ProductResp productResp = ProductResp.Simplefrom(e);
 
-      productResp.setPriceTypes(pricingTypeList.stream().map(ee->{
+      productResp.setPriceTypes(pricingRateList.stream().map(ee->{
             return EntityModel.of(PricingTypeResp.from(ee));
         }).collect(Collectors.toList()));
 
 
         return productResp;
     }
-    public static ProductResp Passfrom(Product e, List<PricingType> pricingTypeList) {
+    public static ProductResp Passfrom(Product e, List<PricingRate> pricingRateList) {
 
         ProductResp productResp = ProductResp.Simplefrom(e);
 
-        productResp.setPriceTypes(pricingTypeList.stream().map(ee->{
+        productResp.setPriceTypes(pricingRateList.stream().map(ee->{
             return EntityModel.of(PricingTypeResp.from(ee));
         }).collect(Collectors.toList()));
 

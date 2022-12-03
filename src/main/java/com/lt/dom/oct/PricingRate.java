@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Entity
-public class PricingType extends Base {
+public class PricingRate extends Base {
 
 
     private Long productId;
@@ -46,7 +46,7 @@ public class PricingType extends Base {
     private Integer restriction_PaxCount;
     private Integer paxCount;
 
-    public static List List(List<PricingType> componentRightMap) {
+    public static List List(List<PricingRate> componentRightMap) {
         return componentRightMap.stream().map(x->{
 
             EnumLongIdResp enumResp = new EnumLongIdResp();

@@ -11,6 +11,8 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
 import com.lt.dom.vo.SupplierPojoVo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
@@ -21,11 +23,13 @@ import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class SetupDataLoader implements
         ApplicationListener<ContextRefreshedEvent> {
 
+    Logger logger = LoggerFactory.getLogger(SetupDataLoader.class);
 
 
     @Value("${setupdata.alreadySetup}")
@@ -91,9 +95,23 @@ public class SetupDataLoader implements
     private DeviceService deviceService;
 
 
+    @Value("${spring.profiles.active:}")
+    private String activeProfiles;
+
+    public String getActiveProfiles() {
+        for (String profileName : activeProfiles.split(",")) {
+            System.out.println("Currently active profile - " + profileName);
+        }
+
+        return Arrays.stream(activeProfiles.split(",")).collect(Collectors.joining(","));
+    }
+
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
+
+        logger.info("启动， 目前活动 配置是：{}",getActiveProfiles());
+
 
         valueListService.setupDataSupper();
         settingService.setupDataSupper();
