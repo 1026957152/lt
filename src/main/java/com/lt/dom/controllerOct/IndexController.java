@@ -56,6 +56,10 @@ public class IndexController {
     boolean miniapp_release ;
 
 
+
+
+
+
     @Autowired
     private AttractionRepository attractionRepository;
     @Autowired
