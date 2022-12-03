@@ -49,6 +49,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class IndexController {
 
 
+
+
+
     @Value("${blog_flag}")
     boolean miniapp_release ;
 
