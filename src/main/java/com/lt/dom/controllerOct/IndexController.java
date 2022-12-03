@@ -275,7 +275,7 @@ public class IndexController {
                 .filter(e->e.getStatus().equals(EnumProductStatus.active))
 
                 .collect(Collectors.toList());
-        List<PricingRate> pricingRateList = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()));
+        List<PricingRate> pricingRateList = pricingTypeRepository.findByProductIdIn(productList.stream().map(e->e.getId()).collect(Collectors.toList()));
 
         Map<Long, List<PricingRate>>  longListPriceGroupMap = pricingRateList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
 
