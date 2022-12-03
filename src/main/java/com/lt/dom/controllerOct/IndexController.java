@@ -304,7 +304,7 @@ public class IndexController {
             productResp.setAvailabilityNote(availabilityService.getAvailabilitySimple(e));
 
 
-            productResp.setPriceRange(priceService.getPriceRange(longListPriceGroupMap.get(e.getId())));
+            productResp.setPriceRange(priceService.getPriceRange(longListPriceGroupMap.getOrDefault(e.getId(), Arrays.asList())));
 
 
             EntityModel<ProductResp> productRespEntityModel = EntityModel.of(productResp);
