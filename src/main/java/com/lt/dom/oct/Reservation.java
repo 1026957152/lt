@@ -30,6 +30,7 @@ private String code;
     @Enumerated(EnumType.STRING)
     private EnumPayment_behavior payment_behavior;
     private String trackingId;
+    private Long agent;
 
     public EnumPayment_behavior getPayment_behavior() {
         return payment_behavior;
@@ -515,5 +516,13 @@ private String code;
 
     public String getTrackingId() {
         return trackingId;
+    }
+
+    public void setAgent(Long agent) {
+        this.agent = agent;
+    }
+
+    public Long getAgent() {
+        return agent;
     }
 }

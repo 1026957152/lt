@@ -25,7 +25,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 public class FeatureServiceImpl {
 
-    @Value("${miniapp_release}")
+    @Value("${blog_flag}")
     boolean miniapp_release ;
     @Autowired
     private CityWalkRepository cityWalkRepository;

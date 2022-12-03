@@ -35,7 +35,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class SearchRestController {
 
 
-    @Value("${miniapp_release}")
+    @Value("${blog_flag}")
     boolean miniapp_release ;
 
     @Autowired
@@ -618,9 +618,9 @@ public class SearchRestController {
 */
 
 
-        List<PricingType> pricingTypeList = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()));
+        List<PricingRate> pricingRateList = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()));
 
-        Map<Long, List<PricingType>>  longListPriceGroupMap = pricingTypeList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
+        Map<Long, List<PricingRate>>  longListPriceGroupMap = pricingRateList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
 
       //  Map<Long, PricingType>  longPricingTypeMap = pricingTypeList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
 

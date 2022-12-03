@@ -49,7 +49,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class IndexController {
 
 
-    @Value("${miniapp_release}")
+    @Value("${blog_flag}")
     boolean miniapp_release ;
 
 
@@ -266,9 +266,9 @@ public class IndexController {
                 .filter(e->e.getStatus().equals(EnumProductStatus.active))
 
                 .collect(Collectors.toList());
-        List<PricingType> pricingTypeList = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()));
+        List<PricingRate> pricingRateList = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()));
 
-        Map<Long, List<PricingType>>  longListPriceGroupMap = pricingTypeList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
+        Map<Long, List<PricingRate>>  longListPriceGroupMap = pricingRateList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
 
      //   Map<Long, PricingType>  longPricingTypeMap = pricingTypeList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
         List<EntityModel<ProductResp>> productRespList = productList.stream().map(e->{
@@ -508,17 +508,17 @@ public class IndexController {
 
 
         List<Product> productList = productRepository.findAllById(valueListItems_product.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList()));
-        Map<Long, List<PricingType>>  pricingType = pricingTypeRepository.findByProductIdIn(productList.stream().map(e->e.getId()).collect(Collectors.toList()))
+        Map<Long, List<PricingRate>>  pricingType = pricingTypeRepository.findByProductIdIn(productList.stream().map(e->e.getId()).collect(Collectors.toList()))
                 .stream().collect(Collectors.groupingBy(e->e.getProductId()));
 
 
 
         List<EntityModel<ProductResp>> productRespList = productList.stream().map(e->{
 
-            List<PricingType> pricingType_default = pricingType.get(e.getId());
+            List<PricingRate> pricingRate_default = pricingType.get(e.getId());
 
 
-            ProductResp productResp = ProductResp.Passfrom(e,pricingType_default);
+            ProductResp productResp = ProductResp.Passfrom(e, pricingRate_default);
 
 
             productResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.product_photos,e.getCode()));
@@ -636,17 +636,17 @@ public class IndexController {
 
 
         List<Product> productList = productRepository.findAllById(valueListItems_product.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList()));
-        Map<Long, List<PricingType>>  pricingType = pricingTypeRepository.findByProductIdIn(productList.stream().map(e->e.getId()).collect(Collectors.toList()))
+        Map<Long, List<PricingRate>>  pricingType = pricingTypeRepository.findByProductIdIn(productList.stream().map(e->e.getId()).collect(Collectors.toList()))
                 .stream().collect(Collectors.groupingBy(e->e.getProductId()));
 
 
 
         List<EntityModel<ProductResp>> productRespList = productList.stream().map(e->{
 
-            List<PricingType> pricingType_default = pricingType.get(e.getId());
+            List<PricingRate> pricingRate_default = pricingType.get(e.getId());
 
 
-            ProductResp productResp = ProductResp.Passfrom(e,pricingType_default);
+            ProductResp productResp = ProductResp.Passfrom(e, pricingRate_default);
 
 
             productResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.product_photos,e.getCode()));

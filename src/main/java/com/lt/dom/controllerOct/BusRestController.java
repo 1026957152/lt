@@ -168,22 +168,22 @@ public class BusRestController {
                 .findAllByType(EnumProductType.BusTicket)
                 .stream().filter(e->EnumPrivacyLevel.public_.equals(e.getPrivacyLevel())).collect(Collectors.toList());
 
-        Map<Long, PricingType> longPricingTypeMap = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()))
+        Map<Long, PricingRate> longPricingTypeMap = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()))
                 .stream().collect(Collectors.toMap(e->e.getId(),e->e));
 
 
         List<EntityModel> productResps = productList.stream().map(e->{
 
-            PricingType pricingType_default = null;
+            PricingRate pricingRate_default = null;
             if(e.getDefault_price() == null){
                 if(longPricingTypeMap.isEmpty()){
-                    pricingType_default = longPricingTypeMap.values().stream().findAny().get();
+                    pricingRate_default = longPricingTypeMap.values().stream().findAny().get();
 
                 }else{
-                    pricingType_default = new PricingType();
+                    pricingRate_default = new PricingRate();
                 }
             }else{
-                pricingType_default = longPricingTypeMap.get(e.getDefault_price());
+                pricingRate_default = longPricingTypeMap.get(e.getDefault_price());
 
             }
 
@@ -192,7 +192,7 @@ public class BusRestController {
             ProductResp productResp = new ProductResp();
             productResp.setDesc_short(e.getName_long());
             productResp.setName(e.getName());
-            productResp.setDefault_sku(PricingTypeResp.sku_simple(pricingType_default));
+            productResp.setDefault_sku(PricingTypeResp.sku_simple(pricingRate_default));
             EntityModel<ProductResp> entityModel = EntityModel.of(productResp);
             entityModel.add(linkTo(methodOn(ProductRestController.class).getProduct(e.getId())).withSelfRel());
 
@@ -228,22 +228,22 @@ public class BusRestController {
                 .findAllByType(EnumProductType.BusTicket)
                 .stream().filter(e->EnumPrivacyLevel.public_.equals(e.getPrivacyLevel())).collect(Collectors.toList());
 
-        Map<Long, PricingType> longPricingTypeMap = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()))
+        Map<Long, PricingRate> longPricingTypeMap = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()))
                 .stream().collect(Collectors.toMap(e->e.getId(),e->e));
 
 
         List<EntityModel> productResps = productList.stream().map(e->{
 
-            PricingType pricingType_default = null;
+            PricingRate pricingRate_default = null;
             if(e.getDefault_price() == null){
                 if(longPricingTypeMap.isEmpty()){
-                    pricingType_default = longPricingTypeMap.values().stream().findAny().get();
+                    pricingRate_default = longPricingTypeMap.values().stream().findAny().get();
 
                 }else{
-                    pricingType_default = new PricingType();
+                    pricingRate_default = new PricingRate();
                 }
             }else{
-                pricingType_default = longPricingTypeMap.get(e.getDefault_price());
+                pricingRate_default = longPricingTypeMap.get(e.getDefault_price());
 
             }
 
@@ -252,7 +252,7 @@ public class BusRestController {
             ProductResp productResp = new ProductResp();
             productResp.setDesc_short(e.getName_long());
             productResp.setName(e.getName());
-            productResp.setDefault_sku(PricingTypeResp.sku_simple(pricingType_default));
+            productResp.setDefault_sku(PricingTypeResp.sku_simple(pricingRate_default));
             EntityModel<ProductResp> entityModel = EntityModel.of(productResp);
             entityModel.add(linkTo(methodOn(ProductRestController.class).getProduct(e.getId())).withSelfRel());
 
@@ -719,7 +719,7 @@ public class BusRestController {
         movieResp.setBlocks(skuList.stream().collect(Collectors.groupingBy(e->e.getZone())).entrySet().stream().map(e->{
            ZoneResp zoneResp = ZoneResp.from(zoneMap.get(e.getKey()));
 
-           Map<Long,PricingType> longPricingTypeMap = pricingTypeRepository.findAllById(e.getValue().stream().map(ex->ex.getPricingType()).collect(Collectors.toList()))
+           Map<Long, PricingRate> longPricingTypeMap = pricingTypeRepository.findAllById(e.getValue().stream().map(ex->ex.getPricingType()).collect(Collectors.toList()))
                    .stream().collect(Collectors.toMap(ee->ee.getId(),ee->ee));
 
            return Map.of("zone_name",zoneResp.getName(),
@@ -727,8 +727,8 @@ public class BusRestController {
                    "remaining",100,
                    "skus",e.getValue().stream().map(ee-> {
 
-                       PricingType pricingType = longPricingTypeMap.get(ee.getPricingType());
-                       PricingTypeResp pricingTypeResp = PricingTypeResp.sku(pricingType);
+                       PricingRate pricingRate = longPricingTypeMap.get(ee.getPricingType());
+                       PricingTypeResp pricingTypeResp = PricingTypeResp.sku(pricingRate);
                        pricingTypeResp.setId(ee.getId());
                        return pricingTypeResp;
                    }).collect(Collectors.toList()));
@@ -788,7 +788,7 @@ public class BusRestController {
                "blocks",skuList.stream().collect(Collectors.groupingBy(e->e.getZone())).entrySet().stream().map(e->{
             ZoneResp zoneResp = ZoneResp.from(zoneMap.get(e.getKey()));
 
-            Map<Long,PricingType> longPricingTypeMap = pricingTypeRepository.findAllById(e.getValue().stream().map(ex->ex.getPricingType()).collect(Collectors.toList()))
+            Map<Long, PricingRate> longPricingTypeMap = pricingTypeRepository.findAllById(e.getValue().stream().map(ex->ex.getPricingType()).collect(Collectors.toList()))
                     .stream().collect(Collectors.toMap(ee->ee.getId(),ee->ee));
 
             return Map.of(
@@ -800,8 +800,8 @@ public class BusRestController {
 
                     "skus",e.getValue().stream().map(ee-> {
 
-                        PricingType pricingType = longPricingTypeMap.get(ee.getPricingType());
-                        PricingTypeResp pricingTypeResp = PricingTypeResp.sku(pricingType);
+                        PricingRate pricingRate = longPricingTypeMap.get(ee.getPricingType());
+                        PricingTypeResp pricingTypeResp = PricingTypeResp.sku(pricingRate);
                         pricingTypeResp.setId(ee.getId());
                         return pricingTypeResp;
                     }).collect(Collectors.toList()));

@@ -52,6 +52,8 @@ public class TsToLtServiceImpl {
 
     @Autowired
     private LtToTsServiceImpl ltToTsService;
+    @Autowired
+    private AgentServiceImpl agentService;
 
 
 
@@ -146,24 +148,9 @@ public class TsToLtServiceImpl {
     }
 
 
-        public   LtRespToTs产品列表 getTsReqLt产品列表( TsReqLt产品列表 data){
+        public   LtRespToTs产品列表 getTsReqLt产品列表(Agent agent, TsReqLt产品列表 data){
 
 
-
-        EnumMethord enumMethord =data.getMethod();
-
-
-        if(!enumMethord.equals(EnumMethord.item_list)){
-            return null;
-        }
-
-        if(!data.getFormat().equals("json")){
-            return null;
-        }
-
-        if(!data.getFormat().equals("json")){
-            return null;
-        }
 
 
 
@@ -173,10 +160,10 @@ public class TsToLtServiceImpl {
         List<Product> products = new ArrayList<>();
 
         if(data.getItem_id()!= null){
-            products.addAll(thirdPartyService.findAll(EnumThirdParty.TS,data.getItem_id().longValue()));
+            products.addAll(agentService.findAll(EnumThirdParty.TS,agent,data.getItem_id().longValue()));
 
         }else{
-            products.addAll(thirdPartyService.findAll(EnumThirdParty.TS,data.getKey_word(),PageRequest.of(data.getPage()-1,data.getSize())));
+            products.addAll(agentService.findAll(EnumThirdParty.TS,agent,data.getKey_word(),PageRequest.of(data.getPage()-1,data.getSize())));
         }
 
 
@@ -203,16 +190,16 @@ public class TsToLtServiceImpl {
                             }));
 
            // LtRespToTs产品列表.ListDTO listDTO = getFul(e);
-            Optional<PricingType> optionalPricingType = priceService.getDefault_price(e);
+            Optional<PricingRate> optionalPricingType = priceService.getDefault_price(e);
 
             if(optionalPricingType.isEmpty()){
                 throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到 sku priceingType");
 
             }
-            PricingType pricingType = optionalPricingType.get();
+            PricingRate pricingRate = optionalPricingType.get();
 
 
-            ListDTO listDTO = get(e,pricingType);
+            ListDTO listDTO = get(e, pricingRate);
 
             listDTO.setDatePrices(dateDatePricesDTOMap);
 
@@ -290,7 +277,7 @@ public class TsToLtServiceImpl {
 
 
 
-    public ListDTO get(Product e, PricingType pricingType){
+    public ListDTO get(Product e, PricingRate pricingRate){
 
 
 
@@ -342,7 +329,7 @@ public class TsToLtServiceImpl {
 
 
 
-        listDTO.setMarketPrice_指导价_建议价(pricingType.getOriginal().toString()); //必须
+        listDTO.setMarketPrice_指导价_建议价(pricingRate.getOriginal().toString()); //必须
         listDTO.setMaxNum_最多可购买数(10); //必须
 
 
@@ -544,19 +531,22 @@ public class TsToLtServiceImpl {
 
 
 
-    public   LtRespToTs下单接口.InfoDTO  getTsReqLt下单接口(TsReqLt下单接口 data){
+    public   LtRespToTs下单接口.InfoDTO  getTsReqLt下单接口(Agent agent, TsReqLt下单接口 data){
 
 
 
 
 
-        Optional<Product> optional =  thirdPartyService.find(EnumThirdParty.TS,data.getItem_id());
+        Optional<Pair<Product,PricingRate>>  optional =  agentService.find(EnumThirdParty.TS,agent,data.getItem_id());
 
         if(optional.isEmpty()){
-            throw new BookNotFoundException(Enumfailures.resource_not_found,"产品");
-        }
-        Product product = optional.get();
 
+            logger.error("找不到供应商 {} 产品 id{} 或者 产品 sku",agent.getName(),data.getItem_id());
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到产品 或者 产品 sku");
+        }
+        Product product = optional.get().getValue0();
+
+/*
 
         if(!product.getType().equals(EnumProductType.Pass)
                 || !product.getStatus().equals(EnumProductStatus.active) ||
@@ -578,16 +568,15 @@ public class TsToLtServiceImpl {
 
 
 
+*/
 
 
 
 
-        List<PricingType> pricingTypes = priceService.find(product);
+     //   List<PricingRate> pricingRates = priceService.find(product);
 
 
-
-
-        PricingType pricingType = pricingTypes.get(0);
+        PricingRate pricingRate = optional.get().getValue1();
 
 
 
@@ -605,7 +594,7 @@ public class TsToLtServiceImpl {
 
 
         bookingTypeTowhoVo.setProduct(product);
-        bookingTypeTowhoVo.setSku(pricingType);
+        bookingTypeTowhoVo.setSku(pricingRate);
         bookingTypeTowhoVo.setQuantity(data.getSize().longValue());
         bookingTypeTowhoVo.setRemark(data.getRemark());
 
@@ -642,6 +631,7 @@ public class TsToLtServiceImpl {
 
 
         platUserVo.setTracking_id(data.getOrders_id());
+        platUserVo.setAgent(agent);
 
         if(data.getIs_pay() == 1){ ////是否下单同时支付（1:同时支付，0:不支付）缺省时默认1
             platUserVo.setPaid(true);

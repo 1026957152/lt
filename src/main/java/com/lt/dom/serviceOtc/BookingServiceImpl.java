@@ -18,6 +18,8 @@ import com.lt.dom.vo.UserVo;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -32,6 +34,7 @@ import static com.lt.dom.serviceOtc.JsonParse.GSON;
 
 @Service
 public class BookingServiceImpl {
+    Logger logger = LoggerFactory.getLogger(BookingServiceImpl.class);
 
     @Autowired
     private ImportExcelRepository importExcelRepository;
@@ -170,14 +173,14 @@ public class BookingServiceImpl {
 
 
 
-            Optional<PricingType> pricingTypeOptional = pricingTypeRepository.findById(product.getDefault_price());
+            Optional<PricingRate> pricingTypeOptional = pricingTypeRepository.findById(product.getDefault_price());
 
             if(pricingTypeOptional.isEmpty()){
                 throw new BookNotFoundException(Enumfailures.not_found,"价格不能为空");
             }
-            PricingType pricingType = pricingTypeOptional.get();
+            PricingRate pricingRate = pricingTypeOptional.get();
 
-            Integer total  =  pricingType.getPrice()*pojo.getCount().intValue();
+            Integer total  =  pricingRate.getPrice()*pojo.getCount().intValue();
 
 /*            List<PricingType> pricingTypes = getForProduct(product);
 
@@ -281,29 +284,29 @@ public class BookingServiceImpl {
 
             LineItem lineItem = new LineItem();
 
-            PricingType pricingType = e.getPricingType();
+            PricingRate pricingRate = e.getPricingType();
 
             lineItem.setBooking(finalReservation.getId());
             lineItem.setProductType(product.getType());
-            lineItem.setTitle(product.getName()+"-"+pricingType.getNick_name());
+            lineItem.setTitle(product.getName()+"-"+ pricingRate.getNick_name());
             lineItem.setProduct(product.getId());
             lineItem.setSupplier(product.getSupplierId());
             lineItem.setPaymentMethods_json(product.getPaymentMethods_json());
 
 
             lineItem.setQuantity(e.getQuantity().intValue());
-            lineItem.setUnitPrice(pricingType.getRetail());
-            lineItem.setAmount(pricingType.getRetail()*e.getQuantity().intValue());
+            lineItem.setUnitPrice(pricingRate.getRetail());
+            lineItem.setAmount(pricingRate.getRetail()*e.getQuantity().intValue());
 
             if(e.getNegotiatedSku() != null) {
                 lineItem.setNegotiated(true);
-                lineItem.setUnitPrice(pricingType.getRetail());
-                lineItem.setAmount(pricingType.getRetail()*e.getQuantity().intValue());
+                lineItem.setUnitPrice(pricingRate.getRetail());
+                lineItem.setAmount(pricingRate.getRetail()*e.getQuantity().intValue());
 
             }else{
                 lineItem.setNegotiated(false);
-                lineItem.setUnitPrice(pricingType.getRetail());
-                lineItem.setAmount(pricingType.getRetail()*e.getQuantity().intValue());
+                lineItem.setUnitPrice(pricingRate.getRetail());
+                lineItem.setAmount(pricingRate.getRetail()*e.getQuantity().intValue());
 
             }
 
@@ -530,6 +533,8 @@ public class BookingServiceImpl {
                 reservation.setPayment_behavior(EnumPayment_behavior.normal_payment);
 
             }
+
+            reservation.setAgent(userVo.getAgent().getId());
         }
 
 
@@ -576,7 +581,7 @@ public class BookingServiceImpl {
             if(pricingTypeOptional.isEmpty()){
                 throw new BookNotFoundException(Enumfailures.not_found,"价格不能为空");
             }*/
-            PricingType pricingType = e.getSku();
+            PricingRate pricingRate = e.getSku();
 
 
             lineItem.setCode(idGenService.lineItemCode());
@@ -584,7 +589,7 @@ public class BookingServiceImpl {
             lineItem.setBooking(finalReservation.getId());
 
             lineItem.setProductType(product.getType());
-            lineItem.setTitle(product.getName()+"-"+pricingType.getNick_name());
+            lineItem.setTitle(product.getName()+"-"+ pricingRate.getNick_name());
             lineItem.setProduct(product.getId());
             lineItem.setSupplier(product.getSupplierId());
             lineItem.setPaymentMethods_json(product.getPaymentMethods_json());
@@ -595,18 +600,18 @@ public class BookingServiceImpl {
             }
 
             lineItem.setQuantity(e.getQuantity().intValue());
-            lineItem.setUnitPrice(pricingType.getRetail());
-            lineItem.setAmount(pricingType.getRetail()*e.getQuantity().intValue());
+            lineItem.setUnitPrice(pricingRate.getRetail());
+            lineItem.setAmount(pricingRate.getRetail()*e.getQuantity().intValue());
 
             if(e.getNegotiatedSku() != null) {
                 lineItem.setNegotiated(true);
-                lineItem.setUnitPrice(pricingType.getRetail());
-                lineItem.setAmount(pricingType.getRetail()*e.getQuantity().intValue());
+                lineItem.setUnitPrice(pricingRate.getRetail());
+                lineItem.setAmount(pricingRate.getRetail()*e.getQuantity().intValue());
 
             }else{
                 lineItem.setNegotiated(false);
-                lineItem.setUnitPrice(pricingType.getRetail());
-                lineItem.setAmount(pricingType.getRetail()*e.getQuantity().intValue());
+                lineItem.setUnitPrice(pricingRate.getRetail());
+                lineItem.setAmount(pricingRate.getRetail()*e.getQuantity().intValue());
 
             }
 
@@ -882,11 +887,11 @@ public class BookingServiceImpl {
 
 
 
-    private List<PricingType> getForProduct(Product product){
+    private List<PricingRate> getForProduct(Product product){
 
-        List<PricingType> pricingTypes = pricingTypeRepository.findByProductId(product.getId());
+        List<PricingRate> pricingRates = pricingTypeRepository.findByProductId(product.getId());
 
-        return pricingTypes;
+        return pricingRates;
     }
 
 
@@ -1049,23 +1054,8 @@ public class BookingServiceImpl {
         reservationRepository.save(reservation);
     }
 
-    public Reservation cancel(Reservation reservation, BookingCancelPojo cancelBookingRequest) {
 
 
-
-        reservation.setStatus(EnumBookingStatus.Cancelled);
-       // reservation.setRejectionReason(cancelBookingRequest.getReason());
-
-        Cancellation cancellation = new Cancellation();
-        cancellation.setBooking(reservation.getId());
-        cancellation.setCancel_reason(cancelBookingRequest.getReason());
-        cancellation.setNote(cancelBookingRequest.getNote());
-        cancellation.setNotifyParticipants(cancelBookingRequest.getNotifyParticipants());
-
-        cancellationRepository.save(cancellation);
-        return reservationRepository.save(reservation);
-
-    }
     public Reservation amendment(Reservation reservation, BookingAmendmentReq cancelBookingRequest) {
 
 
@@ -1092,5 +1082,13 @@ public class BookingServiceImpl {
 
 
         
+    }
+
+    public void getCost(Reservation e) {
+
+
+        List<LineItem> lineItemList = lineItemRepository.findAllByBooking(e.getId());
+
+       // lineItemList.stream().map(e->e.get)
     }
 }

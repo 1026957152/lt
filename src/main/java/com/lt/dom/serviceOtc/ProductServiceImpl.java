@@ -450,17 +450,17 @@ public class ProductServiceImpl {
 
         if(pojo.getPrices() != null){
 
-            List<PricingType> pricingTypes = priceService.getPriceType(product,pojo.getPrices());
-            List<PricingType> priceTypeList = pricingTypeRepository.saveAll(pricingTypes);
+            List<PricingRate> pricingRates = priceService.getPriceType(product,pojo.getPrices());
+            List<PricingRate> priceTypeList = pricingTypeRepository.saveAll(pricingRates);
             product.setDefault_price(priceTypeList.get(0).getId());
             product = productRepository.save(product);
         }
 
 
         if(pojo.getPrice() != null){
-            PricingType pricingType = priceService.getPriceType(product,pojo.getPrice());
-            pricingType = pricingTypeRepository.save(pricingType);
-            product.setDefault_price(pricingType.getId());
+            PricingRate pricingRate = priceService.getPriceType(product,pojo.getPrice());
+            pricingRate = pricingTypeRepository.save(pricingRate);
+            product.setDefault_price(pricingRate.getId());
             product = productRepository.save(product);
 
         }
@@ -891,7 +891,7 @@ public class ProductServiceImpl {
         }).collect(Collectors.toList());
 
         if(pojo.getContacts() != null ){
-            contactService.create(product,pojo.getContacts());
+            contactService.create(EnumRelatedObjectType.product,product.getId(),pojo.getContacts());
 
         }
 
@@ -964,31 +964,31 @@ public class ProductServiceImpl {
     @Transactional
     public Product editProductComponentTab(Product product, ProductEditComponentTabPojo pojo) {
 
-        List<PricingType> pricingTypes = pricingTypeRepository.findByProductId(product.getId());
+        List<PricingRate> pricingRates = pricingTypeRepository.findByProductId(product.getId());
 
 
         List<Long> contain = pojo.getPrices().stream().filter(e->e.getId() != null).map(e->e.getId()).collect(Collectors.toList());
 
-        Map<Long, PricingType> pricingTypeMap = pricingTypes
+        Map<Long, PricingRate> pricingTypeMap = pricingRates
                 .stream().collect(Collectors.toMap(e->e.getId(),e->e));
         ;
 
-        pricingTypeRepository.deleteAllById(pricingTypes.stream().filter(e->!contain.contains(e.getId())).map(e->e.getId()).collect(Collectors.toList()));
+        pricingTypeRepository.deleteAllById(pricingRates.stream().filter(e->!contain.contains(e.getId())).map(e->e.getId()).collect(Collectors.toList()));
 
 
 
       //      componentRightService.assingtoProduct(product,pojo.getRoyalties());
 
        // pricingTypeRepository.deleteAllByProductId(product.getId());
-            List<PricingType>  priceTyps = pojo.getPrices().stream().map(x->{
+            List<PricingRate>  priceTyps = pojo.getPrices().stream().map(x->{
 
-                PricingType pricingType = pricingTypeMap.getOrDefault(x.getId(),new PricingType());
+                PricingRate pricingRate = pricingTypeMap.getOrDefault(x.getId(),new PricingRate());
 
-                pricingType = priceService.updatePriceType(product,pricingType,x);
-                return pricingType;
+                pricingRate = priceService.updatePriceType(product, pricingRate,x);
+                return pricingRate;
             }).collect(Collectors.toList());
 
-            List<PricingType> priceTypeList = pricingTypeRepository.saveAll(priceTyps);
+            List<PricingRate> priceTypeList = pricingTypeRepository.saveAll(priceTyps);
 
 
 
@@ -1042,7 +1042,7 @@ public class ProductServiceImpl {
                     "text","产品 短描述 不能为空"));
         }
 
-        Optional<PricingType> pricingType = priceService.getDefault_price(product);
+        Optional<PricingRate> pricingType = priceService.getDefault_price(product);
 
         if(pricingType.isEmpty()){
             errors.add(Map.of("id","至少要添加一个价格",

@@ -277,7 +277,7 @@ private String code;
     @Transient
     private Offer offer;
     @Transient
-    private PricingType pricingType;
+    private PricingRate pricingRate;
 
     @Transient
     private Supplier supplier;

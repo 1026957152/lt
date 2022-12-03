@@ -2,15 +2,15 @@ package com.lt.dom.controllerOct;
 
 import cn.hutool.core.util.DesensitizedUtil;
 import com.lt.dom.OctResp.CustomerDemographicsResp;
+import com.lt.dom.OctResp.ReportBookingSummary;
 import com.lt.dom.OctResp.ReportSaleResp;
 import com.lt.dom.OctResp.VoucherLiabilityResp;
-import com.lt.dom.oct.PublicationEntry;
-import com.lt.dom.oct.RedemptionEntry;
-import com.lt.dom.oct.Traveler;
-import com.lt.dom.oct.Voucher;
+import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
 import com.lt.dom.repository.*;
+import com.lt.dom.serviceOtc.BookingServiceImpl;
+import com.lt.dom.serviceOtc.CancellationServiceImpl;
 import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +22,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.summingInt;
@@ -33,6 +35,19 @@ public class ReportRestController {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private BookingServiceImpl bookingService;
+
+
+    @Autowired
+    private CancellationServiceImpl cancellationService;
+
+
+    @Autowired
+    private ReservationRepository reservationRepository;
+
+
 
     @Autowired
     private VoucherRepository voucherRepository;
@@ -182,4 +197,60 @@ public class ReportRestController {
 
 
     }
+
+
+
+
+
+    @GetMapping(value = "reports/Booking-summary", produces = "application/json")
+    public List<ReportBookingSummary> Booking_summary( @RequestBody ReportReq reportReq) {
+
+
+
+
+        List<Reservation> reservationList = reservationRepository.findAll();
+
+
+        return reservationList.stream().map(e->{
+
+            ReportBookingSummary bookingSummary = new ReportBookingSummary();
+
+            bookingSummary.setBooking_ID(e.getCode());
+            bookingSummary.setBooking_name(e.getNote());
+            bookingSummary.setCustomer_ID(e.getLog_buyer_id_number());
+            bookingSummary.setCustomer_name(e.getLog_buyer_name());
+          //  bookingSummary.setStart_date();
+           // bookingSummary.setEnd_date();
+            bookingSummary.setStatus(e.getStatus().toString());
+            bookingSummary.setPayment_status("");
+
+
+            Optional<Cancellation> cancellations = cancellationService.getCancellation(e);
+            bookingSummary.setReason("ddd");
+            if(cancellations.isPresent()){
+                bookingSummary.setCancelled_date(cancellations.get().getCreatedDate().toString());
+            }
+            bookingSummary.setConfirmed_date("null");
+
+            bookingService.getCost(e);
+
+         //   bookingSummary.setTotal_sale_price(e.getTotal_amount());
+
+
+            bookingSummary.setMargin("");
+
+            bookingSummary.setAgent_commission("不知道");
+           // bookingSummary.setAgent(e.getAgent());
+
+            return bookingSummary;
+
+        }).collect(Collectors.toList());
+
+
+
+
+
+    }
+
+
 }

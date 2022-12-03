@@ -7,6 +7,8 @@ import com.lt.dom.otcenum.EnumPrivacyLevel;
 
 import javax.persistence.Entity;
 import java.time.LocalDate;
+import java.util.List;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TripResp {
 
@@ -28,6 +30,7 @@ public class TripResp {
     private String desc_short;
     private String name_long;
     private String desc_long;
+    private List itinerary;
 
     public static TripResp from(Trip trip) {
         TripResp tripResp = new TripResp();
@@ -138,5 +141,13 @@ public class TripResp {
 
     public String getDesc_long() {
         return desc_long;
+    }
+
+    public <R> void setItinerary(List itinerary) {
+        this.itinerary = itinerary;
+    }
+
+    public List getItinerary() {
+        return itinerary;
     }
 }

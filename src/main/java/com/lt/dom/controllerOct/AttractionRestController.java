@@ -93,10 +93,10 @@ public class AttractionRestController {
         List<Product> attractionPage = productRepository.findAllByTypeAndTypeTo(EnumProductType.Attraction,attraction.getId());
 
 
-        List<PricingType> pricingTypeList =  pricingTypeRepository.findByProductIdIn(attractionPage.stream().map(e->e.getId()).collect(Collectors.toList()));
-        Map<Long,List<PricingType>> longListMap = pricingTypeList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
+        List<PricingRate> pricingRateList =  pricingTypeRepository.findByProductIdIn(attractionPage.stream().map(e->e.getId()).collect(Collectors.toList()));
+        Map<Long,List<PricingRate>> longListMap = pricingRateList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
 
-        Map<Long,PricingType> longPricingTypeMap =  pricingTypeList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
+        Map<Long, PricingRate> longPricingTypeMap =  pricingRateList.stream().collect(Collectors.toMap(e->e.getId(), e->e));
 
         AttractionEditResp attractionResp = AttractionEditResp.from(attraction);
 
@@ -338,10 +338,10 @@ public class AttractionRestController {
         }
 
 
-      List<PricingType> pricingTypeList =  pricingTypeRepository.findByProductIdIn(attractionPage.stream().map(e->e.getId()).collect(Collectors.toList()));
-      Map<Long,List<PricingType>> longListMap = pricingTypeList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
+      List<PricingRate> pricingRateList =  pricingTypeRepository.findByProductIdIn(attractionPage.stream().map(e->e.getId()).collect(Collectors.toList()));
+      Map<Long,List<PricingRate>> longListMap = pricingRateList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
 
-        Map<Long,PricingType> longPricingTypeMap =  pricingTypeList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
+        Map<Long, PricingRate> longPricingTypeMap =  pricingRateList.stream().collect(Collectors.toMap(e->e.getId(), e->e));
 
         AttractionResp attractionResp = AttractionResp.from(attraction);
 
@@ -410,9 +410,9 @@ public class AttractionRestController {
             ProductResp productResp =  ProductResp.basefrom(e);
 
 
-                PricingType pricingType = longPricingTypeMap.get(e.getDefault_price());
-            if(pricingType != null){
-                PricingTypeResp pricingTypeResp_default = PricingTypeResp.from(pricingType);
+                PricingRate pricingRate = longPricingTypeMap.get(e.getDefault_price());
+            if(pricingRate != null){
+                PricingTypeResp pricingTypeResp_default = PricingTypeResp.from(pricingRate);
 
                 productResp.setDefault_price(pricingTypeResp_default);
             }
@@ -649,9 +649,9 @@ public class AttractionRestController {
 
         Page<Product> attractionPage = productRepository.findAllByTypeAndTypeTo(EnumProductType.Attraction,attraction.getId(),pageable);
 
-        List<PricingType> pricingTypes = pricingTypeRepository.findByProductIdIn(attractionPage.stream().map(e->e.getId()).collect(Collectors.toList()));
+        List<PricingRate> pricingRates = pricingTypeRepository.findByProductIdIn(attractionPage.stream().map(e->e.getId()).collect(Collectors.toList()));
 
-        Map<Long,List<PricingType>> longListMap = pricingTypes.stream().collect(Collectors.groupingBy(e->e.getProductId()));
+        Map<Long,List<PricingRate>> longListMap = pricingRates.stream().collect(Collectors.groupingBy(e->e.getProductId()));
         return assembler.toModel(attractionPage.map(e->{
 
 

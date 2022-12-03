@@ -30,7 +30,7 @@ public class BookingTypeTowhoVoSku {
     @Valid
     @Size(min=0,max=200)
     private List<Sku> skus;
-    private PricingType pricingType;
+    private PricingRate pricingRate;
     private NegotiatedPricingType negotiatedSku;
     private com.lt.dom.oct.Sku sku;
 
@@ -42,12 +42,12 @@ public class BookingTypeTowhoVoSku {
         this.skus = skus;
     }
 
-    public void setPricingType(PricingType pricingType) {
-        this.pricingType = pricingType;
+    public void setPricingType(PricingRate pricingRate) {
+        this.pricingRate = pricingRate;
     }
 
-    public PricingType getPricingType() {
-        return pricingType;
+    public PricingRate getPricingType() {
+        return pricingRate;
     }
 
     public void setNegotiatedSku(NegotiatedPricingType negotiatedSku) {
@@ -68,15 +68,15 @@ public class BookingTypeTowhoVoSku {
 
     public static class Sku {
         @NotEmpty
-        private PricingType id;
+        private PricingRate id;
         @NotNull
         private Integer quantity;
 
-        public PricingType getId() {
+        public PricingRate getId() {
             return id;
         }
 
-        public void setId(PricingType id) {
+        public void setId(PricingRate id) {
             this.id = id;
         }
 

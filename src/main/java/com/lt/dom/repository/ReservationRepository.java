@@ -20,4 +20,7 @@ public interface ReservationRepository extends JpaRepository<Reservation
     Page<Reservation> findAllByStatusIn(List<EnumBookingStatus> statusList, Pageable pageReq);
 
     Optional<Reservation> findByTrackingId(String orders_id);
+
+    Page<Reservation> findAllByAgent(Long id, Pageable pageable);
+
 }

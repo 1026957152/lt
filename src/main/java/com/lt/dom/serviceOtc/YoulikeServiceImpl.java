@@ -2,19 +2,14 @@ package com.lt.dom.serviceOtc;
 
 
 import com.lt.dom.OctResp.*;
-import com.lt.dom.config.LtConfig;
-import com.lt.dom.controllerOct.BookingRestController;
 import com.lt.dom.controllerOct.ProductRestController;
-import com.lt.dom.controllerOct.SupplierRestController;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
-import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,9 +46,9 @@ public class YoulikeServiceImpl {
 
                 .collect(Collectors.toList());
 
-        List<PricingType> pricingTypeList = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()));
+        List<PricingRate> pricingRateList = pricingTypeRepository.findAllById(productList.stream().map(e->e.getDefault_price()).collect(Collectors.toList()));
 
-        Map<Long, List<PricingType>>  longListPriceGroupMap = pricingTypeList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
+        Map<Long, List<PricingRate>>  longListPriceGroupMap = pricingRateList.stream().collect(Collectors.groupingBy(e->e.getProductId()));
 
 
         /*

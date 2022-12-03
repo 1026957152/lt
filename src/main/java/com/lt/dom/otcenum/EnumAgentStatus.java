@@ -6,15 +6,13 @@ import org.springframework.context.MessageSource;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public enum EnumRelatedObjectType {
-    voucher("Vendor_groups"),
-    tour_booking("ddddd"),
-    booking(""),
-    product(""),
-    agent(""),
+public enum EnumAgentStatus {
+    Active("Active"),
+    PendingApproval("PendingApproval"),
+    Rejected("Rejected"),
+    Blocked("Blockedp"),
 
     ;
-
 
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle("messages",
             Locale.getDefault());
@@ -24,17 +22,15 @@ public enum EnumRelatedObjectType {
     @Autowired
     private MessageSource messageSource;
 
-    EnumRelatedObjectType(String name) {
+    EnumAgentStatus(String name) {
         this.name = name;
     }
 
-/*    @Override
+    @Override
     public String toString() {
 
-        String displayStatusString = resourceBundle.getString("page.systemadministration.valuelist.type."
+        String displayStatusString = resourceBundle.getString("page.systemadministration.supplier.status."
                 + this.name());
-
-
         return displayStatusString;
-    }*/
+    }
 }

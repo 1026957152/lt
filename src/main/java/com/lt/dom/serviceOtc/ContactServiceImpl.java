@@ -35,9 +35,9 @@ public class ContactServiceImpl {
 
 
 
-    public Contact create(Product supplier, List<IdentifierReq> identifierReqs) {
+    public Contact create(EnumRelatedObjectType enumRelatedObjectType,Long supplier, List<IdentifierReq> identifierReqs) {
 
-        Optional<Contact> contactOptional = contactRepository.findByRelatedObjectTypeAndRelatedObjectId(EnumRelatedObjectType.product,supplier.getId());
+        Optional<Contact> contactOptional = contactRepository.findByRelatedObjectTypeAndRelatedObjectId(enumRelatedObjectType,supplier);
 
 
         if(contactOptional.isPresent()){
@@ -47,8 +47,8 @@ public class ContactServiceImpl {
 
         Contact crossSellKey = new Contact();
 
-        crossSellKey.setRelatedObjectId(supplier.getId());
-        crossSellKey.setRelatedObjectType(EnumRelatedObjectType.product);
+        crossSellKey.setRelatedObjectId(supplier);
+        crossSellKey.setRelatedObjectType(enumRelatedObjectType);
 
 
         Contact finalCrossSellKey = crossSellKey;

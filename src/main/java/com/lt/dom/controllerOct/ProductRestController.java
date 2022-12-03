@@ -337,7 +337,7 @@ public class ProductRestController {
 
 
 
-        List<PricingType> pricingTypes = pricingTypeRepository.findByProductId(product.getId());
+        List<PricingRate> pricingRates = pricingTypeRepository.findByProductId(product.getId());
         List<Component> componentRightPage= componentRepository.findAllByProduct(product.getId());
         ProductResp.ComponentTap componentTap = ProductResp.ComponentTap.from(componentRightPage);
 
@@ -354,7 +354,7 @@ public class ProductRestController {
             return royalty;
         }).collect(Collectors.toList()));
 
-        componentTap.setPrices(pricingTypes.stream().map(e->{
+        componentTap.setPrices(pricingRates.stream().map(e->{
             ProductPojo.Price price = ProductPojo.Price.from(e);
 
 
@@ -576,7 +576,7 @@ public class ProductRestController {
                             "movie_list",Movie.List(movieList),
                             "layout_list",SeatingLayout.List(seatingLayoutList),
                             "theatre_list",Theatre.List(theatreList),
-                            "pricing_type_list",PricingType.List(pricingTypes)
+                            "pricing_type_list", PricingRate.List(pricingRates)
 
                     ));
 
@@ -739,14 +739,14 @@ public class ProductRestController {
 
 
 
-            List<PricingType> pricingTypes = pricingTypeRepository.findByProductId(product.getId());
+            List<PricingRate> pricingRates = pricingTypeRepository.findByProductId(product.getId());
 
 
 
-            PricingType pricingType = pricingTypes.get(0);
-            productResp.setDefault_price(PricingTypeResp.from(pricingType));
+            PricingRate pricingRate = pricingRates.get(0);
+            productResp.setDefault_price(PricingTypeResp.from(pricingRate));
 
-            productResp.setPriceTypes(pricingTypes.stream().map(e->{
+            productResp.setPriceTypes(pricingRates.stream().map(e->{
 
                 PricingTypeResp pricingTypeResp = PricingTypeResp.from(e);
 
@@ -877,13 +877,13 @@ public class ProductRestController {
 
 
 
-            List<PricingType> pricingTypes = pricingTypeRepository.findByProductId(product.getId()).stream().filter(e->e.getActive()).collect(Collectors.toList());
+            List<PricingRate> pricingRates = pricingTypeRepository.findByProductId(product.getId()).stream().filter(e->e.getActive()).collect(Collectors.toList());
 
 
 
-            if(pricingTypes.size() !=0){
-                PricingType pricingType = pricingTypes.get(0);
-                productResp.setDefault_sku(PricingTypeResp.sku_simple(pricingType));
+            if(pricingRates.size() !=0){
+                PricingRate pricingRate = pricingRates.get(0);
+                productResp.setDefault_sku(PricingTypeResp.sku_simple(pricingRate));
 
             }else{
                 productResp.setDefault_sku(new PricingTypeResp());
@@ -910,7 +910,7 @@ public class ProductRestController {
 
 
 
-            productResp.setSkus(pricingTypes.stream().map(e->{
+            productResp.setSkus(pricingRates.stream().map(e->{
                 PricingTypeResp pricingTypeResp = PricingTypeResp.sku_simpleBooking(e);
                 Optional<Partner> partner = partnerService.getPartner(product.getSupplierId(),product.getSupplierId());
 
@@ -2074,7 +2074,7 @@ public class ProductRestController {
         Product product = validatorOptional.get();
 
 
-        List<PricingType> pricingTypes = pricingTypeRepository.findByProductId(product.getId());
+        List<PricingRate> pricingRates = pricingTypeRepository.findByProductId(product.getId());
 
 
 
@@ -2083,7 +2083,7 @@ public class ProductRestController {
 
                 "range_type_list",EnumAvailabilityRangetype.from(),
 
-                "price_type_list", pricingTypes.stream().map(e->{
+                "price_type_list", pricingRates.stream().map(e->{
 
                     EntityModel pricingTypeEntityModel = EntityModel.of(e);
                     //         pricingTypeEntityModel.add(linkTo(methodOn(BookingRestController.class).Page_createBookingFromPriceType(e.getId())).withRel("Page_createBooking"));

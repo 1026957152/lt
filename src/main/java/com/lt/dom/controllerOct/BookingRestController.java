@@ -17,8 +17,6 @@ import com.lt.dom.serviceOtc.pay.BalancePaymentServiceImpl;
 import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
 import com.lt.dom.specification.BookingQueryfieldsCriteria;
 import com.lt.dom.specification.BookingSpecification;
-import com.lt.dom.specification.TourBookingQueryfieldsCriteria;
-import com.lt.dom.specification.TourBookingSpecification;
 import com.lt.dom.util.HttpUtils;
 import com.lt.dom.vo.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -105,7 +103,8 @@ public class BookingRestController {
     @Autowired
     private SupplierRepository supplierRepository;
 
-
+    @Autowired
+    private CancellationServiceImpl cancellationService;
     @Autowired
     private BookingServiceImpl bookingService;
     @Autowired
@@ -1085,15 +1084,15 @@ public class BookingRestController {
 
         bookingTypeTowhoVo.setToWhoTyp(pojo.getType());
 
-        Optional<PricingType> pricingTypeOptional = pricingTypeRepository.findById(PRICE_TYPE_ID);
+        Optional<PricingRate> pricingTypeOptional = pricingTypeRepository.findById(PRICE_TYPE_ID);
 
         if(pricingTypeOptional.isEmpty()){
             throw new BookNotFoundException(PRICE_TYPE_ID,"找不到产品");
         }
 
-        PricingType pricingType = pricingTypeOptional.get();
+        PricingRate pricingRate = pricingTypeOptional.get();
 
-        Optional<Product> productOptional = productRepository.findById(pricingType.getProductId());
+        Optional<Product> productOptional = productRepository.findById(pricingRate.getProductId());
 
         if(productOptional.isEmpty()){
             throw new BookNotFoundException(PRICE_TYPE_ID,"找不到产品");
@@ -1151,7 +1150,7 @@ public class BookingRestController {
 
         Product product = validatorOptional.get();
 
-        List<PricingType> pricingTypes = pricingTypeRepository.findAllById(skus);//.stream()
+        List<PricingRate> pricingRates = pricingTypeRepository.findAllById(skus);//.stream()
 
 /*        List<PricingType> pricingTypes = pricingTypeRepository.findByProductId(product.getId()).stream()
                 .filter(e->{
@@ -1206,7 +1205,7 @@ public class BookingRestController {
 
         productResp.setShipping(shipping);
 
-        productResp.setSkus(pricingTypes.stream().map(pricingType->{
+        productResp.setSkus(pricingRates.stream().map(pricingType->{
 
             PricingTypeResp pricingTypeResp_default = PricingTypeResp.sku(pricingType);
             pricingTypeResp_default.setImage(fileStorageService.loadDocumentWithDefault(EnumDocumentType.product_thumb,product.getCode()));
@@ -1365,8 +1364,8 @@ public class BookingRestController {
 
         productResp.setSkus(skuList.stream().map(pricingType->{
 
-            PricingType pricingType1 = pricingTypeRepository.findById(pricingType.getPricingType()).get();
-            PricingTypeResp pricingTypeResp_default = PricingTypeResp.sku(pricingType1);
+            PricingRate pricingRate1 = pricingTypeRepository.findById(pricingType.getPricingType()).get();
+            PricingTypeResp pricingTypeResp_default = PricingTypeResp.sku(pricingRate1);
             pricingTypeResp_default.setImage(fileStorageService.loadDocumentWithDefault(EnumDocumentType.product_thumb,product.getCode()));
             pricingTypeResp_default.setId(pricingType.getId());
             return pricingTypeResp_default;
@@ -1518,29 +1517,29 @@ public class BookingRestController {
                     bookingTypeTowhoVo.setQuantity(e.getQuantity().longValue());
                 }
 
-                List<PricingType> priceType = pricingTypeRepository.findAllById(e.getSkus().stream().map(ee->ee.getId()).collect(Collectors.toList()));
+                List<PricingRate> priceType = pricingTypeRepository.findAllById(e.getSkus().stream().map(ee->ee.getId()).collect(Collectors.toList()));
 
                 if(priceType.size() != e.getSkus().size()){
                     throw new BookNotFoundException(Enumfailures.not_found,"找不到"+product.getId()+ " 得价格");
 
                 }
-                Map<Long,PricingType> pricingTypeMap = priceType.stream().collect(Collectors.toMap(ee->ee.getId(), ee->ee));
+                Map<Long, PricingRate> pricingTypeMap = priceType.stream().collect(Collectors.toMap(ee->ee.getId(), ee->ee));
 
 
                 bookingTypeTowhoVo.setSkus(e.getSkus().stream().map(ee->{
-                    PricingType pricingType = pricingTypeMap.get(ee.getId());
+                    PricingRate pricingRate = pricingTypeMap.get(ee.getId());
                     BookingTypeTowhoVo.Sku sku = new BookingTypeTowhoVo.Sku();
-                    sku.setId(pricingType);
+                    sku.setId(pricingRate);
                     sku.setQuantity(ee.getQuantity());
                     return sku;
                 }).collect(Collectors.toList()));
             }else{
                 bookingTypeTowhoVo.setQuantity(e.getQuantity().longValue());
 
-                List<PricingType> priceType = pricingTypeRepository.findByProductId(product.getId());//.collect(Collectors.toList()));
-                PricingType pricingType = priceType.get(0);
+                List<PricingRate> priceType = pricingTypeRepository.findByProductId(product.getId());//.collect(Collectors.toList()));
+                PricingRate pricingRate = priceType.get(0);
                 BookingTypeTowhoVo.Sku sku = new BookingTypeTowhoVo.Sku();
-                sku.setId(pricingType);
+                sku.setId(pricingRate);
                 sku.setQuantity(e.getQuantity());
 
                 bookingTypeTowhoVo.setSkus(Arrays.asList(sku));
@@ -1598,13 +1597,13 @@ public class BookingRestController {
         Authentication authentication = authenticationFacade.getAuthentication();
 
         UserVo userVo = authenticationFacade.getUserVo(authentication);
-        List<PricingType> pricingTypes = pricingTypeRepository.findAllById(pojo.getSkus().stream().map(ee->ee.getId()).collect(Collectors.toList()));
+        List<PricingRate> pricingRates = pricingTypeRepository.findAllById(pojo.getSkus().stream().map(ee->ee.getId()).collect(Collectors.toList()));
 
-        Map<Long, PricingType> pricingTypeMap = pricingTypes.stream().collect(Collectors.toMap(e->e.getId(),e->e));
+        Map<Long, PricingRate> pricingTypeMap = pricingRates.stream().collect(Collectors.toMap(e->e.getId(), e->e));
 
 
 
-        List<Product> productList = productRepository.findAllById(pricingTypes.stream().map(e->e.getProductId()).collect(Collectors.toList()));
+        List<Product> productList = productRepository.findAllById(pricingRates.stream().map(e->e.getProductId()).collect(Collectors.toList()));
 
 
         Map<Long, Product> longProductMap = productList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
@@ -1630,9 +1629,9 @@ public class BookingRestController {
 
 
         List<BookingTypeTowhoVo> list =  pojo.getSkus().stream().map(e->{
-            PricingType pricingType = pricingTypeMap.get(e.getId());
+            PricingRate pricingRate = pricingTypeMap.get(e.getId());
 
-            Product product = longProductMap.get(pricingType.getProductId());
+            Product product = longProductMap.get(pricingRate.getProductId());
             Assert.notNull(product, "产品不能为空");
             Optional<Partner> partner = partnerService.getPartner(product.getSupplierId(),product.getSupplierId());
 
@@ -1644,7 +1643,7 @@ public class BookingRestController {
                 Partner partner1 = partner.get();
                 Optional<PartnerShareRatePlan> partnerList = partnerShareRatePlanRepository.findAllByPartnerAndProduct(partner1.getId(),product.getId());
 
-                NegotiatedPricingType negotiatedPricingType = priceService.fill(pricingType,partnerList);
+                NegotiatedPricingType negotiatedPricingType = priceService.fill(pricingRate,partnerList);
 
                 bookingTypeTowhoVo.setNegotiatedSku(negotiatedPricingType);
 
@@ -1654,7 +1653,7 @@ public class BookingRestController {
 
 
             bookingTypeTowhoVo.setProduct(product);
-            bookingTypeTowhoVo.setSku(pricingType);
+            bookingTypeTowhoVo.setSku(pricingRate);
             bookingTypeTowhoVo.setQuantity(e.getQuantity().longValue());
 
 
@@ -1742,13 +1741,13 @@ public class BookingRestController {
         UserVo userVo = authenticationFacade.getUserVo(authentication);
 
 
-        List<PricingType> pricingTypes = pricingTypeRepository.findAllById(pojo.getSkus().stream().map(ee->ee.getId()).collect(Collectors.toList()));
+        List<PricingRate> pricingRates = pricingTypeRepository.findAllById(pojo.getSkus().stream().map(ee->ee.getId()).collect(Collectors.toList()));
 
-        Map<Long, PricingType> pricingTypeMap = pricingTypes.stream().collect(Collectors.toMap(e->e.getId(),e->e));
+        Map<Long, PricingRate> pricingTypeMap = pricingRates.stream().collect(Collectors.toMap(e->e.getId(), e->e));
 
 
 
-        List<Product> productList = productRepository.findAllById(pricingTypes.stream().map(e->e.getProductId()).collect(Collectors.toList()));
+        List<Product> productList = productRepository.findAllById(pricingRates.stream().map(e->e.getProductId()).collect(Collectors.toList()));
 
 
         Map<Long, Product> longProductMap = productList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
@@ -1756,16 +1755,16 @@ public class BookingRestController {
 
 
         List<BookingTypeTowhoVo> list =  pojo.getSkus().stream().map(e->{
-            PricingType pricingType = pricingTypeMap.get(e.getId());
+            PricingRate pricingRate = pricingTypeMap.get(e.getId());
 
-            Product product = longProductMap.get(pricingType.getProductId());
+            Product product = longProductMap.get(pricingRate.getProductId());
             Assert.notNull(product, "产品不能为空");
 
             BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
             bookingTypeTowhoVo.setToWhoTyp(EnumBookingOjbectType.Product);
 
             bookingTypeTowhoVo.setProduct(product);
-            bookingTypeTowhoVo.setSku(pricingType);
+            bookingTypeTowhoVo.setSku(pricingRate);
             bookingTypeTowhoVo.setQuantity(e.getQuantity().longValue());
 
 
@@ -1828,7 +1827,7 @@ public class BookingRestController {
             Sku sku = pricingTypeMap.get(e.getId());
 
 
-            PricingType pricingType =  pricingTypeRepository.findById(sku.getPricingType()).get();
+            PricingRate pricingRate =  pricingTypeRepository.findById(sku.getPricingType()).get();
 
             Product product = longProductMap.get(sku.getProduct());
             Assert.notNull(product, "产品不能为空");
@@ -1842,7 +1841,7 @@ public class BookingRestController {
                 Partner partner1 = partner.get();
                 Optional<PartnerShareRatePlan> partnerList = partnerShareRatePlanRepository.findAllByPartnerAndProduct(partner1.getId(),product.getId());
 
-                NegotiatedPricingType negotiatedPricingType = priceService.fill(pricingType,partnerList);
+                NegotiatedPricingType negotiatedPricingType = priceService.fill(pricingRate,partnerList);
 
                 bookingTypeTowhoVo.setNegotiatedSku(negotiatedPricingType);
 
@@ -1851,7 +1850,7 @@ public class BookingRestController {
 
             bookingTypeTowhoVo.setProduct(product);
             bookingTypeTowhoVo.setSku(sku);
-            bookingTypeTowhoVo.setPricingType(pricingType);
+            bookingTypeTowhoVo.setPricingType(pricingRate);
             bookingTypeTowhoVo.setQuantity(e.getQuantity().longValue());
 
             return bookingTypeTowhoVo;
@@ -1927,13 +1926,13 @@ public class BookingRestController {
 
         UserVo userVo = authenticationFacade.getUserVo(authentication);
 
-        List<PricingType> pricingTypes = pricingTypeRepository.findAllById(pojo.getSkus().stream().map(ee->ee.getId()).collect(Collectors.toList()));
+        List<PricingRate> pricingRates = pricingTypeRepository.findAllById(pojo.getSkus().stream().map(ee->ee.getId()).collect(Collectors.toList()));
 
-        Map<Long, PricingType> pricingTypeMap = pricingTypes.stream().collect(Collectors.toMap(e->e.getId(),e->e));
+        Map<Long, PricingRate> pricingTypeMap = pricingRates.stream().collect(Collectors.toMap(e->e.getId(), e->e));
 
 
 
-        List<Product> productList = productRepository.findAllById(pricingTypes.stream().map(e->e.getProductId()).collect(Collectors.toList()));
+        List<Product> productList = productRepository.findAllById(pricingRates.stream().map(e->e.getProductId()).collect(Collectors.toList()));
 
 
         Map<Long, Product> longProductMap = productList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
@@ -1943,7 +1942,7 @@ public class BookingRestController {
 
             System.out.println("参数"+e.toString());
 
-            PricingType sku = pricingTypeMap.get(e.getId());
+            PricingRate sku = pricingTypeMap.get(e.getId());
 
 
          //   PricingType pricingType =  pricingTypeRepository.findById(sku.getPricingType()).get();
@@ -2070,7 +2069,7 @@ public class BookingRestController {
             Sku sku = pricingTypeMap.get(e.getId());
 
 
-            PricingType pricingType =  pricingTypeRepository.findById(sku.getPricingType()).get();
+            PricingRate pricingRate =  pricingTypeRepository.findById(sku.getPricingType()).get();
 
             Product product = longProductMap.get(sku.getProduct());
 
@@ -2086,7 +2085,7 @@ public class BookingRestController {
                 Partner partner1 = partner.get();
                 Optional<PartnerShareRatePlan> partnerList = partnerShareRatePlanRepository.findAllByPartnerAndProduct(partner1.getId(),product.getId());
 
-                NegotiatedPricingType negotiatedPricingType = priceService.fill(pricingType,partnerList);
+                NegotiatedPricingType negotiatedPricingType = priceService.fill(pricingRate,partnerList);
 
                 bookingTypeTowhoVo.setNegotiatedSku(negotiatedPricingType);
 
@@ -2095,7 +2094,7 @@ public class BookingRestController {
 
             bookingTypeTowhoVo.setProduct(product);
             bookingTypeTowhoVo.setSku(sku);
-            bookingTypeTowhoVo.setPricingType(pricingType);
+            bookingTypeTowhoVo.setPricingType(pricingRate);
             bookingTypeTowhoVo.setQuantity(e.getQuantity().longValue());
 
             return bookingTypeTowhoVo;
@@ -2175,7 +2174,7 @@ public class BookingRestController {
 
         }
 
-        bookingService.cancel(reservation,cancelBookingRequest);
+        cancellationService.cancel(reservation,cancelBookingRequest);
 
 
 
