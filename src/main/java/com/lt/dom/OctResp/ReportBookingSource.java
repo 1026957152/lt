@@ -1,7 +1,7 @@
 package com.lt.dom.OctResp;
 
 
-public class HomeSummary {
+public class ReportBookingSource {
 
     private String RevenueToday;
     private String RevenueMTD;

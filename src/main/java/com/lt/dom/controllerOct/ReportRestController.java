@@ -312,12 +312,70 @@ public class ReportRestController {
     }
 
 
+
     @GetMapping(value = "/reports/home-summary", produces = "application/json")
     public HomeSummary Home_summary() {
 
         List<Reservation> reservationList = reservationRepository.findAll();
 
-        return new HomeSummary();
+        Long today_bookings = reservationList.stream().count();
+        HomeSummary homeSummary = new HomeSummary();
+
+        homeSummary.setBookings_Total_today(today_bookings.toString());
+
+        homeSummary.setBookings_Total_today(today_bookings.toString());
+
+
+        homeSummary.setPAX_Total_today(reservationList.stream().mapToInt(e->1).sum()+"");
+        homeSummary.setPAX_Already_arrived(today_bookings.toString());
+
+
+
+        homeSummary.setRevenueToday(reservationList.stream().mapToDouble(e->e.getAmount()).sum()+"");
+        homeSummary.setRevenueToday(reservationList.stream().mapToDouble(e->e.getAmount()).sum()+"");
+
+        return homeSummary;
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @GetMapping(value = "/reports/booking-source", produces = "application/json")
+    public ReportBookingSource booking_source( @RequestBody ReportBookingSourceReq reportReq) {
+
+
+
+        List<Reservation> reservationList = reservationRepository.findAll();
+
+        Long today_bookings = reservationList.stream().count();
+
+        ReportBookingSource reportBookingSource = new ReportBookingSource();
+
+        reportBookingSource.setBookings_Total_today(today_bookings.toString());
+
+        reportBookingSource.setBookings_Total_today(today_bookings.toString());
+
+
+        reportBookingSource.setPAX_Total_today(reservationList.stream().mapToInt(e->1).sum()+"");
+        reportBookingSource.setPAX_Already_arrived(today_bookings.toString());
+
+
+
+        reportBookingSource.setRevenueToday(reservationList.stream().mapToDouble(e->e.getAmount()).sum()+"");
+        reportBookingSource.setRevenueToday(reservationList.stream().mapToDouble(e->e.getAmount()).sum()+"");
+
+        return reportBookingSource;
 
     }
 }

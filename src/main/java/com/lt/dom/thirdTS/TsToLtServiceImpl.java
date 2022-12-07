@@ -331,29 +331,27 @@ public class TsToLtServiceImpl {
 
         Timestamp timestamp_object = Timestamp.valueOf(LocalDateTime.now().plusDays(30));
 
-        listDTO.setExpireTime_产品有效期结束时间(timestamp_object.getTime());  //必须
-        listDTO.setGoodsType_门票类型(2); //必须  ////门票类型;1普通票，2套票，3线路
+        listDTO.setExpireTime_产品有效期结束时间(timestamp_object.getTime()/1000);  //必须
+        listDTO.setGoodsType_门票类型(1); //必须  ////门票类型;1普通票，2套票，3线路
 
         listDTO.setId_产品ID(e.getId().intValue());  //必须
 
 
 
         listDTO.setMarketPrice_指导价_建议价(pricingRate.getMarket().toString()); //必须
-        listDTO.setMaxNum_最多可购买数(10); //必须
-
-
-        listDTO.setMinNum_至少须购买数(10); //必须
+        listDTO.setMaxNum_最多可购买数(0); //必须
+        listDTO.setMinNum_至少须购买数(0); //必须
 
         listDTO.setNettPrice_分销价(pricingRate.getNet().toString()); //必须
         listDTO.setOriginalPrice_市场价_门市价_票面原价(pricingRate.getOriginal().toString());//必须
 
 
-        listDTO.setStartTime_产品有效期开始时间(Timestamp.valueOf(e.getCreatedDate()).getTime()); //必须  //产品有效期开始时间；时间戳
+        listDTO.setStartTime_产品有效期开始时间(Timestamp.valueOf(e.getCreatedDate()).getTime()/1000); //必须  //产品有效期开始时间；时间戳
         listDTO.setStatus_产品状态(1); //必须 产品状态（1：正常，0：下架）
 
 
         listDTO.setTitle_门票标题(e.getName()); //必须
-        listDTO.setType_门票类型(2);//必须 //门票类型;1普通票，2套票，3线路
+        listDTO.setType_门票类型(1);//必须 //门票类型;1普通票，2套票，3线路
 
         listDTO.setWeek_有效星期("1,2,3,4,5,6,7");  //必须
 
