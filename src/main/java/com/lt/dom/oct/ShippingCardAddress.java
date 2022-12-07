@@ -107,11 +107,11 @@ public class ShippingCardAddress extends Base{
         return code;
     }
 
-    public void setUser(long user) {
+    public void setUser(Long user) {
         this.user = user;
     }
 
-    public long getUser() {
+    public Long getUser() {
         return user;
     }
 

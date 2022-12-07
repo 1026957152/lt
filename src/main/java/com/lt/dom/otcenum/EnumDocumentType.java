@@ -61,6 +61,8 @@ public enum EnumDocumentType {
     museum_large("theatreImageLarge"),
     museum_standard("theatreImageStandard"),
     museum_thumbnail("theatreImageThumbnail"),
+    exhibit_cover("exhibit_cover"),
+    museum_cover("museum_cover"),
 
     artwork_icon("theatreImageIcon"),
 
@@ -68,6 +70,7 @@ public enum EnumDocumentType {
     artwork_standard("theatreImageStandard"),
     artwork_thumbnail("theatreImageThumbnail"),
     artwork_audio("theatreImageThumbnail"),
+    artwork_portrait("artwork_portrait"),
 
 
 

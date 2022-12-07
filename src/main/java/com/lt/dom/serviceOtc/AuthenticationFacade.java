@@ -1,10 +1,8 @@
 package com.lt.dom.serviceOtc;
 
-import com.lt.dom.config.AuthenticationToken;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.Error401Exception;
 import com.lt.dom.error.Error403Exception;
-import com.lt.dom.error.ExistException;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.UserRepository;
@@ -14,12 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
 
 
@@ -41,7 +37,7 @@ public class AuthenticationFacade implements IAuthenticationFacade {
         if (authentication instanceof AnonymousAuthenticationToken) {
 
             System.out.println("=============需要实名认证啊啊");
-            throw new Error403Exception(Enumfailures.Need_real_name,"需要实名认证");
+            throw new Error403Exception(Enumfailures.NEED_REAL_NAME,"需要实名认证");
 
 
         }else{
@@ -71,6 +67,42 @@ public class AuthenticationFacade implements IAuthenticationFacade {
 
     }
 
+
+
+    @Override
+    public UserVo checkUserVo(Authentication authentication) {
+
+        System.out.println("=====查看登录情况啊啊啊");
+
+        if (authentication instanceof AnonymousAuthenticationToken) {
+
+            System.out.println("=============需要实名认证啊啊");
+            //     throw new Error403Exception(Enumfailures.Need_real_name, "需要实名认证");
+
+
+        } else {
+
+
+            System.out.println("=====不是匿名对象");
+            if (authentication != null && authentication.isAuthenticated()) {
+
+                CustomUserDetails user_ = (CustomUserDetails) authentication.getPrincipal();
+
+                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUser_id());
+                if (!optional.isEmpty()) {
+                    return userService.getInverUser(optional.get());
+                }
+
+
+            }
+
+
+        }
+
+
+        return null;
+
+    }
     @Override
     public UserVo getUserVo(Authentication authentication) {
 
@@ -121,6 +153,86 @@ public class AuthenticationFacade implements IAuthenticationFacade {
 
 
         return null;
+
+    }
+
+
+    @Override
+    public UserVo getUserVoWithUser(Authentication authentication) {
+
+        if (authentication instanceof AnonymousAuthenticationToken) {
+
+            System.out.println("=============需要实名认证啊啊");
+
+            throw new Error401Exception(Enumfailures._401_Unauthorized,"需要注册或登录");
+
+
+        } else {
+
+            if (authentication != null && authentication.isAuthenticated()) {
+
+                CustomUserDetails user_ = (CustomUserDetails) authentication.getPrincipal();
+
+                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUser_id());
+
+
+                if (!optional.isEmpty()) {
+                    User user = optional.get();
+
+
+
+                    return userService.getInverUser(optional.get());
+                }
+
+
+            }
+
+            throw new AuthenticationServiceException("客户未登录认证");
+
+        }
+
+
+    }
+
+    @Override
+    public UserVo getUserVoWithUserRealname(Authentication authentication) {
+
+        if (authentication instanceof AnonymousAuthenticationToken) {
+
+            System.out.println("=============需要实名认证啊啊");
+
+            throw new Error401Exception(Enumfailures._401_Unauthorized,"需要注册或登录");
+
+
+        } else {
+
+            if (authentication != null && authentication.isAuthenticated()) {
+
+                CustomUserDetails user_ = (CustomUserDetails) authentication.getPrincipal();
+
+                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUser_id());
+
+
+                if (!optional.isEmpty()) {
+                    User user = optional.get();
+
+                    if(!user.isRealNameVerified()){
+
+                        throw new Error403Exception(Enumfailures.NEED_REAL_NAME,"需要实名");
+
+                    }
+
+
+                    return userService.getInverUser(optional.get());
+                }
+
+
+            }
+
+            throw new AuthenticationServiceException("客户未登录认证");
+
+        }
+
 
     }
 }

@@ -180,7 +180,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 				"/oct/openid/merchants_settled",
 				"/oct/openid/merchants_settled/page",
 				"/oct/login",
-				"/oct/index",
+			//	"/oct/index",
 				"/oct/wxLogin",
 				"/oct/campaigns/page",
 				"/oct/scenarios/**",

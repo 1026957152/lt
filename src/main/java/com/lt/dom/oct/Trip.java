@@ -18,6 +18,7 @@ public class Trip extends Base{
     private String name_long;
     private String desc_long;
     private String desc_short;
+    private Long user;
 
     public String getName_long() {
         return name_long;
@@ -144,5 +145,13 @@ public class Trip extends Base{
 
     public String getCode() {
         return code;
+    }
+
+    public void setUser(Long user) {
+        this.user = user;
+    }
+
+    public Long getUser() {
+        return user;
     }
 }

@@ -1,6 +1,8 @@
 package com.lt.dom.oct;
 
 
+import com.lt.dom.otcenum.EnumPrivacyLevel;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
@@ -38,6 +40,8 @@ public class Artwork extends Base {
 
         private String repository;
     private String code;
+    private String intro;
+    private EnumPrivacyLevel privacyLevel;
 
     public String getName() {
         return name;
@@ -205,6 +209,22 @@ public class Artwork extends Base {
 
     public void setDesc_long(String desc_long) {
         this.desc_long = desc_long;
+    }
+
+    public void setIntro(String intro) {
+        this.intro = intro;
+    }
+
+    public String getIntro() {
+        return intro;
+    }
+
+    public void setPrivacyLevel(EnumPrivacyLevel privacyLevel) {
+        this.privacyLevel = privacyLevel;
+    }
+
+    public EnumPrivacyLevel getPrivacyLevel() {
+        return privacyLevel;
     }
 /*     "completion_year": "1889",
              "": "Saint-rémy-de-provenceFrance",

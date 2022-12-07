@@ -61,6 +61,69 @@ public class LineItem extends Base {
   //  private Integer unitPrice;//
 
 
+    private Float base_cost_price;
+    private Float cost_price_inc_tax;
+    private Float cost_price_ex_tax;
+    private Float cost_price_tax;
+
+    public Float getBase_cost_price() {
+        return base_cost_price;
+    }
+
+    public void setBase_cost_price(Float base_cost_price) {
+        this.base_cost_price = base_cost_price;
+    }
+
+    public Float getCost_price_inc_tax() {
+        return cost_price_inc_tax;
+    }
+
+    public void setCost_price_inc_tax(Float cost_price_inc_tax) {
+        this.cost_price_inc_tax = cost_price_inc_tax;
+    }
+
+    public Float getCost_price_ex_tax() {
+        return cost_price_ex_tax;
+    }
+
+    public void setCost_price_ex_tax(Float cost_price_ex_tax) {
+        this.cost_price_ex_tax = cost_price_ex_tax;
+    }
+
+    public Float getCost_price_tax() {
+        return cost_price_tax;
+    }
+
+    public void setCost_price_tax(Float cost_price_tax) {
+        this.cost_price_tax = cost_price_tax;
+    }
+
+    /*            string
+    The product’s cost price. This can be set using the Catalog API. (Float, Float-As-String, Integer) Read Only
+
+    Example:
+            0.0000
+    cost_price_inc_tax
+            string
+    The product’s cost price including tax. (Float, Float-As-String, Integer) The cost of your products to you; this is never shown to customers, but can be used for accounting purposes. Read Only
+
+    Example:
+            0.0000
+    cost_price_ex_tax
+            string
+    The products cost price excluding tax. (Float, Float-As-String, Integer) The cost of your products to you; this is never shown to customers, but can be used for accounting purposes. Read Only
+
+    Example:
+            0.0000
+    weight
+    number or string
+    Weight of the product. (Float, Float-As-String, Integer)
+
+    Example:
+            1
+    cost_price_tax
+            string*/
+
 
 
     @Enumerated(EnumType.STRING)

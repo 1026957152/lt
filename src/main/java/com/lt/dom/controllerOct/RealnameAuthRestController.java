@@ -5,21 +5,20 @@ import com.lt.dom.OctResp.UserResp;
 import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
+import com.lt.dom.oct.Media;
 import com.lt.dom.oct.Openid;
 import com.lt.dom.oct.Product;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcReq.OpenidResp;
 import com.lt.dom.otcReq.RealnameAuthsReq;
+import com.lt.dom.otcenum.EnumAgentStatus;
 import com.lt.dom.otcenum.EnumUserType;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.OpenidRepository;
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.UserRepository;
 import com.lt.dom.repository.VoucherRepository;
-import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
-import com.lt.dom.serviceOtc.IAuthenticationFacade;
-import com.lt.dom.serviceOtc.UserServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import com.lt.dom.serviceOtc.*;
 import com.lt.dom.vo.UserVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
@@ -58,6 +57,10 @@ public class RealnameAuthRestController {
     @Autowired
     private UserRepository userRepository;
 
+
+    @Autowired
+    private SettingServiceImpl settingService;
+
     @Autowired
     private IAuthenticationFacade authenticationFacade;
 
@@ -77,6 +80,10 @@ public class RealnameAuthRestController {
         EntityModel entityModel = EntityModel.of(map);
 
 
+        entityModel.add(linkTo(methodOn(EmpowerRestController.class).mini_getPhone(null)).withRel("getPhone"));
+
+
+
         entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).individual_only_for_realnameauth(null)).withRel("realnameAuths"));
 
 
@@ -84,19 +91,35 @@ public class RealnameAuthRestController {
 
     }
 
+
+    @GetMapping(value = "/Page_realName", produces = "application/json")
+    public EntityModel<Media> Page_realName() {
+
+
+            Map map = Map.of("term", "请确保信息的真实性，将用户领取验证");
+
+
+     ///   settingService.getValue();
+
+        EntityModel entityModel = EntityModel.of(map);
+        entityModel.add(linkTo(methodOn(EmpowerRestController.class).mini_getPhone(null)).withRel("getPhone"));
+
+
+        entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).Page_realName()).withSelfRel());
+
+        entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).individual_only_for_realnameauth(null)).withRel("create"));
+
+        return entityModel;
+
+    }
+
+
     @Operation(summary = "1、实名认证")
     @PostMapping(value = "/realname-auths/individual", produces = "application/json")
     public ResponseEntity postRealnameAuths( @RequestBody @Valid RealnameAuthsReq realnameAuthsReq) {
         System.out.println("参数参数"+realnameAuthsReq.toString());
         Authentication authentication =  authenticationFacade.getAuthentication();
 
-
-        if (authentication instanceof AnonymousAuthenticationToken) {
-
-        }else{
-            throw new ExistException(Enumfailures.general_exists_error,"不是匿名用户错误返回");
-
-        }
 
 
         System.out.println("--token认证认证认证goggggggg日日日日日日日日日日日日gggggggggggggggss"+(String)authentication.getPrincipal());

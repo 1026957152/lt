@@ -4,6 +4,11 @@ package com.lt.dom.serviceOtc;
 import com.lt.dom.OctResp.EmpowerResp;
 import com.lt.dom.OctResp.PhoneResp;
 import com.lt.dom.OctResp.SmsResp;
+import com.lt.dom.controllerOct.BookingRestController;
+import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.otcenum.Enumfailures;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +18,8 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
@@ -21,8 +28,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.lt.dom.serviceOtc.JsonParse.GSON;
+
 @Service
 public class SMSServiceImpl {
+
+    Logger logger = LoggerFactory.getLogger(SMSServiceImpl.class);
+
 
     // 服务商 AppID
     @Value("${yunpian_sms.apikey}")
@@ -37,13 +49,12 @@ public class SMSServiceImpl {
      * @return json格式字符串
      */
 
-    public String singleSend(String text, String mobile) {
+    public void singleSend(String text, String mobile) {
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
         params.add("apikey", apikey);
         params.add("text", text);
         params.add("mobile", mobile);
-
 
 
         HttpHeaders requestHeaders = new HttpHeaders();
@@ -56,19 +67,36 @@ public class SMSServiceImpl {
         RestTemplate restTemplate = new RestTemplate();
         //  ResponseEntity<PhoneResp> responseEntity = restTemplate.getForEntity(url,PhoneResp.class);
 
-        ResponseEntity<SmsResp> responseEntity = restTemplate.postForEntity("https://sms.yunpian.com/v2/sms/single_send.json",requestEntity,SmsResp.class);
+        try {
+            ResponseEntity<SmsResp> responseEntity = restTemplate.postForEntity("https://sms.yunpian.com/v2/sms/single_send.json", requestEntity, SmsResp.class);
+
+
+            System.out.println("getStatusCode" + responseEntity.getStatusCode());
+            SmsResp buffer = responseEntity.getBody();
+
+            System.out.println(buffer);
 
 
 
+        } catch (HttpStatusCodeException e) {
+            String errorpayload = e.getResponseBodyAsString();
 
-        System.out.println("getStatusCode"+responseEntity.getStatusCode());
-        SmsResp buffer = responseEntity.getBody();
+            SmsResp buffer = GSON.fromJson(errorpayload,SmsResp.class);
+            logger.error("短信发送错误 {}",e.toString());
 
-        System.out.println(buffer);
+            throw new BookNotFoundException(Enumfailures.resource_not_found, buffer.getMsg());
 
-        return null;
+            //do whatever you want
+        } catch (RestClientException e) {
+
+            logger.error("短信发送错误 {}",e.toString());
+            //no response payload, tell the user sth else
+            throw new BookNotFoundException(Enumfailures.resource_not_found, "短信发送网络问题");
+
+        }
+
+
     }
-
 
 
 

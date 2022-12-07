@@ -1,6 +1,7 @@
 package com.lt.dom.otcReq;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.OctResp.PhotoResp;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.validation.constraints.NotEmpty;
@@ -46,6 +47,27 @@ public class RealnameAuthsReq {
 
 
     private String crypto_phone;
+
+
+    private PhotoResp selfie;
+    private PhotoResp document;
+
+
+    public PhotoResp getSelfie() {
+        return selfie;
+    }
+
+    public void setSelfie(PhotoResp selfie) {
+        this.selfie = selfie;
+    }
+
+    public PhotoResp getDocument() {
+        return document;
+    }
+
+    public void setDocument(PhotoResp document) {
+        this.document = document;
+    }
 
     public String getCrypto_phone() {
         return crypto_phone;

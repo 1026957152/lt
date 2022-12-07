@@ -55,7 +55,7 @@ public class FeatureServiceImpl {
             if(e.equals(Enumfeatured.tours)){
                 String link = linkTo(methodOn(TripRestController.class).Page_listTrip()).withSelfRel().getHref();
                 //  entityModel1.add(linkTo(methodOn(BookingMakeplanController.class).getGuideList(3,null,null)).withSelfRel());
-                resp.setPath("/pages/tours/list?url="+link);
+                resp.setPath(EnumMiniappPagePath.upcomming_trip.getPath()+"?url="+link);
             }
             if(e.equals(Enumfeatured.city_hero)){
                 String link = linkTo(methodOn(IndexController.class).heroPass(null)).withSelfRel().getHref();
@@ -83,7 +83,7 @@ public class FeatureServiceImpl {
 
                 String link = linkTo(methodOn(CityWalkRestController.class).getCityWalk(cityWalk.getId())).withSelfRel().getHref();
                 entityModel1.add(linkTo(methodOn(CityWalkRestController.class).getCityWalk(cityWalk.getId())).withSelfRel());
-                resp.setPath(EnumMiniappPagePath.city_walk.getPath()+"/pages/citywalk/show?url="+link);
+                resp.setPath(EnumMiniappPagePath.city_walk.getPath()+"?url="+link);
             }
             if(e.equals(Enumfeatured.activity)){
                 String link = linkTo(methodOn(IndexController.class).activities(null)).withSelfRel().getHref();
@@ -249,7 +249,7 @@ public class FeatureServiceImpl {
                                         resp.setPath("/pages/ownercard/activate?url="+link);
                                     }
                                     else if(ee.equals(EnumLayoutFeatured.添加卡)){
-                                        String link = linkTo(methodOn(PassRestController.class).Page_linkPass(user.getId())).withSelfRel().getHref();
+                                        String link = linkTo(methodOn(PassRestController.class).Page_linkPass()).withSelfRel().getHref();
                                         resp.setPath("/pages/user/card/add?url="+link);
                                     }
                                     else if(ee.equals(EnumLayoutFeatured.客服中心)){
@@ -258,7 +258,7 @@ public class FeatureServiceImpl {
                                     }
 
                                     else  if(ee.equals(EnumLayoutFeatured.常用出行人)){
-                                        String link = linkTo(methodOn(PassengerRestController.class).getPassengerList(user.getId(),null,null)).withSelfRel().getHref();
+                                        String link = linkTo(methodOn(PassengerRestController.class).Page_listPassenger(user.getId())).withSelfRel().getHref();
                                         //  entityModel1.add(linkTo(methodOn(IndexController.class).cityPass(null)).withSelfRel());
                                         resp.setPath("/pages/user/people/list?url="+link);
                                     }

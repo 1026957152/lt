@@ -46,17 +46,19 @@ public class PassResp extends BaseResp {
     private Map additionalInfo;
     private String code_base64_src;
     private long id;
+    private EnumFormFactorType formFactor;
+    private String formFactor_text;
 
     public String getCode() {
         return code;
     }
-    private Long user ;//digital tickets or PDF tickets
+    private String user ;//digital tickets or PDF tickets
 
-    public Long getUser() {
+    public String getUser() {
         return user;
     }
 
-    public void setUser(Long user) {
+    public void setUser(String user) {
         this.user = user;
     }
 
@@ -153,6 +155,12 @@ public class PassResp extends BaseResp {
         passResp.setNumber(e.getNumber());
         passResp.setCreatedDate(e.getCreatedDate());
         passResp.setModifiedDate(e.getModifiedDate());
+        passResp.setFormFactor(e.getFormFactor());
+        passResp.setFormFactor_text(e.getFormFactor().toString());
+        if(e.getCardholder() != null){
+            passResp.setUser(e.getCardholder().getName()+e.getNumber());
+        }
+
        // passResp.setExpiringDate(e.get());
         return passResp;
     }
@@ -367,5 +375,21 @@ public class PassResp extends BaseResp {
 
     public long getId() {
         return id;
+    }
+
+    public void setFormFactor(EnumFormFactorType formFactor) {
+        this.formFactor = formFactor;
+    }
+
+    public EnumFormFactorType getFormFactor() {
+        return formFactor;
+    }
+
+    public void setFormFactor_text(String formFactor_text) {
+        this.formFactor_text = formFactor_text;
+    }
+
+    public String getFormFactor_text() {
+        return formFactor_text;
     }
 }

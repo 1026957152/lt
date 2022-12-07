@@ -154,12 +154,14 @@ wxpay:
 
 
 wx:
-  app_id: wx626ed6460e6dd971
-  secret: 1f3055e00adf20e81f54d87b174a2b70
+  app_id: wx56e4655ed33d5eca
+  secret: 6304bf22f38b3bb4432eafb96be809f6
+#  app_id: wx626ed6460e6dd971
+#  secret: 1f3055e00adf20e81f54d87b174a2b70
   app: wxada5ab1a8c131d85
   sec: bdde4cd0c7eff399037992a53dba9826
-
-  lbs_key: H5BBZ-4Q5CX-THQ4S-7R2GW-4B4ME-NRBLJ
+  lbs_key: 7GGBZ-KJ6LD-PEG4M-HBN4Q-IGDUO-LVFXW
+  #lbs_key: H5BBZ-4Q5CX-THQ4S-7R2GW-4B4ME-NRBLJ
 
 wxmerchant:
   app_id: wx56e4655ed33d5eca

@@ -126,17 +126,17 @@ public class EmpowerRestController {
 
 
 
+
  //   public EmpowerResp mini_getPhone(@RequestParam(value = "code",required = true) String code)
     {
 
-        System.out.println("mini_getPhone");
+
+        logger.info("请求微信 手机号认证 {}",code.toString());
+
+
         ///     POST https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=ACCESS_TOKEN
-        Token accessToken = null;
-        if(code.getType() == 2){
+        Token accessToken = accessToken = CommonUtil.getToken(wxConfig.getAppId(), wxConfig.getSecret());
 
-            accessToken = CommonUtil.getToken(wxConfig.getAppId(), wxConfig.getSecret());
-
-        }
 
 
         String url = "https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=" + accessToken.getAccessToken();

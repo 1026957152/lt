@@ -298,9 +298,25 @@ public class UserRestController {
 
         entityModel.add(linkTo(methodOn(OpenidRestController.class).Page_linkUser(user.getOpenid())).withRel("Page_linkUser"));
         entityModel.add(linkTo(methodOn(LoginController.class).Page_verification()).withRel("Page_verifyPhone"));
-        entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).Page_realnameAuth()).withRel("Page_realnameAuth"));
+        entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).Page_realName()).withRel("Page_realnameAuth"));
         entityModel.add(linkTo(methodOn(EmpowerRestController.class).wxlogout(user.getOpenid())).withRel("wxlogout"));
 
+
+        if(employeeOptional.isPresent()){
+            Employee employee = employeeOptional.get();
+
+            Optional<Supplier> optionalSupplier = supplierRepository.findById(employee.getSuplierId());
+
+            Supplier supplier = optionalSupplier.get();
+
+            EntityModel entityModel_supplier = EntityModel.of(SupplierResp.simpleFrom(supplier));
+            entityModel_supplier.add(linkTo(methodOn(UserRestController.class).getSupplier(employee.getSuplierId())).withRel("Page_getSupplier"));
+
+            userResp.setSupplier(entityModel_supplier);
+
+        }else{
+            work_space_list = Arrays.asList(EnumPreferenceSpace.default_);
+        }
 
         return ResponseEntity.ok(entityModel);
 
@@ -370,7 +386,7 @@ public class UserRestController {
 
     @Operation(summary = "1、实名认证")
     @PostMapping(value = "/users/{USER_ID}/realname-auths/individual", produces = "application/json")
-    public ResponseEntity<User> postRealnameAuths(@PathVariable long USER_ID, @RequestBody @Valid RealnameAuthsReq realnameAuthsReq) {
+    public ResponseEntity<Void> postRealnameAuths(@PathVariable long USER_ID, @RequestBody @Valid RealnameAuthsReq realnameAuthsReq) {
 
         Optional<User> optionalUser = userRepository.findById(USER_ID);
 
@@ -379,8 +395,8 @@ public class UserRestController {
 
         }
 
-        User user = realnameAuthsService.postRealnameAuths(optionalUser.get(),realnameAuthsReq);
-        return ResponseEntity.ok(user);
+        realnameAuthsService.postRealnameAuths(optionalUser.get(),realnameAuthsReq);
+        return ResponseEntity.ok().build();
 
 
     }

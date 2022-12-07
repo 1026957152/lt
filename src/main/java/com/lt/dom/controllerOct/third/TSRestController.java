@@ -1,7 +1,10 @@
 package com.lt.dom.controllerOct.third;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.Agent;
+import com.lt.dom.oct.Supplier;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
@@ -10,6 +13,7 @@ import com.lt.dom.thirdTS.LtToTsServiceImpl;
 import com.lt.dom.thirdTS.TsToLtServiceImpl;
 import com.lt.dom.thirdTS.domainLtToTs.*;
 import com.lt.dom.thirdTS.domainTsToLt.*;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -60,19 +65,37 @@ public class TSRestController {
     private OpenidRepository openidRepository;
 
 
-    @PostMapping(value = "", produces = "application/json")
-    public Object jk(@RequestBody TsReqLtBase tsReqLt产品列表) {
+    @PostMapping(value = "")
+    public Object jk(@RequestParam Map<String, String> body ){
+
+
+        System.out.println("dddddddddddd"+body.toString());
+
+        ObjectMapper mapper = new ObjectMapper();
+        String json = null;
+        try {
+            json = mapper.writeValueAsString(body);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("dddddddddddd"+json);
+
+        TsReqLtBase tsReqLt产品列表 = null;
+        try {
+            tsReqLt产品列表 = mapper.readValue(json, TsReqLtBase.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
 
 
-        System.out.println("dddddddddddd"+tsReqLt产品列表.toString());
         if(!tsReqLt产品列表.getFormat().equals("json")){
             throw new BookNotFoundException(Enumfailures.not_found,"请求 format 需要json 格式");
 
         }
 
 
-        Optional<Agent> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
+        Optional<Pair<Agent, Supplier>> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
 
 
         if(agentOptional.isEmpty()){
@@ -85,9 +108,12 @@ public class TSRestController {
         }
 
 
-        Agent agent = agentOptional.get();
+        Pair<Agent,Supplier> agent = agentOptional.get();
+
+
+
         logger.info("天使同城接口调用 id {} 请求方法 {} 代理机构 {} 代理机构编码",tsReqLt产品列表.get_pid(),
-                tsReqLt产品列表.getMethod(),agent.getName(),agent.getCode());
+                tsReqLt产品列表.getMethod(),agent.getValue1().getName(),agent.getValue1().getCode());
 
 
 
@@ -202,7 +228,7 @@ public class TSRestController {
     public LtRespToTs产品列表 item_list(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
 
 
-        Optional<Agent> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
+        Optional<Pair<Agent,Supplier>> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
 
 
         if(agentOptional.isEmpty()){
@@ -215,7 +241,7 @@ public class TSRestController {
         }
 
 
-        Agent agent = agentOptional.get();
+        Pair<Agent,Supplier> agent = agentOptional.get();
 
 
         if(tsReqLt产品列表.get_pid().equals("dddddd")){
@@ -231,7 +257,7 @@ public class TSRestController {
     @PostMapping(value = "/item_orders", produces = "application/json")
     public LtRespToTs下单接口 item_orders(@RequestBody TsReqLt下单接口 tsReqLt产品列表) {
 
-        Optional<Agent> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
+        Optional<Pair<Agent,Supplier>> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
 
 
         if(agentOptional.isEmpty()){
@@ -244,7 +270,7 @@ public class TSRestController {
         }
 
 
-        Agent agent = agentOptional.get();
+        Pair<Agent,Supplier> agent = agentOptional.get();
 
         try{
             if(tsReqLt产品列表.get_pid().equals("dddddd")){

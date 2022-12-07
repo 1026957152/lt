@@ -38,6 +38,7 @@ public class AgentResp extends BaseResp{
     private Integer total_bookings;//	Total number of bookings associated with the agent
     private Integer recent_bookings;//	Number of recent bookings associated with the agent
     private LocalDate last_booked;//	Date the last booking made by the agent was created. YYYY-MM-DD.
+    private SupplierResp agent;
 
 
     public Integer getTotal_bookings() {
@@ -186,5 +187,13 @@ public class AgentResp extends BaseResp{
 
     public String getStatus_text() {
         return status_text;
+    }
+
+    public void setAgent(SupplierResp agent) {
+        this.agent = agent;
+    }
+
+    public SupplierResp getAgent() {
+        return agent;
     }
 }

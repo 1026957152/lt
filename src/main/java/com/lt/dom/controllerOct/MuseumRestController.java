@@ -13,12 +13,12 @@ import com.lt.dom.otcReq.ExhibitionReq;
 import com.lt.dom.otcReq.LocationResp;
 import com.lt.dom.otcReq.MuseumReq;
 import com.lt.dom.otcenum.EnumDocumentType;
-import com.lt.dom.otcenum.EnumPhotos;
 import com.lt.dom.otcenum.EnumRedemptionMethod;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import com.lt.dom.serviceOtc.MuseumServiceImpl;
+import net.bytebuddy.asm.Advice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +28,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -123,7 +122,7 @@ public class MuseumRestController {
     }
 
 
-    @PostMapping(value = "/museums/{Museum_ID}", produces = "application/json")
+    @PutMapping(value = "/museums/{Museum_ID}", produces = "application/json")
     public EntityModel<Museum> editMuseum(@PathVariable long Museum_ID ,@RequestBody @Valid MuseumReq MuseumReq) {
 
         Optional<Museum> supplierOptional = museumRepository.findById(Museum_ID);
@@ -189,9 +188,7 @@ public class MuseumRestController {
 
         MuseumResp museumResp = MuseumResp.from(Museum);
 
-        LocationResp locationResp = new LocationResp();
-        locationResp.setAddress("山西省榆阳区阜石路");
-        museumResp.setAddress(locationResp);
+        museumResp.setAddress(LocationResp.from(Museum.getLocation()));
         museumResp.setExhibitions(exhibitionList.stream().map(e->{
 
 
@@ -199,10 +196,10 @@ public class MuseumRestController {
 
             EntityModel entityModel = EntityModel.of(exhibitionResp);
 
-            MediaResp mediaResp = new MediaResp();
-            mediaResp.setPortrait(fileStorageService.loadDocumentWithDefault(EnumDocumentType.museum_thumbnail,e.getCode()));
+           // MediaResp mediaResp = new MediaResp();
+            exhibitionResp.setCover(fileStorageService.loadDocumentWithDefault(EnumDocumentType.exhibit_cover,e.getCode()));
 
-            exhibitionResp.setMedia(mediaResp);
+           // exhibitionResp.setMedia(mediaResp);
 
 
             entityModel.add(linkTo(methodOn(MuseumRestController.class).getExhibit(e.getId())).withSelfRel());
@@ -213,9 +210,9 @@ public class MuseumRestController {
             return entityModel;
         }).collect(Collectors.toList()));
 
-        museumResp.setHeaderImage(fileStorageService.loadDocument(Arrays.asList(EnumPhotos.full),EnumDocumentType.museum_thumbnail,Museum.getCode()));
+        museumResp.setHeader(fileStorageService.loadDocumentWithDefault(EnumDocumentType.museum_cover,Museum.getCode()));
         EntityModel entityModel = EntityModel.of(museumResp);
-        entityModel.add(linkTo(methodOn(MuseumRestController.class).getMuseum(Museum.getId())).withRel("createMuseum"));
+        entityModel.add(linkTo(methodOn(MuseumRestController.class).getMuseum(Museum.getId())).withSelfRel());
 
         return entityModel;
 
@@ -223,6 +220,55 @@ public class MuseumRestController {
 
 
 
+    @GetMapping(value = "/museums/{Museum_ID}/edit", produces = "application/json")
+    public EntityModel<MuseumResp> getMuseumEdit(@PathVariable long Museum_ID) {
+
+        Optional<Museum> validatorOptional = museumRepository.findById(Museum_ID);
+        if(validatorOptional.isEmpty()){
+
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到产品");
+
+        }
+
+
+        Museum Museum = validatorOptional.get();
+
+
+
+        List<Exhibition> exhibitionList = exhibitionRepository.findAll();
+
+
+        MuseumResp museumResp = MuseumResp.from(Museum);
+
+        museumResp.setAddress(LocationResp.from(Museum.getLocation()));
+        museumResp.setExhibitions(exhibitionList.stream().map(e->{
+
+
+            ExhibitionResp exhibitionResp = ExhibitionResp.from(e);
+
+            EntityModel entityModel = EntityModel.of(exhibitionResp);
+
+            // MediaResp mediaResp = new MediaResp();
+            exhibitionResp.setCover(fileStorageService.loadDocumentWithDefault(EnumDocumentType.exhibit_cover,e.getCode()));
+
+            // exhibitionResp.setMedia(mediaResp);
+
+
+            entityModel.add(linkTo(methodOn(MuseumRestController.class).getExhibit(e.getId())).withSelfRel());
+
+
+
+
+            return entityModel;
+        }).collect(Collectors.toList()));
+
+        museumResp.setHeader(fileStorageService.loadDocumentWithDefault(EnumDocumentType.museum_cover,Museum.getCode()));
+        EntityModel entityModel = EntityModel.of(museumResp);
+        entityModel.add(linkTo(methodOn(MuseumRestController.class).getMuseum(Museum.getId())).withRel("createMuseum"));
+
+        return entityModel;
+
+    }
 
 
 
@@ -275,7 +321,7 @@ public class MuseumRestController {
 
     }
 
-    @GetMapping(value = "/exhibit/{EXHIBITON_ID}", produces = "application/json")
+    @GetMapping(value = "/exhibits/{EXHIBITON_ID}", produces = "application/json")
     public EntityModel<ExhibitionReq> getExhibit(@PathVariable long EXHIBITON_ID) {
 
         Optional<Exhibition> supplierOptional = exhibitionRepository.findById(EXHIBITON_ID);
@@ -294,9 +340,9 @@ public class MuseumRestController {
 
             ArtworkResp artworkResp = ArtworkResp.from(e);
             MediaResp mediaResp = new MediaResp();
-            mediaResp.setPortrait(fileStorageService.loadDocumentWithCode(EnumDocumentType.artwork_thumbnail,e.getCode()));
+            mediaResp.setPortrait(fileStorageService.loadDocumentWithDefault(EnumDocumentType.artwork_portrait,e.getCode()));
 
-            mediaResp.setAudio(fileStorageService.loadDocumentWithCodeToUrl(EnumDocumentType.artwork_audio,e.getCode()));
+            mediaResp.setAudio(fileStorageService.loadDocumentWithDefault(EnumDocumentType.artwork_audio,e.getCode()));
             artworkResp.setMedia(mediaResp);
 
 
@@ -314,6 +360,44 @@ public class MuseumRestController {
 
     }
 
+    @GetMapping(value = "/exhibit/{EXHIBITON_ID}/pc", produces = "application/json")
+    public EntityModel<ExhibitionReq> getExhibitPc(@PathVariable long EXHIBITON_ID) {
+
+        Optional<Exhibition> supplierOptional = exhibitionRepository.findById(EXHIBITON_ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
+
+        Exhibition exhibition = supplierOptional.get();
+
+        List<Artwork> artworks = collectionItemRepository.findAll();
+
+        ExhibitionResp exhibitionReq = ExhibitionResp.from(exhibition);
+        exhibitionReq.setArtworkss(artworks.stream().map(e->{
+
+
+
+            ArtworkResp artworkResp = ArtworkResp.from(e);
+            MediaResp mediaResp = new MediaResp();
+            mediaResp.setPortrait(fileStorageService.loadDocumentWithDefault(EnumDocumentType.artwork_portrait,e.getCode()));
+
+            mediaResp.setAudio(fileStorageService.loadDocumentWithCode(EnumDocumentType.artwork_audio,e.getCode()));
+            artworkResp.setMedia(mediaResp);
+
+
+            EntityModel entityModel = EntityModel.of(artworkResp);
+            //  entityModel.add(linkTo(methodOn(MuseumRestController.class).getExhibit(e.getId())).withSelfRel());
+
+            return entityModel;
+        }).collect(Collectors.toList()));
+
+
+
+        EntityModel entityModel = EntityModel.of(exhibitionReq);
+
+        return entityModel;
+
+    }
 
     @PostMapping(value = "/suppliers/{SUPPLIER_ID}/artwork", produces = "application/json")
     public EntityModel<Artwork> createArtwork(@PathVariable long SUPPLIER_ID , @RequestBody @Valid ArtworkReq movieReq) {
@@ -338,7 +422,27 @@ public class MuseumRestController {
     }
 
 
+    @PutMapping(value = "/artworks/{ID}", produces = "application/json")
+    public EntityModel<Artwork> updateArtwork(@PathVariable long ID , @RequestBody @Valid ArtworkReq movieReq) {
 
+        Optional<Artwork> supplierOptional = collectionItemRepository.findById(ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"没找到 艺术品");
+        }
+
+        Artwork supplier = supplierOptional.get();
+
+
+
+
+        Artwork place = museumService.updateArtwork(supplier,movieReq);
+
+
+        EntityModel entityModel = EntityModel.of(place);
+
+        return entityModel;
+
+    }
 
 
 

@@ -40,6 +40,7 @@ public class ArtworkResp {
 
         private String repository;
     private long id;
+    private String intro;
 
     public static ArtworkResp from(Artwork e) {
         ArtworkResp artworkResp = new ArtworkResp();
@@ -48,6 +49,8 @@ public class ArtworkResp {
         artworkResp.setName_long(e.getName_long());
         artworkResp.setDesc_short(e.getDesc_short());
         artworkResp.setDesc_long(e.getDesc_long());
+        artworkResp.setIntro(e.getIntro());
+
         return artworkResp;
     }
 
@@ -226,5 +229,13 @@ public class ArtworkResp {
 
     public long getId() {
         return id;
+    }
+
+    public void setIntro(String intro) {
+        this.intro = intro;
+    }
+
+    public String getIntro() {
+        return intro;
     }
 }

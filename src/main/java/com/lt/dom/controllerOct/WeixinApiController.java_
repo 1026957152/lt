@@ -1,0 +1,206 @@
+package com.lt.dom.controllerOct;
+
+import com.alibaba.fastjson.JSONObject;
+import com.fan.yygh.common.exception.YyghException;
+import com.fan.yygh.common.result.Result;
+import com.fan.yygh.common.result.ResultCodeEnum;
+import com.fan.yygh.helper.JwtHelper;
+import com.fan.yygh.model.user.UserInfo;
+import com.fan.yygh.user.service.UserInfoService;
+import com.fan.yygh.user.utils.ConstantPropertiesUtil;
+import com.fan.yygh.user.utils.HttpClientUtils;
+import com.lt.dom.config.Constants;
+import com.lt.dom.config.WxConfig;
+import com.lt.dom.minapp.CommonUtil;
+import com.lt.dom.minapp.Token;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.annotation.Resource;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
+//微信操作的接口
+@Api("微信")
+@Controller
+@RequestMapping("/api/ucenter/wx")
+public class WeixinApiController {
+    @Resource
+    private UserInfoService userInfoService;
+
+
+    @Autowired
+    private WxConfig wxConfig;
+
+    /**
+     * 获取微信登录参数
+     * 1.生成微信扫描二维码
+     * 返回生成二维码需要的参数
+     */
+    @GetMapping("getLoginParam")
+    @ResponseBody
+    public ResponseEntity genQrConnect() throws UnsupportedEncodingException {
+        String redirect_uri = URLEncoder.encode(
+                Constants.WX_OPEN_REDIRECT_URL, "UTF-8");
+        Map<String, Object> map = new HashMap<>();
+
+        map.put("appid", wxConfig.getAppId());
+        map.put("redirect_uri", redirect_uri);
+        map.put("scope", "snsapi_login");
+        map.put("state", System.currentTimeMillis()+"");//System.currentTimeMillis()+""
+        return ResponseEntity.ok(map);
+    }
+    //微信扫描后回调的方法
+    @GetMapping("callback")
+    public String callback(String code,String state){
+        //第一步，获取 临时授权临时票据code
+        System.out.println("code:"+code);
+
+
+        //第二步：拿着code和微信appid和秘钥appscrect(三个参数换一个参数),--》请求微信固定地址--》换取access_token
+        StringBuffer baseAccessTokenUrl = new StringBuffer()
+                .append("https://api.weixin.qq.com/sns/oauth2/access_token")
+                .append("?appid=%s")
+                .append("&secret=%s")
+                .append("&code=%s")
+                .append("&grant_type=authorization_code");
+        //baseAccessTokenUrl的参数填充
+        String accessTokenUrl = String.format(baseAccessTokenUrl.toString(),
+                wxConfig.getAppId(), //参数一appid
+                wxConfig.getSecret(), //参数二appscrec
+                code); //参数三code
+
+        //使用httpclient请求这个地址
+        String accessTokenInfo  = null;
+        try {
+
+            Token accessTokenInfo  =null;// CommonUtil.getToken(wxConfig.getAppId(), wxConfig.getSecret());
+
+
+            //使用三个参数换取token,accessTokenInfo包含token令牌信息
+            //accessTokenInfo = HttpClientUtils.get(accessTokenUrl);//accessTokenUrl包含三个参数
+            /*令牌accessTokenInfo:
+            {"access_token":"60_jEgLorfJRsMwTfuDdzUN_7mApa4D7c",
+            "expires_in":7200,
+            "refresh_token":"60_LPZ7M5sigEJ_wB09HKCeMETuYwLBjg",
+            "openid":"o3_SC5yAwrC4BO587_u3_llgcHZU",
+            "scope":"snsapi_login",
+            "unionid":"oWgGz1KqBehsbtgjrIjCR8-5hxkU"}*/
+            System.out.println("使用code换取的access_token结果accessTokenInfo:"+accessTokenInfo);
+            /*=============================以下是对换取的token做处理=======================================*/
+            //从返回字符串拿到两个值openid  和 access_token
+       //     JSONObject jsonObject = JSONObject.parseObject(accessTokenInfo);
+            String access_token = accessTokenInfo.getAccessToken();// jsonObject.getString("access_token");
+            String openid = accessTokenInfo.getAccessToken();// jsonObject.getString("openid");
+            //判断数据库是否存在微信的扫描人信息，根据openid判断
+            UserInfo userInfo = userInfoService.selectWxInfoOpenId(openid);
+            if(userInfo == null){ //数据库不存在微信信息
+                //第三步：拿着openid 和access_token 请求微信地址，得到扫码人 信息
+                //根据access_token获取微信用户的基本信息
+                //先根据openid进行数据库查询
+                // UserInfo userInfo = userInfoService.getByOpenid(openId);
+                // 如果没有查到用户信息,那么调用微信个人信息获取的接口
+                // if(null == userInfo){
+                //如果查询到个人信息，那么直接进行登录
+                //使用access_token换取受保护的资源：微信的个人信息
+                //换取token的地址：   https://api.weixin.qq.com/sns/oauth2/access_token
+                //换取user信息的地址：https://api.weixin.qq.com/sns/userinfo
+                String baseUserInfoUrl = "https://api.weixin.qq.com/sns/userinfo" +
+                        "?access_token=%s" +
+                        "&openid=%s";
+                String userInfoUrl = String.format(baseUserInfoUrl, access_token, openid);
+
+                String resultInfo = HttpClientUtils.get(userInfoUrl);
+                //得到扫码 用户信息resultInfo，是一个json字符串
+                /*扫码人信息resultInfo:
+                {"openid":"o3_SC5yAwrC4BO587_u3_llgcHZUxxx",
+                "nickname":"xxx","sex":0,"language":"","city":"","province":"","country":"",
+                "headimgurl":"https:\23\/132",
+                "privilege":[],
+                "unionid":"oWgGz1KqBehsbtgjrIjCR8-5hxkU"}*/
+                //================第四步：利用access_token 和openid  换取 扫码人信息=============
+                System.out.println("扫码人信息resultInfo:"+resultInfo);
+                //解析用户信息，将string转成json对象
+                JSONObject resultUserInfoJson = JSONObject.parseObject(resultInfo);
+                String nickname = resultUserInfoJson.getString("nickname");//得到用户昵称
+                String headimgurl = resultUserInfoJson.getString("headimgurl");//得到用户头像
+                //获取扫码人信息 并添加到数据库
+                userInfo = new UserInfo();
+                userInfo.setName(nickname);
+                userInfo.setOpenid(openid);
+                userInfo.setStatus(1);
+                //保存到数据库
+                userInfoService.save(userInfo);
+            }
+
+            //返回name和token令牌字符串
+            HashMap<String, String> map = new HashMap<>();
+            String name = userInfo.getName();
+            if(StringUtils.isEmpty(name)){
+                name = userInfo.getNickName();
+            }
+            if(StringUtils.isEmpty(name)){
+                name = userInfo.getPhone();
+            }
+            map.put("name",name);//将名字放入map
+            //要求每个微信用户要绑定手机号，判断userInfo是否有手机号，
+            // 如果手机号为空，返回openid
+            //如果手机号不为空，返回openid值是空字符串
+            //前端判断：如果openid不为空，绑定手机号，如果openid为空，不需要绑定手机号
+            if(StringUtils.isEmpty(userInfo.getPhone())){
+                map.put("openid", userInfo.getOpenid());
+            }else{
+                map.put("openid","");
+            }
+            //产生token令牌字符串
+            String token = JwtHelper.createToken(userInfo.getId(), name);
+            map.put("token",token);//将令牌token放入map
+
+            //登录成功后的页面跳转
+            return "redirect:"+ ConstantPropertiesUtil.YYGH_BASE_URL + "/weixin/callback?token="+
+                    map.get("token")+"&openid="+
+                    map.get("openid")+"&name="+URLEncoder.encode(map.get("name"),"utf-8");
+
+        } catch (Exception e) {
+            throw new YyghException(ResultCodeEnum.FETCH_ACCESSTOKEN_FAILD);
+            //return null;
+        }
+
+    }
+
+    /*============我的微信二维码生成的方法====================*/
+    /*方法返回生成展示二维码的各种前端页面参数*/
+    @ApiOperation("我的微信二维码生成的方法")
+    @GetMapping("createWeixinImage")
+    @ResponseBody  //此注解返回json
+    public ResponseEntity   createWeixinImage() throws UnsupportedEncodingException {
+        //微信官方规定：redirect_uri		重定向地址，需要进行UrlEncode
+        String redirect_uri = URLEncoder.encode(
+                Constants.WX_OPEN_REDIRECT_URL,
+                "UTF-8");
+        HashMap<String, Object> map = new HashMap<>();
+        //从官网给的参数中获取appid，appid在配置文件中的
+        map.put("appid",wxConfig.getAppId());
+        //scope:应用授权作用域，拥有多个作用域用逗号（,）分隔，网页应用目前仅填写snsapi_login即可
+        map.put("scope","snsapi_login");
+        map.put("redirect_uri",redirect_uri);
+        /*用于保持请求和回调的状态，授权请求后原样带回给第三方。
+        该参数可用于防止 csrf 攻击（跨站请求伪造攻击），
+        建议第三方带上该参数，可设置为简单的随机数加 session 进行校验*/
+        map.put("state",System.currentTimeMillis()+"");
+        return ResponseEntity.ok(map);
+    }
+
+}
+/*
+————————————————
+版权声明：本文为CSDN博主「这个名字先用着」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/weixin_38568503/article/details/126469125*/

@@ -1,6 +1,9 @@
 package com.lt.dom.otcReq;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.lt.dom.OctResp.LocationReq;
+import com.lt.dom.OctResp.PhoneResp;
+import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.oct.Base;
 import com.lt.dom.oct.Museum;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -16,6 +19,15 @@ public class MuseumReq extends Base {
     private String desc_long;
     private String slug;
 
+    private LocationReq location;
+
+    public LocationReq getLocation() {
+        return location;
+    }
+
+    public void setLocation(LocationReq location) {
+        this.location = location;
+    }
 
     @DateTimeFormat(pattern = "HH:mm:ss")
     @JsonFormat(pattern = "HH:mm:ss")
@@ -29,6 +41,7 @@ public class MuseumReq extends Base {
 
 
     private MediaReq media;
+    private PhotoResp cover;
 
 
     public String getName() {
@@ -109,37 +122,45 @@ public class MuseumReq extends Base {
         return museumResp;
     }
 
+    public PhotoResp getCover() {
+        return cover;
+    }
+
+    public void setCover(PhotoResp cover) {
+        this.cover = cover;
+    }
+
     public static class MediaReq{
         private String  icon;
         private String  large;
         private String  standard;
         private String  thumbnail;
-        private String  audio;
+        private PhotoResp  audio;
 
-        private String  portrait;
-        private String  introductionAudio;
+        private PhotoResp  portrait;
+        private PhotoResp  introductionAudio;
 
-        public String getPortrait() {
+        public PhotoResp getPortrait() {
             return portrait;
         }
 
-        public void setPortrait(String portrait) {
+        public void setPortrait(PhotoResp portrait) {
             this.portrait = portrait;
         }
 
-        public String getIntroductionAudio() {
+        public PhotoResp getIntroductionAudio() {
             return introductionAudio;
         }
 
-        public void setIntroductionAudio(String introductionAudio) {
+        public void setIntroductionAudio(PhotoResp introductionAudio) {
             this.introductionAudio = introductionAudio;
         }
 
-        public String getAudio() {
+        public PhotoResp getAudio() {
             return audio;
         }
 
-        public void setAudio(String audio) {
+        public void setAudio(PhotoResp audio) {
             this.audio = audio;
         }
 

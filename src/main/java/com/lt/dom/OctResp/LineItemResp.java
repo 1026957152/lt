@@ -21,6 +21,7 @@ public class LineItemResp {
     private EnumFulfillmentInstructionsType fulfillmentInstructionsType;
     private String fulfillmentInstructionsType_text;
     private List intelliCodes;
+    private Float base_cost_price;
 
     public void setType(EnumLineType type) {
         this.type = type;
@@ -100,6 +101,14 @@ public class LineItemResp {
 
     public List getIntelliCodes() {
         return intelliCodes;
+    }
+
+    public void setBase_cost_price(Float base_cost_price) {
+        this.base_cost_price = base_cost_price;
+    }
+
+    public Float getBase_cost_price() {
+        return base_cost_price;
     }
 
     public static class Pass {
@@ -253,7 +262,7 @@ public class LineItemResp {
         lineItemResp.setQuantity(e.getQuantity());
         lineItemResp.setStatus(e.getStatus());
 
-
+        lineItemResp.setBase_cost_price(e.getBase_cost_price());
 
         lineItemResp.setFulfillmentInstructionsType(e.getFulfillmentInstructionsType());
 

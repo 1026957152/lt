@@ -17,6 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/oct")
@@ -40,6 +44,7 @@ public class MenuRestController {
 
 
 
+/*
 
         //todo
 
@@ -57,6 +62,7 @@ public class MenuRestController {
         ));
         menuRespList.addAll(Arrays.asList(menuResp_device));
 
+*/
 
 
 
@@ -162,18 +168,7 @@ public class MenuRestController {
         //todo
 
 
-        MenuResp menuResp_device =new MenuResp("Device","/device/index",
-                "device",
-                new MenuResp.Meta( "设备管理", "el-icon-film",Arrays.asList("ROLE_ADMIN"))
-        );
 
-        menuResp_device.getChildren().add(new MenuResp("/device/index","IndexDevice",
-                new MenuResp.Meta( "设备列表", "el-icon-film")
-        ));
-        menuResp_device.getChildren().add(new MenuResp("/device/detail","DetailDevice",
-                new MenuResp.Meta( "设备详情", "el-icon-film")
-        ));
-        menuRespList.addAll(Arrays.asList(menuResp_device));
 
 
 
@@ -196,20 +191,22 @@ public class MenuRestController {
                 new MenuResp.Meta( "商户发布")
         ));
 
-        menuResp_Suppliers.getChildren().add(new MenuResp("/suppliers/employees/index",true,"IndexEmployees",
+/*
+        menuResp_Suppliers.getChildren().add(new MenuResp("/suppliers/employees/index","IndexEmployees",
                 new MenuResp.Meta( "职工管理","el-icon-s-custom",Arrays.asList("ROLE_ADMIN","ROLE_MERCHANT","ROLE_TRAVEL_AGENCY"))
         ));
+*/
 
-        menuResp_Suppliers.getChildren().add(new MenuResp("/suppliers/guide/index",true,"IndexGuide",
+/*        menuResp_Suppliers.getChildren().add(new MenuResp("/suppliers/guide/index",true,"IndexGuide",
                 new MenuResp.Meta( "导游列表","el-icon-service",Arrays.asList("ROLE_ADMIN","ROLE_MERCHANT","ROLE_TRAVEL_AGENCY"))
-        ));
-        menuResp_Suppliers.getChildren().add(new MenuResp("/suppliers/balance/index",true,"IndexBalance",
+        ));*/
+        menuResp_Suppliers.getChildren().add(new MenuResp("/suppliers/balance/index","IndexBalance",
                 new MenuResp.Meta( "余额明细","el-icon-s-finance",Arrays.asList("ROLE_ADMIN"))
         ));
-        menuResp_Suppliers.getChildren().add(new MenuResp("/suppliers/charge/index",true,"IndexCharge",
+        menuResp_Suppliers.getChildren().add(new MenuResp("/suppliers/charge/index","IndexCharge",
                 new MenuResp.Meta( "付款记录","'el-icon-s-finance",Arrays.asList("ROLE_ADMIN"))
         ));
-        menuResp_Suppliers.getChildren().add(new MenuResp("/suppliers/refund/index",true,"IndexRefund",
+        menuResp_Suppliers.getChildren().add(new MenuResp("/suppliers/refund/index","IndexRefund",
                 new MenuResp.Meta( "退款记录","'el-icon-s-finance",Arrays.asList("ROLE_ADMIN"))
         ));
 
@@ -251,6 +248,7 @@ public class MenuRestController {
 
 
 
+/*
         MenuResp menuResp_balance =new MenuResp("/suppliers/balance",true,"/suppliers/guide/index",
                 "Balance'",
                 new MenuResp.Meta( "余额管理", "el-icon-s-finance",Arrays.asList("ROLE_ADMIN"))
@@ -261,12 +259,14 @@ public class MenuRestController {
         ));
 
         menuRespList.addAll(Arrays.asList(menuResp_balance));
+*/
 
 
 
 
 
 
+/*
 
         MenuResp menuResp_Charge =new MenuResp("/suppliers/charge",true,"/suppliers/charge/index",
                 "Charge",
@@ -278,11 +278,12 @@ public class MenuRestController {
         ));
 
         menuRespList.addAll(Arrays.asList(menuResp_Charge));
+*/
 
 
 
 
-        MenuResp menuResp_refund =new MenuResp("/suppliers/refund",true,"/suppliers/refund/index",
+/*        MenuResp menuResp_refund =new MenuResp("/suppliers/refund",true,"/suppliers/refund/index",
                 "Refund",
                 new MenuResp.Meta( "退款记录", "el-icon-s-finance",Arrays.asList("ROLE_ADMIN"))
         );
@@ -291,28 +292,26 @@ public class MenuRestController {
                 new MenuResp.Meta( "退款记录", "el-icon-s-finance",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT"))
         ));
 
-        menuRespList.addAll(Arrays.asList(menuResp_refund));
+        menuRespList.addAll(Arrays.asList(menuResp_refund));*/
 
 
 
 
 
-        MenuResp menuResp_approval =new MenuResp("/approval",true,"/approval/index",
+        MenuResp menuResp_approval =new MenuResp("/approval","/approval/index",
                 "Approval",
                 new MenuResp.Meta( "审批管理", "el-icon-s-check",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
-                ),true
+                )
         );
 
-        menuResp_approval.getChildren().add(new MenuResp("index",true,"IndexApproval",
-                new MenuResp.Meta( "审批列表", "el-icon-s-finance",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")),
-                true
+        menuResp_approval.getChildren().add(new MenuResp("index","IndexApproval",
+                new MenuResp.Meta( "审批列表", "el-icon-s-finance",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT"))
+
         ));
         menuResp_approval.getChildren().add(new MenuResp("detail",true,"DetailApproval",
                 new MenuResp.Meta( "审批详情", "el-icon-s-check",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT"))
         ));
         menuRespList.addAll(Arrays.asList(menuResp_approval));
-
-
 
 
 
@@ -329,18 +328,18 @@ public class MenuRestController {
                 )
         );
 
-        menuResp_products.getChildren().add(new MenuResp("/products/index",true,"IndexProducts",
+        menuResp_products.getChildren().add(new MenuResp("/products/index","IndexProducts",
                 new MenuResp.Meta( "产品列表", "el-icon-menu",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
         ));
         menuResp_products.getChildren().add(new MenuResp("/products/post",true,"PostProducts",
-                new MenuResp.Meta( "发布产品", "el-icon-s-check",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY")),true
+                new MenuResp.Meta( "发布产品", "el-icon-s-check",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"),true),true
         ));
 
-        menuResp_products.getChildren().add(new MenuResp("/componentright/index",true,"IndexComponentright",
+        menuResp_products.getChildren().add(new MenuResp("/componentright/index","IndexComponentright",
                 new MenuResp.Meta( "权益列表", "el-icon-thumb",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
         ));
-        menuResp_products.getChildren().add(new MenuResp("/attractions/post",true,"IndexAttractions",
-                new MenuResp.Meta( "景点列表", "el-icon-guide",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY")),true
+        menuResp_products.getChildren().add(new MenuResp("/attractions/post","IndexAttractions",
+                new MenuResp.Meta( "景点列表", "el-icon-guide",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
         ));
         menuResp_products.getChildren().add(new MenuResp("/attractions/create",true,"CreateAttractions",
                 new MenuResp.Meta( "新建景点", true)
@@ -350,7 +349,7 @@ public class MenuRestController {
                 new MenuResp.Meta( "编辑景点", true)
         ));
 
-        menuResp_products.getChildren().add(new MenuResp("/theater/create",true,"IndexTheater",
+        menuResp_products.getChildren().add(new MenuResp("/theater/create","IndexTheater",
                 new MenuResp.Meta( "剧院列表", "el-icon-video-camera",true)
         ));
 
@@ -359,7 +358,7 @@ public class MenuRestController {
         ));
 
 
-        menuResp_products.getChildren().add(new MenuResp("/movies/index",true,"IndexMovies",
+        menuResp_products.getChildren().add(new MenuResp("/movies/index","IndexMovies",
                 new MenuResp.Meta( "剧目列表", "el-icon-video-camera-solid")
         ));
 
@@ -367,7 +366,7 @@ public class MenuRestController {
                 new MenuResp.Meta( "发布剧目", true)
         ));
 
-        menuResp_products.getChildren().add(new MenuResp("/citywalk/index",true,"IndexCitywalk",
+        menuResp_products.getChildren().add(new MenuResp("/citywalk/index","IndexCitywalk",
                 new MenuResp.Meta( "自助旅行", "el-icon-menu",Arrays.asList("ROLE_ADMIN"))
         ));
 
@@ -376,7 +375,7 @@ public class MenuRestController {
         ));
 
 
-        menuResp_products.getChildren().add(new MenuResp("/campaigns/index",true,"IndexCampaigns",
+        menuResp_products.getChildren().add(new MenuResp("/campaigns/index","IndexCampaigns",
                 new MenuResp.Meta( "优惠券管理", "el-icon-s-ticket",Arrays.asList("ROLE_ADMIN"))
         ));
 
@@ -386,11 +385,11 @@ public class MenuRestController {
 
 
 
-        menuResp_products.getChildren().add(new MenuResp("/campaigns/create",true,"CreateCampaigns",
+ /*       menuResp_products.getChildren().add(new MenuResp("/campaigns/index",true,"IndexCampaign",
                 new MenuResp.Meta( "优惠券管理", "el-icon-s-ticket",Arrays.asList("ROLE_ADMIN"))
-        ));
+        ));*/
 
-        menuResp_products.getChildren().add(new MenuResp("/campaigns/detail",true,"detailCampaigns",
+        menuResp_products.getChildren().add(new MenuResp("/campaigns/create",true,"CreateCampaign",
                 new MenuResp.Meta( "新建活动","el-icon-menu", Arrays.asList("ROLE_ADMIN"))
         ));
 
@@ -429,11 +428,64 @@ public class MenuRestController {
 
 
 
-        MenuResp menuResp_bookingservice =new MenuResp("/bookingservice",true,"/bookingservice/index",
+
+
+        MenuResp menuResp_order =new MenuResp("/order",
+                "Order",
+                new MenuResp.Meta( "订单管理", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                )
+        );
+        menuResp_order.getChildren().add(new MenuResp("/bookingtour/index","IndexBookingtour",
+                new MenuResp.Meta( "团订单列表","el-icon-s-order", Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"))
+        ));
+
+
+
+        menuResp_order.getChildren().add(new MenuResp("/bookingtour/detail",true,"DetailBookingtour",
+                new MenuResp.Meta( "团订单详情", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"),true)
+        ));
+
+
+        menuResp_order.getChildren().add(new MenuResp("/booking/index","IndexBooking",
+                new MenuResp.Meta( "订单列表", "el-icon-s-order",Arrays.asList("ROLE_ADMIN"))
+        ));
+
+
+
+
+
+        menuResp_order.getChildren().add(new MenuResp("/booking/detail",true,"DetailBooking",
+                new MenuResp.Meta( "订单详情", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+        menuResp_order.getChildren().add(new MenuResp("/order/redemption","IndexRedemption",
+                new MenuResp.Meta( "核销记录","el-icon-document", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+
+
+
+
+
+        menuResp_order.getChildren().add(new MenuResp("/order/create",true,"CreateOrder",
+                new MenuResp.Meta("下单领券", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+
+        menuResp_order.getChildren().add(new MenuResp("/voucher/index","IndexVoucher",
+                new MenuResp.Meta( "券列表", "el-icon-s-ticket",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"))
+        ));
+
+        menuResp_order.getChildren().add(new MenuResp("/voucher/detail",true,"DetailVoucher",
+                new MenuResp.Meta( "券详情", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT")),
+                true
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_order));
+
+
+
+
+        MenuResp menuResp_bookingservice =new MenuResp("/bookingservice","/bookingservice/index",
                 "Bookingservice",
                 new MenuResp.Meta( "预约服务管理", "el-icon-film",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
-                ),true
-        );
+                )       );
 
         menuResp_bookingservice.getChildren().add(new MenuResp("/bookingservice/index","IndexBookingservice",
                 new MenuResp.Meta( "服务列表", "el-icon-coordinate",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
@@ -449,19 +501,26 @@ public class MenuRestController {
 
 
 
-        MenuResp menuResp_bulkissuances =new MenuResp("/bulkissuances",true,"/bulkissuances",
+        MenuResp menuResp_bulkissuances =new MenuResp("/bulkissuances","/bulkissuances",
                 "Bulkissuances",
                 new MenuResp.Meta( "城市主人卡管理", "el-icon-files",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
-                ),true
+                )
         );
 
         menuResp_bulkissuances.getChildren().add(new MenuResp("/passes/index","IndexPasses",
                 new MenuResp.Meta( "卡列表", "el-icon-copy-document",Arrays.asList("ROLE_ADMIN"))
         ));
+
+        menuResp_bulkissuances.getChildren().add(new MenuResp("/passes/detail",true,"DetailPasses",
+                new MenuResp.Meta( "卡详情", "el-icon-copy-document",Arrays.asList("ROLE_ADMIN"),true)
+        ));
+
+
+
         menuResp_bulkissuances.getChildren().add(new MenuResp("/bulkissuances/index","IndexBulkissuances",
                 new MenuResp.Meta( "批量卡列表","el-icon-files", Arrays.asList("ROLE_ADMIN"),true)
         ));
-        menuResp_bulkissuances.getChildren().add(new MenuResp("/bookingresource/detail",true,"DetailBulkissuances",
+        menuResp_bulkissuances.getChildren().add(new MenuResp("/bulkissuances/detail",true,"DetailBulkissuances",
                 new MenuResp.Meta( "批量卡详情", Arrays.asList("ROLE_ADMIN"),true)
         ));
         menuRespList.addAll(Arrays.asList(menuResp_bulkissuances));
@@ -471,14 +530,14 @@ public class MenuRestController {
 
 
 
-        MenuResp menuResp_invoice =new MenuResp("/invoice",true,"/Invoice",
-                "Bulkissuances",
-                new MenuResp.Meta( "发票管理", "el-icon-menu",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
-                ),true
+        MenuResp menuResp_invoice =new MenuResp("/invoice","/Invoice",
+                "Invoice",
+                new MenuResp.Meta( "票据管理", "el-icon-menu",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                )
         );
 
         menuResp_invoice.getChildren().add(new MenuResp("/invoice/index","IndexInvoice",
-                new MenuResp.Meta( "票据管理", "el-icon-menu",Arrays.asList("ROLE_ADMIN"))
+                new MenuResp.Meta( "应收账款", "el-icon-menu",Arrays.asList("ROLE_ADMIN"))
         ));
         menuResp_invoice.getChildren().add(new MenuResp("/invoice/detail",true,"DetailInvoice",
                 new MenuResp.Meta( "发票详情","el-icon-menu", Arrays.asList("ROLE_ADMIN"),true)
@@ -487,11 +546,10 @@ public class MenuRestController {
 
 
 
-
-        MenuResp menuResp_subscribe =new MenuResp("/subscribe",true,"/Invoice",
+        MenuResp menuResp_subscribe =new MenuResp("/subscribe","/Invoice",
                 "Subscribe",
                 new MenuResp.Meta( "订阅管理", "el-icon-menu",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
-                ),true
+                )
         );
 
         menuResp_subscribe.getChildren().add(new MenuResp("/subscribe/index","IndexSubscribe",
@@ -509,31 +567,39 @@ public class MenuRestController {
 
 
 
-        MenuResp menuResp_market =new MenuResp("/market",true,
+
+
+        MenuResp menuResp_market =new MenuResp("/market",
                 "Market",
                 new MenuResp.Meta( "市场管理", "el-icon-s-flag",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
-                ),true
+                )
         );
 
         menuResp_market.getChildren().add(new MenuResp("/invitations/index","IndexInvitations",
                 new MenuResp.Meta( "邀请列表", "el-icon-thumb",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
         ));
-        menuResp_market.getChildren().add(new MenuResp("/market/product/index",true,"MarketIndexProduct",
+        menuResp_market.getChildren().add(new MenuResp("/market/product/index","MarketIndexProduct",
                 new MenuResp.Meta( "产品列表","el-icon-menu", Arrays.asList("ROLE_ADMIN"),true)
         ));
 
         menuResp_market.getChildren().add(new MenuResp("/market/product/detail",true,"MarketDetailProduct",
-                new MenuResp.Meta( "产品详情", "el-icon-s-order",Arrays.asList("ROLE_ADMIN"))
+                new MenuResp.Meta( "产品详情", "el-icon-s-order",Arrays.asList("ROLE_ADMIN"),true)
         ));
         menuResp_market.getChildren().add(new MenuResp("/partners/index","IndexPartners",
                 new MenuResp.Meta( "合作方列表","el-icon-s-flag", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
         ));
 
         menuResp_market.getChildren().add(new MenuResp("/partners/detail",true,"DetailPartners",
-                new MenuResp.Meta( "合作方详情", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"))
+                new MenuResp.Meta( "合作方详情", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"),true)
+        ));
+
+        menuResp_market.getChildren().add(new MenuResp("/agent/index","IndexAgent",
+                new MenuResp.Meta( "代理商列表","el-icon-s-flag", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+        menuResp_market.getChildren().add(new MenuResp("/agent/post",true,"PostAgent",
+                new MenuResp.Meta( "代理商编辑", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"),true)
         ));
         menuRespList.addAll(Arrays.asList(menuResp_market));
-
 
 
 
@@ -571,82 +637,6 @@ public class MenuRestController {
 
 
 
-        MenuResp menuResp_order =new MenuResp("/order",
-                "Order",
-                new MenuResp.Meta( "订单管理", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
-                )
-        );
-        menuResp_order.getChildren().add(new MenuResp("/bookingtour/index",true,"IndexBookingtour",
-                new MenuResp.Meta( "团订单列表","el-icon-s-order", Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"))
-        ));
-
-
-
-        menuResp_order.getChildren().add(new MenuResp("/bookingtour/detail",true,"DetailBookingtour",
-                new MenuResp.Meta( "团订单详情", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"),true)
-        ));
-
-
-            menuResp_order.getChildren().add(new MenuResp("/booking/index","IndexBooking",
-                new MenuResp.Meta( "订单列表", "el-icon-s-order",Arrays.asList("ROLE_ADMIN"))
-        ));
-
-
-
-
-
-            menuResp_order.getChildren().add(new MenuResp("/booking/detail",true,"DetailBooking",
-                new MenuResp.Meta( "订单详情", Arrays.asList("ROLE_ADMIN"),true)
-        ));
-            menuResp_order.getChildren().add(new MenuResp("/order/redemption","IndexRedemption",
-                new MenuResp.Meta( "核销记录","el-icon-document", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
-        ));
-
-
-
-        menuResp_order.getChildren().add(new MenuResp("/order/redemption","IndexRedemption",
-                new MenuResp.Meta( "订阅列表","el-icon-document", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
-        ));
-
-
-        menuResp_order.getChildren().add(new MenuResp("/order/create",true,"CreateOrder",
-                new MenuResp.Meta("下单领券", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
-        ));
-
-        menuResp_order.getChildren().add(new MenuResp("/voucher/index","IndexVoucher",
-                new MenuResp.Meta( "券列表", "el-icon-s-ticket",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"))
-        ));
-
-        menuResp_order.getChildren().add(new MenuResp("/voucher/detail",true,"DetailVoucher",
-                new MenuResp.Meta( "券详情", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT")),
-                true
-        ));
-        menuRespList.addAll(Arrays.asList(menuResp_order));
-
-
-
-
-
-
-
-
-        MenuResp menuResp_thirdplatform =new MenuResp("/thirdplatform",
-                "Order",
-                new MenuResp.Meta( "第三方平台", "el-icon-user-solid",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
-                )
-        );
-
-        menuResp_thirdplatform.getChildren().add(new MenuResp("/thirdplatform/index","IndexThirdplatform",
-                new MenuResp.Meta( "第三方平台", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
-        ));
-        menuResp_thirdplatform.getChildren().add(new MenuResp("/thirdplatform/product/index","IndexThirdplatformProduct",
-                new MenuResp.Meta( "产品列表","el-icon-s-order", Arrays.asList("ROLE_ADMIN"))
-        ));
-        menuRespList.addAll(Arrays.asList(menuResp_thirdplatform));
-
-
-
-
 
 
 
@@ -669,7 +659,7 @@ public class MenuRestController {
         menuResp_blog.getChildren().add(new MenuResp("/community/index","IndexCommunity",
                 new MenuResp.Meta( "社区列表", "el-icon-s-opportunity",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
         ));
-        menuResp_blog.getChildren().add(new MenuResp("/community/post",true,"PostBlog",
+        menuResp_blog.getChildren().add(new MenuResp("/community/post",true,"PostCommunity",
                 new MenuResp.Meta( "PostCommunity", Arrays.asList("ROLE_ADMIN"),true)
         ));
         menuRespList.addAll(Arrays.asList(menuResp_blog));
@@ -686,10 +676,28 @@ public class MenuRestController {
 
 
 
+        MenuResp menuResp_thirdplatform =new MenuResp("/thirdplatform",
+                "Thirdplatform",
+                new MenuResp.Meta( "第三方平台", "el-icon-user-solid",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                )
+        );
+
+        menuResp_thirdplatform.getChildren().add(new MenuResp("/thirdplatform/index","IndexThirdplatform",
+                new MenuResp.Meta( "第三方平台", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ));
+        menuResp_thirdplatform.getChildren().add(new MenuResp("/thirdplatform/product/index","IndexThirdplatformProduct",
+                new MenuResp.Meta( "产品列表","el-icon-s-order", Arrays.asList("ROLE_ADMIN"))
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_thirdplatform));
 
 
 
-        MenuResp menuResp_export =new MenuResp("/export");
+
+
+
+
+        MenuResp menuResp_export =new MenuResp("/export","/export/index" ,"Export",
+                new MenuResp.Meta( "导出", "el-icon-upload",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")));
 
             menuResp_export.getChildren().add(new MenuResp("/export/index","IndexExport",
                 new MenuResp.Meta( "导出", "el-icon-upload",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT","ROLE_MERCHANT","ROLE_TRAVEL_AGENCY"))
@@ -714,6 +722,14 @@ public class MenuRestController {
         ));
 
 
+        String link = linkTo(methodOn(ReportRestController.class).Booking_summary(null)).withRel("create").getHref();
+
+        menuResp_statistics.getChildren().add(new MenuResp("/statistics/booking-summary","Booking_summary",
+                new MenuResp.Meta( "订单概要", "el-icon-s-data",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        ,link));
+        menuResp_statistics.getChildren().add(new MenuResp("/statistics/channel-summary","Channel_summary",
+                new MenuResp.Meta( "渠道概要", "el-icon-s-data",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+                ,link));
         menuRespList.addAll(Arrays.asList(menuResp_statistics));
 
 
@@ -745,6 +761,18 @@ public class MenuRestController {
 
 
 
+        MenuResp menuResp_device =new MenuResp("/device","/device/index",
+                "Device",
+                new MenuResp.Meta( "设备管理", "el-icon-film",Arrays.asList("ROLE_ADMIN"))
+        );
+
+        menuResp_device.getChildren().add(new MenuResp("/device/index","IndexDevice",
+                new MenuResp.Meta( "设备列表", "el-icon-film")
+        ));
+        menuResp_device.getChildren().add(new MenuResp("/device/detail","DetailDevice",
+                new MenuResp.Meta( "设备详情", "el-icon-film")
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_device));
 
 
 
@@ -796,7 +824,7 @@ public class MenuRestController {
 
 
 
-        menuResp_settings.getChildren().add(new MenuResp("/valuelist/create","CreateValuelist",
+        menuResp_settings.getChildren().add(new MenuResp("/valuelist/create",true,"CreateValuelist",
                 new MenuResp.Meta( "添加组", Arrays.asList("ROLE_ADMIN"),true)
         ));
 
@@ -810,6 +838,24 @@ public class MenuRestController {
 
 
 
+        menuRespList = menuRespList.stream().map(e->{
+
+            if(e.getChildren().size()>0){
+                e.setComponent("#");
+                if(e.getRedirect()== null) {
+                    e.setRedirect("noRedirect");
+                }
+                e.setChildren(e.getChildren().stream().map(chiildren->{
+                    chiildren.setComponent(chiildren.getPath());
+                    chiildren.setChildren(null);
+                    return chiildren;
+                }).collect(Collectors.toList()));
+
+            }
+
+
+            return e;
+        }).collect(Collectors.toList());
 
 
 

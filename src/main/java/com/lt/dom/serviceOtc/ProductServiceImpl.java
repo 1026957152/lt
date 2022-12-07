@@ -840,7 +840,7 @@ public class ProductServiceImpl {
 
     }
     @Transactional
-    public Product editProductShippingTab(Product product, ProductEditResp.ShippingTap pojo) {
+    public Product editProductShippingTab(Product product, ProductEditResp.ShippingTab pojo) {
 
 
         if(pojo.getDeliveryFormats()!= null){
@@ -1454,5 +1454,14 @@ public class ProductServiceImpl {
         ProductSpecification spec = new ProductSpecification(searchQuery); //, "code", "claim_note"
         List<Product> productList = productRepository.findAll(where(spec));
         return productList;
+    }
+
+
+    public List<Product> fromValueList(List<Long> collect) {
+
+
+        List<Product> componentRightList = productRepository.findAllById(collect);
+        return componentRightList;
+
     }
 }

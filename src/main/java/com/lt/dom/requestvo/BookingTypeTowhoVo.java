@@ -35,6 +35,8 @@ public class BookingTypeTowhoVo {
     private NegotiatedPricingType negotiatedSku;
     private EnumDeliveryFormats deliveryFormat;
     private String remark;
+    private Float base_cost_price;
+    private Integer retail;
 
     public List<Sku> getSkus() {
         return skus;
@@ -75,6 +77,22 @@ public class BookingTypeTowhoVo {
 
     public String getRemark() {
         return remark;
+    }
+
+    public Float getBase_cost_price() {
+        return base_cost_price;
+    }
+
+    public void setBase_cost_price(Float base_cost_price) {
+        this.base_cost_price = base_cost_price;
+    }
+
+    public Integer getRetail() {
+        return retail;
+    }
+
+    public void setRetail(Integer retail) {
+        this.retail = retail;
     }
 
     public static class Sku {

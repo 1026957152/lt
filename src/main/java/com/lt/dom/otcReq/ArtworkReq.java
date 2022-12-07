@@ -2,6 +2,7 @@ package com.lt.dom.otcReq;
 
 
 import com.lt.dom.oct.Base;
+import com.lt.dom.otcenum.EnumPrivacyLevel;
 
 import javax.persistence.Entity;
 
@@ -38,6 +39,8 @@ public class ArtworkReq  {
 
 
         private String repository;
+    private String intro;
+    private EnumPrivacyLevel privacyLevel;
 
     public String getName() {
         return name;
@@ -208,4 +211,19 @@ public class ArtworkReq  {
         this.desc_long = desc_long;
     }
 
+    public String getIntro() {
+        return intro;
+    }
+
+    public void setIntro(String intro) {
+        this.intro = intro;
+    }
+
+    public EnumPrivacyLevel getPrivacyLevel() {
+        return privacyLevel;
+    }
+
+    public void setPrivacyLevel(EnumPrivacyLevel privacyLevel) {
+        this.privacyLevel = privacyLevel;
+    }
 }

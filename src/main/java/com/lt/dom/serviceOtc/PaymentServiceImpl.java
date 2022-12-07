@@ -881,10 +881,17 @@ public class PaymentServiceImpl {
 
     public List<EntityModel<PaymentMethodResp>> getPaymentMethods(Payment payment) {
 
+        List<EnumPayChannel> payChannelList = new ArrayList();
+        if(payment.getPayment_method_json() != null){
+            EnumPayChannel[] payChannels = new Gson().fromJson(payment.getPayment_method_json(),EnumPayChannel[].class);
 
-        EnumPayChannel[] payChannelList = new Gson().fromJson(payment.getPayment_method_json(),EnumPayChannel[].class);
+            if(payChannels.length> 0){
+                payChannelList = Arrays.stream(payChannels).collect(Collectors.toList());
 
-        List<EntityModel<PaymentMethodResp>>  entityModelList = Arrays.stream(payChannelList).map(e->{
+            }
+        }
+
+        List<EntityModel<PaymentMethodResp>>  entityModelList = payChannelList.stream().map(e->{
 
             EntityModel<PaymentMethodResp> entityModel = EntityModel.of(PaymentMethodResp.of(e));
 
@@ -924,5 +931,12 @@ public class PaymentServiceImpl {
         List<Charge> chargeList = chargeRepository.findByBooking(reservation.getId());
 
         return chargeList;
+    }
+
+    public Payment getPayment(Reservation e) {
+
+        List<Payment> payment = paymentRepository.findByReference(e.getCode());
+
+        return payment.get(0);
     }
 }

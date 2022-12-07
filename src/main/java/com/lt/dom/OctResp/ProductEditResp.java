@@ -35,6 +35,8 @@ public class ProductEditResp {
     private List<AvailabilityCalendarVO> bookingAvailability;
     private EntityModel movieTab;
     private EntityModel bundleTab;
+    private EntityModel upsellingTab;
+    private EntityModel crossSellTab;
 
 
     public void setRightTab(EntityModel rightTab) {
@@ -116,6 +118,23 @@ public class ProductEditResp {
 
     public EntityModel getBundleTab() {
         return bundleTab;
+    }
+
+    public void setUpsellingTab(EntityModel upsellingTab) {
+
+        this.upsellingTab = upsellingTab;
+    }
+
+    public EntityModel getUpsellingTab() {
+        return upsellingTab;
+    }
+
+    public void setCrossSellTab(EntityModel crossSellTab) {
+        this.crossSellTab = crossSellTab;
+    }
+
+    public EntityModel getCrossSellTab() {
+        return crossSellTab;
     }
 
     public class GeneralTab {
@@ -986,7 +1005,7 @@ private String code;
 
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class ShippingTap {
+    public static class ShippingTab {
         private List<EnumDeliveryFormat> deliveryFormats;
         private EnumShippingAddressCollection shippingAddressCollection;
 
@@ -1027,8 +1046,8 @@ private String code;
             this.shipping_rates = shipping_rates;
         }
 
-        public static ShippingTap from(Product bookingRuleList) {
-            ShippingTap availability = new ShippingTap();
+        public static ShippingTab from(Product bookingRuleList) {
+            ShippingTab availability = new ShippingTab();
 
 
             if(bookingRuleList.getShipping_rates_json()!=null){
@@ -1282,6 +1301,7 @@ private String code;
         }
     }
 
+
     public static class BundleTab {
 
         private List<ProductBundleReq> bundles;
@@ -1291,6 +1311,44 @@ private String code;
         public static BundleTab from(List<ProductBundle> bookingRuleList) {
 
             BundleTab availability = new BundleTab();
+            availability.setBundles(bookingRuleList.stream().map(e->{
+                ProductBundleReq productBundleReq = new ProductBundleReq();
+                productBundleReq.setId(e.getBurdle());
+
+                return productBundleReq;
+            }).collect(Collectors.toList()));
+
+            return availability;
+        }
+
+        public List<ProductBundleReq> getBundles() {
+            return bundles;
+        }
+
+        public void setBundles(List<ProductBundleReq> bundles) {
+            this.bundles = bundles;
+        }
+
+        public <K, V> void setParameterList(Map parameterList) {
+            this.parameterList = parameterList;
+        }
+
+        public Map getParameterList() {
+            return parameterList;
+        }
+    }
+
+
+
+    public static class UpsellingTab {
+
+        private List<ProductBundleReq> bundles;
+
+        private Map parameterList;
+
+        public static UpsellingTab from(List<ProductBundle> bookingRuleList) {
+
+            UpsellingTab availability = new UpsellingTab();
             availability.setBundles(bookingRuleList.stream().map(e->{
                 ProductBundleReq productBundleReq = new ProductBundleReq();
                 productBundleReq.setId(e.getBurdle());

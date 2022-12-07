@@ -110,9 +110,9 @@ public class Pass  extends Base{
     public String getCode() {
         return code;
     }
-    private long user ;//digital tickets or PDF tickets
+    private Long user ;//digital tickets or PDF tickets
 
-    public long getUser() {
+    public Long getUser() {
         return user;
     }
 

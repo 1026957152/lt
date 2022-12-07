@@ -8,6 +8,7 @@ import com.lt.dom.otcReq.MediaGenralReq;
 import com.lt.dom.otcReq.MuseumReq;
 import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.otcenum.EnumMediaType;
+import com.lt.dom.otcenum.EnumPrivacyLevel;
 import com.lt.dom.repository.CollectionItemRepository;
 import com.lt.dom.repository.ExhibitionRepository;
 import com.lt.dom.repository.MuseumRepository;
@@ -78,8 +79,38 @@ public class MuseumServiceImpl {
 
     }
 
-    public Museum update(Museum supplier, MuseumReq tripReq) {
-        return supplier;
+    public Museum update(Museum theatre, MuseumReq theatreReq) {
+
+
+
+
+
+        theatre.setName(theatreReq.getName());
+
+        theatre.setDesc_long(theatreReq.getDesc_long());
+        theatre.setDesc_short(theatreReq.getDesc_short());
+        theatre.setSlug(theatreReq.getSlug());
+        theatre.setGuestServicesPhoneNumber(theatreReq.getGuestServicesPhoneNumber());
+        theatre.setOpen_time(theatreReq.getOpen_time());
+        theatre.setClose_time(theatreReq.getClose_time());
+
+
+        Address address =Address.from(theatreReq.getLocation());
+
+
+
+
+        theatre.setLocation(address);
+        theatre = museumRepository.save(theatre);
+
+
+
+        if(theatreReq.getCover()!=null){
+            fileStorageService.updateFromTempDocument(theatre.getCode(), theatreReq.getCover(),EnumDocumentType.museum_cover);
+        }
+
+
+        return theatre;
     }
 
 
@@ -118,7 +149,7 @@ public class MuseumServiceImpl {
         if(artworkReq.getMedia().getThumbnail()!=null){
             fileStorageService.saveFromTempDocumentCode(showtime.getCode(), EnumDocumentType.artwork_thumbnail,artworkReq.getMedia().getThumbnail());
         }
-        if(artworkReq.getMedia().getAudio()!=null){
+/*        if(artworkReq.getMedia().getAudio()!=null){
             Document tempDocument = fileStorageService.saveFromTempDocumentCode(showtime.getCode(), EnumDocumentType.artwork_audio,artworkReq.getMedia().getAudio());
 
 
@@ -130,9 +161,83 @@ public class MuseumServiceImpl {
             mediaGenralReq.setMediaType(EnumMediaType.audio);
             mediaService.create(supplier,mediaGenralReq);
 
-        }
+        }*/
         return showtime;
     }
+
+
+
+    public Artwork updateArtwork(Artwork showtime, ArtworkReq artworkReq) {
+
+        if(artworkReq.getName()!= null){
+            showtime.setName(artworkReq.getName());
+
+        }
+        if(artworkReq.getDescription()!= null){
+            showtime.setDescription(artworkReq.getDescription());
+
+
+        }
+        if(artworkReq.getName_long()!= null){
+            showtime.setName_long(artworkReq.getName_long());
+        }
+        if(artworkReq.getDesc_long()!= null){
+            showtime.setDesc_long(artworkReq.getDesc_long());
+        }
+        if(artworkReq.getIntro()!= null){
+            showtime.setDesc_long(artworkReq.getIntro());
+        }
+
+        if(artworkReq.getPrivacyLevel()!= null){
+            showtime.setPrivacyLevel(artworkReq.getPrivacyLevel());
+        }
+
+        showtime = collectionItemRepository.save(showtime);
+
+ /*       if(artworkReq.getMedia().getIcon()!=null){
+            fileStorageService.saveFromTempDocumentCode(showtime.getCode(), EnumDocumentType.artwork_icon,artworkReq.getMedia().getIcon());
+
+        }
+        if(artworkReq.getMedia().getLarge()!=null){
+            fileStorageService.saveFromTempDocumentCode(showtime.getCode(), EnumDocumentType.artwork_large,artworkReq.getMedia().getLarge());
+        }
+        if(artworkReq.getMedia().getStandard()!=null){
+            fileStorageService.saveFromTempDocumentCode(showtime.getCode(), EnumDocumentType.artwork_standard,artworkReq.getMedia().getStandard());
+        }
+        if(artworkReq.getMedia().getThumbnail()!=null){
+            fileStorageService.saveFromTempDocumentCode(showtime.getCode(), EnumDocumentType.artwork_thumbnail,artworkReq.getMedia().getThumbnail());
+        }*/
+        if(artworkReq.getMedia().getIntroductionAudio()!=null){
+            fileStorageService.updateFromTempDocument(showtime.getCode(), artworkReq.getMedia().getIntroductionAudio(),EnumDocumentType.artwork_audio);
+
+
+/*            MediaGenralReq mediaGenralReq = new MediaGenralReq();
+            mediaGenralReq.setDescription_lang("");
+            mediaGenralReq.setDescription_text(artworkReq.getDescription());
+            mediaGenralReq.setHref(FileStorageServiceImpl.url(tempDocument));
+            mediaGenralReq.setPreview_image_url(FileStorageServiceImpl.url(tempDocument));
+            mediaGenralReq.setMediaType(EnumMediaType.audio);
+            mediaService.create(supplier,mediaGenralReq);*/
+
+        }
+
+        if(artworkReq.getMedia().getPortrait()!=null){
+            fileStorageService.updateFromTempDocument(showtime.getCode(), artworkReq.getMedia().getPortrait(),EnumDocumentType.artwork_portrait);
+
+
+        }
+
+/*
+
+        if(cityWalkReq.getIntroductionAudio()!= null){
+            fileStorageService.saveFromTempDocumentCode(theatre.getCode(), EnumDocumentType.city_walk_audio,cityWalkReq.getIntroductionAudio().getCode());
+
+        }
+*/
+
+        return showtime;
+    }
+
 
     public Exhibition createExhibit(Supplier supplier, ExhibitionReq theatreReq) {
         Exhibition exhibition = new Exhibition();

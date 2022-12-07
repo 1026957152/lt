@@ -24,6 +24,8 @@ public class AgentProduct extends BaseWithoutId{
     Product product;
     private Float net;
     private Long sku;
+    private Float original;
+    private Float market;
 
 
     public Product getProduct() {
@@ -96,5 +98,21 @@ public class AgentProduct extends BaseWithoutId{
 
     public Long getSku() {
         return sku;
+    }
+
+    public Float getOriginal() {
+        return original;
+    }
+
+    public void setOriginal(Float original) {
+        this.original = original;
+    }
+
+    public Float getMarket() {
+        return market;
+    }
+
+    public void setMarket(Float market) {
+        this.market = market;
     }
 }

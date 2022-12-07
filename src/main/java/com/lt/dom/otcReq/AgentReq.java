@@ -95,6 +95,15 @@ public class AgentReq {
 
 
     private String baseURL;
+    private Long agent;
+
+    public Long getAgent() {
+        return agent;
+    }
+
+    public void setAgent(Long agent) {
+        this.agent = agent;
+    }
 
     private String partner_id;
     private String authorization_code;

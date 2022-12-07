@@ -30,6 +30,7 @@ public class HomePassResp {
     private List<MediaResp> gallery;
     private List<Comment> reviews;
     private List highligths;
+    private List<EntityModel> planner;
 
     public static void noteShow(HomePassResp homeResp, Pair<Boolean, String> stringPair) {
 
@@ -128,5 +129,13 @@ public class HomePassResp {
 
     public List getHighligths() {
         return highligths;
+    }
+
+    public void setPlanner(List<EntityModel> planner) {
+        this.planner = planner;
+    }
+
+    public List<EntityModel> getPlanner() {
+        return planner;
     }
 }

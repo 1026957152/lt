@@ -8,11 +8,17 @@ import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
+import com.lt.dom.specification.PassQueryfieldsCriteria;
+import com.lt.dom.specification.PassSpecification;
+import com.lt.dom.specification.ProductSpecification;
 import com.lt.dom.thiirdAli.idfaceIdentity.IdfaceIdentityOcrService;
 import com.lt.dom.thiirdAli.idfaceIdentity.IdfaceIdentityVo;
 import com.lt.dom.util.ZxingBarcodeGenerator;
 import com.lt.dom.vo.UserVo;
 import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +31,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.core.EmbeddedWrapper;
 import org.springframework.hateoas.server.core.EmbeddedWrappers;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +39,7 @@ import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.springframework.data.jpa.domain.Specification.where;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -39,6 +47,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/oct")
 public class PassRestController {
 
+    Logger logger = LoggerFactory.getLogger(CityPassServiceImpl.class);
 
     @Autowired
     private PassServiceImpl passService;
@@ -96,19 +105,33 @@ public class PassRestController {
     @Autowired
     private ProductRepository   productRepository ;
 
-    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/passes", produces = "application/json")
-    public PagedModel getPassList(@PathVariable long SUPPLIER_ID,
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/passes") //produces = "application/json"
+    public PagedModel getPassList(PassQueryfieldsCriteria searchQuery ,@PathVariable long SUPPLIER_ID,
                                   @PageableDefault(sort = {"createdDate",
                                           "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable ,
 
                                   PagedResourcesAssembler<EntityModel<Pass>> assembler) {
 
+
+        logger.debug("请求 参数是：{}",searchQuery);
         Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
         if(supplierOptional.isEmpty()) {
             throw new BookNotFoundException("找不到供应商","找不到供应商");
         }
         Supplier supplier = supplierOptional.get();
-        Page<Pass> validatorOptional = passRepository.findAll(pageable);
+
+
+
+
+     //   searchQuery.setHoder_name("赵源");
+    //    searchQuery.setProduct(1l);
+     //   searchQuery.setFormFactorType(EnumFormFactorType.physical);
+   //     searchQuery.setKeyword("");
+     //   searchQuery.setStatuses(Arrays.asList(EnumCardStatus.active));
+
+        PassSpecification spec =new PassSpecification(Arrays.asList("cardholder","code","name"),searchQuery); //, "code", "claim_note"
+
+        Page<Pass> validatorOptional = passRepository.findAll(where(spec),pageable);
 
 
         return assembler.toModel(validatorOptional.map(e->{
@@ -216,14 +239,20 @@ public class PassRestController {
         Supplier supplier = supplierOptional.get();
 
 
-        Map map = Map.of("type_list", EnumCardType.from());
+        List<Product> productList = productRepository.findAllByType(EnumProductType.Pass);
+
+        Map map = Map.of("type_list", EnumCardType.from(),
+                "product_list",Product.List(productList),
+                "formFactorType_list",EnumFormFactorType.from()
+
+        );
 
         //  Map map = Map.of("status_list", EnumBulkIssuanceCardRequestStatus.values());
 
 
         EntityModel entityModel = EntityModel.of(map);
         entityModel.add(linkTo(methodOn(PassRestController.class).createPass(supplier.getId(),null)).withRel("create"));
-        entityModel.add(linkTo(methodOn(PassRestController.class).getPassList(supplier.getId(),null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(PassRestController.class).getPassList(null,supplier.getId(),null,null)).withRel("list"));
         entityModel.add(linkTo(methodOn(PassRestController.class).Page_createValueList_getItems(supplier.getId())).withRel("getProductList"));
 
         return entityModel;
@@ -282,11 +311,39 @@ public class PassRestController {
     }
 
 
-
     @GetMapping(value = "/users/{USER_ID}/passes/Page_link", produces = "application/json")
-    public EntityModel<Media> Page_linkPass(@PathVariable long USER_ID) {
+    public EntityModel<Media> Page_linkPass(@PathVariable Long USER_ID) {
 
-        Optional<User> validatorOptional = userRepository.findById(USER_ID);
+        Authentication authentication = authenticationFacade.getAuthentication();
+
+        UserVo userVo = authenticationFacade.getUserVoWithUser(authentication);
+
+
+        Optional<User> validatorOptional = userRepository.findById(userVo.getUser_id());
+
+        if(validatorOptional.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到用户");
+        }
+        User user = validatorOptional.get();
+
+        Map map = Map.of("name", DesensitizedUtil.chineseName(user.getRealName()),
+                "id_card",
+                DesensitizedUtil.idCardNum(user.getIdCard(), 1, 2));
+        EntityModel entityModel = EntityModel.of(map);
+        entityModel.add(linkTo(methodOn(DocumentRestController.class).uploadDocument(null)).withRel("uploadFile"));
+
+        entityModel.add(linkTo(methodOn(PassRestController.class).linkPass(user.getId(),null)).withRel("link"));
+        return entityModel;
+    }
+    @GetMapping(value = "/passes/Page_link", produces = "application/json")
+    public EntityModel<Media> Page_linkPass() {
+
+        Authentication authentication = authenticationFacade.getAuthentication();
+
+        UserVo userVo = authenticationFacade.getUserVoWithUserRealname(authentication);
+
+
+        Optional<User> validatorOptional = userRepository.findById(userVo.getUser_id());
 
         if(validatorOptional.isEmpty()){
             throw new BookNotFoundException(Enumfailures.not_found,"找不到用户");
@@ -382,7 +439,10 @@ public class PassRestController {
 
 
     @PostMapping(value = "/users/{USER_ID}/passes/link", produces = "application/json")
-    public EntityModel linkPass(@PathVariable long USER_ID,  @RequestBody PassLinkPojo pojo) {
+    public EntityModel linkPass(@PathVariable Long USER_ID,  @RequestBody PassLinkPojo pojo) {
+
+        Authentication authentication = authenticationFacade.getAuthentication();
+        UserVo userVo = authenticationFacade.getUserVoWithUser(authentication);
 
         Optional<User> validatorOptional = userRepository.findById(USER_ID);
 
@@ -402,12 +462,27 @@ public class PassRestController {
 
         Pass pass = productOptional.get();
 
-        if(!pass.getStatus().equals(EnumCardStatus.active)){
-            throw new BookNotFoundException(Enumfailures.not_found,"该卡未激活，请先激活");
+        if(pass.getStatus().equals(EnumCardStatus.active)){
+
+            if(!pass.getCardholder().getName().equals(user.getRealName())
+                    || !pass.getCardholder().getIdentity().equals(user.getIdCard())){
+
+                throw new BookNotFoundException(Enumfailures.not_found,"该卡已激活，您非该卡持卡人");
+
+            }
+            passService.link(pass,user);
+        }else{
+
+            PassActivePojo pojo1 = new PassActivePojo();
+            pojo1.setName(user.getRealName());
+            pojo1.setId_card(user.getIdCard());
+
+            passService.active(pass,pojo1);
+            passService.link(pass,user);
         }
 
 
-        passService.link(pass,user);
+
 
 
         return EntityModel.of(pass);
@@ -435,13 +510,15 @@ public class PassRestController {
     @GetMapping(value = "/passes/Page_active", produces = "application/json")
     public EntityModel<Media> Page_activePass() {
 
-
-
-        Map map = Map.of("type_list", EnumCardType.from());
+       // "type_list", EnumCardType.from(),
+        Map map = Map.of("verification_check_type",EnumVerificationCheckType.id_number);
         EntityModel entityModel = EntityModel.of(map);
         entityModel.add(linkTo(methodOn(DocumentRestController.class).uploadDocument(null)).withRel("uploadFile"));
 
-        entityModel.add(linkTo(methodOn(PassRestController.class).active_by_order_number(null)).withRel("active"));
+       // entityModel.add(linkTo(methodOn(PassRestController.class).active_by_order_number(null)).withRel("active"));
+
+        entityModel.add(linkTo(methodOn(PassRestController.class).activePass_(null)).withRel("active"));
+
         return entityModel;
     }
 
@@ -553,6 +630,10 @@ public class PassRestController {
         return EntityModel.of(passResp);
     }
 
+
+
+
+
     @PostMapping(value = "/passes/active", produces = "application/json")
     public EntityModel activePass_( @RequestBody PassActivePojo pojo) {
 
@@ -566,22 +647,31 @@ public class PassRestController {
         Optional<Pass> optionalOptional = passRepository.findByNumber(pojo.getCode());
 
         if(optionalOptional.isEmpty()){
-            throw new BookNotFoundException(Enumfailures.not_found,"找不到用户");
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到卡，请确认卡号输入正确");
         }
         Pass pass = optionalOptional.get();
 
-        if(!pass.getPin().equals(pojo.getCvc())){
-            throw new BookNotFoundException(Enumfailures.not_found,"验证错误");
+        if(!pass.getStatus().equals(EnumCardStatus.inactive)){
+            throw new BookNotFoundException(Enumfailures.not_found,"该卡 非未激活卡");
 
         }
+
+
+/*
+        if(!pass.getPin().equals(pojo.getCvc())){
+            throw new BookNotFoundException(Enumfailures.not_found,"验证错误");
+        }*/
         pass = passService.active(pass,pojo);
 
         PassResp passResp =PassResp.from(pass);
 
-
-
         return EntityModel.of(passResp);
     }
+
+
+
+
+
     @PostMapping(value = "/passes/{USER_ID}/active", produces = "application/json")
     public EntityModel activePass(@PathVariable long PASS_ID,  @RequestBody PassActivePojo pojo, MultipartFile file) {
 

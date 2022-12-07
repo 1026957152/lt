@@ -23,6 +23,8 @@ public enum EnumMiniappPagePath {
 
     nearby_car_rent("/pages/rentcars/list2"),
 
+    upcomming_trip("/pages/trip/index"),
+
 
 
     ;

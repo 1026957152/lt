@@ -1,5 +1,6 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.OctResp.EnumLongIdResp;
 import com.lt.dom.domain.SettleAccount;
 import com.lt.dom.otcenum.EnumAgentBilling;
 import com.lt.dom.otcenum.EnumAgentStatus;
@@ -10,6 +11,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 public class Agent extends Base {
@@ -19,7 +21,19 @@ public class Agent extends Base {
     @OneToMany(mappedBy="agent",
             cascade = CascadeType.ALL)  // orphanRemoval = true
     private List<AgentProduct> products;
+    private Long supplier;
+    private Long agent;
 
+    public static List List(List<Agent> componentRightMap) {
+        return componentRightMap.stream().map(x->{
+
+            EnumLongIdResp enumResp = new EnumLongIdResp();
+            enumResp.setId(x.getId());
+
+            enumResp.setText(x.getName()+"_"+x.getCode());
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
     public List<AgentProduct> getProducts() {
         return products;
     }
@@ -177,6 +191,7 @@ private String code;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "contact", referencedColumnName = "id")
     private Contact contact;
+
 
     public Contact getContact() {
         return contact;
@@ -395,5 +410,21 @@ private String code;
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public void setSupplier(Long supplier) {
+        this.supplier = supplier;
+    }
+
+    public Long getSupplier() {
+        return supplier;
+    }
+
+    public void setAgent(Long agent) {
+        this.agent = agent;
+    }
+
+    public Long getAgent() {
+        return agent;
     }
 }

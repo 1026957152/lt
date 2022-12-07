@@ -35,6 +35,7 @@ private String code;//
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDateTime created_to;
+    private Long agent;
 
     public boolean isReviewing() {
         return reviewing;
@@ -177,5 +178,13 @@ private String code;//
     @Override
     public String toString() {
         return ReflectionToStringBuilder.toString(this);
+    }
+
+    public void setAgent(Long agent) {
+        this.agent = agent;
+    }
+
+    public Long getAgent() {
+        return agent;
     }
 }

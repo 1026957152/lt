@@ -246,11 +246,8 @@ private String code;
     @Transient
     private List<EnumPaymentOption> paymentOptions;
 
-    private int total;//	The order's current total price, included all items, fees, and taxes.
-    private int subtotal;//	The order's current total price of all active items.
-    private boolean paid;//	The order's current value of all active tenders.
-    private int savings;//	The order's current savings value for all active discounts and waived fees.
-    private String token;//	A GUID identifier for the Order.
+   // private int subtotal;//	The order's current total price of all active items.
+  //  private int savings;//	The order's current savings value for all active discounts and waived fees.
 
 
     @Transient
@@ -293,7 +290,6 @@ private String code;
    // integer	Summarize all discounts applied to the order including discounts applied to particular order line items and discounts applied to the whole cart.
 
    // Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 is written as 10000.
-    private int  total_amount;//
 
     public int getAmount() {
         return amount;
@@ -319,13 +315,6 @@ private String code;
         this.total_discount_amount = total_discount_amount;
     }
 
-    public int getTotal_amount() {
-        return total_amount;
-    }
-
-    public void setTotal_amount(int total_amount) {
-        this.total_amount = total_amount;
-    }
 
     public void setProductType(EnumProductType productType) {
         this.productType = productType;

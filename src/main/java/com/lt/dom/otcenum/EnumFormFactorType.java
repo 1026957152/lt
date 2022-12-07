@@ -52,6 +52,7 @@ public enum EnumFormFactorType {
         this.name = name;
     }
 
+/*
     @Override
     public String toString() {
 
@@ -59,5 +60,6 @@ public enum EnumFormFactorType {
                 + this.name());
         return displayStatusString;
     }
+*/
 
 }

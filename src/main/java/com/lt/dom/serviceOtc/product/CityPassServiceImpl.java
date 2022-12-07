@@ -4,10 +4,12 @@ package com.lt.dom.serviceOtc.product;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.controllerOct.RedemptionRestController;
 import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.ExistException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.RedemBycodePojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import com.lt.dom.requestvo.BookingTypeTowhoVo;
 import com.lt.dom.serviceOtc.ComponentRightServiceImpl;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import com.lt.dom.serviceOtc.IdGenServiceImpl;
@@ -28,7 +30,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.lt.dom.serviceOtc.JsonParse.GSON;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -49,6 +50,7 @@ public class CityPassServiceImpl {
 
     @Autowired
     private ReservationRepository reservationRepository;
+
 
 
 
@@ -172,15 +174,18 @@ public class CityPassServiceImpl {
     private static final EnumVoucherType voucherType = EnumVoucherType.Multi_Ticket;
 
 
-    public void booking(LineItem lineItem, Product product) {
+    public void booking(LineItem lineItem, Product product, PricingRate pricingRate) {
         if(!product.getType().equals(productType)){
             return;
         }
+
 
         lineItem.setLineType(lineType);
         lineItem.setStatus(EnumLineItemStatus.Executing);
         lineItem.setBillingTriggerRule(EnumBillingTriggerRule.WithoutFulfillment);
 
+        logger.debug("这里来看看 base_code_price {}  unitPrice{}",lineItem.getBase_cost_price(),lineItem.getUnitPrice());
+      //  lineItem.setBase_cost_price(pricingRate.getNet().floatValue());
 
         lineItem.setFulfillmentInstructionsType(EnumFulfillmentInstructionsType.DIGITAL);
 
@@ -261,19 +266,35 @@ public class CityPassServiceImpl {
                     cardholder.setIdentity(tra.getIdNo());
                     CompoentRightAssigtToTargeVo compoentRightAssigtToTargeVo = new CompoentRightAssigtToTargeVo();
 
-                    if(user.getPlatform().equals(EnumPlatform.TS)){
-                        Pass pass = passService.create_virtual(lineItem,cardholder,10);
-                        compoentRightAssigtToTargeVo.setPass(pass);
 
-                    }
                     logger.error("订单数量和 新建一个年卡 "+reservation.getPlatform());
-                    if(reservation.getPlatform().equals(EnumPlatform.LT)){
 
 
-                        logger.error("订单数量和 新建一个年卡 ");
-                        Pass pass = passService.create_virtual(lineItem,cardholder,user.getUser().getId(),10);
-                        compoentRightAssigtToTargeVo.setPass(pass);
+                    Pass pass = passService.create_virtual(lineItem,cardholder,10);
+                    passService.active(pass);
+
+                    compoentRightAssigtToTargeVo.setPass(pass);
+
+                    if(user.getPlatform().equals(EnumPlatform.TS)){
+/*                        Pass pass = passService.create_virtual(lineItem,cardholder,10);
+                        compoentRightAssigtToTargeVo.setPass(pass);*/
+
                     }
+
+                    if(reservation.getPlatform().equals(EnumPlatform.LT)){
+                        logger.error("订单数量和 新建一个年卡 ");
+                        //   Pass pass = passService.create_virtual(lineItem,cardholder,user.getUser().getId(),10);
+                        if(user.getUser().isRealNameVerified()){
+                            if(pass.getCardholder().getName().equals(user.getUser().getRealName())
+                                    && pass.getCardholder().getIdentity().equals(user.getUser().getIdCard())){
+                                passService.link(pass, user.getUser());
+                                //  throw new BookNotFoundException(Enumfailures.not_found,"该卡已激活，您非该卡持卡人");
+
+                            }
+
+                        }
+                    }
+
                     Long limit = 2l;
                     componentRightService.assingtoTicket(compoentRightAssigtToTargeVo,componentRightList,limit);
 
@@ -494,4 +515,35 @@ public class CityPassServiceImpl {
 
     }
 
+    public void booking_trial(List<BookingTypeTowhoVo> list) {
+
+        List<BookingTypeTowhoVo> bookingTypeTowhoVoList = list.stream().filter(e->e.getProduct().getType().equals(productType)).map(e->{
+
+            return e;
+        }).collect(Collectors.toList());
+
+
+
+ if(bookingTypeTowhoVoList.size() == 0){
+     return;
+ }
+
+
+        List<String> id_number_list = bookingTypeTowhoVoList.stream().map(e->{
+
+
+            return e.getTraveler().stream().map(travelerReq->travelerReq.getId_card()).collect(Collectors.toList());
+        }).flatMap(List::stream).collect(Collectors.toList());
+
+        if(id_number_list.size()==0){
+            throw new ExistException(Enumfailures.invalid_amount,"至少需要添加一名旅客");
+
+        }
+        String pattern = "^(6127|6108)\\d{2}[1-9]\\d{3}((0[1-9])|(1[0-2]))(0[1-9]|([1|2][0-9])|3[0-1])((\\d{4})|\\d{3}X)$";
+
+        passService.allowedHolder(id_number_list, pattern);
+
+
+
+    }
 }

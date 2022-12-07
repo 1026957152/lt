@@ -93,6 +93,8 @@ public class ProductRestController {
 
     @Autowired
     private ShippingRateRepository shippingRateRepository;
+    @Autowired
+    private ExtraRepository extraRepository;
 
 
 
@@ -628,7 +630,9 @@ public class ProductRestController {
 
 
 
-        ProductEditResp.CrossSellTab aboutTab = ProductEditResp.CrossSellTab.from(product.getCrossSells());
+
+
+        ProductEditResp.AboutTab aboutTab = ProductEditResp.AboutTab.from(attributeList);
         Optional<Contact> contactOptional = contactService.find(EnumRelatedObjectType.product,product.getId());
 
         if(contactOptional.isPresent()){
@@ -646,10 +650,29 @@ public class ProductRestController {
         productResp.setAboutTab(entityModel_aboutTap);
 
 
-        ProductEditResp.ShippingTap shippingTap = ProductEditResp.ShippingTap.from(product);
+
+        ProductEditResp.CrossSellTab crossSellTab = ProductEditResp.CrossSellTab.from(product.getCrossSells());
+/*        Optional<Contact> contactOptional = contactService.find(EnumRelatedObjectType.product,product.getId());
+
+        if(contactOptional.isPresent()){
+            aboutTab.setContacts(contactOptional.get().getIdentifiers()
+                    .stream().map(e->{
+                        return IdentifierReq.from(e);
+                    }).collect(Collectors.toList()));
+        }*/
+        crossSellTab.setParameterList(
+                Map.of(
+                        "feature_tag_list",EnumFeatureTag.List()
+                ));
+        EntityModel entityModel_crossSellTab = EntityModel.of(crossSellTab);
+        entityModel_crossSellTab.add(linkTo(methodOn(ProductRestController.class).editProductAboutTab(product.getId(),null)).withRel("edit"));
+        productResp.setCrossSellTab(entityModel_crossSellTab);
+
+
+        ProductEditResp.ShippingTab shippingTab = ProductEditResp.ShippingTab.from(product);
 
         List<ShippingRate> shippingRates = shippingRateRepository.findAllBySupplier(product.getSupplierId());
-        shippingTap.setParameterList(
+        shippingTab.setParameterList(
                 Map.of(
                         "delivery_format_list",EnumDeliveryFormat.List(),
                         "shippingAddressCollection_type_list",EnumShippingAddressCollection.List(),
@@ -658,21 +681,39 @@ public class ProductRestController {
 
                 ));
 
-        EntityModel entityModelshippingTap = EntityModel.of(shippingTap);
+        EntityModel entityModelshippingTap = EntityModel.of(shippingTab);
         entityModelshippingTap.add(linkTo(methodOn(ProductRestController.class).editProductShippingTab(product.getId(),null)).withRel("edit"));
         productResp.setShippingTab(entityModelshippingTap);
 
 
         ProductEditResp.BundleTab bundleTab = ProductEditResp.BundleTab.from(product.getBundles());
-
         bundleTab.setParameterList(
                 Map.of(
                         "delivery_format_list",EnumDeliveryFormat.List()
-
                 ));
         EntityModel entityModel_bundleTab = EntityModel.of(bundleTab);
         entityModel_bundleTab.add(linkTo(methodOn(ProductRestController.class).editProductBundleTab(product.getId(),null)).withRel("edit"));
         productResp.setBundleTab(entityModel_bundleTab);
+
+
+
+
+        List<Extra> extraList = extraRepository.findAllBySupplier(product.getSupplierId());
+
+
+
+
+        ProductEditResp.UpsellingTab upsellingTab = ProductEditResp.UpsellingTab.from(product.getBundles());
+        upsellingTab.setParameterList(
+                Map.of(
+                        "delivery_format_list",EnumDeliveryFormat.List(),
+                        "extra_list",Extra.List(extraList)
+                ));
+        EntityModel entityModel_upsellingTab = EntityModel.of(upsellingTab);
+        entityModel_upsellingTab.add(linkTo(methodOn(ProductRestController.class).editProductBundleTab(product.getId(),null)).withRel("edit"));
+        productResp.setUpsellingTab(entityModel_upsellingTab);
+
+
 
 
 
@@ -1734,7 +1775,7 @@ public class ProductRestController {
 
 
     @PutMapping(value = "/products/{PRODUCT_ID}/shippingTab", produces = "application/json")
-    public ResponseEntity<ProductResp> editProductShippingTab(@PathVariable long PRODUCT_ID,@RequestBody @Valid ProductEditResp.ShippingTap pojo) {
+    public ResponseEntity<ProductResp> editProductShippingTab(@PathVariable long PRODUCT_ID,@RequestBody @Valid ProductEditResp.ShippingTab pojo) {
 
         System.out.println("---------------"+ pojo.toString());
         Optional<Product> validatorOptional = productRepository.findById(PRODUCT_ID);

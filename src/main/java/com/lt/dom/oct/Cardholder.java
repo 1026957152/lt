@@ -1,5 +1,6 @@
 package com.lt.dom.oct;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.otcenum.EnumAssetType;
 import com.lt.dom.otcenum.EnumCardholderStatus;
@@ -30,6 +31,8 @@ public class Cardholder extends Base{
         this.code = code;
     }
 
+
+    @JsonBackReference
     @OneToOne(mappedBy = "cardholder")
     private Pass pass;
 

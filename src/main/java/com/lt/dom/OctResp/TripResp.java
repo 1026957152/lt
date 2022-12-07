@@ -24,13 +24,15 @@ public class TripResp {
     private LocalDate starts_on;
     private LocalDate ends_on;
     private Integer day_count;
-    private long supplier;
+
     private String code;
     private PhotoResp tripCover;
     private String desc_short;
     private String name_long;
     private String desc_long;
     private List itinerary;
+    private Integer attraction_count;
+    private String duration;
 
     public static TripResp from(Trip trip) {
         TripResp tripResp = new TripResp();
@@ -47,6 +49,13 @@ public class TripResp {
         return tripResp;
     }
 
+    public static TripResp simpleFrom(Trip trip) {
+        TripResp tripResp = new TripResp();
+
+        tripResp.setName(trip.getName());
+
+        return tripResp;
+    }
     public String getName() {
         return name;
     }
@@ -95,13 +104,7 @@ public class TripResp {
         this.day_count = day_count;
     }
 
-    public void setSupplier(long supplier) {
-        this.supplier = supplier;
-    }
 
-    public long getSupplier() {
-        return supplier;
-    }
 
     public void setCode(String code) {
         this.code = code;
@@ -149,5 +152,21 @@ public class TripResp {
 
     public List getItinerary() {
         return itinerary;
+    }
+
+    public void setAttraction_count(Integer attraction_count) {
+        this.attraction_count = attraction_count;
+    }
+
+    public Integer getAttraction_count() {
+        return attraction_count;
+    }
+
+    public void setDuration(String duration) {
+        this.duration = duration;
+    }
+
+    public String getDuration() {
+        return duration;
     }
 }

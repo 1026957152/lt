@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.OctResp.EnumLongIdResp;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.mediatype.alps.Ext;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -33,6 +34,18 @@ public class Extra extends Base{
     private Float price_Net;
     private Float price_Original;
     private Float price_Retail;
+
+
+    public static List List(List<Extra> componentRightMap) {
+        return componentRightMap.stream().map(x->{
+
+            EnumLongIdResp enumResp = new EnumLongIdResp();
+            enumResp.setId(x.getId());
+
+            enumResp.setText(x.getTitle()+"_"+x.getCode());
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
 
     public String getCode() {
         return code;

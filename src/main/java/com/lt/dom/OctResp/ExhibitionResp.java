@@ -19,6 +19,7 @@ public class ExhibitionResp {
 
     private MediaResp media;
     private List artworkss;
+    private PhotoResp cover;
 
     public static ExhibitionResp from(Exhibition exhibition) {
         ExhibitionResp exhibitionResp =new ExhibitionResp();
@@ -95,6 +96,14 @@ public class ExhibitionResp {
 
     public List getArtworkss() {
         return artworkss;
+    }
+
+    public void setCover(PhotoResp cover) {
+        this.cover = cover;
+    }
+
+    public PhotoResp getCover() {
+        return cover;
     }
 
 

@@ -118,8 +118,11 @@ public enum Enumfailures {
     Expired_credentials(1,"","401.expired_credentials"),
 
 
+    _401_Unauthorized(1,"未登录"),
 
-    Need_real_name(1,"需要实名人认证"),
+
+    NEED_REAL_NAME(40301,"需要实名人认证"),
+
     bad_request(1,"需要实名人认证"),
 
     _305(1,"The message has expired."),
@@ -176,6 +179,15 @@ public enum Enumfailures {
         this.code = code;
         this.message_code = message_code;
     }
+
+    public Integer getCode() {
+        return code;
+    }
+
+    public void setCode(Integer code) {
+        this.code = code;
+    }
+
     public String getText() {
         return text;
     }

@@ -62,7 +62,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(Error401Exception.class)
     public ResponseEntity<ApiErrorResponse> handleAuthenticationException(Error401Exception ex, WebRequest request){
 
-        String s =  messageSource.getMessage(ex.getError().getMessage_code(), null, Locale.getDefault());
+   //     String s =  messageSource.getMessage(ex.getError().getMessage_code(), null, Locale.getDefault());
 
 
         ApiErrorResponse response =

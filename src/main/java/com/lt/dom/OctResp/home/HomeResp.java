@@ -28,6 +28,7 @@ public class HomeResp {
     private List greatYulin;
     private Map cityPass;
     private EntityModel pickupDropoff;
+    private List planner;
 
     public static void noteShow(HomeResp homeResp, Pair<Boolean, String> stringPair) {
 
@@ -127,5 +128,13 @@ public class HomeResp {
 
     public EntityModel getPickupDropoff() {
         return pickupDropoff;
+    }
+
+    public void setPlanner(List planner) {
+        this.planner = planner;
+    }
+
+    public List getPlanner() {
+        return planner;
     }
 }

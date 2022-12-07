@@ -3,17 +3,17 @@ package com.lt.dom.serviceOtc;
 
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.AgentEditReq;
 import com.lt.dom.otcReq.AgentReq;
 import com.lt.dom.otcenum.*;
-import com.lt.dom.repository.AgentProductRepository;
-import com.lt.dom.repository.AgentRepository;
-import com.lt.dom.repository.PricingTypeRepository;
-import com.lt.dom.repository.ProductRepository;
+import com.lt.dom.repository.*;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -22,14 +22,14 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 public class AgentServiceImpl {
 
     Logger logger = LoggerFactory.getLogger(AgentServiceImpl.class);
 
-
+    @Autowired
+    private SupplierRepository supplierRepository;
     @Autowired
     private AgentRepository agentRepository;
 
@@ -56,17 +56,17 @@ public class AgentServiceImpl {
 
 
     @Transient
-    public Agent create( AgentReq theatreReq) {
+    public Agent create(Supplier supplier, Supplier agent, AgentReq theatreReq) {
         Agent theatre = new Agent();
 
 
 
-
+        theatre.setSupplier(supplier.getId());
         theatre.setName(theatreReq.getName());
         theatre.setCode(idGenService.nextId("thpa"));
         theatre.setDesc(theatreReq.getDesc());
 
-
+        theatre.setAgent(theatreReq.getAgent());
 
         theatre.setPartnerId(theatreReq.getPartner_id());
         theatre.setAuthorizationCode(theatreReq.getAuthorization_code());
@@ -76,7 +76,7 @@ public class AgentServiceImpl {
         theatre = agentRepository.save(theatre);
 
 
-        if(theatreReq.getLogo().getCode()!=null){
+        if(theatreReq.getLogo()!= null && theatreReq.getLogo().getCode()!=null){
             fileStorageService.updateFromTempDocument(theatre.getCode(),theatreReq.getLogo(), EnumDocumentType.region_photo);
 
         }
@@ -93,12 +93,12 @@ public class AgentServiceImpl {
     }
 
     @Transactional
-    public Agent update(Agent theatre, AgentReq tripReq) {
+    public Agent update(Agent theatre, Supplier agent, AgentEditReq.EditReq tripReq) {
 
         List<Product> productList = productRepository.findAllById(tripReq.getProducts().stream().map(e->e.getId()).collect(Collectors.toList()));
 
         theatre.setName(tripReq.getName());
-
+        theatre.setAgent(agent.getId());
         theatre.setDesc(tripReq.getDesc());
         theatre.setBilling(tripReq.getBilling());
 
@@ -119,9 +119,46 @@ public class AgentServiceImpl {
 
 
 
+        if(tripReq.getContacts() != null ){
+            Contact contact = contactService.createUpdate(EnumRelatedObjectType.agent,theatre.getId(),tripReq.getContacts());
+
+          theatre.setContact(contact);
+        }
+
+/*
+        if(theatre.getContact()!= null){
+
+            Contact contact = theatre.getContact();
+            contact.setIdentifiers(tripReq.getContacts().stream().map(e->{
+                Identifier identifier = new Identifier();
+                identifier.setContact(contact);
+                identifier.setType(e.getType());
+                identifier.setStatus(EnumChannelStatus.subscribed);
+                identifier.setLinkId(e.getId());
+                return identifier;
+            }).collect(Collectors.toList()));
+
+
+        }else{
+
+            Contact contact = new Contact();
+            contact.setIdentifiers(tripReq.getContacts().stream().map(e->{
+                Identifier identifier = new Identifier();
+                identifier.setContact(contact);
+                identifier.setType(e.getType());
+                identifier.setStatus(EnumChannelStatus.subscribed);
+                identifier.setLinkId(e.getId());
+                return identifier;
+            }).collect(Collectors.toList()));
+
+            theatre.setContact(contact);
+        }
+*/
+
+
         theatre.getProducts().addAll(tripReq.getProducts().stream().map(e->{
 
-            AgentReq.ProductReq productReq = e;
+            AgentEditReq.ProductReq productReq = e;
 
             Optional<Product> optionalProduct = productRepository.findById(e.getId());
             if(optionalProduct.isEmpty()){
@@ -161,10 +198,6 @@ public class AgentServiceImpl {
             fileStorageService.updateFromTempDocument(theatre.getCode(),tripReq.getLogo(), EnumDocumentType.agent_logo);
 
         }
-        if(tripReq.getContacts() != null ){
-            contactService.create(EnumRelatedObjectType.agent,theatre.getId(),tripReq.getContacts());
-
-        }
 
 
 
@@ -172,12 +205,24 @@ public class AgentServiceImpl {
         return theatre;
     }
 
-    public Optional<Agent> find(String pid) {
+    public Optional<Pair<Agent,Supplier>> find(String pid) {
 
 
         Optional<Agent> agentOptional = agentRepository.findByPartnerId(pid);
 
-        return agentOptional;
+        if(agentOptional.isPresent()){
+            Optional<Supplier> supplier = supplierRepository.findById(agentOptional.get().getAgent());
+
+            if(supplier.isEmpty()){
+                throw new BookNotFoundException(Enumfailures.resource_not_found,"代理connection 不完整，未完善 合作机构");
+            }
+
+            return Optional.of(Pair.with(agentOptional.get(),supplier.get()));
+        }else{
+            return Optional.empty();
+        }
+
+
     }
 /*
 
@@ -223,7 +268,7 @@ public class AgentServiceImpl {
 
     }*/
 
-    public Optional<Pair<Product,PricingRate>> find(EnumThirdParty ts,Agent agent, Integer item_id) {
+    public Optional<Triplet<Product,PricingRate,AgentProduct>> find(EnumThirdParty ts,Agent agent, Integer item_id) {
 
 
         Optional<AgentProduct> agentProducts = agent.getProducts().stream().filter(e->e.getProduct().getId().equals(item_id.longValue())).findAny();
@@ -244,43 +289,61 @@ public class AgentServiceImpl {
 
 
         }
-        return Optional.of(Pair.with(agentProducts.get().getProduct(),pricingRateOptional.get()));
+        return Optional.of(Triplet.with(agentProducts.get().getProduct(),pricingRateOptional.get(),agentProduct));
 
     }
 
 
-    public List<Product> findAll(EnumThirdParty ts, Agent agent,String key_word, PageRequest of) {
+    public List<Pair<Product,AgentProduct>> findAll(EnumThirdParty ts, Agent agent,String key_word, PageRequest of) {
 
 
         logger.info("第三方{}对接,按照关键字 {} 请求产品列表",ts,key_word);
 
 
-
-        List<Long> list = agent.getProducts().stream().map(e->
-                e.getProduct().getId()).collect(Collectors.toList());
-        logger.info("第三方{}对接,目前产品有 ids {}",ts,list);
+        List<Pair<Product,AgentProduct>> list = agent.getProducts().stream().map(e->{
+            //   e.getProduct().getId()).collect(Collectors.toList())
 
 
-        Page<Product> optionalProduct = productRepository.findAllByIdIn(list,of);
+            if(e.getMarket() == null){
+                e.setMarket(e.getNet());
+            }
+            if(e.getOriginal() == null){
+                e.setOriginal(e.getNet());
+            }
+            return Pair.with(e.getProduct(),e);
+
+        }).collect(Collectors.toList());
+
+
+        Page<Pair<Product,AgentProduct>> optionalProduct =new PageImpl(list,of,list.size());// productRepository.findAllByIdIn(list,of);
 
 
         return optionalProduct.getContent();
 
     }
 
-    public List<Product>  findAll(EnumThirdParty ts,Agent agent, long longValue) {
+    public List<Pair<Product,AgentProduct>>  findAll(EnumThirdParty ts,Agent agent, long longValue) {
 
 
 
         logger.error("第三方{}对接,按照ID{} 请求产品列表",ts,longValue);
 
 
-        List<Long> list = agent.getProducts().stream().map(e->
-                        e.getProduct().getId()).collect(Collectors.toList())
-                .stream().filter(e->e == longValue).collect(Collectors.toList());
+        List<Pair<Product,AgentProduct>> list = agent.getProducts().stream().filter(e->e.getProduct().getId() == longValue).map(e->{
+         //   e.getProduct().getId()).collect(Collectors.toList())
 
-        List<Product> optionalProduct = productRepository.findAllById(list);
+            if(e.getMarket() == null){
+                e.setMarket(e.getNet());
+            }
+            if(e.getOriginal() == null){
+                e.setOriginal(e.getNet());
+            }
 
-        return optionalProduct;
+            return Pair.with(e.getProduct(),e);
+
+                        }).collect(Collectors.toList());
+
+
+        return list;
     }
 }

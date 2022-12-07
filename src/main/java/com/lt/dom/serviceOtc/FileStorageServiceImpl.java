@@ -1,6 +1,7 @@
 package com.lt.dom.serviceOtc;
 
 import com.lt.dom.OctResp.PhotoResp;
+import com.lt.dom.config.Constants;
 import com.lt.dom.controllerOct.FileUploadController;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumDocumentType;
@@ -581,7 +582,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         PhotoResp photoResp = new PhotoResp();
 
 
-        String link =  linkTo(FileUploadController.class).slash("/files/"+"default_logo.jpg").toUriComponentsBuilder().build().toString();
+        String link =  linkTo(FileUploadController.class).slash("/"+ Constants.STATIC_PATH+"/"+"default_logo.jpg").toUriComponentsBuilder().build().toString();
 
         //    String link = "https://www.baidu.com/img/flexible/logo/pc/result.png";
         if(enumPhotosList.contains(EnumPhotos.thumb)){

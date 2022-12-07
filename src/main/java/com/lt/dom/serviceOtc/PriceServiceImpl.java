@@ -1,6 +1,7 @@
 package com.lt.dom.serviceOtc;
 
 
+import com.lt.dom.OctResp.EnumLongIdResp;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ProductPojo;
 import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
@@ -310,9 +311,22 @@ public class PriceServiceImpl {
 /*        Assert.notNull(x.getByPerson().getMax(), "max 不能为空");
         Assert.notNull(x.getByPerson().getMin(), "min 不能为空");
         */
-        pricingRate.setRestriction_MinQuantity(x.getRestriction().getMinQuantity());
-        pricingRate.setRestriction_MaxQuantity(x.getRestriction().getMaxQuantity());
-        pricingRate.setRestriction_IdRequired(x.getRestriction().getIdRequired());
+
+        if(x.getRestriction().getMinQuantity() == null){
+            pricingRate.setRestriction_MinQuantity(1);
+            pricingRate.setRestriction_MaxQuantity(1);
+        }else{
+            pricingRate.setRestriction_MinQuantity(x.getRestriction().getMinQuantity());
+            pricingRate.setRestriction_MaxQuantity(x.getRestriction().getMaxQuantity());
+        }
+        if(x.getRestriction().getIdRequired() == null){
+            pricingRate.setRestriction_IdRequired(false);
+
+        }else{
+            pricingRate.setRestriction_IdRequired(x.getRestriction().getIdRequired());
+
+        }
+
         pricingRate.setRestriction_PaxCount(x.getRestriction().getPaxCount());
 
         return pricingRate;
@@ -333,5 +347,28 @@ public class PriceServiceImpl {
 
     public List<PricingRate> find(Product product) {
         return pricingTypeRepository.findByProductId(product.getId());
+    }
+
+    public  List  getProductSkus(List<Product> productList) {
+
+
+        return productList.stream().map(x->{
+
+            EnumLongIdResp enumResp = new EnumLongIdResp();
+            enumResp.setId(x.getId());
+
+            enumResp.setText(x.getName()+"_"+x.getCode());
+            List<PricingRate> pricingRateList = pricingTypeRepository.findByProductId(x.getId());
+
+            enumResp.setSubitems(pricingRateList.stream().map(e->{
+                EnumLongIdResp enumSkuResp = new EnumLongIdResp();
+                enumSkuResp.setId(e.getId());
+
+                enumSkuResp.setText(e.getLable()+"_"+e.getPrice());
+                return enumSkuResp;
+            }).collect(Collectors.toList()));
+
+            return enumResp;
+        }).collect(Collectors.toList());
     }
 }

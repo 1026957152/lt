@@ -3,6 +3,7 @@ package com.lt.dom.controllerOct;
 import com.google.gson.Gson;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.OctResp.ShippingRateResp;
+import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
 import com.lt.dom.controllerOct.pay.BalancePaymentRestController;
 import com.lt.dom.domain.CouponTemplatePojoList;
 import com.lt.dom.error.*;
@@ -14,6 +15,7 @@ import com.lt.dom.requestvo.BookingTypeTowhoVo;
 import com.lt.dom.requestvo.BookingTypeTowhoVoSku;
 import com.lt.dom.serviceOtc.*;
 import com.lt.dom.serviceOtc.pay.BalancePaymentServiceImpl;
+import com.lt.dom.serviceOtc.product.AttractionTicketServiceImpl;
 import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
 import com.lt.dom.specification.BookingQueryfieldsCriteria;
 import com.lt.dom.specification.BookingSpecification;
@@ -71,6 +73,10 @@ public class BookingRestController {
     @Autowired
     private ShippingRateRepository shippingRateRepository;
 
+    @Autowired
+    private RealNameAuthenticationServiceImpl realnameAuthsService;
+
+
 
 
     @Autowired
@@ -116,6 +122,8 @@ public class BookingRestController {
 
     @Autowired
     private CityPassServiceImpl cityPassService;
+    @Autowired
+    private AttractionTicketServiceImpl attractionTicketService;
 
 
     @Autowired
@@ -1138,7 +1146,7 @@ public class BookingRestController {
 
         Authentication authentication = authenticationFacade.getAuthentication();
 
-        UserVo userVo = authenticationFacade.getUserVo(authentication);
+        UserVo userVo = authenticationFacade.getUserVoWithUser(authentication);
 
         System.out.println("----参数 ------"+skus);
         Optional<Product> validatorOptional = productRepository.findById(PRODUCT_ID);
@@ -1181,29 +1189,56 @@ public class BookingRestController {
 
 
 
-        ProductBookingResp.Shipping shipping = new ProductBookingResp.Shipping();
 
 
-        List<ShippingCardAddress> shippingCardAddresses  = shippingAddressRepository.findAllByUser(userVo.getUser_id());
+        BookingSkuPojo trial_pojo = new BookingSkuPojo();
 
-        Optional<ShippingCardAddress> shippingCardAddressOptional = shippingCardAddresses.stream().filter(e->e.getDefault_()).findAny();
-        if(shippingCardAddressOptional.isPresent()){
-            ShippingCardAddress shippingCardAddress = shippingCardAddressOptional.get();
 
-            shipping.setDefaultShippingAddress(ShippingAddressResp.from(shippingCardAddress));
+
+        BookingSkuPojo.Shipping shipping_POJO = new BookingSkuPojo.Shipping();
+
+        productResp.setShippingAddressCollection(product.getShippingAddressCollection());
+
+        if(product.getShippingAddressCollection().equals(EnumShippingAddressCollection.required)){
+
+
+            ProductBookingResp.Shipping shipping = new ProductBookingResp.Shipping();
+
+
+            List<ShippingCardAddress> shippingCardAddresses  = shippingAddressRepository.findAllByUser(userVo.getUser_id());
+
+            Optional<ShippingCardAddress> shippingCardAddressOptional = shippingCardAddresses.stream().filter(e->e.getDefault_()).findAny();
+            if(shippingCardAddressOptional.isPresent()){
+                ShippingCardAddress shippingCardAddress = shippingCardAddressOptional.get();
+
+                shipping.setDefaultShippingAddress(ShippingAddressResp.from(shippingCardAddress));
+            }
+            List<ShippingRate> shippingRates = shippingRatePlanRepository.findAll();
+
+            List<ShippingRateResp> shippingRateRespList = shippingRates.stream().map(e->{
+                ShippingRateResp shippingRateResp = ShippingRateResp.shimpleFrom(e);
+
+                return shippingRateResp;
+            }).collect(Collectors.toList());
+            shippingRateRespList.get(0).setDefault(true);
+            shipping_POJO.setShippingRate(shippingRateRespList.get(0).getId());
+
+            shipping.setShipping_options(shippingRateRespList);
+
+
+
+
+            productResp.setShipping(shipping);
         }
 
-        productResp.setShippingAddressCollection(EnumShippingAddressCollection.required);
-
-        List<ShippingRate> shippingRates = shippingRatePlanRepository.findAll();
-        shipping.setShipping_options(shippingRates.stream().map(e->{
-            ShippingRateResp shippingRateResp = ShippingRateResp.shimpleFrom(e);
-            shippingRateResp.setDefault(true);
-            return shippingRateResp;
-        }).collect(Collectors.toList()));
 
 
-        productResp.setShipping(shipping);
+
+        trial_pojo.setShipping(shipping_POJO);
+
+
+
+
 
         productResp.setSkus(pricingRates.stream().map(pricingType->{
 
@@ -1256,10 +1291,6 @@ public class BookingRestController {
 
 
 
-        Map map_subTotal = Map.of("name","小计","amount",22,"key","subTotal");
-        Map map_shippingFee = Map.of("name","运费","amount",1,"key","shippingFee");
-        Map map_total_discount_amount = Map.of("name","折扣","amount",-2,"key","total_discount_amount");
-        Map map_total_amount = Map.of("name","合计","amount",0,"key","total_amount");
 
 
         List<Pass> passList = passRepository.findByUser(userVo.getUser_id());
@@ -1267,9 +1298,33 @@ public class BookingRestController {
         passList.stream().map(e->PassResp.SimplefromWithId(e)).collect(Collectors.toList());
 
 
+
+
+
+
+
+
+
+        trial_pojo.setSkus(pricingRates.stream().map(e->{
+            BookingSkuPojo.ProductReq.Sku sku = new BookingSkuPojo.ProductReq.Sku();
+            sku.setId(e.getId());
+            sku.setQuantity(e.getRestriction_MinQuantity());
+            sku.setTravelers(new ArrayList<>());
+            return sku;
+        }).collect(Collectors.toList()));
+
+
+        trial_pojo.setPasses(new ArrayList<>());
+        trial_pojo.setExtras(new ArrayList<>());
+
+
+
+        BookingTrialResp bookingTrialResp = bookingforsku_preview_price__(trial_pojo);
+
+
+
         Map map = Map.of(
 
-                "summary",Arrays.asList(map_subTotal,map_shippingFee,map_total_discount_amount,map_total_amount),
 
                 "vouchers",Arrays.asList(Map.of("id",123,"amount",10,"text","优惠券"),
                         Map.of("id",12,"amount",100,"text","优惠券")),
@@ -1284,7 +1339,10 @@ public class BookingRestController {
                 }).collect(Collectors.toList()),
 
                 "product",productResp,
-                "total",map_total_amount,
+
+                "summary",bookingTrialResp.getSummary(),//Arrays.asList(map_subTotal,map_shippingFee,map_total_discount_amount,map_total_amount),
+
+                "total",bookingTrialResp.getTotal(),//map_total_amount,
 
 "referral",Map.of(
                 "referral_path",url_with_link,
@@ -1307,7 +1365,7 @@ public class BookingRestController {
 
         entityModel.add(linkTo(methodOn(PassengerRestController.class).createPassenger(userVo.getUser_id(),null)).withRel("createPassenger"));
 
-        entityModel.add(linkTo(methodOn(PassengerRestController.class).getPassengerList(userVo.getUser_id(),null,null)).withRel("getPassengerList"));
+        entityModel.add(linkTo(methodOn(PassengerRestController.class).listPassenger(userVo.getUser_id(),null,null)).withRel("getPassengerList"));
 
         entityModel.add(linkTo(methodOn(AddressRestController.class).listAddress(userVo.getUser_id(),null,null)).withRel("listAddress"));
         entityModel.add(linkTo(methodOn(AddressRestController.class).Page_listAddress(userVo.getUser_id())).withRel("Page_listAddress"));
@@ -1376,7 +1434,6 @@ public class BookingRestController {
         productResp.setShippable(true);
 
         productResp.setShippingAddressCollection(product.getShippingAddressCollection());
-        productResp.setShippingAddressCollection(EnumShippingAddressCollection.required);
 
         List<ShippingRate> shippingRates = shippingRatePlanRepository.findAll();
         productResp.setShipping_options(shippingRates.stream().map(e->{
@@ -1425,21 +1482,30 @@ public class BookingRestController {
         passList.stream().map(e->PassResp.SimplefromWithId(e)).collect(Collectors.toList());
 
 
+        BookingSkuPojo pojo1 = new BookingSkuPojo();
+
+
+
+        BookingTrialResp bookingTrialResp = booking_trial(pojo1);
+
+
+
         //bookingTrialResp.setSummary(Arrays.asList(map_subTotal,map_shippingFee,map_total_discount_amount,map_total_amount));
         Map map = Map.of(
                 "product",productResp,
                 "payment",Arrays.asList(map_subTotal,map_shippingFee,map_total_discount_amount,map_total_amount),
 
-                "summary",Arrays.asList(map_subTotal,map_shippingFee,map_total_discount_amount,map_total_amount),
+                "summary",bookingTrialResp.getSummary(),//Arrays.asList(map_subTotal,map_shippingFee,map_total_discount_amount,map_total_amount),
                 "vouncher",Map.of("amount",10,"text","优惠券"),
 
                 "passes",passList.stream().map(e->PassResp.SimplefromWithId(e)).collect(Collectors.toList()),
-                "total",map_total_amount,
+                "total",bookingTrialResp.getTotal_amount(),//map_total_amount,
 
                 "referral_path",url_with_link,
                 "referral_id",referral.getCode(),
                 "referral_url",link
         );
+
 
 
         EntityModel entityModel = EntityModel.of(map);
@@ -1451,7 +1517,7 @@ public class BookingRestController {
 
         entityModel.add(linkTo(methodOn(PassengerRestController.class).createPassenger(userVo.getUser_id(),null)).withRel("createPassenger"));
 
-        entityModel.add(linkTo(methodOn(PassengerRestController.class).getPassengerList(userVo.getUser_id(),null,null)).withRel("getPassengerList"));
+        entityModel.add(linkTo(methodOn(PassengerRestController.class).listPassenger(userVo.getUser_id(),null,null)).withRel("getPassengerList"));
 
 
         entityModel.add(linkTo(methodOn(AddressRestController.class).createaUserAddress(userVo.getUser_id(),null)).withRel("createAddress"));
@@ -1609,18 +1675,52 @@ public class BookingRestController {
         Map<Long, Product> longProductMap = productList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
 
 
-/*
-
-        pojo.getSkus().stream().map(e->{
-            PricingType pricingType = pricingTypeMap.get(e.getId());
-            Product product = longProductMap.get(pricingType.getProductId());
-            return Quartet.with(e.getQuantity(),product.getId(),product.getRestriction_maxQuantity(),product.getRestriction_minQuantity());
-        }).collect(Collectors.toList());
 
 
 
-*/
+        BookingSkuPojo pojo1 = new BookingSkuPojo();
 
+
+
+        pojo1.setSkus(pojo.getSkus().stream().map(e->{
+            BookingSkuPojo.ProductReq.Sku sku = new BookingSkuPojo.ProductReq.Sku();
+            sku.setId(e.getId());
+            sku.setQuantity(e.getQuantity());
+            sku.setTravelers(e.getTravelers());
+            return sku;
+        }).collect(Collectors.toList()));
+
+
+        pojo1.setPasses(pojo.getPasses());
+        pojo1.setExtras(pojo.getExtras());
+
+
+
+
+        BookingTrialResp bookingTrialResp = bookingforsku_preview_price__(pojo1);
+
+
+
+
+        List<BookingSkuPojo.TravelerReq> travelerReqs =   pojo.getSkus().stream().map(e->{
+            PricingRate pricingRate = pricingTypeMap.get(e.getId());
+            Product product = longProductMap.get(pricingRate.getProductId());
+            if(product.getRestriction_passenger_identity_documents_required()){
+
+                return e.getTravelers();
+            }else{
+
+                return new ArrayList<BookingSkuPojo.TravelerReq>();
+            }
+
+
+        }).flatMap(List::stream).collect(Collectors.toList());
+
+
+
+
+
+        realnameAuthsService.checkRealname(travelerReqs);
 
 
 
@@ -1704,11 +1804,15 @@ public class BookingRestController {
             return bookingTypeTowhoVo;
         }).collect(Collectors.toList());
 
+        cityPassService.booking_trial(list);
+        attractionTicketService.booking_trial(list);
 
         PlatUserVo platUserVo = new PlatUserVo();
         platUserVo.setUserVo(userVo);
         platUserVo.setPlatform(EnumPlatform.LT);
 
+
+      //  extraService.
 
         Triplet<Reservation,List<LineItem>,PlatUserVo > booking = bookingService.bookingWithPayment(list,pojo,platUserVo);
 
@@ -1803,10 +1907,23 @@ public class BookingRestController {
     public ResponseEntity bookingforsku_preview(@RequestBody @Valid BookingSkuPojo pojo) {
 
 
-        System.out.println("参数"+pojo.toString());
-        Authentication authentication = authenticationFacade.getAuthentication();
 
-        UserVo userVo = authenticationFacade.getUserVo(authentication);
+
+        EntityModel entityModel = EntityModel.of(booking_trial(pojo));
+
+
+        return ResponseEntity.ok(entityModel);
+
+    }
+
+
+
+
+
+    private BookingTrialResp booking_trial(BookingSkuPojo pojo) {
+
+
+        System.out.println("参数"+pojo.toString());
 
         List<Sku> pricingTypes = zonePricingRepository.findAllById(pojo.getSkus().stream().map(ee->ee.getId()).collect(Collectors.toList()));
 
@@ -1861,18 +1978,11 @@ public class BookingRestController {
         List<Pass> passList = passRepository.findAllById(pojo.getPasses());
 
 
-
-/*
-        "subTotal": 22,// 小计
-                "shippingFee": 1, // 运费
-                "total_discount_amount": 1, //折扣
-                "total_amount": 0 // 合计*/
         bookingTrialResp.setSubTotal(Long.valueOf(list.stream().mapToLong(e->e.getQuantity()*e.getPricingType().getRetail()).sum()).intValue());
 
 
         bookingTrialResp.setTotal_discount_amount(0);
         bookingTrialResp.setHeroCard_amount(20);
-        //    bookingTrialResp.setShippingDetail("待晚上");
         bookingTrialResp.setShippingFee(1);
 
         if(passList.size()> 0){
@@ -1898,14 +2008,19 @@ public class BookingRestController {
 
         bookingTrialResp.setTotal_amount(bookingTrialResp.getSubTotal()- bookingTrialResp.getShippingFee()- bookingTrialResp.getTotal_discount_amount() - bookingTrialResp.getHeroCard_amount());
 
-    //    bookingTrialResp.setAmount_due(booking.getTotal_amount());
+
+        return bookingTrialResp;
 
 
 
+    }
 
-    //    Pair<Reservation, List<BookingProductFuck> > booking = bookingService.bookingsku(list,pojo,userVo);
+    @Operation(summary = "2、下单购买")
+    @PostMapping(value = "/bookings/check_trial_proceType", produces = "application/json")
+    public ResponseEntity bookingforsku_preview_price(@RequestBody @Valid BookingSkuPojo pojo) {
 
 
+        BookingTrialResp bookingTrialResp = bookingforsku_preview_price__(pojo);
 
 
         EntityModel entityModel = EntityModel.of(bookingTrialResp);
@@ -1916,15 +2031,12 @@ public class BookingRestController {
     }
 
 
-    @Operation(summary = "2、下单购买")
-    @PostMapping(value = "/bookings/check_trial_proceType", produces = "application/json")
-    public ResponseEntity bookingforsku_preview_price(@RequestBody @Valid BookingSkuPojo pojo) {
+    private BookingTrialResp bookingforsku_preview_price__(BookingSkuPojo pojo) {
 
 
         System.out.println("参数"+pojo.toString());
-        Authentication authentication = authenticationFacade.getAuthentication();
 
-        UserVo userVo = authenticationFacade.getUserVo(authentication);
+
 
         List<PricingRate> pricingRates = pricingTypeRepository.findAllById(pojo.getSkus().stream().map(ee->ee.getId()).collect(Collectors.toList()));
 
@@ -1945,7 +2057,7 @@ public class BookingRestController {
             PricingRate sku = pricingTypeMap.get(e.getId());
 
 
-         //   PricingType pricingType =  pricingTypeRepository.findById(sku.getPricingType()).get();
+            //   PricingType pricingType =  pricingTypeRepository.findById(sku.getPricingType()).get();
 
             Product product = longProductMap.get(sku.getProductId());
             Assert.notNull(product, "产品不能为空");
@@ -1976,36 +2088,69 @@ public class BookingRestController {
         BookingTrialResp bookingTrialResp = new BookingTrialResp();
 
 
+
+
+
         List<Pass> passList = passRepository.findAllById(pojo.getPasses());
 
 
+        Double tot =  extraService.getTotalPrice(pojo.getExtras());
 
+        Double subTotal = list.stream().mapToLong(e->e.getQuantity()*e.getPricingType().getRetail()).sum()+0d;
+
+        subTotal += tot;
+
+        Double total_discount_amount = 0d;
+
+        if(passList.size()> 0){
+            BookingTypeTowhoVoSku sku =  list.get(0);
+            sku.setQuantity(sku.getQuantity()-1);
+            total_discount_amount = sku.getPricingType().getPrice()+0d;
+        }
 /*
         "subTotal": 22,// 小计
                 "shippingFee": 1, // 运费
                 "total_discount_amount": 1, //折扣
                 "total_amount": 0 // 合计*/
-        bookingTrialResp.setSubTotal(Long.valueOf(list.stream().mapToLong(e->e.getQuantity()*e.getPricingType().getRetail()).sum()).intValue());
+        bookingTrialResp.setSubTotal(subTotal.intValue());
 
 
-        bookingTrialResp.setTotal_discount_amount(0);
+
         bookingTrialResp.setHeroCard_amount(20);
-        //    bookingTrialResp.setShippingDetail("待晚上");
-        bookingTrialResp.setShippingFee(1);
 
-        if(passList.size()> 0){
-            BookingTypeTowhoVoSku sku =  list.get(0);
-            sku.setQuantity(sku.getQuantity()-1);
-            bookingTrialResp.setTotal_discount_amount(sku.getPricingType().getPrice());
+
+        Double shippingFee = 0d;
+        if(pojo.getShipping()!= null && pojo.getShipping().getShippingRate()!= null){
+            Optional<ShippingRate> shippingRates = shippingRatePlanRepository.findById(pojo.getShipping().getShippingRate());
+            if(shippingRates.isEmpty()){
+
+
+                bookingTrialResp.setShippingFee(0);
+            }else{
+                ShippingRate shippingRate = shippingRates.get();
+                shippingFee = Integer.valueOf(shippingRate.getFixed_amount()).doubleValue();
+
+                bookingTrialResp.setShippingFee(Integer.valueOf(shippingRate.getFixed_amount()));
+            }
+
+
         }
-        bookingTrialResp.setAmount_due(Long.valueOf(list.stream().mapToLong(e->e.getQuantity()*e.getPricingType().getRetail()).sum()).intValue());
 
-        bookingTrialResp.setAmount(Long.valueOf(list.stream().mapToLong(e->e.getQuantity()*e.getPricingType().getRetail()).sum()).intValue());
 
+
+
+
+
+
+        bookingTrialResp.setTotal_discount_amount(total_discount_amount.intValue());
+
+        bookingTrialResp.setAmount_due(Double.valueOf(subTotal+shippingFee - total_discount_amount).intValue());
+
+        bookingTrialResp.setAmount(Double.valueOf(subTotal+shippingFee - total_discount_amount).intValue());
 
 
         Map map_subTotal = Map.of("name","小计","amount",bookingTrialResp.getSubTotal(),"key","subTotal");
-        Map map_shippingFee = Map.of("name","运费","amount",0,"key","shippingFee");
+        Map map_shippingFee = Map.of("name","运费","amount",shippingFee,"key","shippingFee");
         Map map_total_discount_amount = Map.of("name","折扣","amount",-bookingTrialResp.getTotal_discount_amount(),"key","total_discount_amount");
         Map map_total_amount = Map.of("name","合计","amount",bookingTrialResp.getAmount_due(),"key","total_amount");
         bookingTrialResp.setSummary(Arrays.asList(map_subTotal,map_shippingFee,map_total_discount_amount,map_total_amount));
@@ -2014,25 +2159,12 @@ public class BookingRestController {
         bookingTrialResp.setTotal(map_total_amount);
 
 
-        bookingTrialResp.setTotal_amount(bookingTrialResp.getSubTotal()- bookingTrialResp.getShippingFee()- bookingTrialResp.getTotal_discount_amount() - bookingTrialResp.getHeroCard_amount());
 
-        //    bookingTrialResp.setAmount_due(booking.getTotal_amount());
-
+        return bookingTrialResp;
 
 
-
-        //    Pair<Reservation, List<BookingProductFuck> > booking = bookingService.bookingsku(list,pojo,userVo);
-
-
-
-
-        EntityModel entityModel = EntityModel.of(bookingTrialResp);
-
-
-        return ResponseEntity.ok(entityModel);
 
     }
-
 
 
 

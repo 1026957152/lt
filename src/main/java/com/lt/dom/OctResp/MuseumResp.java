@@ -8,7 +8,6 @@ import com.lt.dom.otcReq.LocationResp;
 
 import java.time.LocalTime;
 import java.util.List;
-import java.util.stream.Stream;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MuseumResp extends Base {
@@ -26,10 +25,10 @@ public class MuseumResp extends Base {
     private LocalTime open_time;
 
 
-    private String thumbnail_image;
+    private PhotoResp thumbnail_image;
     private String guestServicesPhoneNumber;
     private String code;
-    private PhotoResp headerImage;
+    private PhotoResp header;
 
     private LocationResp address;
     private List exhibitions;
@@ -46,11 +45,11 @@ public class MuseumResp extends Base {
         return museumResp;
     }
 
-    public void setThumbnail_image(String thumbnail_image) {
+    public void setThumbnail_image(PhotoResp thumbnail_image) {
         this.thumbnail_image = thumbnail_image;
     }
 
-    public String getThumbnail_image() {
+    public PhotoResp getThumbnail_image() {
         return thumbnail_image;
     }
 
@@ -134,12 +133,12 @@ public class MuseumResp extends Base {
         return code;
     }
 
-    public void setHeaderImage(PhotoResp headerImage) {
-        this.headerImage = headerImage;
+    public void setHeader(PhotoResp header) {
+        this.header = header;
     }
 
-    public PhotoResp getHeaderImage() {
-        return headerImage;
+    public PhotoResp getHeader() {
+        return header;
     }
 
     public void setExhibitions(List exhibitions) {

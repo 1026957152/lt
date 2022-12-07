@@ -34,6 +34,7 @@ import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,13 @@ public class IndexController {
     private FileStorageService fileStorageService;
     @Autowired
     private ComponentRepository componentRepository;
+    @Autowired
+    private AttributeServiceImpl attributeService;
+    @Autowired
+    private TripRepository tripRepository;
+
+
+
 
     @Autowired
     private PriceServiceImpl priceService;
@@ -109,7 +117,7 @@ public class IndexController {
     @Autowired
     private MediaServiceImpl mediaService;
     @Autowired
-    private RegionRepository regionRepository;
+    private ProductServiceImpl productService;
 
     @Autowired
     private PlaceRepository placeRepository;
@@ -148,6 +156,7 @@ public class IndexController {
     public EntityModel<HomeResp> qqLogin(HttpServletRequest request)  {
 
 
+        Authentication authentication = authenticationFacade.getAuthentication();
 
 
 
@@ -339,7 +348,11 @@ public class IndexController {
         System.out.println("剧目  "+ valueListItems_movie.toString());
 
     //    List<Long> sortList_movie = valueListItems_movie.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList());
-        List<Product> productList1 = productRepository.findAllByType(EnumProductType.Showtime);
+
+        List<Product>  productList1  = productService.fromValueList(valueListItems_carousel.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList()));
+
+
+     //   List<Product> productList1 = productRepository.findAllById(valueListItems_movie.stream().map(e->e.getValue()));
 
         if(miniapp_release){
             productList1 = Arrays.asList();
@@ -353,20 +366,23 @@ public class IndexController {
 
         Map<Long,Movie>  movieListMap  = movieList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
 
+        if(movieList.size()>0){
 
-        homeResp.setMovies(movieProductList.stream().map(e->{
+            homeResp.setMovies(movieProductList.stream().map(e->{
 
-            Movie movie = movieListMap.get(e.getMovie());
+                Movie movie = movieListMap.get(e.getMovie());
 
-            MovieResp movieResp = MovieResp.homeFrontSimple(movie);
+                MovieResp movieResp = MovieResp.homeFrontSimple(movie);
 
-            movieResp.setThumb(fileStorageService.loadDocumentWithDefault(EnumDocumentType.movie_cover,movie.getCode()));
-            EntityModel entityModel1 = EntityModel.of(movieResp);
-            entityModel1.add(linkTo(methodOn(MovieRestController.class).getMovie(e.getMovie())).withSelfRel());
+                movieResp.setThumb(fileStorageService.loadDocumentWithDefault(EnumDocumentType.movie_cover,movie.getCode()));
+                EntityModel entityModel1 = EntityModel.of(movieResp);
+                entityModel1.add(linkTo(methodOn(MovieRestController.class).getMovie(e.getMovie())).withSelfRel());
 
-            return entityModel1;
-        }).collect(Collectors.toList()));
+                return entityModel1;
+            }).collect(Collectors.toList()));
 
+
+        }
 
 
 
@@ -390,9 +406,19 @@ public class IndexController {
 
 
         if(!miniapp_release){
+            UserVo userVo = authenticationFacade.checkUserVo(authentication);
 
-            passService.withMe(homeResp);
+            if(userVo != null) {
 
+                Optional<Pass> pass = passService.find(userVo.getUser_id());
+
+                if(pass.isEmpty()){
+                    passService.withMe(homeResp);
+                }
+            }else {
+
+
+            }
         }
 
 
@@ -408,6 +434,26 @@ public class IndexController {
             homeResp.setPickupDropoff(entityModel_pickup);
         }
 
+        List<Trip> bookingRuleList = tripRepository.findAll();
+
+
+        List<EntityModel> listMap = bookingRuleList.stream().map(e->{
+            TripResp movieResp = TripResp.simpleFrom(e);
+
+
+            movieResp.setAttraction_count(1);
+            movieResp.setDuration("1天");
+            movieResp.setTripCover(fileStorageService.loadDocumentWithDefault(EnumDocumentType.trip_cover,e.getCode()));
+
+            EntityModel entityModel_trip = EntityModel.of(movieResp);
+            entityModel_trip.add(linkTo(methodOn(TripRestController.class).getTrip(e.getId())).withSelfRel());
+
+            return entityModel_trip;
+        }).collect(Collectors.toList());
+
+
+
+        homeResp.setPlanner(listMap);
 
         return entityModel;
 
@@ -535,6 +581,15 @@ public class IndexController {
 
 
 
+            productResp.setPriceRange(priceService.getPriceRange(pricingRate_default));
+
+
+
+
+            attributeService.fill(productResp,e);
+
+
+
             List<Component> componentList = componentRepository.findAllByProduct(e.getId());;
 
             productResp.setComponent_rights(componentList.stream().map(right->right.getComponentRightId()).collect(Collectors.toList()));
@@ -580,6 +635,21 @@ public class IndexController {
 
         homeResp.setReviews(commentList);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        entityModel.add(linkTo(methodOn(TripRestController.class).Page_planner()).withRel("Page_planner"));
 
 
         return entityModel;
@@ -644,7 +714,10 @@ public class IndexController {
 
 
 
-        List<Product> productList = productRepository.findAllById(valueListItems_product.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList()));
+        List<Product> productList = productRepository
+                .findAllById(valueListItems_product.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList()))
+                .stream().filter(e->e.getPrivacyLevel().equals(EnumPrivacyLevel.public_)).filter(e->e.getStatus().equals(EnumProductStatus.active)).toList()
+                .stream().toList();
         Map<Long, List<PricingRate>>  pricingType = pricingTypeRepository.findByProductIdIn(productList.stream().map(e->e.getId()).collect(Collectors.toList()))
                 .stream().collect(Collectors.groupingBy(e->e.getProductId()));
 
@@ -742,11 +815,9 @@ public class IndexController {
 
             MuseumResp museumResp = MuseumResp.from(e);
 
-            LocationResp locationResp = new LocationResp();
-            locationResp.setAddress("山西省榆阳区阜石路");
-            museumResp.setAddress(locationResp);
+            museumResp.setAddress(LocationResp.from(e.getLocation()));
          // productResp.setImages(fileStorageService.loadDocuments(EnumDocumentType.museum_thumbnail,e.getCode()));
-           museumResp.setThumbnail_image(fileStorageService.loadDocumentWithDefault(EnumDocumentType.museum_thumbnail,e.getCode()).getUrl_thumbnail());
+           museumResp.setThumbnail_image(fileStorageService.loadDocumentWithDefault(EnumDocumentType.museum_thumbnail,e.getCode()));
 
 
 

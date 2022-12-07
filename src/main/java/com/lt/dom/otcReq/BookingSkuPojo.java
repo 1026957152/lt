@@ -35,6 +35,16 @@ public class BookingSkuPojo {
 
     private List<Long> passes;
 
+    private List<Long> extras;
+
+    public List<Long> getExtras() {
+        return extras;
+    }
+
+    public void setExtras(List<Long> extras) {
+        this.extras = extras;
+    }
+
     private Shipping shipping;
 
     public Shipping getShipping() {

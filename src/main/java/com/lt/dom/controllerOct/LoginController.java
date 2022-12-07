@@ -294,10 +294,14 @@ public class LoginController {
 
 
         EntityModel entityModel = EntityModel.of(map);
+        entityModel.add(linkTo(methodOn(EmpowerRestController.class).mini_getPhone(null)).withRel("getPhone"));
+
 
         entityModel.add(linkTo(methodOn(LoginController.class).login_send_code(null)).withRel("send_verification_code"));
 
         entityModel.add(linkTo(methodOn(LoginController.class).login_sms_confirm(optional.get().getOpenid(),null)).withRel("login"));
+
+
 
         return entityModel;
 

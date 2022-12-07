@@ -1,20 +1,24 @@
 package com.lt.dom.controllerOct;
 
 import cn.hutool.core.util.DesensitizedUtil;
-import com.lt.dom.OctResp.CustomerDemographicsResp;
-import com.lt.dom.OctResp.ReportBookingSummary;
-import com.lt.dom.OctResp.ReportSaleResp;
-import com.lt.dom.OctResp.VoucherLiabilityResp;
+import com.lt.dom.OctResp.*;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
+import com.lt.dom.otcenum.EnumAgentStatus;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
+import com.lt.dom.otcenum.EnumReportMetric;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.BookingServiceImpl;
 import com.lt.dom.serviceOtc.CancellationServiceImpl;
+import com.lt.dom.serviceOtc.PaymentServiceImpl;
 import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import com.lt.dom.specification.BookingQueryfieldsCriteria;
+import com.lt.dom.specification.BookingSpecification;
+import com.lt.dom.specification.TourBookingSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +31,9 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.summingInt;
+import static org.springframework.data.jpa.domain.Specification.where;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/oct")
@@ -35,6 +42,10 @@ public class ReportRestController {
 
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private AgentRepository agentRepository;
+
+
 
     @Autowired
     private BookingServiceImpl bookingService;
@@ -46,6 +57,8 @@ public class ReportRestController {
 
     @Autowired
     private ReservationRepository reservationRepository;
+    @Autowired
+    private PaymentServiceImpl paymentService;
 
 
 
@@ -200,15 +213,57 @@ public class ReportRestController {
 
 
 
+    @GetMapping(value = "/reports/Page_Booking_summary", produces = "application/json")
+
+    public EntityModel Page_Booking_summary() {
 
 
-    @GetMapping(value = "reports/Booking-summary", produces = "application/json")
+
+
+        List<Agent> agents = agentRepository.findAll();
+
+
+        List<Product> productList = productRepository.findAll();
+
+
+        Map map = Map.of("agent_list", Agent.List(agents),
+                "product_list", Product.List(productList),
+                "metric_list", EnumReportMetric.from()
+                );
+
+
+            EntityModel entityModel = EntityModel.of(map);
+
+
+            entityModel.add(linkTo(methodOn(ReportRestController.class).Booking_summary(null)).withRel("create"));
+
+
+            return entityModel;
+
+        }
+
+
+
+
+
+    @GetMapping(value = "/reports/booking-summary", produces = "application/json")
+
     public List<ReportBookingSummary> Booking_summary( @RequestBody ReportReq reportReq) {
 
 
+        System.out.println("=================:" + reportReq.toString() + "");
+
+        BookingQueryfieldsCriteria searchQuery = new BookingQueryfieldsCriteria();
+
+      //  searchQuery.setProduct(reportReq.getProduct());
+        searchQuery.setAgent(reportReq.getAgent());
+
+        BookingSpecification spec =
+                new BookingSpecification(searchQuery); //, "code", "claim_note"
 
 
-        List<Reservation> reservationList = reservationRepository.findAll();
+
+        List<Reservation> reservationList = reservationRepository.findAll(where(spec));
 
 
         return reservationList.stream().map(e->{
@@ -222,7 +277,11 @@ public class ReportRestController {
           //  bookingSummary.setStart_date();
            // bookingSummary.setEnd_date();
             bookingSummary.setStatus(e.getStatus().toString());
-            bookingSummary.setPayment_status("");
+
+            Payment payment = paymentService.getPayment(e);
+
+
+            bookingSummary.setPayment_status(payment.getStatus().toString());
 
 
             Optional<Cancellation> cancellations = cancellationService.getCancellation(e);
@@ -232,12 +291,12 @@ public class ReportRestController {
             }
             bookingSummary.setConfirmed_date("null");
 
-            bookingService.getCost(e);
+            ;
+            bookingService.getCost(e).toString();
+           bookingSummary.setTotal_sale_price(e.getAmount()+"");
 
-         //   bookingSummary.setTotal_sale_price(e.getTotal_amount());
 
-
-            bookingSummary.setMargin("");
+            bookingSummary.setMargin(bookingService.getMargin(e).toString());
 
             bookingSummary.setAgent_commission("不知道");
            // bookingSummary.setAgent(e.getAgent());
@@ -253,4 +312,12 @@ public class ReportRestController {
     }
 
 
+    @GetMapping(value = "/reports/home-summary", produces = "application/json")
+    public HomeSummary Home_summary() {
+
+        List<Reservation> reservationList = reservationRepository.findAll();
+
+        return new HomeSummary();
+
+    }
 }

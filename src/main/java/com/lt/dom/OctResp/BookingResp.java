@@ -190,7 +190,7 @@ public class BookingResp extends BaseResp {
         reservationResp.setCode(booking.getCode());
         reservationResp.setStatus(booking.getStatus());
 
-        reservationResp.setTotal_amount(booking.getTotal_amount());
+        reservationResp.setTotal_amount(booking.getAmount());
         reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
 
         reservationResp.setProductType(booking.getProductType());
@@ -215,7 +215,7 @@ public class BookingResp extends BaseResp {
         reservationResp.setCode(booking.getCode());
         reservationResp.setStatus(booking.getStatus());
 
-        reservationResp.setTotal_amount(booking.getTotal_amount());
+        reservationResp.setTotal_amount(booking.getAmount());
         reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
 
         reservationResp.setProductType(booking.getProductType());
@@ -488,15 +488,15 @@ public class BookingResp extends BaseResp {
         reservationResp.setStatus(booking.getStatus());
         reservationResp.setStatus_text(booking.getStatus().toString());
 
-        reservationResp.setSubTotal(booking.getTotal_amount());
+        reservationResp.setSubTotal(booking.getAmount());
         reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
     //    reservationResp.setHeroCard_amount(booking.getTotal_amount());
 
-        reservationResp.setTotal_amount(booking.getTotal_amount());
+        reservationResp.setTotal_amount(booking.getAmount());
 
 
 
-        reservationResp.setAmount_due(booking.getTotal_amount());
+        reservationResp.setAmount_due(booking.getAmount());
         reservationResp.setProductType(booking.getProductType());
         reservationResp.setCreated_at(booking.getCreatedDate());
         reservationResp.setPaid_at(booking.getPaied_at());
@@ -534,7 +534,7 @@ public class BookingResp extends BaseResp {
             reservationResp.setCode(booking.getCode());
             reservationResp.setStatus(booking.getStatus());
 
-            reservationResp.setTotal_amount(booking.getTotal_amount());
+            reservationResp.setTotal_amount(booking.getAmount());
             reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
 
             reservationResp.setProductType(booking.getProductType());
@@ -555,7 +555,7 @@ public class BookingResp extends BaseResp {
             reservationResp.setCode(booking.getCode());
             reservationResp.setStatus(booking.getStatus());
 
-            reservationResp.setTotal_amount(booking.getTotal_amount());
+            reservationResp.setTotal_amount(booking.getAmount());
             reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
 
             reservationResp.setProductType(booking.getProductType());

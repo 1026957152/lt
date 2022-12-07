@@ -14,6 +14,17 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MenuResp {
 
+    private  String link
+            ;
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
     public MenuResp(String s) {
         this.children = new ArrayList<>();
         this.name = s;
@@ -38,18 +49,30 @@ public class MenuResp {
     private boolean leaf;
 
     private List<MenuResp> children;
-
     public MenuResp(String path, String name, Meta meta) {
         this.path = path;
         this.name = name;
         this.meta = meta;
         this.children = new ArrayList<>();
     }
+    public MenuResp(String path, String name, Meta meta,String link) {
+        this.path = path;
+        this.name = name;
+        this.meta = meta;
+        this.children = new ArrayList<>();
+        this.link = link;
+    }
     public MenuResp(String path, String re,String name, Meta meta) {
         this.path = path;
         this.redirect = re;
         this.name = name;
         this.meta = meta;
+        this.children = new ArrayList<>();
+    }
+    public MenuResp(String path, String re,String name) {
+        this.path = path;
+        this.redirect = re;
+        this.name = name;
         this.children = new ArrayList<>();
     }
     public MenuResp() {
@@ -81,7 +104,7 @@ public class MenuResp {
 
         this.name = name;
         this.meta = meta;
-        this.noCache = noCache;
+
         this.children = new ArrayList<>();
     }
     public MenuResp(String path,boolean hidden,String name, Meta meta,Boolean noCache) {
@@ -91,7 +114,7 @@ public class MenuResp {
 
         this.name = name;
         this.meta = meta;
-        this.noCache = noCache;
+       // this.noCache = noCache;
         this.children = new ArrayList<>();
     }
     public static MenuResp from(EnumMenu root,boolean isLeaf) {

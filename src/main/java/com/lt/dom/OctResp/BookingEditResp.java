@@ -67,7 +67,7 @@ private String code;
         reservationResp.setCode(booking.getCode());
         reservationResp.setStatus(booking.getStatus());
 
-        reservationResp.setTotal_amount(booking.getTotal_amount());
+        reservationResp.setTotal_amount(booking.getAmount());
         reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
 
         reservationResp.setProductType(booking.getProductType());
@@ -92,7 +92,7 @@ private String code;
         reservationResp.setCode(booking.getCode());
         reservationResp.setStatus(booking.getStatus());
 
-        reservationResp.setTotal_amount(booking.getTotal_amount());
+        reservationResp.setTotal_amount(booking.getAmount());
         reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
 
         reservationResp.setProductType(booking.getProductType());
@@ -353,7 +353,7 @@ private String code;
             reservationResp.setCode(booking.getCode());
             reservationResp.setStatus(booking.getStatus());
 
-            reservationResp.setTotal_amount(booking.getTotal_amount());
+            reservationResp.setTotal_amount(booking.getAmount());
             reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
 
             reservationResp.setProductType(booking.getProductType());
@@ -374,7 +374,7 @@ private String code;
             reservationResp.setCode(booking.getCode());
             reservationResp.setStatus(booking.getStatus());
 
-            reservationResp.setTotal_amount(booking.getTotal_amount());
+            reservationResp.setTotal_amount(booking.getAmount());
             reservationResp.setTotal_discount_amount(booking.getTotal_discount_amount());
 
             reservationResp.setProductType(booking.getProductType());

@@ -1,6 +1,7 @@
 package com.lt.dom.serviceOtc;
 
 import com.google.gson.Gson;
+import com.lt.dom.OctResp.LineItemResp;
 import com.lt.dom.RealNameAuthentication.PhoneAuth;
 import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
 import com.lt.dom.error.BookNotFoundException;
@@ -600,10 +601,17 @@ public class BookingServiceImpl {
             }
 
             lineItem.setQuantity(e.getQuantity().intValue());
-            lineItem.setUnitPrice(pricingRate.getRetail());
-            lineItem.setAmount(pricingRate.getRetail()*e.getQuantity().intValue());
 
-            if(e.getNegotiatedSku() != null) {
+            if(userVo.getPlatform().equals(EnumPlatform.LT)){
+                lineItem.setUnitPrice(pricingRate.getRetail());
+            }else{
+                lineItem.setUnitPrice(e.getRetail());
+            }
+
+
+            lineItem.setAmount(lineItem.getUnitPrice()*lineItem.getQuantity().intValue());
+
+/*            if(e.getNegotiatedSku() != null) {
                 lineItem.setNegotiated(true);
                 lineItem.setUnitPrice(pricingRate.getRetail());
                 lineItem.setAmount(pricingRate.getRetail()*e.getQuantity().intValue());
@@ -613,7 +621,7 @@ public class BookingServiceImpl {
                 lineItem.setUnitPrice(pricingRate.getRetail());
                 lineItem.setAmount(pricingRate.getRetail()*e.getQuantity().intValue());
 
-            }
+            }*/
 
 
             String reffer = UUID.randomUUID().toString();
@@ -622,6 +630,9 @@ public class BookingServiceImpl {
             lineItem.setStatus(EnumLineItemStatus.Executing);
 
             lineItem.setReferTraveler(reffer);
+            lineItem.setBase_cost_price(e.getBase_cost_price());
+
+
 
             lineItem.setProductCode(product.getCode());
 
@@ -649,7 +660,7 @@ public class BookingServiceImpl {
             }).collect(Collectors.toList()));
 
             multiTicketService.booking(lineItem,product);
-            cityPassService.booking(lineItem,product);
+            cityPassService.booking(lineItem,product,pricingRate);
             attractionTicketService.booking(lineItem,product);
             showtimeTicketService.booking(lineItem,product);
             busTicketService.booking(lineItem,product);
@@ -1084,11 +1095,25 @@ public class BookingServiceImpl {
         
     }
 
-    public void getCost(Reservation e) {
+    public Double getCost(Reservation reservation) {
 
 
-        List<LineItem> lineItemList = lineItemRepository.findAllByBooking(e.getId());
+        List<LineItem> lineItemList = lineItemRepository.findAllByBooking(reservation.getId());
 
+        Double cost = lineItemList.stream().mapToDouble(e->e.getBase_cost_price().doubleValue()).sum();
+
+        return cost;
        // lineItemList.stream().map(e->e.get)
+    }
+
+    public Double getMargin(Reservation reservation) {
+
+
+        List<LineItem> lineItemList = lineItemRepository.findAllByBooking(reservation.getId());
+
+        Double cost = lineItemList.stream().mapToDouble(e->e.getBase_cost_price().doubleValue()).sum();
+
+        return reservation.getAmount() - cost;
+        // lineItemList.stream().map(e->e.get)
     }
 }

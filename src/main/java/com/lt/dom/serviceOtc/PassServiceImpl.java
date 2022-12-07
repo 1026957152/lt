@@ -6,23 +6,31 @@ import com.lt.dom.OctResp.UserResp;
 import com.lt.dom.OctResp.home.HomeHeroPassResp;
 import com.lt.dom.OctResp.home.HomeResp;
 import com.lt.dom.PassAsyncServiceImpl;
+import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
 import com.lt.dom.controllerOct.IndexController;
 import com.lt.dom.controllerOct.PassRestController;
 import com.lt.dom.controllerOct.RandomCardNumberGenerator;
 import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.ExistException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.util.AtomicSequenceGenerator;
+import com.lt.dom.util.ZxingBarcodeGenerator;
 import com.lt.dom.vo.UserVo;
 import org.apache.commons.lang.RandomStringUtils;
+import org.javatuples.Pair;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -70,7 +78,7 @@ public class PassServiceImpl {
 
 
     @Autowired
-    private ComponentRightServiceImpl componentRightService;
+    private RealNameAuthenticationServiceImpl realnameAuthsService;
 
 
 /*
@@ -89,7 +97,21 @@ public class PassServiceImpl {
 public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
 
 
+    Assert.hasLength(wxlinkUserReq.getName(),"姓名不能为空");
+    Assert.hasLength(wxlinkUserReq.getId_card(), "身份证号不能为空");
+    VerificationSession verifiedOutputs1 = realnameAuthsService.checkRealname(wxlinkUserReq.getName(),wxlinkUserReq.getId_card());
 
+
+    if(verifiedOutputs1.getResultStatus().equals(EnumVerificationResultStatus.unverified)){
+        throw new BookNotFoundException(Enumfailures.resource_not_found,"实名认证失败"+verifiedOutputs1.getLastError());
+    }
+
+    allowedHolder(Arrays.asList(verifiedOutputs1.getIdNumber()),null);
+
+
+
+
+/*
 
     UserPojo userPojo = new UserPojo();
     //userPojo.setFirst_name(wxlinkUserReq.getFirst_name());
@@ -100,6 +122,7 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
     userPojo.setPassword(wxlinkUserReq.getId_card());
     userPojo.setRoles(Arrays.asList(EnumRole.ROLE_BANK_STAFF.name()));
 
+*/
 
 
 
@@ -121,8 +144,8 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
 
     Cardholder cardholder = new Cardholder();
     cardholder.setCompany(pass.getId());
-    cardholder.setName(wxlinkUserReq.getName());
-    cardholder.setIdentity(wxlinkUserReq.getId_card());
+    cardholder.setName(verifiedOutputs1.getName());
+    cardholder.setIdentity(verifiedOutputs1.getIdNumber());
 
     cardholder.setUuid(UUID.randomUUID().toString());
     cardholder = cardholderRepository.save(cardholder);
@@ -281,7 +304,6 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
         return pass;
     }
 
-
     public Pass create_virtual(LineItem product, Cardholder cardholder, Long user, Integer duration) {
 
 
@@ -306,9 +328,15 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
 
 
         Pass pass = create_virtual_witoutUser(lineItem,cardholder,duration);
+        pass.setCardholder(cardholder);
+
+
+        cardholder.setPass(pass);
 
 
         pass = passRepository.save(pass);
+
+
 
         return pass;
     }
@@ -400,7 +428,12 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
 
     public Pass link(Pass pass, User user) {
 
+        if(pass.getUser() != null){
+            throw new BookNotFoundException(Enumfailures.not_found,"该卡已关联，无法再次关联");
+
+        }
         pass.setUser(user.getId());
+        pass.setOwner(user.getId());
       //  pass.setStatus(user.getId());
         return passRepository.save(pass);
     }
@@ -472,12 +505,25 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
 
 
         if(user == null || !user.getBind()){
+
+            String link_添加卡 = linkTo(methodOn(PassRestController.class).Page_linkPass()).withSelfRel().getHref();
+            //   resp.setPath("/pages/user/card/add?url="+link);
+            String path_添加卡 = "/pages/user/card/add?url="+link_添加卡;
+
+
+
+            String link = linkTo(methodOn(PassRestController.class).Page_activePass()).withSelfRel().getHref();
+            String path_主人卡激活 = "/pages/ownercard/activate?url="+link;
+
+            String link_hero = linkTo(methodOn(IndexController.class).heroPass(null)).withSelfRel().getHref();
+            String path_link_hero = "/pages/onecard/show?url="+link_hero;
             userResp.setHasPass(false);
             userResp.setLable("您是否已有榆林主人卡");
-            userResp.setLines(Arrays.asList(Map.of("lable","我有一张数字主人卡","path","path_添加卡","image",EnumLayoutFeatured.添加卡.getFeature_image()),
-                    Map.of("lable","我有一张实体主人卡","path","path_添加卡","image",EnumLayoutFeatured.添加卡.getFeature_image()),
-                    Map.of("lable","我帮别人激活","path","path_主人卡激活","image",EnumLayoutFeatured.主人卡激活.getFeature_image()),
-                    Map.of("lable","我没有主人卡","path","path_link_hero","image",EnumLayoutFeatured.主人卡激活.getFeature_image())));
+            userResp.setLines(
+                    Arrays.asList(Map.of("lable","我有主人卡","path",path_添加卡,"image",EnumLayoutFeatured.添加卡.getFeature_image()),
+              //      Map.of("lable","我有一张实体主人卡","path",path_添加卡,"image",EnumLayoutFeatured.添加卡.getFeature_image()),
+                    Map.of("lable","我帮别人激活","path",path_主人卡激活,"image",EnumLayoutFeatured.主人卡激活.getFeature_image()),
+                    Map.of("lable","我没有主人卡","path",path_link_hero,"image",EnumLayoutFeatured.主人卡激活.getFeature_image())));
 
 
             return;
@@ -499,11 +545,17 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
 
 
             EntityModel entityModel = EntityModel.of(Map.of(
-                    "title",pass.getLabel(),
+                    "region","榆林",
+                    "label",pass.getLabel(),
+                    "tip","html 格式",
+
+                    "by_logo",fileStorageService.loadDocumentWithDefault(EnumDocumentType.region_photo,pass.getCode()),
                     "code",pass.getCode(),
                     "number",pass.getNumber(),
-                    "expiringDate",pass.getExpiringDate(),
-                    "path","/pages/ownercard/show?url="+link));
+                    "code_base64_src",   ZxingBarcodeGenerator.base64_png_src(pass.getCode()),
+
+            "expiringDate",pass.getExpiringDate(),
+                    "path",EnumMiniappPagePath.home_city_pass.getPath()+"?url="+link));
 
             entityModel.add(linkTo(methodOn(PassRestController.class).getPass(pass.getId())).withSelfRel());
 
@@ -516,7 +568,7 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
                 String path_主人卡激活 = "/pages/ownercard/activate?url="+link;
            // }
           //  else if(ee.equals(EnumLayoutFeatured.添加卡)){
-                String link_添加卡 = linkTo(methodOn(PassRestController.class).Page_linkPass(user.getUser_id())).withSelfRel().getHref();
+                String link_添加卡 = linkTo(methodOn(PassRestController.class).Page_linkPass()).withSelfRel().getHref();
              //   resp.setPath("/pages/user/card/add?url="+link);
                 String path_添加卡 = "/pages/user/card/add?url="+link_添加卡;
 
@@ -605,13 +657,60 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
     public void withMe(HomeResp homeResp) {
       //  String link_hero = linkTo(methodOn(IndexController.class).heroPass(null)).withSelfRel().getHref();
 
-        Map map = Map.of("hasPass",false,
-                "lable","我没有主人卡",
-                "path",EnumMiniappPagePath.home_city_pass.path,
-                "image",EnumLayoutFeatured.主人卡激活.getFeature_image());
 
 
-        homeResp.setCityPass(map);
+            Map map = Map.of("hasPass",false,
+                    "lable","我没有主人卡",
+                    "path",EnumMiniappPagePath.home_city_pass.path,
+                    "image",EnumLayoutFeatured.主人卡激活.getFeature_image());
 
+
+            homeResp.setCityPass(map);
+
+
+    }
+
+    public void allowedHolder(List<String> id_number_list, String pattern) {
+        if(pattern != null){
+          //  boolean isMatch = ;
+
+
+            List<String> notAlloed = id_number_list.stream().filter(e->!Pattern.matches(pattern, e)).collect(Collectors.toList());
+
+            if(notAlloed.size()>0 ){
+                throw new ExistException(Enumfailures.invalid_amount,"身份证号码号限制不能购买"+ notAlloed);
+
+            }
+
+        }
+
+        List<String> ids = id_number_list.stream().map(e->{
+            List<Cardholder> optionalLong = cardholderRepository.findByIdentity(e);
+            if(optionalLong.size()>0){
+                return Pair.with(true,optionalLong.get(0).getIdentity());
+            }else{
+                return Pair.with(false,"null");
+            }
+        }).filter(e->e.getValue0()).map(e->e.getValue1()).collect(Collectors.toList());
+
+        if(ids.size()>0){
+            throw new ExistException(Enumfailures.invalid_amount,"这些游客存在主人卡，不能购买"+ids);
+        }
+    }
+
+    public Optional<Pass> find(Long user_id) {
+
+        List<Pass> passes = passRepository.findByUser(user_id);
+
+        if(passes.isEmpty()){
+            return Optional.empty();
+        }else{
+            return Optional.of(passes.get(0));
+        }
+    }
+
+    public void active(Pass pass) {
+        pass.setStatus(EnumCardStatus.active);
+        passRepository.save(pass);
     }
 }

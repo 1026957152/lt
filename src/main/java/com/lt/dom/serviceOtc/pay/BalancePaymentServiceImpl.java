@@ -67,7 +67,7 @@ public class BalancePaymentServiceImpl {
 
 
             Charge charge = new Charge();
-            charge.setAmount(reservation.getTotal_amount());
+            charge.setAmount(reservation.getAmount());
             charge.setChannel(EnumPayChannel.balance);
         charge.setBooking(reservation.getId());
         charge.setPayment(payment.getId());

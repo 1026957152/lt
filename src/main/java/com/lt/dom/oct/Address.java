@@ -1,6 +1,8 @@
 package com.lt.dom.oct;
 
 
+import com.lt.dom.OctResp.LocationReq;
+
 import javax.persistence.Entity;
 
 @Entity
@@ -21,6 +23,14 @@ public class Address extends Base{
     private String  marketName;//        "marketName": "St. Louis",
     private String  marketUrlSuffixText;//        "marketUrlSuffixText": "st-louis",
     private String  marketId;//        "marketId": 107
+
+    public static Address from(LocationReq location) {
+        Address address = new Address();
+        address.setLongitude(location.getLongitude());
+        address.setLatitude(location.getLatitude());
+        address.setAddressLine1(location.getAddress());
+        return address;
+    }
 
     public String getAddressLine1() {
         return addressLine1;

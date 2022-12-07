@@ -111,6 +111,7 @@ public class CommonUtil {
 
                 token.setAppId(appid);
 
+
                 token.setAccessToken(jsonObject.getString("access_token"));
                 token.setExpiresIn(jsonObject.getInteger("expires_in"));
                 token.setReveiveTime(LocalDateTime.now());

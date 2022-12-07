@@ -4,6 +4,7 @@ package com.lt.dom.serviceOtc.product;
 import com.lt.dom.OctResp.AttractionResp;
 import com.lt.dom.OctResp.ProductResp;
 import com.lt.dom.config.LtConfig;
+import com.lt.dom.error.ExistException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.LocationResp;
 import com.lt.dom.otcReq.VoucherTicketResp;
@@ -11,6 +12,7 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.AttractionRepository;
 import com.lt.dom.repository.ComponentRepository;
 import com.lt.dom.repository.VoucherTicketRepository;
+import com.lt.dom.requestvo.BookingTypeTowhoVo;
 import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.ComponentRightServiceImpl;
 import com.lt.dom.serviceOtc.IdGenServiceImpl;
@@ -274,5 +276,48 @@ System.out.println("建立  取票却啊啊啊啊  ，团购票啊啊啊啊啊�
             voucherResp.setData(GSON.fromJson(voucherTicket.getData_json(),VoucherTicket.Attraction.class));
 
 
+    }
+
+
+
+
+
+
+
+    public void booking_trial(List<BookingTypeTowhoVo> list) {
+
+        List<BookingTypeTowhoVo> bookingTypeTowhoVoList = list.stream().filter(e->e.getProduct().getType().equals(productType)).map(e->{
+
+            return e;
+        }).collect(Collectors.toList());
+
+        if(bookingTypeTowhoVoList.size() == 0){
+            return;
+        }
+
+
+        List<String> id_number_list = bookingTypeTowhoVoList.stream().map(e->{
+
+
+            return e.getTraveler().stream().map(travelerReq->travelerReq.getId_card()).collect(Collectors.toList());
+        }).flatMap(List::stream).collect(Collectors.toList());
+
+        if(id_number_list.size()==0){
+            throw new ExistException(Enumfailures.invalid_amount,"至少需要添加一名旅客");
+
+        }
+
+      /*  List<String> ids = id_number_list.stream().map(e->{
+            List<Cardholder> optionalLong = cardholderRepository.findByIdentity(e);
+            if(optionalLong.size()>0){
+                return Pair.with(true,optionalLong.get(0).getIdentity());
+            }else{
+                return Pair.with(false,"null");
+            }
+        }).filter(e->e.getValue0()).map(e->e.getValue1()).collect(Collectors.toList());
+
+        if(ids.size()>0){
+            throw new ExistException(Enumfailures.invalid_amount,"这些游客存在主人卡，不能购买"+ids);
+        }*/
     }
 }

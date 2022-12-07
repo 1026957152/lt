@@ -9,5 +9,11 @@ public interface IAuthenticationFacade {
 
     User getUser(Authentication authentication);
 
+    UserVo checkUserVo(Authentication authentication);
+
     UserVo getUserVo(Authentication authentication);
+
+    UserVo getUserVoWithUser(Authentication authentication);
+
+    UserVo getUserVoWithUserRealname(Authentication authentication);
 }

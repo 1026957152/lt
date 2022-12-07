@@ -18,6 +18,7 @@ import java.util.List;
 
 public class ProductSpecification implements Specification<Product> {
 
+
     private ProductQueryfieldsCriteria criteria;
 
     public ProductSpecification(ProductQueryfieldsCriteria searchCriteria) {

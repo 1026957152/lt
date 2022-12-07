@@ -21,15 +21,15 @@ public class MediaResp extends BaseResp{
     private String landscape;
     private PhotoResp portrait;
     private String video_preview;
-    private String audio;
+    private PhotoResp audio;
     private PhotoResp introductionAudio;
     private String code;
 
-    public String getAudio() {
+    public PhotoResp getAudio() {
         return audio;
     }
 
-    public void setAudio(String audio) {
+    public void setAudio(PhotoResp audio) {
         this.audio = audio;
     }
 

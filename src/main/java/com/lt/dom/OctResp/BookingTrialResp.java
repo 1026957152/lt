@@ -19,42 +19,18 @@ import java.util.stream.Collectors;
 public class BookingTrialResp {
 
 
-    List<TravelerResp> travelers;
-
-    private String note;
-
-    private Integer traveler_number;
-
-    private Integer quantity;
 
     private Integer subTotal;
     private int heroCard_amount;
-    private String shippingDetail;
     private int amount_due;
     private Integer shippingFee;
 
 
-
-    private List<Voucher> vouchers; //折扣券
     private List summary;
-
-    public List<Voucher> getVouchers() {
-        return vouchers;
-    }
-
-    public void setVouchers(List<Voucher> vouchers) {
-        this.vouchers = vouchers;
-    }
 
 
 
     private Map total;//	The order's current total price, included all items, fees, and taxes.
-    private Integer subtotal;//	The order's current total price of all active items.
-    private boolean paid;//	The order's current value of all active tenders.
-    private Integer savings;//	The order's current savings value for all active discounts and waived fees.
-    private String token;//	A GUID identifier for the Order.
-
-
 
 
 
@@ -105,29 +81,6 @@ public class BookingTrialResp {
     }
 
 
-    public void setNote(String note) {
-        this.note = note;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setTravelers(List<TravelerResp> travelers) {
-        this.travelers = travelers;
-    }
-
-    public List<TravelerResp> getTravelers() {
-        return travelers;
-    }
-
-    public void setTraveler_number(Integer traveler_number) {
-        this.traveler_number = traveler_number;
-    }
-
-    public Integer getTraveler_number() {
-        return traveler_number;
-    }
 
 
 
@@ -136,13 +89,7 @@ public class BookingTrialResp {
         return ReflectionToStringBuilder.toString(this);
     }
 
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
 
-    public Integer getQuantity() {
-        return quantity;
-    }
 
     public void setSubTotal(Integer subTotal) {
         this.subTotal = subTotal;
@@ -160,13 +107,6 @@ public class BookingTrialResp {
         return heroCard_amount;
     }
 
-    public void setShippingDetail(String shippingDetail) {
-        this.shippingDetail = shippingDetail;
-    }
-
-    public String getShippingDetail() {
-        return shippingDetail;
-    }
 
     public void setAmount_due(int amount_due) {
         this.amount_due = amount_due;

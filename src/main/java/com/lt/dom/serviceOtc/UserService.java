@@ -164,12 +164,10 @@ public class UserService implements IUserService {
                         verificationToken.getToken());
 
                 System.out.println("-------发了短信，发了短信");
-                try{
+
                     smsService.singleSend(greetings,verificationToken.getPhone());
 
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
+
                 return verificationToken;
             }
         }

@@ -48,7 +48,6 @@ public class UserProfileResp extends BaseResp {
     private EnumBussinessType supplier_bussiness_type;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String supplier_code;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private EntityModel supplier;
     private String real_name;
     private Map parameterList;

@@ -211,4 +211,15 @@ public class ExtraServiceImpl {
     }
 
 
+    public Double getTotalPrice(List<Long> extras) {
+
+       return extraRepository.findAllById(extras).stream().mapToDouble(e->{
+            if(e.getPrice_Retail()!= null){
+                return e.getPrice_Retail();
+            }else {
+                return 0;
+            }
+        }).sum();
+
+    }
 }

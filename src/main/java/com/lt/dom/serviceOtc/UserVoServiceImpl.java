@@ -213,7 +213,7 @@ public class UserVoServiceImpl {
 
 
             supplierRespEntityModel.add(linkTo(methodOn(PassRestController.class).getBulkissuaknceList(employee.getSuplierId(),null,null)).withRel("getBulkIssuanceList"));
-            supplierRespEntityModel.add(linkTo(methodOn(PassRestController.class).getPassList(employee.getSuplierId(),null,null)).withRel("getPassList"));
+            supplierRespEntityModel.add(linkTo(methodOn(PassRestController.class).getPassList(null,employee.getSuplierId(),null,null)).withRel("getPassList"));
             supplierRespEntityModel.add(linkTo(methodOn(PassRestController.class).Page_createPass(employee.getSuplierId())).withRel("Page_createPass"));
 
 
@@ -262,6 +262,12 @@ public class UserVoServiceImpl {
             supplierRespEntityModel.add(linkTo(methodOn(BlogRestController.class).Page_listBlog(employee.getSuplierId())).withRel("Page_listBlog"));
 
 
+            supplierRespEntityModel.add(linkTo(methodOn(AgentRestController.class).Page_agent(employee.getSuplierId())).withRel("Page_agent"));
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(ReportRestController.class).Page_Booking_summary()).withRel("Page_Booking_summary"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(ReportRestController.class).Home_summary()).withRel("home_summary"));
 
 
 
@@ -392,6 +398,11 @@ public class UserVoServiceImpl {
         entityModel.add(linkTo(methodOn(CustomerRestController.class).Page_listUser()).withRel("Page_listUser"));
 
         entityModel.add(linkTo(methodOn(PassRestController.class).Page_linkPass(user.getId())).withRel("Page_linkUser"));
+
+
+
+
+        entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).Page_realName()).withRel("Page_realName"));
 
 
 

@@ -1,6 +1,9 @@
 package com.lt.dom.oct;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import java.time.LocalTime;
 
 
@@ -23,6 +26,11 @@ public class Museum extends Base{
     private LocalTime close_time;
     private LocalTime open_time;
     private String guestServicesPhoneNumber;
+
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "location", referencedColumnName = "id")
+    private Address location;
 
 
     public void setSupplier(long supplier) {
@@ -104,5 +112,13 @@ public class Museum extends Base{
 
     public String getGuestServicesPhoneNumber() {
         return guestServicesPhoneNumber;
+    }
+
+    public Address getLocation() {
+        return location;
+    }
+
+    public void setLocation(Address location) {
+        this.location = location;
     }
 }

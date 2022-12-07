@@ -148,7 +148,7 @@ public class TsToLtServiceImpl {
     }
 
 
-        public   LtRespToTs产品列表 getTsReqLt产品列表(Agent agent, TsReqLt产品列表 data){
+        public   LtRespToTs产品列表 getTsReqLt产品列表(Pair<Agent,Supplier> agent, TsReqLt产品列表 data){
 
 
 
@@ -157,61 +157,70 @@ public class TsToLtServiceImpl {
     //    thirdPartyService.findAll(EnumThirdParty.TS, data.getKey_word(), PageRequest.of(data.getPage(), data.getSize()));
 
 
-        List<Product> products = new ArrayList<>();
+        List<Pair<Product,AgentProduct>> products = new ArrayList<>();
 
         if(data.getItem_id()!= null){
-            products.addAll(agentService.findAll(EnumThirdParty.TS,agent,data.getItem_id().longValue()));
+            products.addAll(agentService.findAll(EnumThirdParty.TS,agent.getValue0(),data.getItem_id().longValue()));
 
         }else{
-            products.addAll(agentService.findAll(EnumThirdParty.TS,agent,data.getKey_word(),PageRequest.of(data.getPage()-1,data.getSize())));
+            products.addAll(agentService.findAll(EnumThirdParty.TS,agent.getValue0(),data.getKey_word(),PageRequest.of(data.getPage()-1,data.getSize())));
         }
 
 
 
 
 
-        List<ListDTO> list = products.stream().map(e->{
+        List<ListDTO> list = products.stream().map(pair->{
 
 
 
+            Product e = pair.getValue0();
 
+            AgentProduct agentProduct = pair.getValue1();
 
 
             //TODO 增加价格 MAP
             ListDTO.DatePricesDTO datePricesDTO = new ListDTO.DatePricesDTO();
             datePricesDTO.setDate(LocalDate.now());
+
+            List<ListDTO.DatePricesDTO> datePricesDTOList =Arrays.asList();// Arrays.asList(datePricesDTO);
             // datePricesDTO;//
 
             Map<LocalDate,ListDTO.DatePricesDTO> dateDatePricesDTOMap =
-                    Arrays.asList(datePricesDTO).stream()
+                    datePricesDTOList.stream()
                             .collect(Collectors.toMap(pricesDTO->pricesDTO.getDate(), pricesDTO->{
                                 pricesDTO.setDate(null);
                                 return pricesDTO;
                             }));
 
            // LtRespToTs产品列表.ListDTO listDTO = getFul(e);
-            Optional<PricingRate> optionalPricingType = priceService.getDefault_price(e);
+/*            Optional<PricingRate> optionalPricingType = priceService.getDefault_price(e);
 
             if(optionalPricingType.isEmpty()){
                 throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到 sku priceingType");
 
-            }
-            PricingRate pricingRate = optionalPricingType.get();
+            }*/
 
 
-            ListDTO listDTO = get(e, pricingRate);
 
+            ListDTO listDTO = get(e, agentProduct);
+
+
+
+            //TODO 日历价格（注：无数据时，数据结构为数组[]，有数据时，数据结构为对象）
             listDTO.setDatePrices(dateDatePricesDTOMap);
 
 
 
 
 
-            //TODO 增加库存 MAP
+            //TODO 日历库存，（注：无数据时，数据结构为数组[]，有数据时，数据结构为对象）
             ListDTO.DateStocksDTO dateStocksDTO = new ListDTO.DateStocksDTO();
             dateStocksDTO.setDate(LocalDate.now());
-           Map<LocalDate,ListDTO.DateStocksDTO> dateDateStocksDTOMap =
-                   Arrays.asList(dateStocksDTO).stream()
+            List<ListDTO.DateStocksDTO> dateStocksDTOList = Arrays.asList();//Arrays.asList(dateStocksDTO);
+
+            Map<LocalDate,ListDTO.DateStocksDTO> dateDateStocksDTOMap =
+                    dateStocksDTOList.stream()
                            .collect(Collectors.toMap(pricesDTO->pricesDTO.getDate(), pricesDTO->{
                 pricesDTO.setDate(null);
                 return pricesDTO;
@@ -277,7 +286,7 @@ public class TsToLtServiceImpl {
 
 
 
-    public ListDTO get(Product e, PricingRate pricingRate){
+    public ListDTO get(Product e, AgentProduct pricingRate){
 
 
 
@@ -329,14 +338,14 @@ public class TsToLtServiceImpl {
 
 
 
-        listDTO.setMarketPrice_指导价_建议价(pricingRate.getOriginal().toString()); //必须
+        listDTO.setMarketPrice_指导价_建议价(pricingRate.getMarket().toString()); //必须
         listDTO.setMaxNum_最多可购买数(10); //必须
 
 
         listDTO.setMinNum_至少须购买数(10); //必须
 
-        listDTO.setNettPrice_分销价("11"); //必须
-        listDTO.setOriginalPrice_市场价_门市价_票面原价("11");//必须
+        listDTO.setNettPrice_分销价(pricingRate.getNet().toString()); //必须
+        listDTO.setOriginalPrice_市场价_门市价_票面原价(pricingRate.getOriginal().toString());//必须
 
 
         listDTO.setStartTime_产品有效期开始时间(Timestamp.valueOf(e.getCreatedDate()).getTime()); //必须  //产品有效期开始时间；时间戳
@@ -531,20 +540,23 @@ public class TsToLtServiceImpl {
 
 
 
-    public   LtRespToTs下单接口.InfoDTO  getTsReqLt下单接口(Agent agent, TsReqLt下单接口 data){
+    public   LtRespToTs下单接口.InfoDTO  getTsReqLt下单接口(Pair<Agent,Supplier> agent, TsReqLt下单接口 data){
 
 
 
 
 
-        Optional<Pair<Product,PricingRate>>  optional =  agentService.find(EnumThirdParty.TS,agent,data.getItem_id());
+        Optional<Triplet<Product,PricingRate,AgentProduct>>  optional =  agentService.find(EnumThirdParty.TS,agent.getValue0(),data.getItem_id());
 
         if(optional.isEmpty()){
 
-            logger.error("找不到供应商 {} 产品 id{} 或者 产品 sku",agent.getName(),data.getItem_id());
+            logger.error("找不到供应商 {} 产品 id{} 或者 产品 sku",agent.getValue0().getName(),data.getItem_id());
             throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到产品 或者 产品 sku");
         }
         Product product = optional.get().getValue0();
+
+
+
 
 /*
 
@@ -577,7 +589,7 @@ public class TsToLtServiceImpl {
 
 
         PricingRate pricingRate = optional.get().getValue1();
-
+        AgentProduct agentProduct = optional.get().getValue2();
 
 
         BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
@@ -596,6 +608,11 @@ public class TsToLtServiceImpl {
         bookingTypeTowhoVo.setProduct(product);
         bookingTypeTowhoVo.setSku(pricingRate);
         bookingTypeTowhoVo.setQuantity(data.getSize().longValue());
+
+        bookingTypeTowhoVo.setBase_cost_price(pricingRate.getNet().floatValue());
+
+        bookingTypeTowhoVo.setRetail(agentProduct.getNet().intValue());
+        logger.debug("这里看看 初始 {} {}",bookingTypeTowhoVo.getBase_cost_price(), bookingTypeTowhoVo.getRetail());
         bookingTypeTowhoVo.setRemark(data.getRemark());
 
 
@@ -631,7 +648,10 @@ public class TsToLtServiceImpl {
 
 
         platUserVo.setTracking_id(data.getOrders_id());
-        platUserVo.setAgent(agent);
+
+
+        platUserVo.setAgentPartner(agent.getValue1());
+        platUserVo.setAgent(agent.getValue0());
 
         if(data.getIs_pay() == 1){ ////是否下单同时支付（1:同时支付，0:不支付）缺省时默认1
             platUserVo.setPaid(true);

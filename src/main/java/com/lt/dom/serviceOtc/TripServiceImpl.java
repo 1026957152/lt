@@ -29,6 +29,36 @@ public class TripServiceImpl {
     private FileStorageServiceImpl fileStorageService;
 
 
+
+    public Trip createUserTrip(Long user,TripReq theatreReq) {
+        Trip theatre = new Trip();
+        theatre.setName(theatreReq.getName());
+
+        theatre.setUser(user);
+        theatre.setName_long(theatreReq.getName_long());
+        theatre.setDesc_short(theatreReq.getDesc_short());
+        theatre.setDesc_long(theatreReq.getDesc_long());
+
+        theatre.setCode(idGenService.tripCode());
+        theatre.setDay_count(theatreReq.getDay_count());
+        theatre.setEnds_on(theatreReq.getEnds_on());
+        theatre.setStarts_on(theatreReq.getStarts_on());
+        theatre.setPrivacy_level(theatreReq.getPrivacy_level());
+
+        theatre = tripRepository.save(theatre);
+
+
+        if(theatreReq.getTripCover()!=null){
+
+            fileStorageService.updateFromTempDocument(theatre.getCode(),theatreReq.getTripCover(), EnumDocumentType.trip_cover);
+
+        }
+
+        return theatre;
+
+
+    }
+
     public Trip create(Supplier supplier, TripReq theatreReq) {
         Trip theatre = new Trip();
         theatre.setName(theatreReq.getName());
