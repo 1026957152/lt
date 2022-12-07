@@ -186,6 +186,7 @@ public class PassengerRestController {
             entityModel.add(linkTo(methodOn(PassengerRestController.class).delete(e.getId())).withRel("delete"));
 
             entityModel.add(linkTo(methodOn(PassengerRestController.class).getEdit(e.getId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(PassengerRestController.class).edit(e.getId(),null)).withRel("edit"));
 
             return entityModel;
 

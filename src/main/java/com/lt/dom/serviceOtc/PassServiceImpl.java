@@ -549,7 +549,7 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
                     "label",pass.getLabel(),
                     "tip","html 格式",
 
-                    "by_logo",fileStorageService.loadDocumentWithDefault(EnumDocumentType.region_photo,pass.getCode()),
+                    "by_logo",fileStorageService.loadDocumentWithDefault("lt.png"),
                     "code",pass.getCode(),
                     "number",pass.getNumber(),
                     "code_base64_src",   ZxingBarcodeGenerator.base64_png_src(pass.getCode()),

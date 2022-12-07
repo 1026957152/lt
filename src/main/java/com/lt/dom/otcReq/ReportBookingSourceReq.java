@@ -1,6 +1,7 @@
 package com.lt.dom.otcReq;
 
 
+import com.lt.dom.otcenum.EnumReportBookingSourceGroupby;
 import com.lt.dom.otcenum.EnumReportMetric;
 
 import java.time.LocalDate;
@@ -19,7 +20,7 @@ public class ReportBookingSourceReq {  // 这个就是机器了啊
 
 
     private Long product;
-    private Long agent;
+    private EnumReportBookingSourceGroupby groupby;
 
 
     public Long getProduct() {
@@ -30,11 +31,4 @@ public class ReportBookingSourceReq {  // 这个就是机器了啊
         this.product = product;
     }
 
-    public Long getAgent() {
-        return agent;
-    }
-
-    public void setAgent(Long agent) {
-        this.agent = agent;
-    }
 }

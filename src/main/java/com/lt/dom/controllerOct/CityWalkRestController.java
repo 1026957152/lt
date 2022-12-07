@@ -459,6 +459,62 @@ public class CityWalkRestController {
         }).collect(Collectors.toList()));
 
       //  CityWalkResp.setHeaderImage(fileStorageService.loadDocumentWithCode(EnumDocumentType.CityWalk_thumbnail,CityWalk.getCode()).getUrl_thumbnail());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        CityWalkResp cityWalkResp_MAP = CityWalkResp.simplefrom(cityWalk);
+        cityWalkResp_MAP.setWay_points(IntStream.range(0,wayPoints.size()).mapToObj(i->{
+            WayPoint e = wayPoints.get(i);
+            WayPointResp wayPointResp = WayPointResp.locationFrom(e);
+            EntityModel entityModel = EntityModel.of(wayPointResp);
+            return entityModel;
+        }).collect(Collectors.toList()));
+
+        ViewPortResp viewPortResp = new ViewPortResp();
+        viewPortResp.setBtmRightPoint(ViewPortResp.PointDTO.from());
+        viewPortResp.setTopLeftPoint(ViewPortResp.PointDTO.from());
+        cityWalkResp_MAP.setViewPort(viewPortResp);
+
+
+        EntityModel entityModel_city = EntityModel.of(cityWalkResp_MAP);
+        entityModel_city.add(linkTo(methodOn(AudioGuideRestController.class).getCityWalk(cityWalk.getId(), null)).withSelfRel());
+
+        cityWalkResp.setAudioGuideMap(entityModel_city);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         EntityModel entityModel = EntityModel.of(cityWalkResp);
         entityModel.add(linkTo(methodOn(CityWalkRestController.class).getCityWalk(cityWalk.getId())).withRel("createCityWalk"));
 

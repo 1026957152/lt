@@ -7,6 +7,8 @@ public final class Constants {
     static final double GRAVITATIONAL_ACCELERATION = 9.8;
     static final double EULERS_NUMBER = 2.7182818284590452353602874713527;
     public static final String STATIC_PATH = "static";
+
+    public static final String STATIC_RECOURCE_PATH="http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH+"/" ;
     public enum Operation {
         ADD,
         SUBTRACT,

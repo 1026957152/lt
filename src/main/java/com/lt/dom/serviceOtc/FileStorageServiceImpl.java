@@ -899,4 +899,11 @@ public class FileStorageServiceImpl implements FileStorageService {
         document.setOriginalFilename("tempDocument.getOriginalFilename()");
         return documentRepository.save(document);
     }
+
+    public static PhotoResp loadDocumentWithDefault(String s) {
+        PhotoResp photoResp = new PhotoResp();
+
+        photoResp.setUrl( Constants.STATIC_RECOURCE_PATH+s);
+        return photoResp;
+    }
 }

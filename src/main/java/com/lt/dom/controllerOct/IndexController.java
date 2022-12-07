@@ -354,7 +354,7 @@ public class IndexController {
 
      //   List<Product> productList1 = productRepository.findAllById(valueListItems_movie.stream().map(e->e.getValue()));
 
-        if(miniapp_release){
+        if(!miniapp_release){
             productList1 = Arrays.asList();
 
         }
@@ -452,8 +452,11 @@ public class IndexController {
         }).collect(Collectors.toList());
 
 
+        if(!miniapp_release){
+            homeResp.setPlanner(listMap);
+        }
 
-        homeResp.setPlanner(listMap);
+
 
         return entityModel;
 

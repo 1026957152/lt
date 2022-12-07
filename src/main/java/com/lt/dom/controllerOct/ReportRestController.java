@@ -6,6 +6,7 @@ import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.EnumAgentStatus;
 import com.lt.dom.otcenum.EnumPublicationObjectType;
+import com.lt.dom.otcenum.EnumReportBookingSourceGroupby;
 import com.lt.dom.otcenum.EnumReportMetric;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.BookingServiceImpl;
@@ -347,6 +348,38 @@ public class ReportRestController {
 
 
 
+
+
+
+
+    @GetMapping(value = "/reports/Page_booking_source", produces = "application/json")
+
+    public EntityModel Page_booking_source() {
+
+
+
+
+        List<Agent> agents = agentRepository.findAll();
+
+
+        List<Product> productList = productRepository.findAll();
+
+
+        Map map = Map.of("agent_list", Agent.List(agents),
+                "product_list", Product.List(productList),
+                "groupby_list", EnumReportBookingSourceGroupby.from()
+        );
+
+
+        EntityModel entityModel = EntityModel.of(map);
+
+
+        entityModel.add(linkTo(methodOn(ReportRestController.class).booking_source(null)).withRel("create"));
+
+
+        return entityModel;
+
+    }
 
 
 

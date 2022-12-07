@@ -12,6 +12,7 @@ import com.lt.dom.serviceOtc.RegionServiceImpl;
 
 import com.lt.dom.serviceOtc.TripServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -35,6 +36,10 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 @RequestMapping("/oct")
 public class RegionRestController {
+
+    @Value("${blog_flag}")
+    boolean miniapp_release ;
+
     @Autowired
     private CollectionItemRepository collectionItemRepository;
 
@@ -277,29 +282,32 @@ public class RegionRestController {
         RegionResp museumResp = RegionResp.from(region);
 
 
-        List<Category> bookingRuleList = categoryRepository.findAll();
+        if(!miniapp_release){
+            List<Category> bookingRuleList = categoryRepository.findAll();
 
-        museumResp.setCategories(bookingRuleList.stream().map(e->{
-            CategoryResp categoryResp = CategoryResp.simpleFrom(e);
-
-
-            if(e.getCategory()!= null){
-                PhotoResp photoResp = new PhotoResp();
-                photoResp.setUrl(e.getCategory().getFeature_image());
-                categoryResp.setIcon(photoResp);
-
-            }else{
-                categoryResp.setIcon(fileStorageService.loadDocumentWithDefault(EnumDocumentType.category_icon,e.getCode()));
-
-            }
+            museumResp.setCategories(bookingRuleList.stream().map(e->{
+                CategoryResp categoryResp = CategoryResp.simpleFrom(e);
 
 
-            EntityModel entityModel = EntityModel.of(categoryResp);
-            entityModel.add(linkTo(methodOn(SearchRestController.class).Page_searchProduct(EnumUrlSourceType.search)).withRel("Page_searchProduct"));
+                if(e.getCategory()!= null){
+                    PhotoResp photoResp = new PhotoResp();
+                    photoResp.setUrl(e.getCategory().getFeature_image());
+                    categoryResp.setIcon(photoResp);
 
-            return entityModel;
-        }).collect(Collectors.toList()));
+                }else{
+                    categoryResp.setIcon(fileStorageService.loadDocumentWithDefault(EnumDocumentType.category_icon,e.getCode()));
 
+                }
+
+
+                EntityModel entityModel = EntityModel.of(categoryResp);
+                entityModel.add(linkTo(methodOn(SearchRestController.class).Page_searchProduct(EnumUrlSourceType.search)).withRel("Page_searchProduct"));
+
+                return entityModel;
+            }).collect(Collectors.toList()));
+
+
+        }
 
 
         museumResp.setPhoto(fileStorageService.loadDocumentWithDefault(EnumDocumentType.place_photo,region.getCode()));
@@ -367,6 +375,8 @@ public class RegionRestController {
         return entityModel;
 
     }
+
+
 
 
 

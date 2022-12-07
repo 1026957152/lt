@@ -8,6 +8,7 @@ import com.lt.dom.oct.WayPoint;
 import com.lt.dom.otcReq.LocationResp;
 import com.lt.dom.otcReq.WayPointResp;
 import com.lt.dom.otcenum.Enumfeatured;
+import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import org.checkerframework.checker.units.qual.C;
 import org.springframework.hateoas.EntityModel;
 
@@ -19,6 +20,7 @@ import java.util.Objects;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CityWalkResp extends BaseResp {
     private String path;
+    private EntityModel audioGuideMap;
 
     public String getPath() {
         return path;
@@ -100,8 +102,12 @@ public class CityWalkResp extends BaseResp {
         cityWalkResp.setWalk_duration(e.getWalk_duration());
         cityWalkResp.setWalk_distance(e.getWalk_distance());
 
-        cityWalkResp.setWalk_duration_icon("http://yulinmei.cn:8080/oct/files/citywalk/duration.svg");
-        cityWalkResp.setWalk_distance_icon("http://yulinmei.cn:8080/oct/files/citywalk/map-distance.svg");
+
+
+
+
+        cityWalkResp.setWalk_duration_icon(FileStorageServiceImpl.loadDocumentWithDefault("citywalk/duration.svg").getUrl());
+        cityWalkResp.setWalk_distance_icon(FileStorageServiceImpl.loadDocumentWithDefault("citywalk/map-distance.svg").getUrl());
 
         cityWalkResp.setCreatedDate(e.getCreatedDate());
         cityWalkResp.setModifiedDate(e.getModifiedDate());
@@ -266,4 +272,11 @@ public class CityWalkResp extends BaseResp {
     }
 
 
+    public void setAudioGuideMap(EntityModel audioGuideMap) {
+        this.audioGuideMap = audioGuideMap;
+    }
+
+    public EntityModel getAudioGuideMap() {
+        return audioGuideMap;
+    }
 }
