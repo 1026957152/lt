@@ -3,9 +3,11 @@ package com.lt.dom.serviceOtc;
 
 import com.lt.dom.notification.event.OnRefundCreatedEvent;
 import com.lt.dom.oct.*;
+import com.lt.dom.otcReq.RefundReq;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.vo.PlatRefundVo;
+import com.lt.dom.vo.RefundReqVo;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RefundServiceImpl {
@@ -36,7 +39,7 @@ public class RefundServiceImpl {
     private UserRepository userRepository;
 
     @Autowired
-    private CampaignRepository campaignRepository;
+    private PaymentServiceImpl paymentService;
 
 
     @Autowired
@@ -63,18 +66,42 @@ public class RefundServiceImpl {
 
     }
 
-    public Refund createCharge(String refundCode, Reservation reservation, PlatRefundVo platRefundVo) {
+    public Refund createRefund(String refundCode, Reservation reservation, PlatRefundVo platRefundVo) {
 
 
-        Refund refund = createCharge(refundCode,reservation.getAmount(),reservation);
+/*        List<Payment> payments = paymentRepository.findByReference(reservation.getCode());
 
-        refund.setUnlinked(true);
-        refund.setTransactionId(platRefundVo.getSerial_no());
-        refund.setPlatform(platRefundVo.getPlatform());
+        Payment payment = payments.get(0);*/
+
+        List<Charge> chargeList = chargeRepository.findByBooking(reservation.getId());
+        Charge charge = chargeList.get(0);
 
 
-        refund =  refundRepository.save(refund);
+        Refund refund =null;
 
+        if(platRefundVo.getPlatform().equals(EnumPlatform.TS)){
+            refund = createCharge(refundCode,reservation.getAmount(),reservation);
+
+            refund.setUnlinked(true);
+            refund.setTransactionId(platRefundVo.getSerial_no());
+            refund.setPlatform(platRefundVo.getPlatform());
+
+
+            refund =  refundRepository.save(refund);
+        }
+        if(platRefundVo.getPlatform().equals(EnumPlatform.DERECT)){
+
+            RefundReqVo refundReq = new RefundReqVo();
+            refundReq.setReason(EnumRefundReason.requested_by_customer);
+
+            refundReq.setRefund_fee(charge.getAmount());
+            refundReq.setUnlinked(true);
+            refundReq.setPlatform(platRefundVo.getPlatform());
+            refund =  paymentService.createRefund(refundCode,charge,reservation, refundReq);
+
+
+
+        }
         reservation.setStatus(EnumBookingStatus.Refunded);
         reservationRepository.save(reservation);
 

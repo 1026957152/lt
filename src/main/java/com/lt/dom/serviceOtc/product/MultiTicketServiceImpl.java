@@ -14,9 +14,7 @@ import com.lt.dom.otcReq.VoucherTicketResp;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
-import com.lt.dom.vo.CodeWithLatLngVo;
-import com.lt.dom.vo.UserVo;
-import com.lt.dom.vo.ValidatedByTypeVo;
+import com.lt.dom.vo.*;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
@@ -486,9 +484,21 @@ public class MultiTicketServiceImpl {
 
         User traveler用户 = userRepository.findById(voucher.getUser()).get();
 
+        RedemptionForObjectVo redemptionForObjectVo = new RedemptionForObjectVo();
+        redemptionForObjectVo.setRelatedObjectId(voucher.getId());
+        redemptionForObjectVo.setRelatedObjectType(EnumRelatedObjectType.voucher);
+        redemptionForObjectVo.setRelatedObjectCode(voucher.getCode());
+        redemptionForObjectVo.setRelatedObject_subType(voucher.getType().name());
+        redemptionForObjectVo.setRelatedObject_subType(voucher.getLable());
 
 
-        List<RightRedemptionEntry> redemptionEntryList = redemptionService.redeemRight(voucher,verifier核销人员,traveler用户,componentVounchList);
+        RedemptionForCustomerVo redemptionForCustomerVo = new RedemptionForCustomerVo();
+
+        redemptionForCustomerVo.setId(traveler用户.getId());
+        redemptionForCustomerVo.setRealName(traveler用户.getRealName());
+        redemptionForCustomerVo.setCode(traveler用户.getCode());
+
+        List<RightRedemptionEntry> redemptionEntryList = redemptionService.redeemRight(redemptionForObjectVo,verifier核销人员,redemptionForCustomerVo,componentVounchList);
 
         redemptionEntryList = rightRedemptionEntryRepository.saveAll(redemptionEntryList);
 

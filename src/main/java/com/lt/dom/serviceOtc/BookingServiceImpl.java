@@ -1,7 +1,6 @@
 package com.lt.dom.serviceOtc;
 
 import com.google.gson.Gson;
-import com.lt.dom.OctResp.LineItemResp;
 import com.lt.dom.RealNameAuthentication.PhoneAuth;
 import com.lt.dom.RealNameAuthentication.RealNameAuthenticationServiceImpl;
 import com.lt.dom.error.BookNotFoundException;
@@ -23,9 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import javax.transaction.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -508,7 +508,7 @@ public class BookingServiceImpl {
 
         reservation.setPlatform(userVo.getPlatform());
 
-        if(userVo.getPlatform().equals(EnumPlatform.LT)){
+        if(userVo.getPlatform().equals(EnumPlatform.DERECT)){
             reservation.setUser(userVo.getUserVo().getUser_id());
             UserVo userVo1 = userVo.getUserVo();
 
@@ -602,7 +602,7 @@ public class BookingServiceImpl {
 
             lineItem.setQuantity(e.getQuantity().intValue());
 
-            if(userVo.getPlatform().equals(EnumPlatform.LT)){
+            if(userVo.getPlatform().equals(EnumPlatform.DERECT)){
                 lineItem.setUnitPrice(pricingRate.getRetail());
             }else{
                 lineItem.setUnitPrice(e.getRetail());
@@ -1078,14 +1078,29 @@ public class BookingServiceImpl {
     }
 
 
+    @Transactional(rollbackFor  = Exception.class)
     public Pair<Refund,PlatRefundVo> refund(PlatRefundVo platRefundVo, Reservation reservation) {
 
 
-        Refund refund = new Refund();
+
+
+
+
+        List<LineItem> lineItemList = lineItemRepository.findAllByBooking(reservation.getId());
+
+
+        cityPassService.refund(reservation,lineItemList,platRefundVo);
+
 
 
         String code = idGenService.refundCode();
-        refund = refundService.createCharge(code,reservation,platRefundVo);
+
+
+        Refund refund = refundService.createRefund(code,reservation,platRefundVo);
+
+      //  String refundCode = idGenService.refundCode();
+
+    //  paymentService.createRefundNonReferenced(refundCode,reservation, refundReq,refundReq.getChannel());
 
 
         return Pair.with(refund,platRefundVo);
@@ -1115,5 +1130,27 @@ public class BookingServiceImpl {
 
         return reservation.getAmount() - cost;
         // lineItemList.stream().map(e->e.get)
+    }
+
+    public void checkin(Long bookingLine) {
+
+        Optional<LineItem> lineItemList = lineItemRepository.findById(bookingLine);
+
+
+        LineItem lineItem = lineItemList.get();
+        if(lineItem.isCheckin()){
+            return;
+        }
+        lineItem.setCheckin(true);
+        lineItem.setCheckin_at(LocalDateTime.now());
+        lineItemRepository.save(lineItem);
+
+        Optional<Reservation> reservationOptional = reservationRepository.findById(lineItem.getBooking());
+        Reservation reservation = reservationOptional.get();
+        reservation.setCheckin(true);
+        reservation.setCheckin_at(LocalDateTime.now());
+        reservationRepository.save(reservation);
+
+
     }
 }

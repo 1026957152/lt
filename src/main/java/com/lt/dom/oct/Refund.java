@@ -25,7 +25,7 @@ public class Refund extends Base{
     private Long booking;
 
 
-    @NotNull
+
     private Boolean unlinked;
 
     @NotNull

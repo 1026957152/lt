@@ -21,11 +21,7 @@ public class Traveler extends Base{
 
     private String title;
 
-/*    private String name;///
-    private String age;///
-    private String family_name;///
-    private String given_name;///
-    private String id;///*/
+
 
     private String type;///
 
@@ -63,6 +59,8 @@ public class Traveler extends Base{
     private String nok_contact;//	Emergency contact other note (can be multi-line)
     private String agent_customer_ref;//	A travel agent reference number / ID for this customer, e.g. perhaps the ID for this customer in their own system
     private long booking;
+
+    @Enumerated(EnumType.STRING)
     private EnumIdType idType;
 
     public void setBooking(long booking) {

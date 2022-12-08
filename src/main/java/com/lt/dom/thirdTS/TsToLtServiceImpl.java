@@ -300,7 +300,7 @@ public class TsToLtServiceImpl {
         listDTO.setIdLimitAmount_同一身份证限购设置_最多可购买多少张(10);
         listDTO.setIdLimitOrders_同一身份证限购设置_最多可购买多少笔订单(11);
 
-        listDTO.setModifyTime_产品信息最近更新时间(Timestamp.valueOf(e.getModifiedDate()).getTime());
+        listDTO.setModifyTime_产品信息最近更新时间(Timestamp.valueOf(e.getModifiedDate()).getTime()/1000);
         if(e.getRestriction_passenger_identity_documents_required()){
             listDTO.setMustIdNumber_下单时是否必须提供身份证号码字段(1); // //下单时是否必须提供身份证号码字段，1是，0否
         }else{
@@ -351,7 +351,7 @@ public class TsToLtServiceImpl {
 
 
         listDTO.setTitle_门票标题(e.getName()); //必须
-        listDTO.setType_门票类型(1);//必须 //门票类型;1普通票，2套票，3线路
+        listDTO.setType_门票类型(18);//必须 //门票类型;1普通票，2套票，3线路
 
         listDTO.setWeek_有效星期("1,2,3,4,5,6,7");  //必须
 
@@ -422,7 +422,7 @@ public class TsToLtServiceImpl {
         listDTO.setMbLimitTime_同一手机号限购设置_检查天数(11);
         listDTO.setMinNum_至少须购买数(11); //必须
         listDTO.setMmsContent_彩信内容("11");
-        listDTO.setModifyTime_产品信息最近更新时间(Timestamp.valueOf(e.getModifiedDate()).getTime());
+        listDTO.setModifyTime_产品信息最近更新时间(Timestamp.valueOf(e.getModifiedDate()).getTime()/1000);
 
         listDTO.setMustIdNumber_下单时是否必须提供身份证号码字段(1); //下单时是否必须提供身份证号码字段，1是，0否
 

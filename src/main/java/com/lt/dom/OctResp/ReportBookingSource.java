@@ -1,6 +1,12 @@
 package com.lt.dom.OctResp;
 
 
+import com.lt.dom.oct.Reservation;
+import com.lt.dom.otcenum.EnumPlatform;
+
+import java.util.List;
+import java.util.Map;
+
 public class ReportBookingSource {
 
     private String RevenueToday;
@@ -11,6 +17,8 @@ public class ReportBookingSource {
     private String Bookings_Already_arrived;
     private String PAX_Total_today;
     private String PAX_Already_arrived;
+    private List groupby;
+    private List groupby_today;
 
 
     public String getRevenueToday() {
@@ -59,5 +67,21 @@ public class ReportBookingSource {
 
     public String getPAX_Already_arrived() {
         return PAX_Already_arrived;
+    }
+
+    public void setGroupby(List groupby) {
+        this.groupby = groupby;
+    }
+
+    public List getGroupby() {
+        return groupby;
+    }
+
+    public void setGroupby_today(List groupby_today) {
+        this.groupby_today = groupby_today;
+    }
+
+    public List getGroupby_today() {
+        return groupby_today;
     }
 }

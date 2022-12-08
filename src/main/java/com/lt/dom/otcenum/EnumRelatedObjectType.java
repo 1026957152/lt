@@ -12,6 +12,7 @@ public enum EnumRelatedObjectType {
     booking(""),
     product(""),
     agent(""),
+    pass("pass"),
 
     ;
 

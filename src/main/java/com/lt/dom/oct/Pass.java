@@ -52,10 +52,10 @@ public class Pass  extends Base{
 
     @NotNull
     private String number;
-    private long booking;
+    private Long booking;
     private String pin;
-    private long bookingLine;
-    private long owner;
+    private Long bookingLine;
+    private Long owner;
 
     public EnumCardFullfullmentStatus getFulfillment_status() {
         return fulfillment_status;
@@ -85,7 +85,7 @@ public class Pass  extends Base{
 
     @Enumerated(EnumType.STRING)
     private EnumPassShippingStatus shipping_statis;
-    private long product;
+    private Long product;
 
     private Long bulkIssuanceId;
 
@@ -97,7 +97,7 @@ public class Pass  extends Base{
         this.bulkIssuanceId = bulk_issuance_id;
     }
 
-    private long productPass;
+    private Long productPass;
 
 
     @Enumerated(EnumType.STRING)
@@ -116,7 +116,7 @@ public class Pass  extends Base{
         return user;
     }
 
-    public void setUser(long user) {
+    public void setUser(Long user) {
         this.user = user;
     }
 
@@ -226,19 +226,19 @@ public class Pass  extends Base{
         return shipping_statis;
     }
 
-    public void setProduct(long product) {
+    public void setProduct(Long product) {
         this.product = product;
     }
 
-    public long getProduct() {
+    public Long getProduct() {
         return product;
     }
 
-    public void setProductPass(long productPass) {
+    public void setProductPass(Long productPass) {
         this.productPass = productPass;
     }
 
-    public long getProductPass() {
+    public Long getProductPass() {
         return productPass;
     }
 
@@ -290,11 +290,11 @@ public class Pass  extends Base{
         return number;
     }
 
-    public void setBooking(long booking) {
+    public void setBooking(Long booking) {
         this.booking = booking;
     }
 
-    public long getBooking() {
+    public Long getBooking() {
         return booking;
     }
 
@@ -306,19 +306,19 @@ public class Pass  extends Base{
         return pin;
     }
 
-    public void setBookingLine(long bookingLine) {
+    public void setBookingLine(Long bookingLine) {
         this.bookingLine = bookingLine;
     }
 
-    public long getBookingLine() {
+    public Long getBookingLine() {
         return bookingLine;
     }
 
-    public void setOwner(long owner) {
+    public void setOwner(Long owner) {
         this.owner = owner;
     }
 
-    public long getOwner() {
+    public Long getOwner() {
         return owner;
     }
 

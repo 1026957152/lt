@@ -5,6 +5,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 
 @Entity
 public class ComponentVounch extends Base{
@@ -23,6 +24,8 @@ public class ComponentVounch extends Base{
     private EnumValidateWay validate_way;
     private String name;
     private Long product;
+    private LocalDate end_date;
+    private LocalDate start_date;
 
     public Long getBelong() {
         return belong;
@@ -41,9 +44,6 @@ public class ComponentVounch extends Base{
     }
 
 
-
-    @Transient
-    private RoyaltyRule royaltyRule;
 
 
     private Long component;
@@ -66,13 +66,15 @@ public class ComponentVounch extends Base{
     private Long supplier;
     private Long pass;
 
-    public RoyaltyRule getRoyaltyRule() {
-        return royaltyRule;
-    }
 
-    public void setRoyaltyRule(RoyaltyRule royaltyRule) {
-        this.royaltyRule = royaltyRule;
-    }
+
+
+
+
+
+
+
+
 
 
     private Long componentRight;
@@ -292,5 +294,29 @@ public class ComponentVounch extends Base{
 
     public Long getProduct() {
         return product;
+    }
+
+    public void setRedeem_voucher_key(String redeem_voucher_key) {
+        this.redeem_voucher_key = redeem_voucher_key;
+    }
+
+    public String getRedeem_voucher_key() {
+        return redeem_voucher_key;
+    }
+
+    public LocalDate getEnd_date() {
+        return end_date;
+    }
+
+    public void setEnd_date(LocalDate end_date) {
+        this.end_date = end_date;
+    }
+
+    public LocalDate getStart_date() {
+        return start_date;
+    }
+
+    public void setStart_date(LocalDate start_date) {
+        this.start_date = start_date;
     }
 }

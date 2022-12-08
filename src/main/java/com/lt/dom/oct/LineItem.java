@@ -3,6 +3,7 @@ package com.lt.dom.oct;
 import com.lt.dom.otcenum.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,7 +19,7 @@ public class LineItem extends Base {
     private int tax;//	The tax on the product as a decimal.
     private String name;//	The name of the product.
 
-
+/*
     private String theatre;//	The name of the Theatre showing the movie (tickets only).
     private long theatreId;//	The Id of the Theatre showing the movie (tickets only).
     private String movie;//	The name of the movie (tickets only).
@@ -27,12 +28,14 @@ public class LineItem extends Base {
     private long performanceNumber;//	The showtimes performance number (tickets only).
     private long auditorium;//	The auditorium the showtime is in (tickets only).
 
+
     @Column(name="row_")
     private int row;//	The row of the currently selected seat (reserved-seating tickets only).
     @Column(name="column_")
 
     private int column;//	The column of the currently selected seat (reserved-seating tickets only).
     private String seatName;//	The displayable seat name of the currently selected seat (reserved-seating tickets only).
+*/
 
 
 
@@ -65,6 +68,8 @@ public class LineItem extends Base {
     private Float cost_price_inc_tax;
     private Float cost_price_ex_tax;
     private Float cost_price_tax;
+    private Boolean checkin = false;
+    private LocalDateTime checkin_at;
 
     public Float getBase_cost_price() {
         return base_cost_price;
@@ -439,5 +444,21 @@ public class LineItem extends Base {
 
     public String getRemark() {
         return remark;
+    }
+
+    public void setCheckin(Boolean checkin) {
+        this.checkin = checkin;
+    }
+
+    public Boolean isCheckin() {
+        return checkin;
+    }
+
+    public void setCheckin_at(LocalDateTime checkin_at) {
+        this.checkin_at = checkin_at;
+    }
+
+    public LocalDateTime getCheckin_at() {
+        return checkin_at;
     }
 }

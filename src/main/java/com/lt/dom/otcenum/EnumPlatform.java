@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum EnumPlatform {
-    LT("旅投"),
+    DERECT("旅投"),
     TS("天时同城"),
 
 

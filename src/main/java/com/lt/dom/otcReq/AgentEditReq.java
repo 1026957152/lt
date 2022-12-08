@@ -275,6 +275,7 @@ public class AgentEditReq {
         private Float net;
         private Float retail;
         private Long sku;
+        private Float market;
 
         public Long getId() {
             return id;
@@ -306,6 +307,15 @@ public class AgentEditReq {
 
         public void setSku(Long sku) {
             this.sku = sku;
+        }
+
+
+        public Float getMarket() {
+            return market;
+        }
+
+        public void setMarket(Float market) {
+            this.market = market;
         }
     }
 

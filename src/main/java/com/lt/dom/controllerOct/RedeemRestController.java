@@ -79,6 +79,7 @@ public class RedeemRestController {
 
     }
 
+/*
     @PostMapping(value = "/componet_right_vounchs/{COMPONENT_RIGHT_ID}/redeem", produces = "application/json")
     public ComponentVounch redeemComponentRightVounch(@PathVariable long COMPONENT_RIGHT_ID, CouponTemplatePojo pojo) {
 
@@ -98,6 +99,7 @@ public class RedeemRestController {
                 HttpStatus.NOT_FOUND, "Foo Not Found", new Exception("DDDDDDDDDD"));
 
     }
+*/
 
 /*
 

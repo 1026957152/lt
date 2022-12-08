@@ -15,7 +15,7 @@ public class NonReferencedRefundReq {
     @NotNull
     private EnumRefundReason reason;
 
-    @NotNull
+
     private EnumPayChannel channel;
     private LocalDateTime refundDate;
 
@@ -46,7 +46,7 @@ public class NonReferencedRefundReq {
         this.note = note;
     }
 
-    @NotNull
+
     private Integer amount;
 
     public EnumPayChannel getChannel() {

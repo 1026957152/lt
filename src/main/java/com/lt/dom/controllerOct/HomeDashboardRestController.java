@@ -125,9 +125,10 @@ public class HomeDashboardRestController {
 
         windowTicketResp.setProducts(productList.stream().map(e->{
 
-            List<PricingRate> pricingRateList = pricingType.get(e.getId());
+           // List<PricingRate> pricingRateList = pricingType.get(e.getId());
+            ProductResp productResp = ProductResp.basefrom(e);
 
-            ProductResp productResp = ProductResp.from(e, pricingRateList);
+            //ProductResp productResp = ProductResp.from(e, pricingRateList);
 
             productResp.setThumbnail_image(fileStorageService.loadDocumentWithDefault(EnumDocumentType.product_thumb,e.getCode()));
 

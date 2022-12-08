@@ -4,6 +4,8 @@ import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import com.lt.dom.vo.RedemptionForCustomerVo;
+import com.lt.dom.vo.RedemptionForObjectVo;
 import com.lt.dom.vo.ValidatedByTypeVo;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
@@ -76,7 +78,7 @@ public class RedemptionServiceImpl {
     private RoyaltyTransactionRepository royaltyTransactionRepository;
 
 
-    public ComponentVounch redeemCompo(ComponentVounch componentVounch1){
+/*    public ComponentVounch redeemCompo(ComponentVounch componentVounch1){
 
 
         Optional<RoyaltyRule> royaltyRuleOptional = royaltyRuleRepository.findById(componentVounch1.getRoyaltyRule().getId());
@@ -101,7 +103,7 @@ public class RedemptionServiceImpl {
         return componentVounch1;
 
 
-    }
+    }*/
 
 
 
@@ -325,20 +327,25 @@ public class RedemptionServiceImpl {
     }
 
 
-    public  List<RightRedemptionEntry> redeemRight(VoucherTicket voucher, ValidatedByTypeVo  verifier核销人员, User traveler用户, List<ComponentVounch> componentVounchList) {
+    public  List<RightRedemptionEntry> redeemRight(RedemptionForObjectVo voucher,
+                                                   ValidatedByTypeVo  verifier核销人员,
+                                                   RedemptionForCustomerVo traveler用户,
+                                                   List<ComponentVounch> componentVounchList) {
+
+
 
 
         Redemption redemption = new Redemption();
 
         redemption.setCode(idGenService.redemptionNo());
-        redemption.setRelatedObjectId(voucher.getId());
-        redemption.setRelatedObjectType(EnumRelatedObjectType.voucher);
+        redemption.setRelatedObjectId(voucher.getRelatedObjectId());
+        redemption.setRelatedObjectType(voucher.getRelatedObjectType());
         redemption.setQuantity(1l);
         redemption.setRedeemed_quantity(0l);
 
         redemption.setLog_RelatedObject_lable(voucher.getLable());
-        redemption.setLog_RelatedObject_code(voucher.getCode());
-        redemption.setLog_RelatedObject_type(voucher.getType());
+        redemption.setLog_RelatedObject_code(voucher.getRelatedObjectCode());
+      //  redemption.setLog_RelatedObject_type(voucher.getRelatedObject_subType().name());
 
 
         redemption.setValidatorType(verifier核销人员.getValidatorType());
@@ -389,7 +396,7 @@ public class RedemptionServiceImpl {
         return redemptionEntryList;
     }
 
-    public RightRedemptionEntry redeemRightForeach(Redemption redemption ,ValidatedByTypeVo  verifier核销人员, User traveler用户, ComponentVounch voucher权益) {
+    public RightRedemptionEntry redeemRightForeach(Redemption redemption ,ValidatedByTypeVo  verifier核销人员, RedemptionForCustomerVo traveler用户, ComponentVounch voucher权益) {
 
 
         if(voucher权益.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed)){

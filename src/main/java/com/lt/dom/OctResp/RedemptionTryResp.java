@@ -10,6 +10,7 @@ import org.javatuples.Triplet;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class RedemptionTryResp {
 
     private String type_text;
+    private Boolean checkin;
 
     public void setType_text(String type_text) {
         this.type_text = type_text;
@@ -30,6 +32,14 @@ public class RedemptionTryResp {
 
     public String getType_text() {
         return type_text;
+    }
+
+    public void setCheckin(Boolean checkin) {
+        this.checkin = checkin;
+    }
+
+    public Boolean isCheckin() {
+        return checkin;
     }
 
     public static class PhotoId {
@@ -107,6 +117,9 @@ public class RedemptionTryResp {
         private Integer limit;
         private Integer remaining;
         private Boolean check_in;
+        private String redeem_voucher_key;
+        private LocalDate start_date;
+        private LocalDate end_date;
 
         public void setLable(String lable) {
             this.lable = lable;
@@ -138,6 +151,31 @@ public class RedemptionTryResp {
 
         public Boolean isCheck_in() {
             return check_in;
+        }
+
+        public void setRedeem_voucher_key(String redeem_voucher_key) {
+
+            this.redeem_voucher_key = redeem_voucher_key;
+        }
+
+        public String getRedeem_voucher_key() {
+            return redeem_voucher_key;
+        }
+
+        public void setStart_date(LocalDate start_date) {
+            this.start_date = start_date;
+        }
+
+        public LocalDate getStart_date() {
+            return start_date;
+        }
+
+        public void setEnd_date(LocalDate end_date) {
+            this.end_date = end_date;
+        }
+
+        public LocalDate getEnd_date() {
+            return end_date;
         }
     }
         private EnumRedeamptionType type;

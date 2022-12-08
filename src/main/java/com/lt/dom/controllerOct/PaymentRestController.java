@@ -17,8 +17,10 @@ import com.lt.dom.otcReq.RefundReq;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.serviceOtc.pay.WeixinPaymentServiceImpl;
 import com.lt.dom.util.HttpUtils;
 import com.lt.dom.vo.ChargeMetadataVo;
+import com.lt.dom.vo.RefundReqVo;
 import com.lt.dom.vo.UserVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +79,11 @@ public class PaymentRestController {
 
     @Autowired
     private IdGenServiceImpl idGenService;
+
+    @Autowired
+    private WeixinPaymentServiceImpl weixinPaymentService;
+
+
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -418,144 +425,46 @@ public class PaymentRestController {
         Optional<Payment> payment = paymentRepository.findById(optionalCharge.get().getPayment());
         Optional<Reservation> reservation = reservationRepository.findById(optionalCharge.get().getBooking());
 
-        String refundCode = idGenService.refundCode();
+
 
 
         switch (charge.getChannel()){
             case cash:{
-                Refund refund = paymentService.createRefund(refundCode,charge,reservation.get(),refundReq);
+                String refundCode = idGenService.refundCode();
+
+                RefundReqVo refundReqVo = new RefundReqVo();
+
+                refundReqVo.setUnlinked(true);
+                refundReqVo.setPlatform(EnumPlatform.DERECT);
+                refundReqVo.setRefund_fee(refundReq.getRefund_fee());
+
+                EnumRefundReason refundReason = EnumRefundReason.requested_by_customer;
+
+
+              //  refundReq.getReason();
+                refundReqVo.setReason(refundReason);
+
+                Refund refund = paymentService.createRefund(refundCode,charge,reservation.get(),refundReqVo);
                 return ResponseEntity.ok(refund);
             }
 
             case wx : {
+                String refundCode = idGenService.refundCode();
 
-                String tradeNo = charge.getCode();///transaction_id;
-                Integer totalFee = charge.getAmount();//
+                RefundReqVo refundReqVo = new RefundReqVo();
+                refundReqVo.setUnlinked(true);
+                refundReqVo.setPlatform(EnumPlatform.DERECT);
+                refundReqVo.setRefund_fee(refundReq.getRefund_fee());
 
-
-                MyConfig wxPayConfig = null;
-                try {
-                    wxPayConfig = new MyConfig(wxConfig);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                WXPay wxpay = null;
-                try {
-                    wxpay = new WXPay(wxPayConfig);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                //refundReqVo.setReason(refundReq.getReason());
 
 
-/*        WxPayRefundRequest wxPayRefundRequest = new WxPayRefundRequest();
-        wxPayRefundRequest.setTransactionId(tradeNo);
-        wxPayRefundRequest.setOutRefundNo(String.valueOf(System.currentTimeMillis()));
-        wxPayRefundRequest.setTotalFee(totalFee);
-        wxPayRefundRequest.setRefundFee(totalFee);
-        wxPayRefundRequest.setNotifyUrl(wxPayConfig.getRefundNotifyUrl());*/
+                EnumRefundReason refundReason = EnumRefundReason.requested_by_customer;
 
-                String out_trade_no = "";   //退款订单
-                int   all_total_fee = 100;    //订单金额(这里是按分来计算的)
+                refundReqVo.setReason(refundReason);
+                Refund refund =  paymentService.createRefund(refundCode,charge,reservation.get(), refundReqVo);
 
-                Integer      refund_fee = null;      //退款金额(这里是按分来计算的)
-
-                if(refundReq.getRefund_fee()== null){
-                    refund_fee = charge.getAmount();      //退款金额(这里是按分来计算的)
-
-                }else{
-                    refund_fee = refundReq.getRefund_fee();
-                }
-
-                Map<String, String> paramesMap = new HashMap<>();
-/*        paramesMap.put("out_trade_no",charge.getCode());
-        paramesMap.put("all_total_fee", charge.getAmount()+"");//"2016090910595900000012"
-        paramesMap.put("refund_fee", charge.getAmount()+"");*/
-
- /*       data.put("spbill_create_ip","117.23.108.250");// ip);
-        data.put("notify_url", "http://39.106.34.220:8080/oct/xxxxxx");
-        data.put("trade_type", "JSAPI");  // 此处指定为扫码支付
-        data.put("product_id", "12");
-        data.put("openid", openid);*/
-
-
-   /*         dataMap.put("appid","wx#################");
-
-            dataMap.put("mch_id","137#############");
-
-//自行实现该随机串
-
-            dataMap.put("nonce_str",Core.MD5("12344"));
-
-            dataMap.put("out_trade_no","P190808170038402889c5318502");
-
-            dataMap.put("out_refund_no","P190808170038402889c5318502");
-
-            dataMap.put("total_fee","1");
-
-            dataMap.put("refund_fee","1");
-
-            dataMap.put("refund_desc","退款");
-
-
-        //    SortedMap<String, Object> paramesMap = new TreeMap<>();
-*/
-
-
-
-
-
-
-
-                    paramesMap.put("appid", wxPayConfig.getAppID());
-                    paramesMap.put("mch_id", wxPayConfig.getMchID());
-                    paramesMap.put("nonce_str", "date");
-                    paramesMap.put("out_trade_no", tradeNo);//商户订单号，也可用微信的订单号，二选已，具体看文档
-                    paramesMap.put("out_refund_no", refundCode);//商户退款单号，商户方自己生成
-                    paramesMap.put("total_fee", charge.getAmount()+"");//订单总金额
-                    paramesMap.put("refund_fee", refund_fee+"");//退款金额
-                    paramesMap.put("refund_desc","退款");
-                    paramesMap.put("notify_url","http://39.106.34.220:8080/oct/wechat/pay/refund_notify");
-
-                String sign = null;
-                try {
-                    sign = WXPayUtil.generateSignature(paramesMap,wxPayConfig.getKey(),wxPayConfig.getSignType());
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-
-                paramesMap.put("sign",sign);//签名，同支付签名一样*/
-
-                    //
-                Map<String, String> map = null;
-                try {
-                    map = wxpay.refund(paramesMap);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                //     WxPayRefundResult refund = null;//wxPayService().refundV2(wxPayRefundRequest);
-                    //  if (refund.getReturnCode().equals("SUCCESS") && refund.getResultCode().equals("SUCCESS")) {
-
-                    System.out.println("=================这里是退款的返回细腻些"+ map);
-                    if (map.get("return_code").equals("SUCCESS")) {
-
-                        if(map.get("result_code").equals("SUCCESS")){
-
-
-                            Map map_ = Map.of("refund_id",map.get("refund_id"),
-                                    // 微信退款单号
-                                    "transaction_id",map.get("transaction_id")
-                                    ); // 微信订单号
-
-                            Refund refund =  paymentService.createRefund(refundCode,charge,reservation.get(), refundReq);
-                            return ResponseEntity.ok(refund);
-                        }
-
-                    }else{
-                        throw new ExistException(Enumfailures.general_exists_error,"支付失败"+map.get("return_msg"));
-
-                    }
-
+                return ResponseEntity.ok(refund);
 
             }
         }

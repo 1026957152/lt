@@ -1,35 +1,18 @@
-package com.lt.dom.otcReq;
+package com.lt.dom.vo;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lt.dom.otcenum.EnumCancel_reason;
 import com.lt.dom.otcenum.EnumPlatform;
 import com.lt.dom.otcenum.EnumRefundReason;
 import com.lt.dom.otcenum.EnumRefundStatus;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 
-public class RefundReq {
+public class RefundReqVo {
+
 
 
     @NotNull
-    private EnumCancel_reason reason;
-
-
-    @JsonProperty("note")
-    private String note;
-
-    private String     message;//A custom message to send to the participants.
-    private Boolean notifyParticipants;
-
-
-/*    @NotNull
-    private EnumRefundReason reason;*/
+    private EnumRefundReason reason;
     private EnumRefundStatus status;
 
     private long failure_balance_transaction;
@@ -41,12 +24,11 @@ public class RefundReq {
 
 
 
-    private long charge;
+
     private boolean unlinked;
     private EnumPlatform platform;
 
 
-/*
     public EnumRefundReason getReason() {
         return reason;
     }
@@ -54,7 +36,6 @@ public class RefundReq {
     public void setReason(EnumRefundReason reason) {
         this.reason = reason;
     }
-*/
 
     public EnumRefundStatus getStatus() {
         return status;
@@ -73,14 +54,6 @@ public class RefundReq {
     }
 
 
-
-    public void setCharge(long charge) {
-        this.charge = charge;
-    }
-
-    public long getCharge() {
-        return charge;
-    }
 
 
 

@@ -63,7 +63,7 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
         componentVounchResp.setRemaining (e.getLimit() - e.getRedeemed_quantity());
 
         componentVounchResp.setReservationId(e.getReservation());
-        componentVounchResp.setRoyaltyRule(e.getRoyaltyRule());
+    //    componentVounchResp.setRoyaltyRule(e.getRoyaltyRule());
         componentVounchResp.setCode(e.getCode());
         componentVounchResp.setRoyaltyRuleId(e.getRoyaltyRuleId());
         componentVounchResp.setVoucherId(e.getVoucherId());

@@ -209,7 +209,8 @@ public class BookingRestController {
 
         bookingResp.setParameterList(
                 Map.of(
-                        "cancel_reason_list", EnumCancel_reason.list()
+                        "cancel_reason_list", EnumCancel_reason.list(),
+                        "refund_reason_list", EnumRefundReason.list()
 
                         ));
     //    profileResp.setPreferenceSpace(EnumPreferenceSpace.valueOf(preference.getString_value()));
@@ -1809,7 +1810,7 @@ public class BookingRestController {
 
         PlatUserVo platUserVo = new PlatUserVo();
         platUserVo.setUserVo(userVo);
-        platUserVo.setPlatform(EnumPlatform.LT);
+        platUserVo.setPlatform(EnumPlatform.DERECT);
 
 
       //  extraService.
@@ -1878,7 +1879,7 @@ public class BookingRestController {
 
 
         PlatUserVo platUserVo = new PlatUserVo();
-        platUserVo.setPlatform(EnumPlatform.LT);
+        platUserVo.setPlatform(EnumPlatform.DERECT);
         platUserVo.setUserVo(userVo);
 
 
@@ -2318,7 +2319,7 @@ public class BookingRestController {
     }
 
     @PostMapping(value = "/bookings/{RESERVATOIN_ID}/refunds", produces = "application/json")
-    public ResponseEntity<Reservation> refund(@PathVariable long RESERVATOIN_ID, @RequestBody @Valid NonReferencedRefundReq refundReq) {
+    public ResponseEntity<Reservation> refund(@PathVariable long RESERVATOIN_ID, @RequestBody  RefundFromChannelReq refundReq) {
 
         Optional<Reservation> optionalReservation = reservationRepository.findById(RESERVATOIN_ID);
         if(optionalReservation.isEmpty()) {
@@ -2328,19 +2329,18 @@ public class BookingRestController {
         Reservation reservation = optionalReservation.get();
 
 
-   /*     if(!reservation.getStatus().equals(EnumBookingStatus.PAID)){
+        if(!reservation.getStatus().equals(EnumBookingStatus.PAID)){
             throw new BookNotFoundException(Enumfailures.resource_not_found,"状态错误不是 pending ");
+        }
 
-        }*/
-
-
-        String refundCode = idGenService.refundCode();
-
-        paymentService.createRefundNonReferenced(refundCode,reservation, refundReq,refundReq.getChannel());
+        PlatRefundVo platRefundVo = new PlatRefundVo();
+       // platRefundVo.setSerial_no(data.getSerial_no());
+      //  platRefundVo.setOrders_id(data.getOrders_id());
+        platRefundVo.setPlatform(EnumPlatform.DERECT);
+        Pair<Refund,PlatRefundVo> pair = bookingService.refund(platRefundVo,reservation);
 
 
         return ResponseEntity.ok(reservation);
-
 
     }
 

@@ -31,6 +31,8 @@ private String code;
     private EnumPayment_behavior payment_behavior;
     private String trackingId;
     private Long agent;
+    private Boolean checkin;
+    private LocalDateTime checkin_at;
 
     public EnumPayment_behavior getPayment_behavior() {
         return payment_behavior;
@@ -513,5 +515,21 @@ private String code;
 
     public Long getAgent() {
         return agent;
+    }
+
+    public void setCheckin(Boolean checkin) {
+        this.checkin = checkin;
+    }
+
+    public Boolean isCheckin() {
+        return checkin;
+    }
+
+    public void setCheckin_at(LocalDateTime checkin_at) {
+        this.checkin_at = checkin_at;
+    }
+
+    public LocalDateTime getCheckin_at() {
+        return checkin_at;
     }
 }

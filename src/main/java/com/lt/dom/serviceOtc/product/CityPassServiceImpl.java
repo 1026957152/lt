@@ -10,13 +10,8 @@ import com.lt.dom.otcReq.RedemBycodePojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.BookingTypeTowhoVo;
-import com.lt.dom.serviceOtc.ComponentRightServiceImpl;
-import com.lt.dom.serviceOtc.FileStorageServiceImpl;
-import com.lt.dom.serviceOtc.IdGenServiceImpl;
-import com.lt.dom.serviceOtc.PassServiceImpl;
-import com.lt.dom.vo.CompoentRightAssigtToTargeVo;
-import com.lt.dom.vo.PlatUserVo;
-import com.lt.dom.vo.UserVo;
+import com.lt.dom.serviceOtc.*;
+import com.lt.dom.vo.*;
 import org.apache.commons.lang.RandomStringUtils;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -26,6 +21,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -43,6 +39,8 @@ public class CityPassServiceImpl {
     @Autowired
     private ComponentRightServiceImpl componentRightService;
 
+    @Autowired
+    private UserRepository userRepository;
 
 
     @Autowired
@@ -50,13 +48,17 @@ public class CityPassServiceImpl {
 
     @Autowired
     private ReservationRepository reservationRepository;
-
-
-
+    @Autowired
+    private CardholderRepository cardholderRepository;
 
     @Autowired
-    private CardholderRepository cardholderRepository
-            ;
+    private RedemptionServiceImpl redemptionService;
+
+    @Autowired
+    private RightRedemptionEntryRepository rightRedemptionEntryRepository;
+
+
+
 
     @Autowired
     private PassRepository passRepository
@@ -85,6 +87,8 @@ public class CityPassServiceImpl {
 
     @Autowired
     private IdGenServiceImpl idGenService;
+    @Autowired
+    private BookingBaseServiceImpl bookingBaseService;
 
 
     @Autowired
@@ -254,7 +258,7 @@ public class CityPassServiceImpl {
 
                 if(lineItem.getQuantity() != traveler.size()){
 
-                    logger.error("订单数量和 提供的游客数量不相符");
+                    logger.error("订单数量{},和 供的游客数量{} 不相符 " ,lineItem.getQuantity(),traveler.size());
                     System.out.println("订单数量和 提供的游客数量不相符");
                     throw new BookNotFoundException(Enumfailures.resource_not_found,"订单数和 游客数不相符");
                 }
@@ -281,7 +285,7 @@ public class CityPassServiceImpl {
 
                     }
 
-                    if(reservation.getPlatform().equals(EnumPlatform.LT)){
+                    if(reservation.getPlatform().equals(EnumPlatform.DERECT)){
                         logger.error("订单数量和 新建一个年卡 ");
                         //   Pass pass = passService.create_virtual(lineItem,cardholder,user.getUser().getId(),10);
                         if(user.getUser().isRealNameVerified()){
@@ -338,7 +342,7 @@ public class CityPassServiceImpl {
         });
 
 
-        reservation.setStatus(EnumBookingStatus.Fulfilled);
+       // reservation.setStatus(EnumBookingStatus.Fulfilled);
         reservationRepository.save(reservation);
 
     }
@@ -391,6 +395,12 @@ public class CityPassServiceImpl {
 
         Optional<Pass> cardholderList = passRepository.findByCode(code.getCode());
 
+        if(cardholderList.isEmpty()) {
+            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到门票"+code.getCode());
+        }
+
+
+
         Pass voucher =cardholderList.get();
 /*
         List<Cardholder> cardholderList = cardholderRepository.findByIdentity(code.getCode());
@@ -441,6 +451,11 @@ public class CityPassServiceImpl {
                 }).collect(Collectors.toList());
 
 
+        if(voucher.getBooking()!= null){
+
+            bookingBaseService.checkin(voucher.getBookingLine());
+        }
+
 
 
 
@@ -479,29 +494,34 @@ public class CityPassServiceImpl {
                     "face": "https://example.plaid.com/verifications/idv_52xR9LKo77r1Np/documents/1/face.jpeg"
         },*/
         resp.setEntries(componentVounchList.stream()
-                .filter(e->!(e.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed)))
+            //    .filter(e->!(e.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed)))
                 .map(e->{
                     RedemptionTryResp.RedemptionEntryResp redemptionEntryResp = new RedemptionTryResp.RedemptionEntryResp();
 
 
-
+                    redemptionEntryResp.setRedeem_voucher_key(e.getRedeem_voucher_key());
                     redemptionEntryResp.setLable(e.getName());
                     redemptionEntryResp.setLimit(e.getLimit().intValue());
-                    redemptionEntryResp.setRemaining(e.getTry_().intValue());
+
+                    redemptionEntryResp.setStart_date(e.getStart_date());
+                    redemptionEntryResp.setEnd_date(e.getEnd_date());
+                    redemptionEntryResp.setRemaining(e.getLimit().intValue()-e.getRedeemed_quantity().intValue());
+
 
                     //    redemptionEntryResp.setRemaining(Long.valueOf(e.getLimit()-e.getRedeemed_quantity()).intValue());
-                    redemptionEntryResp.setCheck_in(triplet来自设备.contains(e.getComponentRight()));
+                    redemptionEntryResp.setCheck_in(redemptionEntryResp.getRemaining() >= e.getTry_() && triplet来自设备.contains(e.getComponentRight()));
                     return redemptionEntryResp;
 
                 })
                 .sorted(Comparator.comparing(RedemptionTryResp.RedemptionEntryResp::isCheck_in))
                 .collect(Collectors.toList()));
 
-
-
+        resp.setCheckin(resp.getEntries().stream().map(e->e.isCheck_in()).findAny().isPresent());
         resp.setCrypto_code(voucher.getCode());
 
         EntityModel redemptionEntryEntityModel =  EntityModel.of(resp);
+
+
    /*     String jwt = jwtUtils.generateJwtToken(gson.toJson(codeWithLatLngVo));
 
         resp.setCrypto_code(jwt);*/
@@ -544,6 +564,159 @@ public class CityPassServiceImpl {
         passService.allowedHolder(id_number_list, pattern);
 
 
+
+    }
+
+
+
+
+
+
+    public EntityModel redeem(CodeWithLatLngVo code, UserVo userVo) {
+
+
+        Optional<User> user = userRepository.findById(userVo.getUser_id());
+
+
+        if(!code.getC().startsWith("pass")) {
+
+            return null;
+        }
+        Optional<Pass> optionalVoucher = passRepository.findByCode(code.getC());
+
+
+
+
+
+        if(optionalVoucher.isEmpty()) {
+            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到门票"+code.getC());
+        }
+        Pass voucher =optionalVoucher.get();
+
+
+        if(voucher.getExpiringDate().isBefore(LocalDateTime.now())){
+            throw new ExistException(Enumfailures.invalid_voucher,"该PASS已过期");
+        }
+
+
+        if(!voucher.isActive()){
+            throw new BookNotFoundException(Enumfailures.voucher_not_active,"该PASS未激活");
+        }
+
+
+
+        List<Validator_> validator_s = validatorRepository.findAllByTypeAndUser(EnumValidatorType.特定的人员,userVo.getUser_id());
+
+        if(validator_s.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"职工得 核销分配 对象 为空，请添加"+userVo.getPhone());
+        }
+        List<Long> triplet来自设备 =
+                validator_s.stream().map(e->e.getComponentRightId()).collect(Collectors.toList());
+
+
+        List<ComponentVounch> components = componentVounchRepository.findAllByReference(voucher.getCode());
+
+        if(components.size() ==0){
+            throw new BookNotFoundException(Enumfailures.not_found,"该券 无可核销得 权益"+voucher.getCode());
+        }
+
+
+
+
+        List<ComponentVounch> componentVounchList = components.stream()  // TODO 找到了这里的 权限
+                .filter(e->{
+                    return triplet来自设备.contains(e.getComponentRight());
+                }).collect(Collectors.toList());
+
+        componentVounchList =  componentVounchList.stream()
+                .filter(e->!(e.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed)))
+                .map(e->{
+                    System.out.println("存在的"+e.toString());
+                    return e;
+                })
+         //       .filter(e->triplet来自设备.contains(e.getComponentRight()))
+                .collect(Collectors.toList());
+
+
+        System.out.println("测试测试  "+componentVounchList.size());
+        if(componentVounchList.size() == 0){
+            throw new BookNotFoundException(Enumfailures.not_found,"该券 已经 无 剩余可核销的 权益"+voucher.getCode());
+
+        }
+
+        ValidatedByTypeVo verifier核销人员 = new ValidatedByTypeVo();
+        verifier核销人员.setValidatorType(EnumValidatorType.特定的人员);
+
+        verifier核销人员.setUser(user.get());
+
+        Cardholder traveler用户 = cardholderRepository.findByPass(voucher).get();
+
+        RedemptionForObjectVo redemptionForObjectVo = new RedemptionForObjectVo();
+        redemptionForObjectVo.setRelatedObjectId(voucher.getId());
+        redemptionForObjectVo.setRelatedObjectType(EnumRelatedObjectType.pass);
+        redemptionForObjectVo.setRelatedObjectCode(voucher.getCode());
+        redemptionForObjectVo.setRelatedObject_subType(voucher.getType().name());
+        redemptionForObjectVo.setLable(voucher.getLabel());
+
+        RedemptionForCustomerVo redemptionForCustomerVo = new RedemptionForCustomerVo();
+
+        redemptionForCustomerVo.setId(traveler用户.getId());
+        redemptionForCustomerVo.setRealName(traveler用户.getName());
+        redemptionForCustomerVo.setCode(traveler用户.getCode());
+
+
+        List<RightRedemptionEntry> redemptionEntryList = redemptionService.redeemRight(redemptionForObjectVo,verifier核销人员,redemptionForCustomerVo,componentVounchList);
+
+        redemptionEntryList = rightRedemptionEntryRepository.saveAll(redemptionEntryList);
+
+
+
+
+        List<ComponentVounch> component_for_update_voucher = componentVounchRepository.findAllByReference(voucher.getCode());
+
+/*        if(component_for_update_voucher
+                .stream().filter(e->e.getStatus().equals(EnumComponentVoucherStatus.PartialyRedeemed))
+                .findAny().isPresent()){
+            voucher.setStatus(EnumVoucherStatus.PartialyRedeemed);
+        };
+        if(component_for_update_voucher
+                .stream().filter(e->!e.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed))
+                .findAny().isEmpty()){
+            voucher.setStatus(EnumVoucherStatus.Redeemed);
+        };
+
+        voucherTicketRepository.save(voucher);*/
+
+
+
+        EntityModel redemptionEntryEntityModel =  EntityModel.of(Map.of("dd",redemptionEntryList));
+
+
+        return redemptionEntryEntityModel;
+
+
+
+    }
+
+
+    public void refund(Reservation reservation, List<LineItem> lineItemList, PlatRefundVo platRefundVo) {
+
+        lineItemList = lineItemList.stream().filter(e->e.getLineType().equals(lineType)).collect(Collectors.toList());
+        if(lineItemList.size()==0){
+            return;
+        }
+        if(lineItemList.stream().filter(e->e.isCheckin()!= null && e.isCheckin()).findAny().isPresent()){
+
+
+            String info = lineItemList.stream().filter(e->e.isCheckin() == null || !e.isCheckin()).map(e->{
+
+                String lable = String.format("%s*%s",e.getTitle(),e.getBooking());
+
+                return lable;
+            }).collect(Collectors.joining(","));
+
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"存在已核销的，不能退款"+info);
+        }
 
     }
 }

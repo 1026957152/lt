@@ -9,6 +9,7 @@ import com.lt.dom.otcReq.ProductPojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.vo.CompoentRightAssigtToTargeVo;
+import com.lt.dom.vo.RedemptionForCustomerVo;
 import com.lt.dom.vo.ValidatedByTypeVo;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -283,7 +284,13 @@ public class ComponentRightServiceImpl {
 
         //
         List<RightRedemptionEntry> redemptionEntryList = optionalPass.stream().map(x->{
-            return redemptionService.redeemRightForeach(new Redemption(),x.getValue0(),x.getValue1(),x.getValue2());
+            RedemptionForCustomerVo redemptionForCustomerVo = new RedemptionForCustomerVo();
+            User traveler用户 = x.getValue1();
+            redemptionForCustomerVo.setId(traveler用户.getId());
+            redemptionForCustomerVo.setRealName(traveler用户.getRealName());
+            redemptionForCustomerVo.setCode(traveler用户.getCode());
+
+            return redemptionService.redeemRightForeach(new Redemption(),x.getValue0(),redemptionForCustomerVo,x.getValue2());
         }).collect(Collectors.toList());
 
         redemptionEntryList = rightRedemptionEntryRepository.saveAll(redemptionEntryList);
@@ -585,45 +592,47 @@ public class ComponentRightServiceImpl {
 
         List<ComponentVounch> list =  components.stream().map(right->{
 
-            ComponentVounch component = new ComponentVounch();
-            component.setCode(idGenService.componentVouncherCode());
+            ComponentVounch componentVounch = new ComponentVounch();
+            componentVounch.setCode(idGenService.componentVouncherCode());
 
-            component.setName(right.getName());
+            componentVounch.setRedeem_voucher_key(idGenService.nextId(""));
 
-            component.setProduct(voucherTicket.getPass().getId());
-            component.setSupplier(right.getSupplier());
+            componentVounch.setName(right.getName());
+
+            componentVounch.setProduct(voucherTicket.getPass().getId());
+            componentVounch.setSupplier(right.getSupplier());
 
 
-            component.setComponentRight(right.getComponentRightId());
+            componentVounch.setComponentRight(right.getComponentRightId());
 
 
-            component.setReference(voucherTicket.getPass().getCode());
-            component.setStatus(EnumComponentVoucherStatus.NotRedeemed);
+            componentVounch.setReference(voucherTicket.getPass().getCode());
+            componentVounch.setStatus(EnumComponentVoucherStatus.NotRedeemed);
 
 
 
             //    component.setRatePlan(EnumReferralEvents.);
-            component.setSource(right.getSource());
+            componentVounch.setSource(right.getSource());
             if(right.getSource().equals(EnumProductComponentSource.partner)){
                 Assert.notNull(right.getSubscription(), "系统已有 componment Right 不能为空，当前空，新建 component 失败");
                 Assert.notNull(right.getRatePlan(), "系统已有 componment RatePlan 不能为空，当前空，新建 component 失败");
-                component.setRatePlan(right.getRatePlan());
+                componentVounch.setRatePlan(right.getRatePlan());
 
-                component.setSubscription(right.getSubscription());
+                componentVounch.setSubscription(right.getSubscription());
             }
 
-            component.setVoucherId(voucherTicket.getPass().getId());
-            component.setLimit(limit);
-            component.setTry_(1l);
-            component.setRedeemed_quantity(0l);
-            component.setUnit_off(right.getUnit_off());
-            component.setDuration(right.getDuration());
-            component.setReservation(voucherTicket.getPass().getBooking());
+            componentVounch.setVoucherId(voucherTicket.getPass().getId());
+            componentVounch.setLimit(limit);
+            componentVounch.setTry_(1l);
+            componentVounch.setRedeemed_quantity(0l);
+            componentVounch.setUnit_off(right.getUnit_off());
+            componentVounch.setDuration(right.getDuration());
+            componentVounch.setReservation(voucherTicket.getPass().getBooking());
 
 
-            component.setRoyalty_mode(right.getRoyalty_mode());
-            component.setValidate_way(right.getValidate_way());
-            component.setSupplier(right.getSupplier());
+            componentVounch.setRoyalty_mode(right.getRoyalty_mode());
+            componentVounch.setValidate_way(right.getValidate_way());
+            componentVounch.setSupplier(right.getSupplier());
 /*            component.setRoyaltyPercent(right.getValue());
             component.setRoyaltyAmount(right.getValue());
             component.setRoyaltyAmount(right.getValue());
@@ -631,7 +640,7 @@ public class ComponentRightServiceImpl {
             component.setValidate_way(royalty.getValidate_way());
 
             component.setRoyaltyPercent(royalty.getPercent());*/
-            return component;
+            return componentVounch;
         }).collect(Collectors.toList());
 
         list = componentVounchRepository.saveAll(list);

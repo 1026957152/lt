@@ -1,11 +1,13 @@
 package com.lt.dom.otcenum;
 
+import com.lt.dom.config.Constants;
+
 public enum EnumLayoutFeaturedFuction {
 
     扫码核销("fuction","扫码核销","全部订单",
-            "http://yulinmei.cn:8080/oct/files/icon_me/dingdan.png","http://yulinmei.cn:8080/oct/files/icon_me/dingdan.png","scan_redeem"),
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/icon_me/dingdan.png","http://yulinmei.cn:8080/oct/files/icon_me/dingdan.png","scan_redeem"),
     输码核销("fuction","扫码核销","待付款",
-            "http://yulinmei.cn:8080/oct/files/icon_me/daifukuan.png","http://yulinmei.cn:8080/oct/files/icon_me/daifukuan.png","code_redeem")
+            "http://yulinmei.cn:8080/oct/"+ Constants.STATIC_PATH +"/icon_me/daifukuan.png","http://yulinmei.cn:8080/oct/files/icon_me/daifukuan.png","code_redeem")
 
     ;
     private String group;

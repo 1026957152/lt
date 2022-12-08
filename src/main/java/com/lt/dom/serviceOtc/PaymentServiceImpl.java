@@ -22,10 +22,7 @@ import com.lt.dom.requestvo.PublishTowhoVo;
 import com.lt.dom.serviceOtc.pay.AliPaymentServiceImpl;
 import com.lt.dom.serviceOtc.pay.CashPaymentServiceImpl;
 import com.lt.dom.serviceOtc.pay.WeixinPaymentServiceImpl;
-import com.lt.dom.vo.ChargeMetadataVo;
-import com.lt.dom.vo.PlatUserVo;
-import com.lt.dom.vo.UserVo;
-import com.lt.dom.vo.VoucherPublicationPaymentVo;
+import com.lt.dom.vo.*;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.slf4j.Logger;
@@ -622,7 +619,16 @@ public class PaymentServiceImpl {
     }
 
 
-    public Refund createRefund(String refundCode, Charge charge, Reservation reservation, RefundReq refundReq) {
+    public Refund createRefund(String refundCode, Charge charge, Reservation reservation, RefundReqVo refundReq) {
+
+
+
+        if(charge.getChannel().equals(EnumPayChannel.wx)){
+            weixinPaymentService.createRefund(refundCode,charge,refundReq);
+
+        }
+
+
 
 
         int      refund_fee = refundReq.getRefund_fee();      //退款金额(这里是按分来计算的)
@@ -633,6 +639,7 @@ public class PaymentServiceImpl {
         }
         Refund refund = new Refund();
         refund.setCode(refundCode);
+        refund.setUnlinked(refundReq.isUnlinked());
         refund.setReason(refundReq.getReason());
 
         refund.setCreated(LocalDateTime.now());
@@ -643,6 +650,7 @@ public class PaymentServiceImpl {
         refund.setRefund_fee(refund_fee); //total_fee
 
         refund.setChannel(charge.getChannel());
+        refund.setPlatform(refundReq.getPlatform());
         refund.setBooking(reservation.getId());
 
         refund =  refundRepository.save(refund);

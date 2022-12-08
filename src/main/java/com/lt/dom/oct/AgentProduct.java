@@ -22,10 +22,10 @@ public class AgentProduct extends BaseWithoutId{
     @MapsId("productId")
     @JoinColumn(name = "product_id")
     Product product;
-    private Float net;
+    private Float net; // 分销价
     private Long sku;
-    private Float original;
-    private Float market;
+    private Float original; //票面原价
+    private Float market; // 市场价
 
 
     public Product getProduct() {

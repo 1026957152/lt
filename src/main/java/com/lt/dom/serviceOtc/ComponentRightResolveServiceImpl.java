@@ -89,7 +89,7 @@ public class ComponentRightResolveServiceImpl {
         if(reservation.getPlatform().equals(EnumPlatform.TS)){
 
         }
-        if(reservation.getPlatform().equals(EnumPlatform.LT)){
+        if(reservation.getPlatform().equals(EnumPlatform.DERECT)){
 
             Optional<User> objectUser = userRepository.findById(reservation.getUser());
 
@@ -284,14 +284,4 @@ public class ComponentRightResolveServiceImpl {
 
 
     }
- /*   public void resolve_with_manual_validate(Reservation reservation, EnumFulfillment_behavior followupPaid) {
-
-        resolve_(reservation,followupPaid);
-
-        reservation.setValidationStatus(EnumValidationStatus.ValidationSucceeded);
-
-        bookingService.update(reservation);
-
-    }*/
-
 }

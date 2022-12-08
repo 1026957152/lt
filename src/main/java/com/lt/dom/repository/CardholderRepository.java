@@ -2,6 +2,8 @@ package com.lt.dom.repository;
 
 import com.lt.dom.oct.AccessValidator;
 import com.lt.dom.oct.Cardholder;
+import com.lt.dom.oct.Pass;
+import com.lt.dom.serviceOtc.MessageServiceImpl;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -14,4 +16,6 @@ public interface CardholderRepository extends JpaRepository<Cardholder
     List<Cardholder> findByIdentity(String id);
 
     Optional<Cardholder> findByCode(String code);
+
+    Optional<Cardholder> findByPass(Pass voucher);
 }

@@ -4,10 +4,7 @@ import cn.hutool.core.util.DesensitizedUtil;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
-import com.lt.dom.otcenum.EnumAgentStatus;
-import com.lt.dom.otcenum.EnumPublicationObjectType;
-import com.lt.dom.otcenum.EnumReportBookingSourceGroupby;
-import com.lt.dom.otcenum.EnumReportMetric;
+import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.BookingServiceImpl;
 import com.lt.dom.serviceOtc.CancellationServiceImpl;
@@ -25,13 +22,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.summingInt;
+import static java.util.stream.Collectors.*;
 import static org.springframework.data.jpa.domain.Specification.where;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -304,7 +303,7 @@ public class ReportRestController {
 
             return bookingSummary;
 
-        }).collect(Collectors.toList());
+        }).collect(toList());
 
 
 
@@ -391,6 +390,23 @@ public class ReportRestController {
 
         List<Reservation> reservationList = reservationRepository.findAll();
 
+
+        Map<EnumPlatform,Integer>  enumPlatformListMap =  reservationList.stream().collect(Collectors.groupingBy(e->e.getPlatform(),collectingAndThen(toList(),list->{
+            return  list.size();
+            })));
+
+
+        List<Map>  collect =  Arrays.stream(EnumPlatform.values()).map(e->{
+
+            return Map.of("key",e.name(),"bookings",enumPlatformListMap.getOrDefault(e,0));
+        }).collect(toList());
+
+        List<Reservation> reservationList_today = reservationRepository.findAllByCreatedDateIsAfter(LocalDate.now().atStartOfDay());
+
+        Map<EnumPlatform,Integer>  enumPlatformListMap_today =  reservationList_today.stream().collect(Collectors.groupingBy(e->e.getPlatform(),collectingAndThen(toList(),list->{
+            return  list.size();
+        })));
+
         Long today_bookings = reservationList.stream().count();
 
         ReportBookingSource reportBookingSource = new ReportBookingSource();
@@ -408,6 +424,14 @@ public class ReportRestController {
         reportBookingSource.setRevenueToday(reservationList.stream().mapToDouble(e->e.getAmount()).sum()+"");
         reportBookingSource.setRevenueToday(reservationList.stream().mapToDouble(e->e.getAmount()).sum()+"");
 
+        reportBookingSource.setGroupby(collect);
+
+
+        List<Map>  collect_today =  Arrays.stream(EnumPlatform.values()).map(e->{
+
+            return Map.of("key",e.name(),"bookings",enumPlatformListMap_today.getOrDefault(e,0));
+        }).collect(toList());
+        reportBookingSource.setGroupby_today(collect_today);
         return reportBookingSource;
 
     }

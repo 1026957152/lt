@@ -708,6 +708,20 @@ public class RedemptionRestController {
         if(entityModel != null){
             return entityModel;
         }
+        entityModel = cityPassService.redeem(codeWithLatLngVo,userOv);
+        if(entityModel != null){
+            return entityModel;
+        }
+
+
+
+
+
+
+
+
+
+
 
 
         if(codeWithLatLngVo.getC().startsWith("TT-NI")){
@@ -779,7 +793,7 @@ public class RedemptionRestController {
 
         }
 
-        throw new BookNotFoundException("找不到核销券","找不到核销券");
+        throw new BookNotFoundException(Enumfailures.not_found,"找不到核销券"+pojo___.getCrypto_code());
     }
 
 
@@ -801,6 +815,17 @@ System.out.println("---------------"+pojo___.getCrypto_code());
         CodeWithLatLngVo codeWithLatLngVo =  gson.fromJson(code_json,CodeWithLatLngVo.class);
 
         Supplier supplier = userOv.getSupplier();
+
+
+
+
+
+        EntityModel entityModel = multiTicketService.redeem(codeWithLatLngVo,userOv);
+        if(entityModel != null){
+            return entityModel;
+        }
+
+
 
 
         if(codeWithLatLngVo.getC().startsWith("TT-NI")){

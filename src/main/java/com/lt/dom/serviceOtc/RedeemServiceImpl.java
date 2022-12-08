@@ -98,6 +98,7 @@ public class RedeemServiceImpl {
     @Autowired
     VoucherServiceImpl voucherService;
 
+/*
     public ComponentVounch redeemCompo(ComponentVounch componentVounch1){
 
 
@@ -125,6 +126,7 @@ public class RedeemServiceImpl {
 
     }
 
+*/
 
 
 

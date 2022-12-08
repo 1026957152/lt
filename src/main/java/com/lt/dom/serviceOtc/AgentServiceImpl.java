@@ -160,11 +160,23 @@ public class AgentServiceImpl {
 
             AgentEditReq.ProductReq productReq = e;
 
-            Optional<Product> optionalProduct = productRepository.findById(e.getId());
+
+            Optional<PricingRate> pricingRateOptional = pricingTypeRepository.findById(e.getSku());
+
+         //   Optional<Product> optionalProduct = productRepository.findById(e.getId());
+            if(pricingRateOptional.isEmpty()){
+                return null;
+            }
+            PricingRate pricingRate = pricingRateOptional.get();
+
+            Optional<Product> optionalProduct = productRepository.findById(pricingRate.getProductId());
             if(optionalProduct.isEmpty()){
                 return null;
             }
+
             Product product = optionalProduct.get();
+
+
             Optional<AgentProduct> a =  agentProductRepository.findById(new AgentProductKey(finalTheatre.getId(), e.getId()));
 
             if(a.isEmpty()){
@@ -172,8 +184,9 @@ public class AgentServiceImpl {
 
                 stopRegistration.setAgent(finalTheatre);
                 stopRegistration.setNet(productReq.getNet());
-                stopRegistration.setSku(productReq.getSku());
-
+                stopRegistration.setOriginal(productReq.getRetail());
+                stopRegistration.setMarket(productReq.getMarket());
+                stopRegistration.setSku(pricingRate.getId());
 
                 stopRegistration.setProduct(product);
 

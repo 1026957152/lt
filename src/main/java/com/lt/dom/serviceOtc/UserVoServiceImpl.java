@@ -269,6 +269,9 @@ public class UserVoServiceImpl {
 
             supplierRespEntityModel.add(linkTo(methodOn(ReportRestController.class).Home_summary()).withRel("home_summary"));
 
+            supplierRespEntityModel.add(linkTo(methodOn(HomeDashboardRestController.class).home(employee.getSuplierId())).withRel("Page_dashboard"));
+
+
 
 
             userResp.setSupplier(supplierRespEntityModel);
