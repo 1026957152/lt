@@ -17,12 +17,17 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -64,12 +69,20 @@ public class TSRestController {
     @Autowired
     private OpenidRepository openidRepository;
 
+    //@PostMapping(path = "",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 
-    @PostMapping(value = "")
-    public Object jk(@RequestParam Map<String, String> body ){
+  @PostMapping(path = "",consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+    // public Object jk(TsReqLt下单接口 body_ ){
+     public Object jk(@RequestParam  MultiValueMap<String,String> ob_ ){
 
 
+     //
+        System.out.println("================="+ob_.toString());
+        Map<String, String> body = new HashMap<>();
         System.out.println("dddddddddddd"+body.toString());
+
+
+
 
         ObjectMapper mapper = new ObjectMapper();
         String json = null;
@@ -80,12 +93,19 @@ public class TSRestController {
         }
         System.out.println("dddddddddddd"+json);
 
-        TsReqLtBase tsReqLt产品列表 = null;
+
+    //    ob_.remove(ob_.keySet().stream().filter(e->e.startsWith("players")).collect(Collectors.toList()));
+
+
+
+        TsReqLtBase tsReqLt产品列表 = TsReqLtBase.from(ob_);
+/*
         try {
             tsReqLt产品列表 = mapper.readValue(json, TsReqLtBase.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+*/
 
 
 
@@ -117,24 +137,24 @@ public class TSRestController {
 
 
 
-        if (tsReqLt产品列表 instanceof TsReqLt产品列表){
+        if (tsReqLt产品列表.getMethod().equals(EnumMethord.item_list)){
             if(tsReqLt产品列表.get_pid().equals("dddddd")){
                 throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
             }
 
-            TsReqLt产品列表 tsReqLt产品列表1 = (TsReqLt产品列表) tsReqLt产品列表;
+            TsReqLt产品列表 tsReqLt产品列表1 =TsReqLt产品列表.from_(ob_);
 
             System.out.println("TsReqLt产品列表dddddddddddd"+tsReqLt产品列表1.toString());
             LtRespToTs产品列表 ltRespToTs产品列表 = tsToLtService.getTsReqLt产品列表(agent,tsReqLt产品列表1);
 
             return ltRespToTs产品列表;
         }
-        if (tsReqLt产品列表 instanceof TsReqLt下单接口){
+        if (tsReqLt产品列表.getMethod().equals(EnumMethord.item_orders)){
             if(tsReqLt产品列表.get_pid().equals("dddddd")){
                 throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
             }
 
-            TsReqLt下单接口 tsReqLt产品列表1 = (TsReqLt下单接口) tsReqLt产品列表;
+            TsReqLt下单接口 tsReqLt产品列表1 = TsReqLt下单接口.from_(ob_);
 
             System.out.println("TsReqLt下单接口dddddddddddd"+tsReqLt产品列表1.toString());
             try{

@@ -83,7 +83,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
 			String path = request.getServletPath();
 
+
 			System.out.println("==请求url==="+path);
+
+			request.getAttributeNames().asIterator().forEachRemaining(e->{
+				System.out.println("e"+e);
+			});
+
+			System.out.println("==请求url==getQueryString:"+request.getQueryString());
+
 			String jwt = parseJwt(request);
 
 			System.out.println("-----------------------------"+ jwt);

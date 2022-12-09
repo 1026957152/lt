@@ -304,45 +304,54 @@ public class AgentRestController {
         }
 
 
-        Agent region = validatorOptional.get();
+        Agent agent = validatorOptional.get();
 
         AgentEditReq agentEditReq = new  AgentEditReq();
 
-        AgentEditReq.EditReq thirdPartyResp = AgentEditReq.EditReq.from(region);
+        AgentEditReq.EditReq editReq = AgentEditReq.EditReq.from(agent);
 
 
-        EntityModel entityModel_eidt = EntityModel.of(thirdPartyResp);
-        // entityModel.add(linkTo(methodOn(AgentRestController.class).createProduct(region.getId(),null)).withRel("addProduct"));
-        entityModel_eidt.add(linkTo(methodOn(AgentRestController.class).update(region.getId(),null)).withRel("edit"));
 
-        agentEditReq.setBasicEdit(entityModel_eidt);
+        AgentEditReq.ProductTab productTab = AgentEditReq.ProductTab.from(agent);
 
-        AgentResp agentResp = AgentResp.from(region);
-        Optional<Supplier> supplier = supplierRepository.findById(region.getAgent());
+
+
+
+
+
+
+
+        AgentResp agentResp = AgentResp.from(agent);
+        Optional<Supplier> supplier = supplierRepository.findById(agent.getAgent());
         agentResp.setAgent(SupplierResp.simpleFrom(supplier.get()));
 
         agentEditReq.setInfo(agentResp);
 
         List<Product> productList = productRepository.findAll();
 
-        thirdPartyResp.setParameterList(Map.of(
+        editReq.setParameterList(Map.of(
                 "identify_type_list",EnumIdentifiersType.List(),
                 "agent_bill_type_list",EnumAgentBilling.List(),
                 "product_list",priceService.getProductSkus(productList)
         ));
-        thirdPartyResp.setProducts(region.getProducts().stream().map(e->{
+        editReq.setProducts(agent.getProducts().stream().map(e->{
             AgentEditReq.ProductReq req = new AgentEditReq.ProductReq();
             req.setId(e.getId().getProductId());
             req.setNet(e.getNet());
+            req.setMarket(e.getMarket());
+            req.setRetail(e.getOriginal());
             req.setSku(e.getSku());
+
+            req.setComposite_text(req.getId()+"_"+e.getId());
+            req.setComposite_id(e.getProduct().getId()+"_"+e.getSku());
 
             return req;
 
         }).collect(Collectors.toList()));
 
 
-        if(region.getContact() != null){
-            thirdPartyResp.setContacts(region.getContact().getIdentifiers().stream().map(e->{
+        if(agent.getContact() != null){
+            editReq.setContacts(agent.getContact().getIdentifiers().stream().map(e->{
                 IdentifierReq identifierReq = new IdentifierReq();
                 identifierReq.setType(e.getType());
                 identifierReq.setId(e.getLinkId());
@@ -350,7 +359,7 @@ public class AgentRestController {
 
             }).collect(Collectors.toList()));
         }else{
-            thirdPartyResp.setContacts(Arrays.asList());
+            editReq.setContacts(Arrays.asList());
         }
 
 
@@ -364,13 +373,20 @@ public class AgentRestController {
             return entityModel;
 
         }).collect(Collectors.toList()));*/
-        thirdPartyResp.setLogo(fileStorageService.loadDocumentWithDefault(EnumDocumentType.agent_logo,region.getCode()));
+        editReq.setLogo(fileStorageService.loadDocumentWithDefault(EnumDocumentType.agent_logo,agent.getCode()));
+
+
+        EntityModel entityModel_eidt = EntityModel.of(editReq);
+        // entityModel.add(linkTo(methodOn(AgentRestController.class).createProduct(region.getId(),null)).withRel("addProduct"));
+        entityModel_eidt.add(linkTo(methodOn(AgentRestController.class).update(agent.getId(),null)).withRel("edit"));
+
+        agentEditReq.setBasicEdit(entityModel_eidt);
 
 
 
 
         EntityModel entityModel = EntityModel.of(agentEditReq);
-        entityModel.add(linkTo(methodOn(AgentRestController.class).agentEdit(region.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(AgentRestController.class).agentEdit(agent.getId())).withSelfRel());
         // entityModel.add(linkTo(methodOn(AgentRestController.class).createProduct(region.getId(),null)).withRel("addProduct"));
 
 

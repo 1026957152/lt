@@ -1,6 +1,7 @@
 package com.lt.dom.otcReq;
 
 import com.lt.dom.otcenum.EnumBookingOjbectType;
+import com.lt.dom.otcenum.EnumIdType;
 import com.lt.dom.otcenum.EnumProductPricingTypeByPerson;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
@@ -286,6 +287,9 @@ private String code;//
 
     public static class TravelerReq {
 
+
+        private EnumIdType idType;
+
         public EnumProductPricingTypeByPerson getBy() {
             return by;
         }
@@ -345,6 +349,14 @@ private String code;//
 
         public void setPhone(String phone) {
             this.phone = phone;
+        }
+
+        public void setIdType(EnumIdType idType) {
+            this.idType = idType;
+        }
+
+        public EnumIdType getIdType() {
+            return idType;
         }
     }
 

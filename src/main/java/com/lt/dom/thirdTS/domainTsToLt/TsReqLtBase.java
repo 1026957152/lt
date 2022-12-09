@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.lt.dom.thirdTS.EnumMethord;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.poi.ss.formula.functions.T;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.validation.constraints.NotNull;
 
@@ -36,6 +39,17 @@ public class TsReqLtBase {
 
     @NotNull
     private String format;//:返回数据格式，json
+
+    public static TsReqLtBase from(MultiValueMap<String, String> ob_) {
+
+        TsReqLtBase tsReqLtBase = new TsReqLtBase();
+        tsReqLtBase.set_pid((String)ob_.getFirst("_pid"));
+        tsReqLtBase.setFormat((String)ob_.getFirst("format"));
+        tsReqLtBase.set_sig((String)ob_.getFirst("_sig"));
+        tsReqLtBase.setMethod(EnumMethord.valueOf((String)ob_.getFirst("method")));
+
+        return tsReqLtBase;
+    }
 
     public EnumMethord getMethod() {
         return method;

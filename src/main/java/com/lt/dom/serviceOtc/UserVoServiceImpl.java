@@ -272,6 +272,9 @@ public class UserVoServiceImpl {
             supplierRespEntityModel.add(linkTo(methodOn(HomeDashboardRestController.class).home(employee.getSuplierId())).withRel("Page_dashboard"));
 
 
+            supplierRespEntityModel.add(linkTo(methodOn(ReportRestController.class).Page_booking_source()).withRel("Page_booking_source"));
+
+
 
 
             userResp.setSupplier(supplierRespEntityModel);

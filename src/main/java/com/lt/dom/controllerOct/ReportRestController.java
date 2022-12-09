@@ -13,6 +13,7 @@ import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import com.lt.dom.specification.BookingQueryfieldsCriteria;
 import com.lt.dom.specification.BookingSpecification;
 import com.lt.dom.specification.TourBookingSpecification;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,13 +23,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.Period;
+import java.time.temporal.TemporalAdjuster;
+import java.time.temporal.TemporalAdjusters;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
 import static org.springframework.data.jpa.domain.Specification.where;
@@ -365,8 +368,9 @@ public class ReportRestController {
 
 
         Map map = Map.of("agent_list", Agent.List(agents),
-                "product_list", Product.List(productList),
-                "groupby_list", EnumReportBookingSourceGroupby.from()
+               // "product_list", Product.List(productList),
+              //  "groupby_list", EnumReportBookingSourceGroupby.from(),
+                "compression_list",EnumReportBookingCompression.from()
         );
 
 
@@ -387,19 +391,84 @@ public class ReportRestController {
     public ReportBookingSource booking_source( @RequestBody ReportBookingSourceReq reportReq) {
 
 
+        LocalDate bday = LocalDate.now().minusDays(12);
+        LocalDate today = LocalDate.now();
+        Period age = Period.between(bday, today);
 
+
+        List<LocalDate> daysRange = Stream.iterate(bday, date -> date.plusDays(1)).limit(12)
+
+                .collect(Collectors.toList());
+
+
+        System.out.println("daysRange daysRange daysRange"+ daysRange);
+     //   int years = age.getYears(); int months = age.getMonths();
+
+
+
+
+        EnumReportBookingCompression compression = reportReq.getCompression();//"day";
         List<Reservation> reservationList = reservationRepository.findAll();
 
 
-        Map<EnumPlatform,Integer>  enumPlatformListMap =  reservationList.stream().collect(Collectors.groupingBy(e->e.getPlatform(),collectingAndThen(toList(),list->{
-            return  list.size();
+
+        final Map<String, TemporalAdjuster> ADJUSTERS = new HashMap<>();
+
+        ADJUSTERS.put("day", TemporalAdjusters.ofDateAdjuster(d -> d)); // identity
+        ADJUSTERS.put("week", TemporalAdjusters.previousOrSame(DayOfWeek.of(1)));
+        ADJUSTERS.put("month", TemporalAdjusters.firstDayOfMonth());
+        ADJUSTERS.put("year", TemporalAdjusters.firstDayOfYear());
+
+
+        Map<Object, List<Reservation>> result = reservationList.stream()
+                .collect(Collectors.groupingBy(item -> item.getCreatedDate().toLocalDate()
+                        .with(ADJUSTERS.get(compression.name()))));
+
+
+
+        Map<EnumPlatform,List>  enumPlatformListMap =  reservationList.stream().collect(Collectors.groupingBy(e->e.getPlatform(),collectingAndThen(toList(),list->{
+
+
+            Map<LocalDate, Integer> list_ = list.stream()
+                    .collect(Collectors.groupingBy(item -> item.getCreatedDate().toLocalDate()
+                            .with(ADJUSTERS.get(compression)),
+                            collectingAndThen(toList(),listlist->{
+
+                                return listlist.size();
+                                    })
+
+                    ));
+
+            System.out.println("有数据的 马匹"+list_);
+           ;
+            Map<LocalDate, Integer>  fuckyou = daysRange.stream().map(days->{
+
+                return Pair.with(days,list_.getOrDefault(days,0));
+            }).collect(Collectors.toMap(xxx->xxx.getValue0(),xx->xx.getValue1()));
+            System.out.println("有数据的 看卡顺序"+fuckyou);
+            return  fuckyou.entrySet().stream().sorted(Map.Entry.<LocalDate, Integer>comparingByKey()).collect(toList());
+
+
+
             })));
 
 
         List<Map>  collect =  Arrays.stream(EnumPlatform.values()).map(e->{
 
-            return Map.of("key",e.name(),"bookings",enumPlatformListMap.getOrDefault(e,0));
+            return Map.of("key",e.name(),"bookings",enumPlatformListMap.getOrDefault(e,new ArrayList()));
         }).collect(toList());
+
+
+
+
+        List<Map>  head= daysRange.stream().map(e->{
+            return Map.of("lable",e,"field",e);
+        }).collect(toList());
+
+        head.add(Map.of("lable","agent","field","agent"));
+
+
+
 
         List<Reservation> reservationList_today = reservationRepository.findAllByCreatedDateIsAfter(LocalDate.now().atStartOfDay());
 
@@ -424,14 +493,57 @@ public class ReportRestController {
         reportBookingSource.setRevenueToday(reservationList.stream().mapToDouble(e->e.getAmount()).sum()+"");
         reportBookingSource.setRevenueToday(reservationList.stream().mapToDouble(e->e.getAmount()).sum()+"");
 
-        reportBookingSource.setGroupby(collect);
+      //  reportBookingSource.setGroupby(collect);
+
+
+
+
+
+
+
+        List<Map>  enumPlatformListMap__ =  reservationList.stream().collect(Collectors.groupingBy(e->e.getPlatform(),collectingAndThen(toList(),list->{
+
+
+            Map<LocalDate, Integer> list_ = list.stream()
+                    .collect(Collectors.groupingBy(item -> item.getCreatedDate().toLocalDate()
+                                    .with(ADJUSTERS.get(compression)),
+                            collectingAndThen(toList(),listlist->{
+
+                                return listlist.size();
+                            })
+
+                    ));
+
+            System.out.println("有数据的 马匹"+list_);
+            ;
+            Map<LocalDate, Integer>  fuckyou = daysRange.stream().map(days->{
+
+                return Pair.with(days,list_.getOrDefault(days,0));
+            }).collect(Collectors.toMap(xxx->xxx.getValue0(),xx->xx.getValue1()));
+            System.out.println("有数据的 看卡顺序"+fuckyou);
+            return  fuckyou;//.entrySet().stream().sorted(Map.Entry.<LocalDate, Integer>comparingByKey()).collect(toList());
+
+
+
+        }))).entrySet().stream().map(e->{
+
+            e.getKey();
+            Map hashMap = new HashMap<>(e.getValue());
+            hashMap.put("agent",e.getKey());
+            return hashMap;
+        }).collect(toList());
+
+
+        reportBookingSource.setGroupby_(Map.of("header",head,"list",enumPlatformListMap__));
+/*
+        reportBookingSource.setTest(result);
 
 
         List<Map>  collect_today =  Arrays.stream(EnumPlatform.values()).map(e->{
 
             return Map.of("key",e.name(),"bookings",enumPlatformListMap_today.getOrDefault(e,0));
         }).collect(toList());
-        reportBookingSource.setGroupby_today(collect_today);
+        reportBookingSource.setGroupby_today(collect_today);*/
         return reportBookingSource;
 
     }

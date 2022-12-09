@@ -19,6 +19,8 @@ public class ReportBookingSource {
     private String PAX_Already_arrived;
     private List groupby;
     private List groupby_today;
+    private Map test;
+    private Map groupby_;
 
 
     public String getRevenueToday() {
@@ -83,5 +85,21 @@ public class ReportBookingSource {
 
     public List getGroupby_today() {
         return groupby_today;
+    }
+
+    public void setTest(Map test) {
+        this.test = test;
+    }
+
+    public Map getTest() {
+        return test;
+    }
+
+    public <K, V> void setGroupby_(Map groupby_) {
+        this.groupby_ = groupby_;
+    }
+
+    public Map getGroupby_() {
+        return groupby_;
     }
 }

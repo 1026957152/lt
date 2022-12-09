@@ -1805,15 +1805,15 @@ public class BookingRestController {
             return bookingTypeTowhoVo;
         }).collect(Collectors.toList());
 
-        cityPassService.booking_trial(list);
-        attractionTicketService.booking_trial(list);
+
+
+
+
+
 
         PlatUserVo platUserVo = new PlatUserVo();
         platUserVo.setUserVo(userVo);
         platUserVo.setPlatform(EnumPlatform.DERECT);
-
-
-      //  extraService.
 
         Triplet<Reservation,List<LineItem>,PlatUserVo > booking = bookingService.bookingWithPayment(list,pojo,platUserVo);
 

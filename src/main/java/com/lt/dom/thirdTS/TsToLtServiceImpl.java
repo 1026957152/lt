@@ -332,7 +332,7 @@ public class TsToLtServiceImpl {
         Timestamp timestamp_object = Timestamp.valueOf(LocalDateTime.now().plusDays(30));
 
         listDTO.setExpireTime_产品有效期结束时间(timestamp_object.getTime()/1000);  //必须
-        listDTO.setGoodsType_门票类型(1); //必须  ////门票类型;1普通票，2套票，3线路
+        listDTO.setGoodsType_门票类型(18); //必须  ////门票类型;1普通票，2套票，3线路
 
         listDTO.setId_产品ID(e.getId().intValue());  //必须
 
@@ -351,7 +351,7 @@ public class TsToLtServiceImpl {
 
 
         listDTO.setTitle_门票标题(e.getName()); //必须
-        listDTO.setType_门票类型(18);//必须 //门票类型;1普通票，2套票，3线路
+        listDTO.setType_门票类型(1);//必须 //门票类型;1普通票，2套票，3线路
 
         listDTO.setWeek_有效星期("1,2,3,4,5,6,7");  //必须
 
@@ -598,6 +598,7 @@ public class TsToLtServiceImpl {
             traveler.setId_card(e.getId_number());
             traveler.setName(e.getName());
             traveler.setPhone(e.getMobile());
+            traveler.setIdType(e.getId_ntype() !=null?EnumIdType.valueof(e.getId_ntype()+""):null);
             return traveler;
         }).collect(Collectors.toList()));
 

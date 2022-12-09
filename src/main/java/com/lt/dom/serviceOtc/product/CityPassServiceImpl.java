@@ -1,6 +1,7 @@
 package com.lt.dom.serviceOtc.product;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.controllerOct.RedemptionRestController;
 import com.lt.dom.error.BookNotFoundException;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -41,6 +43,9 @@ public class CityPassServiceImpl {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SMSServiceImpl smsService;
 
 
     @Autowired
@@ -178,6 +183,80 @@ public class CityPassServiceImpl {
     private static final EnumVoucherType voucherType = EnumVoucherType.Multi_Ticket;
 
 
+
+
+    public void booking_trial(List<BookingTypeTowhoVo> list) {
+
+        List<BookingTypeTowhoVo> bookingTypeTowhoVoList = list.stream().filter(e->e.getProduct().getType().equals(productType)).map(e->{
+            return e;
+        }).collect(Collectors.toList());
+
+
+        if(bookingTypeTowhoVoList.size() == 0){
+            return;
+        }
+
+      List<Pair<Boolean,String>> check =   bookingTypeTowhoVoList.stream().map(e->{
+
+            if(e.getProduct().getRestriction_passenger_identity_documents_required()){
+
+                List<String> error_traveler  =e.getTraveler().stream().map(tra-> {
+                    List<String> error = new ArrayList<>();
+                    if(ObjectUtil.isEmpty(tra.getName())){
+                        error.add("身份证为空");
+                    };
+                    if(ObjectUtil.isEmpty(tra.getId_card())){
+                        error.add("身份证号码不能为空");
+                    };
+                    if(ObjectUtil.isEmpty(tra.getIdType())){
+                        error.add("身份证类型不能为空");
+                    };
+                    return error.stream().collect(Collectors.joining(","));
+                }).collect(Collectors.toList());
+
+
+                if(error_traveler.isEmpty()){
+                    return Pair.with(false,error_traveler.stream().collect(Collectors.joining(",")));
+                }
+                return Pair.with(true,"suucess");
+            }
+
+               return Pair.with(true,"suucess");
+        }).collect(Collectors.toList());
+
+
+        if(check.stream().filter(e->e.getValue0() == false).findAny().isPresent()){
+
+            String message = check.stream().filter(e->e.getValue0() == false).map(e->e.getValue1()).collect(Collectors.joining(""));
+
+
+            throw new BookNotFoundException(Enumfailures.not_found,message);
+
+
+        }
+
+
+
+
+        List<String> id_number_list = bookingTypeTowhoVoList.stream().map(e->{
+            return e.getTraveler().stream().map(travelerReq->travelerReq.getId_card()).collect(Collectors.toList());
+        }).flatMap(List::stream).collect(Collectors.toList());
+
+        if(id_number_list.size()==0){
+            throw new ExistException(Enumfailures.invalid_amount,"至少需要添加一名旅客");
+
+        }
+        String pattern = "^(6127|6108)\\d{2}[1-9]\\d{3}((0[1-9])|(1[0-2]))(0[1-9]|([1|2][0-9])|3[0-1])((\\d{4})|\\d{3}X)$";
+
+        passService.allowedHolder(id_number_list, pattern);
+
+    }
+
+
+
+
+
+
     public void booking(LineItem lineItem, Product product, PricingRate pricingRate) {
         if(!product.getType().equals(productType)){
             return;
@@ -192,10 +271,7 @@ public class CityPassServiceImpl {
       //  lineItem.setBase_cost_price(pricingRate.getNet().floatValue());
 
         lineItem.setFulfillmentInstructionsType(EnumFulfillmentInstructionsType.DIGITAL);
-
-
-     lineItem.setDeliveryFormats(EnumDeliveryFormats.虚拟卡);
-
+        lineItem.setDeliveryFormats(EnumDeliveryFormats.虚拟卡);
         lineItem.setFulfillment_behavior(EnumFulfillment_behavior.Create_pass);
     }
 
@@ -301,6 +377,15 @@ public class CityPassServiceImpl {
 
                     Long limit = 2l;
                     componentRightService.assingtoTicket(compoentRightAssigtToTargeVo,componentRightList,limit);
+
+
+                    if(tra.getTel_home()!= null){
+                        String greetings = String.format(
+                                "你的验证码是%s",
+                                "恭喜你");
+
+                        smsService.singleSend(greetings,tra.getTel_home());
+                    }
 
 
                 });
@@ -534,39 +619,6 @@ public class CityPassServiceImpl {
 
 
     }
-
-    public void booking_trial(List<BookingTypeTowhoVo> list) {
-
-        List<BookingTypeTowhoVo> bookingTypeTowhoVoList = list.stream().filter(e->e.getProduct().getType().equals(productType)).map(e->{
-
-            return e;
-        }).collect(Collectors.toList());
-
-
-
- if(bookingTypeTowhoVoList.size() == 0){
-     return;
- }
-
-
-        List<String> id_number_list = bookingTypeTowhoVoList.stream().map(e->{
-
-
-            return e.getTraveler().stream().map(travelerReq->travelerReq.getId_card()).collect(Collectors.toList());
-        }).flatMap(List::stream).collect(Collectors.toList());
-
-        if(id_number_list.size()==0){
-            throw new ExistException(Enumfailures.invalid_amount,"至少需要添加一名旅客");
-
-        }
-        String pattern = "^(6127|6108)\\d{2}[1-9]\\d{3}((0[1-9])|(1[0-2]))(0[1-9]|([1|2][0-9])|3[0-1])((\\d{4})|\\d{3}X)$";
-
-        passService.allowedHolder(id_number_list, pattern);
-
-
-
-    }
-
 
 
 

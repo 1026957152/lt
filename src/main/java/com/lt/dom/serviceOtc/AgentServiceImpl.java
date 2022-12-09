@@ -180,23 +180,26 @@ public class AgentServiceImpl {
             Optional<AgentProduct> a =  agentProductRepository.findById(new AgentProductKey(finalTheatre.getId(), e.getId()));
 
             if(a.isEmpty()){
-                AgentProduct stopRegistration = new AgentProduct();
+                AgentProduct agentProduct = new AgentProduct();
 
-                stopRegistration.setAgent(finalTheatre);
-                stopRegistration.setNet(productReq.getNet());
-                stopRegistration.setOriginal(productReq.getRetail());
-                stopRegistration.setMarket(productReq.getMarket());
-                stopRegistration.setSku(pricingRate.getId());
+                agentProduct.setAgent(finalTheatre);
+                agentProduct.setNet(productReq.getNet());
+                agentProduct.setOriginal(productReq.getRetail());
+                agentProduct.setMarket(productReq.getMarket());
+                agentProduct.setSku(pricingRate.getId());
 
-                stopRegistration.setProduct(product);
 
-                stopRegistration.setId(new AgentProductKey(finalTheatre.getId(), product.getId()));
-                return stopRegistration;
+                agentProduct.setProduct(product);
+
+                agentProduct.setId(new AgentProductKey(finalTheatre.getId(), product.getId()));
+                return agentProduct;
 
             }else{
                 AgentProduct stopRegistration = a.get();
                 stopRegistration.setNet(productReq.getNet());
                 stopRegistration.setSku(productReq.getSku());
+                stopRegistration.setOriginal(productReq.getRetail());
+                stopRegistration.setMarket(productReq.getMarket());
                 return stopRegistration;
             }
 

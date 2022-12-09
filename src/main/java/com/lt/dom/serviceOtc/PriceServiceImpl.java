@@ -365,6 +365,9 @@ public class PriceServiceImpl {
                 enumSkuResp.setId(e.getId());
 
                 enumSkuResp.setText(e.getLable()+"_"+e.getPrice());
+                enumSkuResp.setComposite_text(enumResp.getText()+enumSkuResp.getText());
+                enumSkuResp.setComposite_id(enumResp.getId()+"_"+enumSkuResp.getId());
+
                 return enumSkuResp;
             }).collect(Collectors.toList()));
 

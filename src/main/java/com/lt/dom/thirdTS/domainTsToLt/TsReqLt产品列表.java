@@ -1,7 +1,9 @@
 package com.lt.dom.thirdTS.domainTsToLt;
 
 import com.lt.dom.thirdPft.domainLtToPft.LvToPftRetDat;
+import com.lt.dom.thirdTS.EnumMethord;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.springframework.util.MultiValueMap;
 
 import javax.validation.constraints.NotNull;
 
@@ -13,9 +15,16 @@ public class TsReqLt产品列表 extends TsReqLtBase{
     private Integer size ;//:每页数量
     private String key_word ;//:产品标题搜索关键词
 
+    public static TsReqLt产品列表 from_(MultiValueMap<String, String> ob_) {
+        TsReqLt产品列表 tsReqLtBase = new TsReqLt产品列表();
 
+        tsReqLtBase.setItem_id(ob_.getFirst("item_id") != null ?Integer.valueOf(ob_.getFirst("item_id")):null);
+        tsReqLtBase.setPage(ob_.getFirst("page") !=null? Integer.valueOf(ob_.getFirst("page")):null);
+        tsReqLtBase.setSize(ob_.getFirst("size") != null? Integer.valueOf(ob_.getFirst("size")):null);
+        tsReqLtBase.setKey_word(ob_.getFirst("key_word"));
 
-
+        return tsReqLtBase;
+    }
 
 
     public Integer getItem_id() {

@@ -415,6 +415,10 @@ public class BookingServiceImpl {
     @Transactional
     public Triplet<Reservation,List<LineItem>,PlatUserVo > bookingWithPayment(List<BookingTypeTowhoVo> bookingTypeTowhoVoList, BookingSkuPojo pojo, PlatUserVo userVo) {
 
+
+        cityPassService.booking_trial(bookingTypeTowhoVoList);
+        attractionTicketService.booking_trial(bookingTypeTowhoVoList);
+
         Triplet<Reservation,List<LineItem>,PlatUserVo > booking = bookingOnlySku(bookingTypeTowhoVoList,pojo,userVo);
         Reservation reservation = booking.getValue0();
 

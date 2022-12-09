@@ -20,7 +20,8 @@ public class EnumLongIdResp {
     private Boolean selected;
     private Object info;
     private List subitems;
-
+    private String composite_text;
+    private String composite_id;
 
 
     public void setSubitems(List subitems) {
@@ -64,5 +65,21 @@ public class EnumLongIdResp {
 
     public Object getInfo() {
         return info;
+    }
+
+    public void setComposite_text(String composite_text) {
+        this.composite_text = composite_text;
+    }
+
+    public String getComposite_text() {
+        return composite_text;
+    }
+
+    public void setComposite_id(String composite_id) {
+        this.composite_id = composite_id;
+    }
+
+    public String getComposite_id() {
+        return composite_id;
     }
 }
