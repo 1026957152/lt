@@ -5,13 +5,15 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.Arrays;
 
 @Configuration
 public class EmbeddedTomcatConfiguration {
-    
-   // @Bean
+    @Profile("pro")
+
+    @Bean
     public ServletWebServerFactory servletContainer() {
 
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
