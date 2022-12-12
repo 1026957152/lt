@@ -191,6 +191,22 @@ public class MenuRestController {
                 new MenuResp.Meta( "商户发布")
         ));
 
+        menuResp_Suppliers.getChildren().add(new MenuResp("/agent/index","IndexAgent",
+                new MenuResp.Meta( "我的代理商", "el-icon-s-finance",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT"))
+
+        ));
+        menuResp_Suppliers.getChildren().add(new MenuResp("/merchant/supplier/index","IndexSupplier",
+                new MenuResp.Meta( "我的供应商", "el-icon-s-finance",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT"))
+
+        ));
+        menuResp_Suppliers.getChildren().add(new MenuResp("/agent/detail",true,"DetailAgent",
+                new MenuResp.Meta( "未实现_代理商详情", "el-icon-s-check",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT"))
+        ));
+        menuResp_Suppliers.getChildren().add(new MenuResp("/merchant/supplier/detail",true,"DetailSupplier",
+                new MenuResp.Meta( "未实现_供应商详情", "el-icon-s-finance",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT"))
+
+        ));
+
 /*
         menuResp_Suppliers.getChildren().add(new MenuResp("/suppliers/employees/index","IndexEmployees",
                 new MenuResp.Meta( "职工管理","el-icon-s-custom",Arrays.asList("ROLE_ADMIN","ROLE_MERCHANT","ROLE_TRAVEL_AGENCY"))
@@ -216,7 +232,7 @@ public class MenuRestController {
 
 
 
-        MenuResp menuResp_employees =new MenuResp("/suppliers/employees",true,"/suppliers/employees/index",
+        MenuResp menuResp_employees =new MenuResp("/suppliers/employees","/suppliers/employees/index",
                 "Employees",
                 new MenuResp.Meta( "职工管理", "el-icon-s-custom",Arrays.asList("ROLE_ADMIN","ROLE_MERCHANT", "ROLE_TRAVEL_AGENCY"))
         );
@@ -463,6 +479,15 @@ public class MenuRestController {
 
 
 
+        String link_voucher = linkTo(methodOn(ComponentVoucherRestController.class).listVoucher(null,3l,null,null)).withSelfRel().getHref();
+
+        menuResp_order.getChildren().add(new MenuResp("/order/componentvoucher/index","IndexComponentVoucher",
+                new MenuResp.Meta( "权益券记录","el-icon-document", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+                ,link_voucher));
+
+        menuResp_order.getChildren().add(new MenuResp("/order/componentvoucher/detail","DetailComponentVoucher",
+                new MenuResp.Meta( "权益券详情","el-icon-document", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+                ,link_voucher));
 
 
         menuResp_order.getChildren().add(new MenuResp("/order/create",true,"CreateOrder",
@@ -593,11 +618,11 @@ public class MenuRestController {
                 new MenuResp.Meta( "合作方详情", "el-icon-s-order",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY","ROLE_MERCHANT"),true)
         ));
 
-        menuResp_market.getChildren().add(new MenuResp("/agent/index","IndexAgent",
-                new MenuResp.Meta( "代理商列表","el-icon-s-flag", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+        menuResp_market.getChildren().add(new MenuResp("/market/agent/index","IndexMarketAgent",
+                new MenuResp.Meta( "未实现_代理商列表","el-icon-s-flag", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
         ));
-        menuResp_market.getChildren().add(new MenuResp("/agent/post",true,"PostAgent",
-                new MenuResp.Meta( "代理商编辑", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"),true)
+        menuResp_market.getChildren().add(new MenuResp("/market/agent/detail",true,"DetailMarketAgent",
+                new MenuResp.Meta( "未实现_代理商编辑", Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"),true)
         ));
         menuRespList.addAll(Arrays.asList(menuResp_market));
 
@@ -730,6 +755,16 @@ public class MenuRestController {
         menuResp_statistics.getChildren().add(new MenuResp("/statistics/channel-summary","Channel_summary",
                 new MenuResp.Meta( "渠道概要", "el-icon-s-data",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
                 ,link));
+
+
+        String link_Page_arrivals = linkTo(methodOn(ReportRestController.class).Page_arrivals()).withRel("Page_arrivals").getHref();
+
+
+        menuResp_statistics.getChildren().add(new MenuResp("/statistics/arrival_summary","Arrival_summary",
+                new MenuResp.Meta( "未实现_权益核销概要", "el-icon-s-data",Arrays.asList("ROLE_ADMIN","ROLE_TRAVEL_AGENCY"))
+                ,link_Page_arrivals));
+
+
         menuRespList.addAll(Arrays.asList(menuResp_statistics));
 
 

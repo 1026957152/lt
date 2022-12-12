@@ -15,13 +15,13 @@ import com.lt.dom.serviceOtc.*;
 import com.lt.dom.vo.*;
 import org.apache.commons.lang.RandomStringUtils;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -66,13 +66,11 @@ public class CityPassServiceImpl {
 
 
     @Autowired
-    private PassRepository passRepository
-            ;
+    private PassRepository passRepository;
 
 
     @Autowired
-    private ValidatorRepository validatorRepository
-            ;
+    private ValidatorRepository validatorRepository;
 
 
     @Autowired
@@ -89,6 +87,11 @@ public class CityPassServiceImpl {
     private ComponentRepository componentRepository;
     @Autowired
     private ComponentRightRepository componentRightRepository;
+
+
+    @Autowired
+    private ProductRepository productRepository;
+
 
     @Autowired
     private IdGenServiceImpl idGenService;
@@ -319,7 +322,8 @@ public class CityPassServiceImpl {
 
 
 
-            List<Component> componentRightList = componentRepository.findAllByProduct(lineItem.getProduct());
+            Optional<Product> optionalProduct = productRepository.findById(lineItem.getProduct());
+            Product product = optionalProduct.get();
 
 
 
@@ -354,6 +358,7 @@ public class CityPassServiceImpl {
                     passService.active(pass);
 
                     compoentRightAssigtToTargeVo.setPass(pass);
+                    compoentRightAssigtToTargeVo.setBooking(reservation);
 
                     if(user.getPlatform().equals(EnumPlatform.TS)){
 /*                        Pass pass = passService.create_virtual(lineItem,cardholder,10);
@@ -375,8 +380,24 @@ public class CityPassServiceImpl {
                         }
                     }
 
+
+
+
                     Long limit = 2l;
-                    componentRightService.assingtoTicket(compoentRightAssigtToTargeVo,componentRightList,limit);
+
+                    List<Component> componentRightList = componentRepository.findAllByProduct(lineItem.getProduct());
+                    componentRightService.assingtoComponent(compoentRightAssigtToTargeVo,
+                            componentRightList.stream().map(e->{
+                                Triplet<Component,LineItem,EnumComponentVoucherType> componentVounchLineItemPair =
+                                        Triplet.with(e,lineItem,e.getType());
+                                return componentVounchLineItemPair;
+                            }).collect(Collectors.toList()),
+                            limit);
+
+
+
+
+
 
 
                     if(tra.getTel_home()!= null){

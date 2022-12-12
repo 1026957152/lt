@@ -99,11 +99,33 @@ public class MultiTicketServiceImpl {
     private static final EnumVoucherType voucherType = EnumVoucherType.Multi_Ticket;
 
 
-    // 这里是订单 支付后
-    public Asset pay(Supplier supplier) {
 
-        return null;
+
+
+    public void create(Product product) {
+
+        if(!product.getType().equals(productType)) {
+
+            return ;
+        }
+
+        product.setShippingAddressCollection(EnumShippingAddressCollection.required);
+        product.setFree(false);
+        product.setStatus(EnumProductStatus.draft);
+
+        product.setPaymentMethods_json(GSON.toJson(Arrays.asList()));
+        product.setPrivacyLevel(EnumPrivacyLevel.private_);
+        product.setShipping_rates_json(GSON.toJson(Arrays.asList()));
+        product.setAvailability_type(EnumAvailabilityType.DATE);
+        product.setDeliveryFormats_json(GSON.toJson(Arrays.asList()));
+        product.setShippable(false);
+
+        product.setRestriction_passenger_identity_documents_required(false);
+
     }
+
+
+
 
     // 这里是 订单 确认后
     public Asset fullfil_behaivor(Supplier supplier) {
@@ -150,6 +172,7 @@ public class MultiTicketServiceImpl {
 
         lineItem.setFulfillmentInstructionsType(EnumFulfillmentInstructionsType.DIGITAL);
 
+
     }
 
 
@@ -189,8 +212,8 @@ public class MultiTicketServiceImpl {
 
 
                     List<VoucherTicket> vouchers = LongStream.range(0, bookingProduct.getQuantity()).boxed().map(x -> {
-                        VoucherTicket voucher = new VoucherTicket();
 
+                        VoucherTicket voucher = new VoucherTicket();
                         voucher.setBooking(reservation.getId());
                         voucher.setUser(payer.getId());
 
@@ -530,4 +553,6 @@ public class MultiTicketServiceImpl {
 
 
     }
+
+
 }

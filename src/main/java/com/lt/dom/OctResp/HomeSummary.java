@@ -3,6 +3,8 @@ package com.lt.dom.OctResp;
 
 public class HomeSummary {
 
+
+
     private String RevenueToday;
     private String RevenueMTD;
 
@@ -11,6 +13,8 @@ public class HomeSummary {
     private String Bookings_Already_arrived;
     private String PAX_Total_today;
     private String PAX_Already_arrived;
+    private String revenueDiffToday;
+    private String revenueDiffMTD;
 
 
     public String getRevenueToday() {
@@ -59,5 +63,21 @@ public class HomeSummary {
 
     public String getPAX_Already_arrived() {
         return PAX_Already_arrived;
+    }
+
+    public void setRevenueDiffToday(String revenueDiffToday) {
+        this.revenueDiffToday = revenueDiffToday;
+    }
+
+    public String getRevenueDiffToday() {
+        return revenueDiffToday;
+    }
+
+    public void setRevenueDiffMTD(String revenueDiffMTD) {
+        this.revenueDiffMTD = revenueDiffMTD;
+    }
+
+    public String getRevenueDiffMTD() {
+        return revenueDiffMTD;
     }
 }

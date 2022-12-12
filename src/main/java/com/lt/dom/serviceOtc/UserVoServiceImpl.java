@@ -187,7 +187,7 @@ public class UserVoServiceImpl {
 
             supplierRespEntityModel.add(linkTo(methodOn(XhEmployeeRestController.class).getEmployerList(employee.getSuplierId(),null,null)).withRel("xh_getEmployerList"));
             supplierRespEntityModel.add(linkTo(methodOn(XhSupplierRestController.class).createEmployee(employee.getSuplierId(),null)).withRel("xh_createEmployer"));
-            supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).page_addEmployee(employee.getSuplierId())).withRel("Page_createEmployee"));
+        //    supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).page_mainEmployee(employee.getSuplierId())).withRel("Page_createEmployee"));
 
 
             supplierRespEntityModel.add(linkTo(methodOn(TheatreRestController.class).Page_listTheatre(employee.getSuplierId())).withRel("Page_listTheatre"));
@@ -262,8 +262,8 @@ public class UserVoServiceImpl {
             supplierRespEntityModel.add(linkTo(methodOn(BlogRestController.class).Page_listBlog(employee.getSuplierId())).withRel("Page_listBlog"));
 
 
-            supplierRespEntityModel.add(linkTo(methodOn(AgentRestController.class).Page_agent(employee.getSuplierId())).withRel("Page_agent"));
-
+            supplierRespEntityModel.add(linkTo(methodOn(AgentRestController.class).Page_market_agent(employee.getSuplierId())).withRel("Page_agent"));
+            supplierRespEntityModel.add(linkTo(methodOn(MarketRestController.class).Page_market_agent()).withRel("Page_market_agent"));
 
             supplierRespEntityModel.add(linkTo(methodOn(ReportRestController.class).Page_Booking_summary()).withRel("Page_Booking_summary"));
 
@@ -274,6 +274,19 @@ public class UserVoServiceImpl {
 
             supplierRespEntityModel.add(linkTo(methodOn(ReportRestController.class).Page_booking_source()).withRel("Page_booking_source"));
 
+            supplierRespEntityModel.add(linkTo(methodOn(ReportRestController.class).Page_arrivals()).withRel("Page_arrivals"));
+
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(AgentRestController.class).Page_agent(employee.getSuplierId())).withRel("Page_my_agent"));
+
+
+
+            supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).Page_mainEmployee(employee.getSuplierId())).withRel("Page_listEmployee"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(ComponentVoucherRestController.class).Page_component_vouchers(employee.getSuplierId())).withRel("Page_component_vouchers"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).Page_marchant_supplier(employee.getSuplierId())).withRel("Page_marchant_supplier"));
 
 
 
@@ -300,7 +313,7 @@ public class UserVoServiceImpl {
             entityModel.add(linkTo(methodOn(ProductRestController.class).Page_getProductList(employee.getSuplierId())).withRel("Page_getProductList"));
             entityModel.add(linkTo(methodOn(TourCampaignRestController.class).Page_createTourBooking()).withRel("Page_createTourBooking"));
             entityModel.add(linkTo(methodOn(TourCampaignRestController.class).createTourBooking(null,null)).withRel("createTourBooking"));
-            entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(employee.getSuplierId(),null,null)).withRel("getEmployeeList"));
+            entityModel.add(linkTo(methodOn(SupplierRestController.class).listEmployee(employee.getSuplierId(),null,null)).withRel("getEmployeeList"));
             entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(employee.getSuplierId(),null)).withRel("createEmployee"));
 
             entityModel.add(linkTo(methodOn(RequestFuckRestController.class).getRequestList(employee.getSuplierId(),null,null)).withRel("getRequestList"));
@@ -383,7 +396,10 @@ public class UserVoServiceImpl {
 
 
 
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).page_addEmployee()).withRel("Page_createEmployee"));
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).page_addEmployee()).withRel("Page_createSupplierEmployee"));
+
+
+
 
         entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployeeList(null,null)).withRel("xh_getEmployerList"));
         entityModel.add(linkTo(methodOn(EmployeeRestController.class).createEmployee(null)).withRel("xh_createEmployer"));

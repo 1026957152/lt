@@ -155,10 +155,9 @@ private String code;
     private String name_long;
     private Long typeTo;
     private EnumProductStatus status;
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
-    private boolean acitve;
-    private boolean shippable;
+
+    private Boolean acitve;
+    private Boolean shippable;
 
 
     @Transient
@@ -259,13 +258,14 @@ private String code;
     public void setComponentRights(List<ComponentRight> componentRights) {
         this.componentRights = componentRights;
     }
-
+/*
     @Transient
     private EnumProductPricingType productType__; // Packages（套票） ,or Passes（通票）  or Tickit 单一票
 
    // private String Type ;//Museums, Attractions or Hop on Hop off tours
     @Transient            // walking tours, day trips
     private Enum___Redemption redemption;
+
     @Transient
     List<Feature> features;
     @Transient
@@ -278,10 +278,7 @@ private String code;
     private Offer offer;
     @Transient
     private PricingRate pricingRate;
-
-    @Transient
-    private Supplier supplier;
-
+*/
 
 
     @Transient
@@ -370,21 +367,7 @@ private String code;
         return status;
     }
 
-    public void setCreated_at(LocalDateTime created_at) {
-        this.created_at = created_at;
-    }
 
-    public LocalDateTime getCreated_at() {
-        return created_at;
-    }
-
-    public void setUpdated_at(LocalDateTime updated_at) {
-        this.updated_at = updated_at;
-    }
-
-    public LocalDateTime getUpdated_at() {
-        return updated_at;
-    }
 
     public void setAcitve(boolean acitve) {
         this.acitve = acitve;

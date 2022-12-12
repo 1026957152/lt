@@ -124,7 +124,7 @@ public class SupplierRestController {
 
         EntityModel entityModel = EntityModel.of(supplierResp);
         entityModel.add(linkTo(methodOn(RequestFuckRestController.class).applyCertification(supplier.getId(),null)).withRel("apply_for_approval_url"));
-        entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.getId(),null,null)).withRel("employee_url"));
+        entityModel.add(linkTo(methodOn(SupplierRestController.class).listEmployee(supplier.getId(),null,null)).withRel("employee_url"));
 
 
         entityModel.add(linkTo(methodOn(RequestFuckRestController.class).approveRequest(supplier.getId(),null)).withRel("upload_file_url"));
@@ -184,7 +184,7 @@ public class SupplierRestController {
 
 
         entityModel1.add(linkTo(methodOn(RequestFuckRestController.class).applyCertification(supplier.getId(),null)).withRel("apply_for_approval_url"));
-        entityModel1.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.getId(),null,null)).withRel("employee_url"));
+        entityModel1.add(linkTo(methodOn(SupplierRestController.class).listEmployee(supplier.getId(),null,null)).withRel("employee_url"));
 
 
         entityModel1.add(linkTo(methodOn(RedemptionRestController.class).validateVoucherByCode(null)).withRel("redeem_url"));
@@ -397,7 +397,7 @@ public class SupplierRestController {
 
 
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/employees/main_page", produces = "application/json")
-    public EntityModel page_mainEmployee(@PathVariable long SUPPLIER_ID) {
+    public EntityModel Page_mainEmployee(@PathVariable long SUPPLIER_ID) {
 
 /*
 
@@ -429,7 +429,7 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
                     "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"))*/
 
             entityModel.add(linkTo(methodOn(SupplierRestController.class).page_addEmployee(supplier.get().getId())).withRel("Page_addEmployees"));
-            entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.get().getId(),null,null)).withRel("listEmployees"));
+            entityModel.add(linkTo(methodOn(SupplierRestController.class).listEmployee(supplier.get().getId(),null,null)).withRel("list"));
 
             return entityModel;
     }
@@ -470,70 +470,19 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
                     "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"))*/
 
         entityModel.add(linkTo(methodOn(SupplierRestController.class).page_addEmployee(supplier.get().getId())).withRel("Page_createEmployee"));
-        entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList_(supplier.get().getId(),null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(SupplierRestController.class).listEmployee(supplier.get().getId(),null,null)).withRel("list"));
 
         return entityModel;
     }
 
 
 
-    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/employees/page", produces = "application/json")
-    public EntityModel page_addEmployee(@PathVariable long SUPPLIER_ID) {
 
 
-/*
-
-        Authentication authentication =  authenticationFacade.getAuthentication();
-        UserDetails user = (UserDetails)authentication.getPrincipal();
-        System.out.println(user.getAuthorities());*/
-
-        Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
-        if(optionalSupplier.isEmpty()) {
-            throw new BookNotFoundException(SUPPLIER_ID,"找不到供应商");
-        }
-
-        Supplier supplier = optionalSupplier.get();
-
-        List<String> enumRoles = roleService.get(supplier).stream().map(e->e.name()).collect(Collectors.toList());
-
-
-
-        List<Role> roles = roleRepository.findAll();
-        Map maps  =         Map.of("role_list", roles.stream().filter(e->enumRoles.contains(e.getName())).map(x->{
-            EnumResp enumResp = new EnumResp();
-            enumResp.setId(x.getName());
-            enumResp.setText(EnumRole.valueOf(x.getName()).toString());
-            return enumResp;
-        }).collect(Collectors.toList()));
-
-
-
-
-
-        EntityModel entityModel =  EntityModel.of(Map.of("parameterList",maps));
-/*
-
-        List<Role> roles = roleRepository.findAll();
-        EntityModel entityModel =  EntityModel.of( Map.of("roles", roles.stream().filter(e->!enumRoles.contains(e.getName())).map(x->{
-            EnumResp enumResp = new EnumResp();
-            enumResp.setId(x.getName());
-         //   enumResp.setName(x.getName());
-            enumResp.setText(EnumRole.valueOf(x.getName()).toString());
-            return enumResp;
-        }).collect(Collectors.toList())*/
-/*,
-                    "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"))*//*
-));
-*/
-
-        entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.getId(),null)).withRel("addEmployees"));
-
-        return entityModel;
-    }
 
     @Operation(summary = "4、成为员工")
     @PostMapping(value = "/suppliers/{SUPPLIER_ID}/employees", produces = "application/json")
-    public ResponseEntity<EntityModel<EmployeeResp>> linkEmployee(@PathVariable long SUPPLIER_ID, @RequestBody @Valid EmployerPojo employerPojo) {
+    public ResponseEntity linkEmployee(@PathVariable long SUPPLIER_ID, @RequestBody @Valid EmployerPojo employerPojo) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
         if(optionalSupplier.isEmpty()) {
@@ -541,13 +490,6 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
         }
 
         Supplier supplier = optionalSupplier.get();
-
-
-        Authentication authentication =  authenticationFacade.getAuthentication();
-
-        UserVo userVo = authenticationFacade.getUserVo(authentication);
-
-
 
 
         List<String> enumRoles = roleService.get(supplier).stream().map(x->x.name()).collect(Collectors.toList());
@@ -558,25 +500,18 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
             throw new BookNotFoundException("无相关权限"+employerPojo.getRoles(),"");
         }
 
-            Triplet<Supplier,Employee,User> triplet = supplierService.linkEmployee(supplier,employerPojo,hasEnumRoles);
+        Triplet<Supplier,Employee,User> triplet = supplierService.linkEmployee(supplier,employerPojo,hasEnumRoles);
 
-            EntityModel entityModel = EntityModel.of( EmployeeResp.sigleElementfrom(triplet));
 
-            Employee employee = triplet.getValue1();
 
-            entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(employee.getId())).withSelfRel());
-            entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployeeparameters(employee.getId())).withRel("getParameters"));
-            entityModel.add(linkTo(methodOn(EmployeeRestController.class).delete(employee.getId())).withRel("deleteEmployee"));
-            entityModel.add(linkTo(methodOn(EmployeeRestController.class).updateEmployee(employee.getId(),null)).withRel("updateEmployee"));
-
-            return ResponseEntity.ok(entityModel);
+        return ResponseEntity.ok( EmployeeResp.sigleElementfrom(triplet));
 
 
     }
 
     @Operation(summary = "4、成为员工")
     @PostMapping(value = "/suppliers/{SUPPLIER_ID}/employees/create", produces = "application/json")
-    public ResponseEntity<EntityModel<EmployeeResp>> createEmployee(@PathVariable long SUPPLIER_ID, @RequestBody @Valid EmployerPojo employerPojo) {
+    public ResponseEntity createEmployee(@PathVariable long SUPPLIER_ID, @RequestBody @Valid EmployerPojo employerPojo) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
         if(optionalSupplier.isEmpty()) {
@@ -603,18 +538,11 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
 
 
 
-        Triplet<Supplier,Employee,User> triplet = supplierService.createEmployee(supplier,employerPojo,hasEnumRoles);
+        Employee triplet = supplierService.createEmployee(supplier,employerPojo,hasEnumRoles);
 
-        EntityModel entityModel = EntityModel.of( EmployeeResp.sigleElementfrom(triplet));
 
-        Employee employee = triplet.getValue1();
 
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(employee.getId())).withSelfRel());
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployeeparameters(employee.getId())).withRel("getParameters"));
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).delete(employee.getId())).withRel("deleteEmployee"));
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).updateEmployee(employee.getId(),null)).withRel("updateEmployee"));
-
-        return ResponseEntity.ok(entityModel);
+        return ResponseEntity.ok(triplet);
 
 
     }
@@ -623,7 +551,7 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
 
     @Operation(summary = "3、list所有员工")
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/employees", produces = "application/json")
-    public PagedModel getEmployeeList(@PathVariable long SUPPLIER_ID,  Pageable pageable, PagedResourcesAssembler<EntityModel<EmployeeResp>> assembler) {
+    public PagedModel listEmployee(@PathVariable long SUPPLIER_ID, Pageable pageable, PagedResourcesAssembler<EntityModel<EmployeeResp>> assembler) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
         if(optionalSupplier.isEmpty()) {
@@ -637,20 +565,18 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
         List<User> users = userRepository.findAllById(employees.stream().map(x->x.getUserId()).collect(Collectors.toList()));
         Map<Long,User> userMap = users.stream().collect(Collectors.toMap(x->x.getId(),x->x));
 
-        Page<EntityModel<EmployeeResp>> list = employees.map(x->{
+
+        return assembler.toModel(employees.map(x->{
 
             EntityModel<EmployeeResp> employeeRespEntityModel= EmployeeResp.pageElementfrom(Triplet.with(supplier,x,userMap.get(x.getUserId())));
-        //    employeeRespEntityModel.add(linkTo(methodOn(BookingRestController.class).createBooking(null)).withRel("booking"));
+            //    employeeRespEntityModel.add(linkTo(methodOn(BookingRestController.class).createBooking(null)).withRel("booking"));
             employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployeeEdit(x.getId())).withRel("getEmployee"));
             employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).delete(x.getId())).withRel("deleteEmployee"));
             employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).Page_updateEmployee(x.getId())).withRel("Page_updateEmployee"));
 
             employeeRespEntityModel.add(linkTo(methodOn(EmployeeRestController.class).updateEmployee(x.getId(),null)).withRel("updateEmployee"));
             return employeeRespEntityModel;
-        });
-
-
-        return assembler.toModel(list); //PagedModel.of(list.getContent(), new PagedModel.PageMetadata(10,0,100,100));
+        }));
 
     }
 
@@ -858,4 +784,36 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
 
         throw new RuntimeException();
     }
+
+
+
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/employees/page_", produces = "application/json")
+    public EntityModel page_addEmployee(@PathVariable long SUPPLIER_ID) {
+
+        Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
+        if(optionalSupplier.isEmpty()) {
+            throw new BookNotFoundException(SUPPLIER_ID,"找不到供应商");
+
+        }
+        Supplier supplier = optionalSupplier.get();
+
+        List<String> enumRoles = Arrays.asList(EnumRole.ROLE_BANK_STAFF).stream().map(e->e.name()).collect(Collectors.toList());
+        List<Role> roles = roleRepository.findAll();
+        EntityModel entityModel =  EntityModel.of( Map.of(
+
+                "roles", roles.stream().filter(e->enumRoles.contains(e.getName())).map(x->{
+                    EnumResp enumResp = new EnumResp();
+                    enumResp.setId(x.getName());
+                    //   enumResp.setName(x.getName());
+                    enumResp.setText(EnumRole.valueOf(x.getName()).toString());
+                    return enumResp;
+                }).collect(Collectors.toList())));
+
+
+        entityModel.add(linkTo(methodOn(SupplierRestController.class).createEmployee(supplier.getId(),null)).withRel("create"));
+
+
+        return entityModel;
+    }
+
 }

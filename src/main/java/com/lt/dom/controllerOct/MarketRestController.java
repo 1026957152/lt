@@ -13,6 +13,8 @@ import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -44,6 +46,12 @@ public class MarketRestController {
     private SupplierRepository supplierRepository;
     @Autowired
     private TourRepository tourRepository;
+    @Autowired
+    private FileStorageServiceImpl fileStorageService;
+
+    @Autowired
+    private AgentRepository agentRepository;
+
 
     @Autowired
     private CampaignAssignToTourProductRepository campaignAssignToTourProductRepository;
@@ -547,4 +555,105 @@ public class MarketRestController {
 */
 
 
+    @GetMapping(value = "/Page_agent", produces = "application/json")
+    public EntityModel<Media> Page_market_agent() {
+
+        Map map = Map.of("status_list", EnumAgentStatus.values());
+
+
+        EntityModel entityModel = EntityModel.of(map);
+
+
+        entityModel.add(linkTo(methodOn(MarketRestController.class).listAgent(null,null)).withRel("list"));
+
+
+        return entityModel;
+
+    }
+
+    @GetMapping(value = "/agents", produces = "application/json")
+    public PagedModel listAgent(
+
+                                @PageableDefault(sort = {"createdDate", "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable,
+
+                                PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
+
+
+
+
+        Page<Supplier> bookingRuleList = supplierRepository.findAllByMarketplaceType(EnumMarketplaceType.agent,pageable);
+
+        return assembler.toModel(bookingRuleList.map(e->{
+
+            SupplierResp agentResp = SupplierResp.from(e);
+
+  /*          LocationResp locationResp = new LocationResp();
+            locationResp.setAddress("山西省榆阳区阜石路");
+            movieResp.setAddress(locationResp);*/
+            EntityModel entityModel = EntityModel.of(agentResp);
+            entityModel.add(linkTo(methodOn(MarketRestController.class).getAgent(e.getId())).withSelfRel());
+
+            return entityModel;
+        }));
+
+    }
+
+
+    @Operation(summary = "1、获得")
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}", produces = "application/json")
+    public EntityModel getAgent(@PathVariable  long SUPPLIER_ID) {
+
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        UserVo userVo = authenticationFacade.getUserVo(authentication);
+
+
+        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
+
+        Supplier supplier = supplierOptional.get();
+
+
+        MarketAgentResp supplierResp = MarketAgentResp.from(supplier);
+
+
+
+        List<AgentConnection> agentConnections = agentRepository.findAllByAgent(supplier.getId());
+
+
+
+      Optional<AgentConnection> optionalAgentConnection =  agentConnections.stream().filter(e->e.getSupplier().equals(userVo.getSupplier())).findAny();
+
+        ChannelResp channelResp = new ChannelResp();
+        channelResp.setName("1#");
+        channelResp.setDesc_short("普通通道");
+        channelResp.setDesc_long("普通通道");
+        EntityModel entityModel_channelResp = EntityModel.of(channelResp);
+        if(optionalAgentConnection.isEmpty()){
+            channelResp.setStatus(EnumAgentConnetionStatus.NotConnected);
+            entityModel_channelResp.add(linkTo(methodOn(AgentRestController.class).createAgent(supplier.getId(),null)).withRel("createConnect"));
+
+        }else{
+            channelResp.setStatus(EnumAgentConnetionStatus.Connected);
+        }
+
+
+
+        MarketAgentResp.Connection marketAgentResp = new MarketAgentResp.Connection();
+
+        marketAgentResp.setChecklist("这里接入的说明说明");
+
+        marketAgentResp.setChannels(Arrays.asList(entityModel_channelResp));
+
+        supplierResp.setConnection(marketAgentResp);
+
+        supplierResp.setLogo(fileStorageService.loadDocumentWithDefault(EnumDocumentType.supllier_logo,supplier.getCode()));
+
+
+        return EntityModel.of(supplierResp);
+
+
+    }
 }

@@ -47,6 +47,20 @@ private String code;
     private LocalDateTime created_at;
     private String nick_name;
 
+    public static EmployeeResp sigleElementfrom(Employee triplet) {
+        EmployeeResp employeeResp = new EmployeeResp();
+
+
+
+        employeeResp.setSuplier(triplet.getSuplierId()+"");
+        employeeResp.setPhone(triplet.getPhone());
+        employeeResp.setCreated_at(triplet.getCreated_at());
+        employeeResp.setStatus_text(triplet.getStatus().toString());
+        employeeResp.setCode(triplet.getCode());
+
+        return employeeResp;
+    }
+
     public String getStatus_text() {
         return status_text;
     }

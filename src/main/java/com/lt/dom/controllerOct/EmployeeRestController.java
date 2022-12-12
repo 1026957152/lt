@@ -7,7 +7,6 @@ import com.lt.dom.OctResp.SupplierResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
-import com.lt.dom.otcenum.EnumCancel_reason;
 import com.lt.dom.otcenum.EnumEmployeeStatus;
 import com.lt.dom.otcenum.EnumRole;
 import com.lt.dom.otcenum.Enumfailures;
@@ -19,7 +18,6 @@ import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
@@ -91,7 +89,7 @@ public class EmployeeRestController {
                     "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees")));
 
         entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"));
-        entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.get().getId(),null,null)).withRel("getPageEmployees"));
+        entityModel.add(linkTo(methodOn(SupplierRestController.class).listEmployee(supplier.get().getId(),null,null)).withRel("getPageEmployees"));
 
         return entityModel;
     }
@@ -209,6 +207,52 @@ public class EmployeeRestController {
 
 */
 
+
+
+
+    @GetMapping(value = "/staffs/{EMPLOYEE_ID}/edit", produces = "application/json")
+    public EntityModel staff(@PathVariable long EMPLOYEE_ID) {
+        Optional<Employee> optional = employeeRepository.findById(EMPLOYEE_ID);
+        if(optional.isEmpty()) {
+            throw new BookNotFoundException(EMPLOYEE_ID,"找不到供应商");
+
+        }
+
+        Employee employee = optional.get();
+
+        Supplier supplier = supplierRepository.findById(employee.getSuplierId()).get();
+        Optional<User> optionalUser = userRepository.findById(employee.getUserId());
+        User user = optionalUser.get();
+
+        System.out.println("=================================="+ optionalUser.get());
+        System.out.println("=================================="+ optionalUser.get().getRoles().size());
+
+
+        EmployeeEditResp employeeResp = EmployeeEditResp.pageElementfrom(Pair.with(employee,optionalUser.get()));
+
+
+
+        Map<String,Role> userMap = user.getRoles().stream().collect(Collectors.toMap(e->e.getName(),e->e));
+
+
+        List<EnumRole> enumRoles = roleService.get(supplier);
+
+
+
+        List<Role> roleList = roleRepository.findAll();
+        employeeResp.setParameterList(Map.of("role_list", roleList.stream().map(x->{
+            EnumResp enumResp = new EnumResp();
+            enumResp.setId(x.getName());
+            enumResp.setText(EnumRole.valueOf(x.getName()).toString());
+            return enumResp;
+        }).collect(Collectors.toList())));
+
+        EntityModel entityModel =  EntityModel.of(employeeResp);
+
+        entityModel.add(linkTo(methodOn(EmployeeRestController.class).updateEmployee(employee.getId(),null)).withRel("updateEmployee"));
+
+        return entityModel;
+    }
 
 
 
@@ -384,16 +428,11 @@ public class EmployeeRestController {
 
 
 
-        Triplet<Supplier,Employee,User> triplet = supplierService.createEmployee(supplier,employerPojo,hasEnumRoles);
+        Employee employee = supplierService.createEmployee(supplier,employerPojo,hasEnumRoles);
 
-        EntityModel entityModel = EntityModel.of( EmployeeResp.sigleElementfrom(triplet));
+        EntityModel entityModel = EntityModel.of( EmployeeResp.sigleElementfrom(employee));
 
-        Employee employee = triplet.getValue1();
 
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployee(employee.getId())).withSelfRel());
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).getEmployeeparameters(employee.getId())).withRel("getParameters"));
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).delete(employee.getId())).withRel("delete"));
-        entityModel.add(linkTo(methodOn(EmployeeRestController.class).updateEmployee(employee.getId(),null)).withRel("update"));
 
         return ResponseEntity.ok(entityModel);
 

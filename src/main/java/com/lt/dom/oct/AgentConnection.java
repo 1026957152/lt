@@ -14,17 +14,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Entity
-public class Agent extends Base {
+public class AgentConnection extends Base {
 
 
 
-    @OneToMany(mappedBy="agent",
+    @OneToMany(mappedBy= "agentConnection",
             cascade = CascadeType.ALL)  // orphanRemoval = true
     private List<AgentProduct> products;
+
+    @NotNull
     private Long supplier;
+
+
+    @NotNull
     private Long agent;
 
-    public static List List(List<Agent> componentRightMap) {
+    public static List List(List<AgentConnection> componentRightMap) {
         return componentRightMap.stream().map(x->{
 
             EnumLongIdResp enumResp = new EnumLongIdResp();

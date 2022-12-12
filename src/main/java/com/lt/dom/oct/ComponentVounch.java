@@ -26,6 +26,21 @@ public class ComponentVounch extends Base{
     private Long product;
     private LocalDate end_date;
     private LocalDate start_date;
+    private String log_Reservation_code;
+    private Long lineItem;
+
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private EnumComponentVoucherType type;
+
+    public EnumComponentVoucherType getType() {
+        return type;
+    }
+
+    public void setType(EnumComponentVoucherType type) {
+        this.type = type;
+    }
 
     public Long getBelong() {
         return belong;
@@ -69,7 +84,8 @@ public class ComponentVounch extends Base{
 
 
 
-
+    @NotNull
+    private Long agent;
 
 
 
@@ -318,5 +334,30 @@ public class ComponentVounch extends Base{
 
     public void setStart_date(LocalDate start_date) {
         this.start_date = start_date;
+    }
+
+    public void setAgent(Long agent) {
+        this.agent = agent;
+    }
+
+    public Long getAgent() {
+        return agent;
+    }
+
+    public void setLog_Reservation_code(String log_reservation_code) {
+
+        this.log_Reservation_code = log_reservation_code;
+    }
+
+    public String getLog_Reservation_code() {
+        return log_Reservation_code;
+    }
+
+    public void setLineItem(Long lineItem) {
+        this.lineItem = lineItem;
+    }
+
+    public Long getLineItem() {
+        return lineItem;
     }
 }

@@ -181,17 +181,18 @@ public class SupplierServiceImp {
     }
 
 
-    public Triplet<Supplier,Employee,User> createEmployee(Supplier supplier, EmployerPojo employerPojo, List<String> hasEnumRoles) {
+    public Employee createEmployee(Supplier supplier, EmployerPojo employerPojo, List<String> hasEnumRoles) {
 
         Optional<User> optional = userRepository.findByPhone(employerPojo.getPhone());
-        if(optional.isPresent()){
-            User user = optional.get();
+        if(optional.isEmpty()){
 
-            Employee employee = 成为员工(supplier,user);
-            return Triplet.with(supplier,employee,user);
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到");
         }
+        User user = optional.get();
 
-
+        Employee employee = 成为员工(supplier,user);
+        return employee;
+/*
         UserPojo userPojo = new UserPojo();
         userPojo.setFirst_name(employerPojo.getFirst_name());
         userPojo.setLast_name(employerPojo.getLast_name());
@@ -205,8 +206,8 @@ public class SupplierServiceImp {
         User user = userService.createUser(userPojo, Arrays.asList());
 
 
-        Employee employee = 成为员工(supplier,user);
-        return Triplet.with(supplier,employee,user);
+        Employee employee = 成为员工(supplier,user);*/
+     //   return Triplet.with(supplier,employee,user);
     }
 
 

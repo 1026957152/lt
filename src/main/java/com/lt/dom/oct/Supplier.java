@@ -1,8 +1,10 @@
 package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lt.dom.OctResp.EnumLongIdResp;
 import com.lt.dom.domain.SettleAccount;
 import com.lt.dom.otcenum.EnumBussinessType;
+import com.lt.dom.otcenum.EnumMarketplaceType;
 import com.lt.dom.otcenum.EnumSupplierStatus;
 import com.lt.dom.otcenum.EnumSupplierType;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -11,16 +13,41 @@ import org.hibernate.validator.constraints.Length;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 public class Supplier extends Base {
 
+    @Enumerated(EnumType.STRING)
+    private EnumMarketplaceType marketplaceType;// agent
     private String registered_address;
     private String uniformSocialCreditCode;
     private String registered_name;
     private String contact_detail;
     private String about;
     private String slug;
+
+
+
+    public static List List(List<Supplier> componentRightMap) {
+        return componentRightMap.stream().map(x->{
+
+            EnumLongIdResp enumResp = new EnumLongIdResp();
+            enumResp.setId(x.getId());
+
+            enumResp.setText(x.getName()+"_"+x.getCode());
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
+
+    public EnumMarketplaceType getMarketplaceType() {
+        return marketplaceType;
+    }
+
+    public void setMarketplaceType(EnumMarketplaceType marketplaceType) {
+        this.marketplaceType = marketplaceType;
+    }
 
     public String getRegistered_address() {
         return registered_address;

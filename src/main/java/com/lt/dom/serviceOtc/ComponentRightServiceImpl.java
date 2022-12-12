@@ -10,6 +10,7 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.vo.CompoentRightAssigtToTargeVo;
 import com.lt.dom.vo.RedemptionForCustomerVo;
+import com.lt.dom.vo.RoyaltyVo;
 import com.lt.dom.vo.ValidatedByTypeVo;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -391,7 +392,7 @@ public class ComponentRightServiceImpl {
     }
 
 
-    public void assingtoProduct(Product product ,List<ProductPojo.Royalty> royalties) {
+    public void assingtoProduct(Product product ,List<RoyaltyVo> royalties) {
 
        // componentRepository.deleteAllByProduct(product.getId());
 
@@ -421,6 +422,7 @@ public class ComponentRightServiceImpl {
 
                 component =new Component();
                 component.setProduct(product.getId());
+                component.setOriginalProduct(product.getId());
                 component.setSupplier(right.getSupplier());
 
             }
@@ -465,7 +467,7 @@ public class ComponentRightServiceImpl {
 
 
 
-
+/*
 
         royaltyRuleRepository.saveAll(list.stream().map(e->{
 
@@ -484,14 +486,64 @@ public class ComponentRightServiceImpl {
             royaltyRule.setRoyaltyPercent(e.getRoyaltyPercent());
             royaltyRule.setCollection_method(e.getCollection_method());
 
-
-
-
-
             return royaltyRule;
-        }).collect(Collectors.toList()));
+        }).collect(Collectors.toList()));*/
 
     }
+
+
+    public void assingtoProduct(Product product , ProductBundle royalties, Product burdle) {
+
+
+
+
+        Component component =new Component();
+        component.setProduct(product.getId());
+        component.setOriginalProduct(product.getId());
+        component.setSupplier(burdle.getSupplierId());
+        component.setAgent(product.getSupplierId());
+        component.setSource(EnumProductComponentSource.partner);
+        component.setValidate_way(EnumValidateWay.none);
+        component.setType(EnumComponentVoucherType.Burdle);
+
+        component.setComponentRight(0);
+
+
+
+/*        component.setSource(right.getSource());
+
+            if(right.getSource().equals(EnumProductComponentSource.partner)){
+                Assert.notNull(right.getSubscription(), "系统已有 componment Right 不能为空，当前空，新建 component 失败");
+                Assert.notNull(right.getRatePlan(), "系统已有 componment RatePlan 不能为空，当前空，新建 component 失败");
+                component.setRatePlan(right.getRatePlan());
+                component.setSubscription(right.getSubscription());
+            }*/
+
+
+
+            component.setUnit_off(1l);
+            component.setDuration(EnumDuration.once);
+
+
+/*            component.setRoyalty_mode(right.getRoyalty_mode());
+            component.setRoyaltyPercent(right.getValue());
+            component.setRoyaltyAmount(right.getValue());
+            component.setRoyaltyAmount(right.getValue());
+            component.setCollection_method(royalty.getCollection_method());
+            component.setValidate_way(royalty.getValidate_way());
+
+
+            component.setRoyaltyPercent(royalty.getPercent());*/
+
+
+
+
+            componentRepository.save(component);
+
+    }
+
+
+
 
 
     public String checkPublishProduct(Product product) {
@@ -584,14 +636,22 @@ public class ComponentRightServiceImpl {
 
 
 
-    public void assingtoTicket(CompoentRightAssigtToTargeVo voucherTicket, List<Component>  components, Long limit) {
+    public void assingtoComponent(CompoentRightAssigtToTargeVo voucherTicket, List<Triplet<Component,LineItem,EnumComponentVoucherType>> components , Long limit) {
 
+
+        Reservation reservation = voucherTicket.getBooking();
 
         System.out.println("这里给 VOUcherTicket 复议权益呀啊啊");
         // componentRepository.deleteAllByProduct(product.getId());
 
-        List<ComponentVounch> list =  components.stream().map(right->{
+        List<ComponentVounch> list =  components.stream().map(ccc->{
 
+
+
+            Component right = ccc.getValue0();
+
+            LineItem lineItem = ccc.getValue1();
+            EnumComponentVoucherType type = ccc.getValue2();
             ComponentVounch componentVounch = new ComponentVounch();
             componentVounch.setCode(idGenService.componentVouncherCode());
 
@@ -599,8 +659,18 @@ public class ComponentRightServiceImpl {
 
             componentVounch.setName(right.getName());
 
-            componentVounch.setProduct(voucherTicket.getPass().getId());
+            componentVounch.setProduct(lineItem.getProduct());
+            componentVounch.setLineItem(lineItem.getId());
+
+            componentVounch.setType(type);
+
+
+
             componentVounch.setSupplier(right.getSupplier());
+            componentVounch.setAgent(reservation.getSupplier());
+
+
+
 
 
             componentVounch.setComponentRight(right.getComponentRightId());
@@ -627,7 +697,8 @@ public class ComponentRightServiceImpl {
             componentVounch.setRedeemed_quantity(0l);
             componentVounch.setUnit_off(right.getUnit_off());
             componentVounch.setDuration(right.getDuration());
-            componentVounch.setReservation(voucherTicket.getPass().getBooking());
+            componentVounch.setReservation(reservation.getId());
+            componentVounch.setLog_Reservation_code(reservation.getCode());
 
 
             componentVounch.setRoyalty_mode(right.getRoyalty_mode());

@@ -1,7 +1,8 @@
 package com.lt.dom.OctResp;
 
 
-import com.lt.dom.oct.Agent;
+import com.lt.dom.oct.AgentConnection;
+import com.lt.dom.oct.Supplier;
 import com.lt.dom.otcenum.EnumAgentStatus;
 import com.lt.dom.otcenum.EnumThirdParty;
 
@@ -39,6 +40,21 @@ public class AgentResp extends BaseResp{
     private Integer recent_bookings;//	Number of recent bookings associated with the agent
     private LocalDate last_booked;//	Date the last booking made by the agent was created. YYYY-MM-DD.
     private SupplierResp agent;
+    private SupplierResp supplier;
+
+    public static AgentResp toSupplier(AgentConnection e, Supplier supplier) {
+
+
+        AgentResp agentResp = new AgentResp();
+        agentResp.setName(supplier.getName());
+        agentResp.setCode(supplier.getCode());
+        agentResp.setStatus(e.getStatus());
+        agentResp.setStatus_text(e.getStatus().toString());
+        agentResp.setCreatedDate(e.getCreatedDate());
+        agentResp.setModifiedDate(e.getModifiedDate());
+
+        return agentResp;
+    }
 
 
     public Integer getTotal_bookings() {
@@ -65,7 +81,7 @@ public class AgentResp extends BaseResp{
         this.last_booked = last_booked;
     }
 
-    public static AgentResp simpleFrom(Agent region) {
+    public static AgentResp simpleFrom(AgentConnection region) {
         AgentResp resp = new AgentResp();
         resp.setName(region.getName());
         resp.setCode(region.getCode());
@@ -73,7 +89,7 @@ public class AgentResp extends BaseResp{
         return resp;
 
     }
-    public static AgentResp from(Agent region) {
+    public static AgentResp from(AgentConnection region) {
         AgentResp resp = new AgentResp();
         resp.setName(region.getName());
         resp.setCode(region.getCode());
@@ -195,5 +211,13 @@ public class AgentResp extends BaseResp{
 
     public SupplierResp getAgent() {
         return agent;
+    }
+
+    public void setSupplier(SupplierResp supplier) {
+        this.supplier = supplier;
+    }
+
+    public SupplierResp getSupplier() {
+        return supplier;
     }
 }

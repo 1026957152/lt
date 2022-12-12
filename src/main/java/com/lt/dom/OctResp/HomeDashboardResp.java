@@ -1,20 +1,22 @@
 package com.lt.dom.OctResp;
 
 import java.util.List;
+import java.util.Map;
 
 
 public class HomeDashboardResp {
     private List latestBookings;
+    private Map login;
 
-    public HomeSummary getSummary() {
+    public Map getSummary() {
         return summary;
     }
 
-    public void setSummary(HomeSummary summary) {
+    public void setSummary(Map summary) {
         this.summary = summary;
     }
 
-    private HomeSummary summary;
+    private Map summary;
     private List<ProductResp> products;
 
     public void setProducts(List<ProductResp> products) {
@@ -31,5 +33,13 @@ public class HomeDashboardResp {
 
     public List getLatestBookings() {
         return latestBookings;
+    }
+
+    public <K, V> void setLogin(Map login) {
+        this.login = login;
+    }
+
+    public Map getLogin() {
+        return login;
     }
 }

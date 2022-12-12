@@ -1,7 +1,7 @@
 package com.lt.dom.vo;
 
 
-import com.lt.dom.oct.Agent;
+import com.lt.dom.oct.AgentConnection;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.EnumIdType;
@@ -30,7 +30,7 @@ public class PlatUserVo {
     private User user;
     private String tracking_id;
     private String remark;
-    private Agent agent;
+    private AgentConnection agentConnection;
     private Supplier agentPartner;
 
     public String getName() {
@@ -138,12 +138,12 @@ public class PlatUserVo {
         return remark;
     }
 
-    public void setAgent(Agent agent) {
-        this.agent = agent;
+    public void setAgent(AgentConnection agentConnection) {
+        this.agentConnection = agentConnection;
     }
 
-    public Agent getAgent() {
-        return agent;
+    public AgentConnection getAgent() {
+        return agentConnection;
     }
 
     public void setAgentPartner(Supplier agentPartner) {

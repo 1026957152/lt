@@ -4,7 +4,6 @@ import com.lt.dom.OctResp.EmployeeResp;
 import com.lt.dom.OctResp.EnumResp;
 import com.lt.dom.controllerOct.SupplierRestController;
 import com.lt.dom.error.BookNotFoundException;
-import com.lt.dom.oct.Axh.PullFromYxdRequest;
 import com.lt.dom.oct.Employee;
 import com.lt.dom.oct.Role;
 import com.lt.dom.oct.Supplier;
@@ -96,7 +95,7 @@ public class XhEmployeeRestController {
                     "_link",linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees")));
 
         entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.get().getId(),null)).withRel("addEmployees"));
-        entityModel.add(linkTo(methodOn(SupplierRestController.class).getEmployeeList(supplier.get().getId(),null,null)).withRel("getPageEmployees"));
+        entityModel.add(linkTo(methodOn(SupplierRestController.class).listEmployee(supplier.get().getId(),null,null)).withRel("getPageEmployees"));
 
         return entityModel;
     }

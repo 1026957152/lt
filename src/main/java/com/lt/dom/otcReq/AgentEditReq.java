@@ -5,9 +5,8 @@ import com.lt.dom.OctResp.AgentResp;
 import com.lt.dom.OctResp.AssetResp;
 import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.domain.SettleAccount;
-import com.lt.dom.oct.Agent;
+import com.lt.dom.oct.AgentConnection;
 import com.lt.dom.otcenum.EnumAgentBilling;
-import com.lt.dom.otcenum.EnumAgentStatus;
 import com.lt.dom.otcenum.EnumBussinessType;
 import com.lt.dom.otcenum.EnumSupplierType;
 import org.springframework.hateoas.EntityModel;
@@ -225,7 +224,7 @@ public class AgentEditReq {
             this.billing = billing;
         }
 
-        public static EditReq from(Agent region) {
+        public static EditReq from(AgentConnection region) {
 
             EditReq agentEditReq = new EditReq();
             agentEditReq.setDesc(region.getDesc());
@@ -456,7 +455,7 @@ public class AgentEditReq {
             this.billing = billing;
         }
 
-        public static ProductTab from(Agent region) {
+        public static ProductTab from(AgentConnection region) {
 
             ProductTab  agentEditReq = new ProductTab();
             agentEditReq.setDesc(region.getDesc());

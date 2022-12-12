@@ -10,9 +10,11 @@ import com.lt.dom.otcReq.*;
 import com.lt.dom.otcReq.product.ProductGiftVoucherPojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import com.lt.dom.serviceOtc.product.MultiTicketServiceImpl;
 import com.lt.dom.specification.ProductQueryfieldsCriteria;
 import com.lt.dom.specification.ProductSpecification;
 import com.lt.dom.vo.BookingRuleVO;
+import com.lt.dom.vo.RoyaltyVo;
 import org.apache.commons.lang3.ObjectUtils;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
@@ -85,7 +87,8 @@ public class ProductServiceImpl {
 
     @Autowired
     private CommentRepository commentRepository;
-
+    @Autowired
+    private MultiTicketServiceImpl multiTicketService;
     @Autowired
     private ContactServiceImpl contactService;
 
@@ -188,6 +191,10 @@ public class ProductServiceImpl {
         if(product.getType().equals(EnumProductType.Multi_Ticket)){
             product.setPackage_(true);
         }
+
+
+        multiTicketService.create(product);
+
         product = productRepository.save(product);
 
 
@@ -281,6 +288,9 @@ public class ProductServiceImpl {
 
 
         }
+
+
+
 /*        Product finalProduct = product;
         if(pojo.getAttributes() != null){
             List<Attribute> attributes = pojo.getAttributes().stream().map(x->{
@@ -406,8 +416,7 @@ public class ProductServiceImpl {
         product.setName_long(pojo.getName_long());
 
         product.setStatus(EnumProductStatus.draft);
-        product.setCreated_at(LocalDateTime.now());
-        product.setUpdated_at(LocalDateTime.now());
+
         product.setAcitve(true);
         product.setShippable(false);
 
@@ -444,7 +453,7 @@ public class ProductServiceImpl {
             passProduct.setDurationUnit(pojo.getPass().getCard_setting().getCard_validity_term_unit());
 
             passProductRepository.save(passProduct);
-            componentRightService.assingtoProduct(product,pojo.getPass().getRoyalties());
+      //      componentRightService.assingtoProduct(product,pojo.getPass().getRoyalties());
 
 
 
@@ -812,15 +821,22 @@ public class ProductServiceImpl {
 
 
         Product finalProduct = product;
+
+        Map<Long,Product> burdles = new HashMap<>();
+
         List<ProductBundle> productBundleList = pojo.getBundles().stream().map(e->{
             Product burdle = productRepository.findById(e.getId()).get();
             ProductBundle productBundle = new ProductBundle();
             productBundle.setProduct(finalProduct);
             productBundle.setBurdle(burdle.getId());
+            productBundle.setBurdleProductSource(EnumProductComponentSource.partner);
+            burdles.put(burdle.getId(),burdle);
+
             return productBundle;
         }).collect(Collectors.toList());
         product.getBundles().stream().forEach(e->{
             System.out.println("--保存的元素 啊啊 ----------"+ e.getBurdle());
+            System.out.println("--保存的元素 啊啊 ----------"+ burdles.get(e.getBurdle()).getSupplierId());
         });
 
         product.getBundles().clear();
@@ -832,6 +848,30 @@ public class ProductServiceImpl {
         });
 
 
+
+        productBundleList.stream().filter(e->e.getBurdleProductSource().equals(EnumProductComponentSource.partner)).forEach(e->{
+
+            Product burdle = burdles.get(e.getBurdle());
+
+            componentRightService.assingtoProduct(e.getProduct(),e,burdle);
+
+        });
+
+
+/*
+        List<RoyaltyVo> royaltyVoList =  pojo.getRoyalties().stream().map(e->{
+
+            RoyaltyVo royaltyVo = new RoyaltyVo();
+            royaltyVo.setComponent_right(e.getComponent_right());
+            royaltyVo.setLimit_quantity(e.getLimit_quantity());
+            royaltyVo.setCollection_method(e.getCollection_method());
+            royaltyVo.setPercent(e.getPercent());
+            royaltyVo.setId(e.getId());
+            return royaltyVo;
+        }).collect(Collectors.toList());
+
+
+        componentRightService.assingtoProduct();*/
 
         product = productRepository.save(product);
         return product;
@@ -939,7 +979,21 @@ public class ProductServiceImpl {
     public Product editProductRightTab(Product product, ProductEditComponentTabPojo pojo) {
 
 
-        componentRightService.assingtoProduct(product,pojo.getRoyalties());
+       List<RoyaltyVo> royaltyVoList =  pojo.getRoyalties().stream().map(e->{
+
+            RoyaltyVo royaltyVo = new RoyaltyVo();
+            royaltyVo.setComponent_right(e.getComponent_right());
+            royaltyVo.setLimit_quantity(e.getLimit_quantity());
+            royaltyVo.setCollection_method(e.getCollection_method());
+            royaltyVo.setPercent(e.getPercent());
+            royaltyVo.setId(e.getId());
+            return royaltyVo;
+        }).collect(Collectors.toList());
+
+
+
+
+        componentRightService.assingtoProduct(product,royaltyVoList);
 
         if(pojo.getRoyalties().stream()
                 .filter(e->e.getValidate_way().equals(EnumValidateWay.offline_manual))
@@ -1241,7 +1295,7 @@ public class ProductServiceImpl {
         product.setName(pojo.getName());
         product.setName_long(pojo.getName_long());
 
-        product.setUpdated_at(LocalDateTime.now());
+
 
 
 

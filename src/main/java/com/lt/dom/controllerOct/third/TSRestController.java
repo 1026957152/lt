@@ -3,7 +3,7 @@ package com.lt.dom.controllerOct.third;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lt.dom.error.BookNotFoundException;
-import com.lt.dom.oct.Agent;
+import com.lt.dom.oct.AgentConnection;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
@@ -24,10 +24,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -116,7 +114,7 @@ public class TSRestController {
         }
 
 
-        Optional<Pair<Agent, Supplier>> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
+        Optional<Pair<AgentConnection, Supplier>> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
 
 
         if(agentOptional.isEmpty()){
@@ -129,7 +127,7 @@ public class TSRestController {
         }
 
 
-        Pair<Agent,Supplier> agent = agentOptional.get();
+        Pair<AgentConnection,Supplier> agent = agentOptional.get();
 
 
 
@@ -249,7 +247,7 @@ public class TSRestController {
     public LtRespToTs产品列表 item_list(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
 
 
-        Optional<Pair<Agent,Supplier>> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
+        Optional<Pair<AgentConnection,Supplier>> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
 
 
         if(agentOptional.isEmpty()){
@@ -262,7 +260,7 @@ public class TSRestController {
         }
 
 
-        Pair<Agent,Supplier> agent = agentOptional.get();
+        Pair<AgentConnection,Supplier> agent = agentOptional.get();
 
 
         if(tsReqLt产品列表.get_pid().equals("dddddd")){
@@ -278,7 +276,7 @@ public class TSRestController {
     @PostMapping(value = "/item_orders", produces = "application/json")
     public LtRespToTs下单接口 item_orders(@RequestBody TsReqLt下单接口 tsReqLt产品列表) {
 
-        Optional<Pair<Agent,Supplier>> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
+        Optional<Pair<AgentConnection,Supplier>> agentOptional =  agentService.find(tsReqLt产品列表.get_pid());
 
 
         if(agentOptional.isEmpty()){
@@ -291,7 +289,7 @@ public class TSRestController {
         }
 
 
-        Pair<Agent,Supplier> agent = agentOptional.get();
+        Pair<AgentConnection,Supplier> agent = agentOptional.get();
 
         try{
             if(tsReqLt产品列表.get_pid().equals("dddddd")){

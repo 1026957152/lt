@@ -15,7 +15,7 @@ public class AgentProduct extends BaseWithoutId{
     @ManyToOne
     @MapsId("agentId")
     @JoinColumn(name = "third_party_id")
-    Agent agent;
+    AgentConnection agentConnection;
 
     @JsonBackReference
     @ManyToOne
@@ -75,12 +75,12 @@ public class AgentProduct extends BaseWithoutId{
         this.id = id;
     }
 
-    public Agent getAgent() {
-        return agent;
+    public AgentConnection getAgent() {
+        return agentConnection;
     }
 
-    public void setAgent(Agent agent) {
-        this.agent = agent;
+    public void setAgent(AgentConnection agentConnection) {
+        this.agentConnection = agentConnection;
     }
 
     public void setNet(Float net) {

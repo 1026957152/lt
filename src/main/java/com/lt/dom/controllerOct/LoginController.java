@@ -99,7 +99,6 @@ public class LoginController {
     private SMSServiceImpl smsService;
 
 
-
     @GetMapping("/regitrationConfirm")
     public String confirmRegistration
             (WebRequest request, Model model, @RequestParam("token") String token) {
@@ -450,11 +449,19 @@ public class LoginController {
     public EntityModel Page_login() {
 
 
-
-        Map map = Map.of();
+        Map map = Map.of(
+                "left_image",FileStorageServiceImpl.loadDocumentWithDefault("left_image.png"),
+                "logo",FileStorageServiceImpl.loadDocumentWithDefault("lt.png"),
+                "topMsg","下一站智慧旅游平台",
+                "footer","下一站，2022"
+                );
 
 
         EntityModel entityModel = EntityModel.of(map);
+        entityModel.add(linkTo(methodOn(LoginController.class).Page_login()).withRel("Page_register"));
+        entityModel.add(linkTo(methodOn(LoginController.class).Page_login()).withRel("Page_reset"));
+
+
 
         entityModel.add(linkTo(methodOn(LoginController.class).login_sms_send(null)).withRel("send_verification_code"));
 

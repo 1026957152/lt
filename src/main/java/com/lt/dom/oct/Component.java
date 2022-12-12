@@ -1,6 +1,5 @@
 package com.lt.dom.oct;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.otcenum.*;
 
 import javax.persistence.*;
@@ -24,6 +23,18 @@ public class Component extends Base{   // 这个是 下单的时候， 从 produ
     @NotNull
     private EnumProductComponentSource source;
 
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private EnumComponentVoucherType type;
+    private Long agent;
+
+    public EnumComponentVoucherType getType() {
+        return type;
+    }
+
+    public void setType(EnumComponentVoucherType type) {
+        this.type = type;
+    }
 
     @Enumerated(EnumType.STRING)
     @NotNull
@@ -38,6 +49,7 @@ public class Component extends Base{   // 这个是 下单的时候， 从 produ
     private Long ratePlan;
     private String reference;
     private String code;
+    private Long originalProduct;
 
     public EnumProductComponentSource getSource() {
         return source;
@@ -115,7 +127,7 @@ public class Component extends Base{   // 这个是 下单的时候， 从 produ
     @Transient
     List<RatePlan> ratePlans;
 
-    private long supplierId;
+
 
     private long product;
     private long componentRightId;
@@ -136,12 +148,10 @@ public class Component extends Base{   // 这个是 下单的时候， 从 produ
         this.componentRightId = componentRightId;
     }
 
-    public long getSupplierId() {
-        return supplierId;
-    }
+
 
     public void setSupplier(long supplierId) {
-        this.supplierId = supplierId;
+        this.supplier = supplierId;
     }
 
     @Transient
@@ -334,5 +344,21 @@ public class Component extends Base{   // 这个是 下单的时候， 从 produ
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public void setOriginalProduct(Long originalProduct) {
+        this.originalProduct = originalProduct;
+    }
+
+    public Long getOriginalProduct() {
+        return originalProduct;
+    }
+
+    public void setAgent(Long agent) {
+        this.agent = agent;
+    }
+
+    public Long getAgent() {
+        return agent;
     }
 }

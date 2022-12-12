@@ -4,7 +4,9 @@ package com.lt.dom.otcReq;
 import com.lt.dom.otcenum.EnumReportBookingCompression;
 import com.lt.dom.otcenum.EnumReportBookingSourceGroupby;
 import com.lt.dom.otcenum.EnumReportMetric;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public class ReportBookingSourceReq {  // 这个就是机器了啊
@@ -22,6 +24,9 @@ public class ReportBookingSourceReq {  // 这个就是机器了啊
     private Long agent;
     private Long product;
     private EnumReportBookingSourceGroupby groupby;
+
+
+    @NotNull
     private EnumReportBookingCompression compression;
 
 
@@ -39,5 +44,10 @@ public class ReportBookingSourceReq {  // 这个就是机器了啊
 
     public EnumReportBookingCompression getCompression() {
         return compression;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
     }
 }

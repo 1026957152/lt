@@ -266,12 +266,15 @@ public class LineItemResp {
 
         lineItemResp.setFulfillmentInstructionsType(e.getFulfillmentInstructionsType());
 
-        if(e.getFulfillmentInstructionsType().equals(EnumFulfillmentInstructionsType.DIGITAL)){
+        if(EnumFulfillmentInstructionsType.DIGITAL.equals(e.getFulfillmentInstructionsType())){
 
             lineItemResp.setDeliveryFormats(e.getDeliveryFormats());
         }
+        if(e.getFulfillmentInstructionsType()!=null){
+            lineItemResp.setFulfillmentInstructionsType_text(e.getFulfillmentInstructionsType().toString());
 
-        lineItemResp.setFulfillmentInstructionsType_text(e.getFulfillmentInstructionsType().toString());
+        }
+
         lineItemResp.setStatus_text(e.getStatus().toString());
         if(e.getLineType().equals(EnumLineType.Pass)){
             Pass pass = new  Pass();

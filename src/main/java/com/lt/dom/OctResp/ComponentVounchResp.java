@@ -10,6 +10,8 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.*;
 
+import java.time.LocalDateTime;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -17,7 +19,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ComponentVounchResp {   // 这个是 下单的时候， 从 product 中生成 的
+public class ComponentVounchResp  extends Base{   // 这个是 下单的时候， 从 product 中生成 的
 
 
 
@@ -50,6 +52,9 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
     private String code_base64_src;
     private String title;
     private String componentRightCode;
+    private Long agent;
+    private LocalDateTime check_in_at;
+    private String belongTo;
 
     public static ComponentVounchResp from(ComponentVounch e) {
         ComponentVounchResp componentVounchResp = new ComponentVounchResp();
@@ -67,11 +72,33 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
         componentVounchResp.setCode(e.getCode());
         componentVounchResp.setRoyaltyRuleId(e.getRoyaltyRuleId());
         componentVounchResp.setVoucherId(e.getVoucherId());
+
+
+        if(e.getBelongType() == null){
+            componentVounchResp.setBelongTo("e.getBelongType()");
+
+        }else{
+            componentVounchResp.setBelongTo(e.getBelongType().toString());
+
+        }
+
+
         componentVounchResp.setUser(e.getUser());
         componentVounchResp.setCode(e.getCode());
 
+
+        componentVounchResp.setAgent(e.getAgent());
+        componentVounchResp.setSupplier(e.getSupplier()+"");
+
+        componentVounchResp.setSupplier(e.getSupplier()+"");
+
+        componentVounchResp.setSupplier(e.getSupplier()+"");
+
         componentVounchResp.setStatus_text(e.getStatus().toString());
         componentVounchResp.setDuration_text(e.getDuration().toString());
+        componentVounchResp.setCreatedDate(e.getCreatedDate());
+        componentVounchResp.setCheck_in_at(e.getCreatedDate());
+        componentVounchResp.setModifiedDate(e.getModifiedDate());
 
         return componentVounchResp;
     }
@@ -336,5 +363,30 @@ public class ComponentVounchResp {   // 这个是 下单的时候， 从 product
 
     public String getComponentRightCode() {
         return componentRightCode;
+    }
+
+    public void setAgent(Long agent) {
+        this.agent = agent;
+    }
+
+    public Long getAgent() {
+        return agent;
+    }
+
+    public void setCheck_in_at(LocalDateTime check_in_at) {
+
+        this.check_in_at = check_in_at;
+    }
+
+    public LocalDateTime getCheck_in_at() {
+        return check_in_at;
+    }
+
+    public void setBelongTo(String belong) {
+        this.belongTo = belong;
+    }
+
+    public String getBelongTo() {
+        return belongTo;
     }
 }

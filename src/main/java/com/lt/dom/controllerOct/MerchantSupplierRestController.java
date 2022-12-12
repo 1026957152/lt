@@ -38,8 +38,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 //https://www.postman.com/opamcurators/workspace/open-access-third/example/1501710-e695127d-5c31-4f88-901e-ef4e2a376086
 @RestController
-@RequestMapping("/oct")
-public class AgentRestController {
+@RequestMapping("/oct/merchant")
+public class MerchantSupplierRestController {
     @Autowired
     private ThirdPartyProductRepository thirdPartyProductRepository;
 
@@ -73,36 +73,8 @@ public class AgentRestController {
     @Autowired
     private FileStorageServiceImpl fileStorageService;
 
-
-/*
-    @GetMapping(value = "/agent/{SUPPLIER_ID}/agents/listThirdParty", produces = "application/json")
-    public EntityModel<Media> Page_listThirdParty(@PathVariable long SUPPLIER_ID ) {
-
-
-        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
-        if(supplierOptional.isEmpty()) {
-            throw new BookNotFoundException("没有找到供应商","没找到");
-        }
-
-        Supplier supplier = supplierOptional.get();
-
-        Map map = Map.of("status_list", EnumVoucherStatus.values());
-
-
-        EntityModel entityModel = EntityModel.of(map);
-
-
-        entityModel.add(linkTo(methodOn(AgentRestController.class).listThirdParty(supplier.getId(),null,null)).withRel("list"));
-
-
-        return entityModel;
-
-    }*/
-
-
-
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/Page_agent", produces = "application/json")
-    public EntityModel<Media> Page_market_agent(@PathVariable Long SUPPLIER_ID) {
+    public EntityModel<Media> Page_marchant_supplier(@PathVariable Long SUPPLIER_ID) {
         Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
         if(supplierOptional.isEmpty()) {
             throw new BookNotFoundException("没有找到供应商","没找到");
@@ -114,9 +86,9 @@ public class AgentRestController {
 
         EntityModel entityModel = EntityModel.of(map);
 
-        entityModel.add(linkTo(methodOn(AgentRestController.class).listAgent(supplier.getId(),null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).listAgent(supplier.getId(),null,null)).withRel("list"));
 
-        entityModel.add(linkTo(methodOn(AgentRestController.class).createAgent(supplier.getId(),null)).withRel("create"));
+        entityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).createAgent(supplier.getId(),null)).withRel("create"));
 
         return entityModel;
 
@@ -139,17 +111,18 @@ public class AgentRestController {
 
 
 
-        Page<AgentConnection> bookingRuleList = agentRepository.findAll(pageable);
+        Page<AgentConnection> bookingRuleList = agentRepository.findAllByAgent(supplier.getId(),pageable);
 
         return assembler.toModel(bookingRuleList.map(e->{
 
-            AgentResp agentResp = AgentResp.from(e);
 
-  /*          LocationResp locationResp = new LocationResp();
-            locationResp.setAddress("山西省榆阳区阜石路");
-            movieResp.setAddress(locationResp);*/
+            Optional<Supplier> supplierOptional1 = supplierRepository.findById(e.getSupplier());
+
+            AgentResp agentResp = AgentResp.toSupplier(e,supplierOptional1.get());
+
+
             EntityModel entityModel = EntityModel.of(agentResp);
-            entityModel.add(linkTo(methodOn(AgentRestController.class).agentEdit(e.getId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).agentEdit(e.getId())).withSelfRel());
 
             return entityModel;
         }));
@@ -166,7 +139,6 @@ public class AgentRestController {
         }
 
         Supplier supplier = supplierOptional.get();
-
 
         Optional<Supplier> agentOptional = supplierRepository.findById(tripReq.getAgent());
         if(agentOptional.isEmpty()) {
@@ -185,6 +157,8 @@ public class AgentRestController {
         return entityModel;
 
     }
+
+
 
 
     @PostMapping(value = "/agents/{SUPPLIER_ID}/connect", produces = "application/json")
@@ -215,6 +189,9 @@ public class AgentRestController {
         return entityModel;
 
     }
+
+
+
 
     @PutMapping(value = "/agents/{Museum_ID}", produces = "application/json")
     public EntityModel<AgentConnection> update(@PathVariable long Museum_ID , @RequestBody @Valid AgentEditReq.EditReq regionReq) {
@@ -262,7 +239,7 @@ public class AgentRestController {
 
         EntityModel entityModel = EntityModel.of(map);
 
-        entityModel.add(linkTo(methodOn(AgentRestController.class).createAgent(supplier.getId(),null)).withRel("createMuseum"));
+        entityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).createAgent(supplier.getId(),null)).withRel("createMuseum"));
 
 
         return entityModel;
@@ -291,25 +268,16 @@ public class AgentRestController {
 
         }).collect(Collectors.toList()));
 
-/*        thirdPartyResp.setProducts(region.getProducts().stream().map(e->{
 
-            ProductResp productResp = ProductResp.basefrom(e.getProduct());
-            EntityModel entityModel = EntityModel.of(productResp);
-            entityModel.add(linkTo(methodOn(AgentRestController.class).delete(e.getId().getThirdPartyId(),e.getId().getProductId())).withRel("delete"));
-
-
-            return entityModel;
-
-        }).collect(Collectors.toList()));*/
         thirdPartyResp.setPhoto(fileStorageService.loadDocumentWithDefault(EnumDocumentType.region_photo,region.getCode()));
 
 
 
 
         EntityModel entityModel = EntityModel.of(thirdPartyResp);
-        entityModel.add(linkTo(methodOn(AgentRestController.class).getThirdParty(region.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).getThirdParty(region.getId())).withSelfRel());
        // entityModel.add(linkTo(methodOn(AgentRestController.class).createProduct(region.getId(),null)).withRel("addProduct"));
-        entityModel.add(linkTo(methodOn(AgentRestController.class).update(region.getId(),null)).withRel("edit"));
+        entityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).update(region.getId(),null)).withRel("edit"));
 
 
         return entityModel;
@@ -389,22 +357,13 @@ public class AgentRestController {
         }
 
 
-/*        thirdPartyResp.setProducts(region.getProducts().stream().map(e->{
 
-            ProductResp productResp = ProductResp.basefrom(e.getProduct());
-            EntityModel entityModel = EntityModel.of(productResp);
-            entityModel.add(linkTo(methodOn(AgentRestController.class).delete(e.getId().getThirdPartyId(),e.getId().getProductId())).withRel("delete"));
-
-
-            return entityModel;
-
-        }).collect(Collectors.toList()));*/
         editReq.setLogo(fileStorageService.loadDocumentWithDefault(EnumDocumentType.agent_logo, agentConnection.getCode()));
 
 
         EntityModel entityModel_eidt = EntityModel.of(editReq);
         // entityModel.add(linkTo(methodOn(AgentRestController.class).createProduct(region.getId(),null)).withRel("addProduct"));
-        entityModel_eidt.add(linkTo(methodOn(AgentRestController.class).update(agentConnection.getId(),null)).withRel("edit"));
+        entityModel_eidt.add(linkTo(methodOn(MerchantSupplierRestController.class).update(agentConnection.getId(),null)).withRel("edit"));
 
         agentEditReq.setBasicEdit(entityModel_eidt);
 
@@ -412,7 +371,7 @@ public class AgentRestController {
 
 
         EntityModel entityModel = EntityModel.of(agentEditReq);
-        entityModel.add(linkTo(methodOn(AgentRestController.class).agentEdit(agentConnection.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).agentEdit(agentConnection.getId())).withSelfRel());
         // entityModel.add(linkTo(methodOn(AgentRestController.class).createProduct(region.getId(),null)).withRel("addProduct"));
 
 
@@ -423,90 +382,6 @@ public class AgentRestController {
 
 
 
-
-
-
-
-
-/*
-
-    @PostMapping(value = "/agents/{SUPPLIER_ID}/exhibit", produces = "application/json")
-    public EntityModel<ExhibitionReq> createPlace(@PathVariable long SUPPLIER_ID , @RequestBody @Valid ExhibitionReq movieReq) {
-
-        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
-        if(supplierOptional.isEmpty()) {
-            throw new BookNotFoundException("没有找到供应商","没找到");
-        }
-
-        Supplier supplier = supplierOptional.get();
-
-
-
-
-        Exhibition place = thirdervice.createExhibit(supplier,movieReq);
-
-
-        EntityModel entityModel = EntityModel.of(place);
-
-        return entityModel;
-
-    }*/
-
-
-/*
-    @PostMapping(value = "/agents/{SUPPLIER_ID}/products", produces = "application/json")
-    public EntityModel<ThirdPartyProduct> createProduct(@PathVariable long SUPPLIER_ID , @RequestBody @Valid List<BusStopReq> movieReq) {
-
-        Optional<ThirdParty> supplierOptional = regionRepository.findById(SUPPLIER_ID);
-        if(supplierOptional.isEmpty()) {
-            throw new BookNotFoundException("没有找到供应商","没找到");
-        }
-
-        ThirdParty supplier = supplierOptional.get();
-
-
-        ThirdParty place = agentService.createThirdPartyProduct(supplier,movieReq);
-
-
-        EntityModel entityModel = EntityModel.of(place);
-
-        return entityModel;
-
-    }
-*/
-
-
-
-
-
-
-
-
-
-/*
-
-    @PostMapping(value = "/agents/{SUPPLIER_ID}/exhibit", produces = "application/json")
-    public EntityModel<ExhibitionReq> createPlace(@PathVariable long SUPPLIER_ID , @RequestBody @Valid CollectionItemReq movieReq) {
-
-        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
-        if(supplierOptional.isEmpty()) {
-            throw new BookNotFoundException("没有找到供应商","没找到");
-        }
-
-        Supplier supplier = supplierOptional.get();
-
-
-
-
-        Artwork place = thirdervice.createCollectionItem(supplier,movieReq);
-
-
-        EntityModel entityModel = EntityModel.of(place);
-
-        return entityModel;
-
-    }
-*/
 
 
 
@@ -569,7 +444,7 @@ public class AgentRestController {
         EntityModel entityModel = EntityModel.of(map);
 
 
-        entityModel.add(linkTo(methodOn(AgentRestController.class).listProduct(supplier.getId(),null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).listProduct(supplier.getId(),null,null)).withRel("list"));
 
 
         return entityModel;
@@ -694,7 +569,7 @@ public class AgentRestController {
 
         EntityModel entityModel = EntityModel.of(map);
 
-        entityModel.add(linkTo(methodOn(AgentRestController.class).listConnection(supplier.getId(),null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).listConnection(supplier.getId(),null,null)).withRel("list"));
 
 
         return entityModel;
@@ -737,7 +612,7 @@ public class AgentRestController {
             }).collect(Collectors.toList()));
 
             EntityModel entityModel = EntityModel.of(agentResp);
-            entityModel.add(linkTo(methodOn(AgentRestController.class).agentEdit(e.getId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).agentEdit(e.getId())).withSelfRel());
 
             return entityModel;
         }));

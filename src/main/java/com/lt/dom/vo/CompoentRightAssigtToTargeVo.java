@@ -2,6 +2,7 @@ package com.lt.dom.vo;
 
 
 import com.lt.dom.oct.Pass;
+import com.lt.dom.oct.Reservation;
 import com.lt.dom.otcenum.EnumPlatform;
 
 
@@ -12,6 +13,7 @@ public class CompoentRightAssigtToTargeVo {
     private String serial_no;
     private EnumPlatform platform;
     private Pass pass;
+    private Reservation booking;
 
 
     public void setOrders_id(String orders_id) {
@@ -44,5 +46,13 @@ public class CompoentRightAssigtToTargeVo {
 
     public Pass getPass() {
         return pass;
+    }
+
+    public void setBooking(Reservation booking) {
+        this.booking = booking;
+    }
+
+    public Reservation getBooking() {
+        return booking;
     }
 }

@@ -148,7 +148,7 @@ public class TsToLtServiceImpl {
     }
 
 
-        public   LtRespToTs产品列表 getTsReqLt产品列表(Pair<Agent,Supplier> agent, TsReqLt产品列表 data){
+        public   LtRespToTs产品列表 getTsReqLt产品列表(Pair<AgentConnection,Supplier> agent, TsReqLt产品列表 data){
 
 
 
@@ -538,7 +538,7 @@ public class TsToLtServiceImpl {
 
 
 
-    public   LtRespToTs下单接口.InfoDTO  getTsReqLt下单接口(Pair<Agent,Supplier> agent, TsReqLt下单接口 data){
+    public   LtRespToTs下单接口.InfoDTO  getTsReqLt下单接口(Pair<AgentConnection,Supplier> agent, TsReqLt下单接口 data){
 
 
 
