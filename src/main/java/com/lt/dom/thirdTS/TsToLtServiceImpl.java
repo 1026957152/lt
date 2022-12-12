@@ -654,7 +654,8 @@ public class TsToLtServiceImpl {
 
         if(data.getIs_pay() == 1){ ////是否下单同时支付（1:同时支付，0:不支付）缺省时默认1
             platUserVo.setPaid(true);
-            platUserVo.setPaidAmount(data.getSize().intValue()*Float.valueOf(data.getPrice()));
+            System.out.println("这里看一下， 是不是空"+data.getPrice());
+           // platUserVo.setPaidAmount(data.getSize().intValue()*Float.valueOf(data.getPrice()));
         }
         if(data.getIs_pay() == 0){ ////是否下单同时支付（1:同时支付，0:不支付）缺省时默认1
             platUserVo.setPaid(false);
