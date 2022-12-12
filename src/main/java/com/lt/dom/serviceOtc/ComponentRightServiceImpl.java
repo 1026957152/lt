@@ -673,6 +673,7 @@ public class ComponentRightServiceImpl {
 
 
 
+
             componentVounch.setComponentRight(right.getComponentRightId());
 
 
