@@ -71,13 +71,17 @@ spring:
       hibernate:
         jdbc.batch_size: 30
         order_inserts: true
-        #dialect: org.hibernate.dialect.H2Dialect
-        dialect: org.hibernate.dialect.MySQL5Dialect
+        #dialect: org.hibernate.dialect.H2Dialect  MySQL5Dialect MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
     show-sql: true
 
     generate-ddl: true  # 这个
     hibernate.ddl-auto: update #create-drop
-#    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    database-platform: org.hibernate.dialect.MySQL8InnoDBDialect
+
+
+
 
   mvc:
     static-path-pattern: /oct/**

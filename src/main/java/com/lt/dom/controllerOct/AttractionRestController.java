@@ -5,16 +5,10 @@ import com.lt.dom.HeroCardInfoResp;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.AttractionReq;
-import com.lt.dom.otcReq.ImageReq;
-import com.lt.dom.otcReq.LocationResp;
-import com.lt.dom.otcReq.WayPointResp;
+import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
-import com.lt.dom.serviceOtc.AssetServiceImpl;
-import com.lt.dom.serviceOtc.AttractionServiceImpl;
-import com.lt.dom.serviceOtc.FileStorageServiceImpl;
-import com.lt.dom.serviceOtc.SearchReminderServiceImpl;
+import com.lt.dom.serviceOtc.*;
 import com.lt.dom.vo.ImageVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +49,13 @@ public class AttractionRestController {
     private AttractionRepository attractionRepository;
     @Autowired
     private SearchReminderServiceImpl searchReminderService;
+
+    @Autowired
+    private TripPlanRepository tripPlanRepository;
+
+    @Autowired
+    private TripServiceImpl tripService;
+
 
     @Autowired
     private SupplierRepository supplierRepository;
@@ -1004,6 +1005,34 @@ public class AttractionRestController {
     }
 
 
+
+
+
+
+    @PostMapping(value = "/attractioons/{ATTRACTION_ID}/trip_plan", produces = "application/json")
+    public EntityModel<Attraction> createTrip(@PathVariable Long ATTRACTION_ID,@RequestBody @Valid AttractionTripReq attractionTripReq) {
+
+        Optional<Attraction> validatorOptional = attractionRepository.findById(ATTRACTION_ID);
+        if(validatorOptional.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找活动对象");
+        }
+        Attraction attraction = validatorOptional.get();
+
+
+
+
+        Optional<TripPlan> tripPlanOptional = tripPlanRepository.findById(attractionTripReq.getId());
+        TripPlan tripPlan = tripPlanOptional.get();
+
+
+
+        tripPlan = tripService.addTripPlan(tripPlanOptional.get(),attraction);
+
+        EntityModel entityModel = EntityModel.of(tripPlan);
+
+        return entityModel;
+
+    }
 
 
 }

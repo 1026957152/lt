@@ -49,6 +49,7 @@ public class AttractionResp extends BaseResp {
     private PhotoResp thumb;
     private List knowfors;
     private String privacyLevel_text;
+    private Long id;
 
 
     public EntityModel<AssetResp> getTourLink() {
@@ -190,6 +191,50 @@ public class AttractionResp extends BaseResp {
 /*        attractionResp.setThumbnail_image(photoResp);
 
         return attractionResp;*/
+    }
+
+
+
+
+
+
+
+
+
+    public static AttractionResp simpleFromId(Attraction attraction,PhotoResp photoResp) {
+        AttractionResp attractionResp = new AttractionResp();
+        attractionResp.setName(attraction.getName());
+        attractionResp.setId(attraction.getId());
+        attractionResp.setShortdesc(attraction.getShortdesc());
+
+        if(attraction.getTags_json() != null){
+            attractionResp.setTags(Arrays.stream((new Gson()).fromJson(attraction.getTags_json(),EnumTags[].class)).map(e->e.name()).toList());
+
+        }else{
+            attractionResp.setTags(Arrays.asList());
+
+        }
+
+        if(attraction.getKnowfors().isEmpty()){
+            KnowforResp knowforResp = new KnowforResp();
+            knowforResp.setKnownfor_text(EnumKnownfor.History.toString());
+            knowforResp.setText(EnumKnownfor.History.toString());
+
+            attractionResp.setKnowfors(Arrays.asList(knowforResp));
+
+        }else{
+            attractionResp.setKnowfors(attraction.getKnowfors().stream().map(e->{
+                KnowforResp knowforResp = KnowforResp.from(e);
+                return knowforResp;
+            }).collect(Collectors.toList()));
+        }
+
+        attractionResp.setThumbnail_image(photoResp);
+
+        attractionResp.setStatus_text(attraction.getStatus().toString());
+        attractionResp.setThumbnail_image(photoResp);
+        return attractionResp;
+
     }
 
 
@@ -477,5 +522,13 @@ public class AttractionResp extends BaseResp {
 
     public String getPrivacyLevel_text() {
         return privacyLevel_text;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
     }
 }

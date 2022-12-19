@@ -34,6 +34,13 @@ public class ValidatorServiceImpl {
 
     @Autowired
     private DeviceRepository deviceRepository;
+    @Autowired
+    private ComponentVounchRepository componentVounchRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+
 
     @Autowired
     private ValidatorRepository validatorRepository;
@@ -59,11 +66,20 @@ public class ValidatorServiceImpl {
 
 
 
-        validatorRepository.deleteAllByDevice(device.getId());
+/*
+        validatorRepository.deleteAll(validatorOptional.stream()
+                        .filter(e->!pojoList.getIds().contains(e.getId())).collect(Collectors.toList()));
+*/
 
         List<Validator_> validator_list = validatorRepository.saveAll(validatorOptional.stream().map(e->{
-            pojoList.getIds().contains(e.getId());
-            e.setActive(true);
+
+            if(pojoList.getIds().contains(e.getId())){
+                e.setActive(true);
+            }else{
+                e.setActive(false);
+            }
+
+//            e.setId(null);
             return e;
         }).collect(Collectors.toList()));
 
@@ -230,4 +246,96 @@ public class ValidatorServiceImpl {
         return componentVounchValidatorRecordRepository.saveAll(componentVounchValidatorRecordList);
     }
 
+    public List<ComponentVounch> check(Long user_id, Long supplier, String code) {
+
+
+        List<Validator_> validator_s = validatorRepository.findAllByTypeAndUser(EnumValidatorType.特定的人员,user_id);
+
+        if(validator_s.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"职工得 核销分配 对象 为空，请添加"+user_id);
+        }
+
+
+        List<Long> triplet来自设备 = validator_s.stream().map(e->e.getComponentRightId()).collect(Collectors.toList());
+
+
+        List<ComponentVounch> components = componentVounchRepository.findAllByReference(code);
+
+        if(components.size() ==0){
+            throw new BookNotFoundException(Enumfailures.not_found,"该券 无可核销得 权益"+code);
+        }
+
+        List<Product> productList = productRepository.findAllBySupplierId(supplier);
+        List<Long> longList_公司允许的 = productList.stream().map(e->e.getId()).collect(Collectors.toList());
+
+
+
+        List<ComponentVounch> componentVounchList = components.stream()  // TODO 找到了这里的 权限
+                .filter(e->{
+
+                    return switch (e.getType()){
+                        case Burdle -> longList_公司允许的.contains(e.getOriginalProduct());
+
+                        case Right -> triplet来自设备.contains(e.getComponentRight());
+
+                        default -> false;
+                    };
+
+
+
+
+                }).collect(Collectors.toList());
+
+
+
+
+
+        return componentVounchList;
+    }
+
+
+
+    public List<ComponentVounch> check(Long device_id,  String code) {
+
+
+        List<Validator_> validator_s = validatorRepository.findAllByTypeAndDevice(EnumValidatorType.特定机器,device_id);
+
+        if(validator_s.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"职工得 核销分配 对象 为空，请添加"+device_id);
+        }
+
+
+        List<Long> triplet来自设备 = validator_s.stream().map(e->e.getComponentRightId()).collect(Collectors.toList());
+
+
+        List<ComponentVounch> components = componentVounchRepository.findAllByReference(code);
+
+        if(components.size() ==0){
+            throw new BookNotFoundException(Enumfailures.not_found,"该券 无可核销得 权益"+code);
+        }
+
+
+
+        List<ComponentVounch> componentVounchList = components.stream()  // TODO 找到了这里的 权限
+                .filter(e->{
+
+                    return switch (e.getType()){
+                        case Burdle -> false;
+
+                        case Right -> triplet来自设备.contains(e.getComponentRight());
+
+                        default -> false;
+                    };
+
+
+
+
+                }).collect(Collectors.toList());
+
+
+
+
+
+        return componentVounchList;
+    }
 }

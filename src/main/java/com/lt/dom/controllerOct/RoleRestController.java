@@ -1,24 +1,17 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.OctResp.EmployeeResp;
 import com.lt.dom.OctResp.EnumLongIdResp;
 import com.lt.dom.OctResp.EnumResp;
 import com.lt.dom.OctResp.RoleResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.Privilege;
-import com.lt.dom.oct.Product;
 import com.lt.dom.oct.Role;
 import com.lt.dom.otcReq.RoleEditReq;
 import com.lt.dom.otcReq.RoleReq;
-import com.lt.dom.otcenum.EnumAssociatedType;
 import com.lt.dom.otcenum.EnumAvailableActions;
 import com.lt.dom.otcenum.EnumRole;
 import com.lt.dom.repository.PrivilegeRepository;
-import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.RoleRepository;
-import com.lt.dom.repository.VoucherRepository;
-import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,9 +19,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 

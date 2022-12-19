@@ -1,6 +1,8 @@
 package com.lt.dom.serviceOtc;
 
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.lt.dom.OctResp.RedemptionTryResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.AccessValidatorPojo;
@@ -8,19 +10,18 @@ import com.lt.dom.otcReq.ComponentRightPojo;
 import com.lt.dom.otcReq.ProductPojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
-import com.lt.dom.vo.CompoentRightAssigtToTargeVo;
-import com.lt.dom.vo.RedemptionForCustomerVo;
-import com.lt.dom.vo.RoyaltyVo;
-import com.lt.dom.vo.ValidatedByTypeVo;
+import com.lt.dom.util.SecurityUtils;
+import com.lt.dom.vo.*;
+import org.hashids.Hashids;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -448,7 +449,7 @@ public class ComponentRightServiceImpl {
             component.setRoyaltyAmount(right.getValue());
             component.setCollection_method(royalty.getCollection_method());
             component.setValidate_way(royalty.getValidate_way());
-
+            component.setType(EnumComponentVoucherType.Right);
 
 /*
             if(componentRight.getSupplier().equals(product.getSupplierId())){
@@ -504,6 +505,7 @@ public class ComponentRightServiceImpl {
         component.setAgent(product.getSupplierId());
         component.setSource(EnumProductComponentSource.partner);
         component.setValidate_way(EnumValidateWay.none);
+
         component.setType(EnumComponentVoucherType.Burdle);
 
         component.setComponentRight(0);
@@ -563,6 +565,7 @@ public class ComponentRightServiceImpl {
 
 
 
+/*
 
 
 
@@ -574,53 +577,55 @@ public class ComponentRightServiceImpl {
 
         List<ComponentVounch> list =  components.stream().map(right->{
 
-            ComponentVounch component = new ComponentVounch();
-            component.setCode(idGenService.componentVouncherCode());
+            ComponentVounch componentVounch = new ComponentVounch();
+            componentVounch.setCode(idGenService.componentVouncherCode());
 
-            component.setName(right.getName());
+            componentVounch.setName(right.getName());
 
-                component.setProduct(voucherTicket.getId());
-                component.setSupplier(right.getSupplier());
-
-
-            component.setComponentRight(right.getComponentRightId());
+            componentVounch.setProduct(voucherTicket.getId());
+            componentVounch.setSupplier(right.getSupplier());
 
 
-            component.setReference(voucherTicket.getCode());
-            component.setStatus(EnumComponentVoucherStatus.NotRedeemed);
+            componentVounch.setComponentRight(right.getComponentRightId());
+
+
+            componentVounch.setReference(voucherTicket.getCode());
+            componentVounch.setStatus(EnumComponentVoucherStatus.NotRedeemed);
 
 
 
-        //    component.setRatePlan(EnumReferralEvents.);
-            component.setSource(right.getSource());
+        //    componentVounch.setRatePlan(EnumReferralEvents.);
+            componentVounch.setSource(right.getSource());
             if(right.getSource().equals(EnumProductComponentSource.partner)){
-                Assert.notNull(right.getSubscription(), "系统已有 componment Right 不能为空，当前空，新建 component 失败");
-                Assert.notNull(right.getRatePlan(), "系统已有 componment RatePlan 不能为空，当前空，新建 component 失败");
-                component.setRatePlan(right.getRatePlan());
+                Assert.notNull(right.getSubscription(), "系统已有 componment Right 不能为空，当前空，新建 componentVounch 失败");
+                Assert.notNull(right.getRatePlan(), "系统已有 componment RatePlan 不能为空，当前空，新建 componentVounch 失败");
+                componentVounch.setRatePlan(right.getRatePlan());
 
-                component.setSubscription(right.getSubscription());
+                componentVounch.setSubscription(right.getSubscription());
             }
 
-            component.setVoucherId(voucherTicket.getId());
-            component.setLimit(limit);
-            component.setTry_(1l);
-            component.setRedeemed_quantity(0l);
-            component.setUnit_off(right.getUnit_off());
-            component.setDuration(right.getDuration());
-            component.setReservation(voucherTicket.getBooking());
+            componentVounch.setVoucherId(voucherTicket.getId());
+            componentVounch.setLimit(limit);
+            componentVounch.setTry_(1l);
+            componentVounch.setRedeemed_quantity(0l);
+            componentVounch.setUnit_off(right.getUnit_off());
+            componentVounch.setDuration(right.getDuration());
+            componentVounch.setReservation(voucherTicket.getBooking());
 
 
-            component.setRoyalty_mode(right.getRoyalty_mode());
-            component.setValidate_way(right.getValidate_way());
-            component.setSupplier(right.getSupplier());
-/*            component.setRoyaltyPercent(right.getValue());
-            component.setRoyaltyAmount(right.getValue());
-            component.setRoyaltyAmount(right.getValue());
-            component.setCollection_method(royalty.getCollection_method());
-            component.setValidate_way(royalty.getValidate_way());
+            componentVounch.setRoyalty_mode(right.getRoyalty_mode());
+            componentVounch.setValidate_way(right.getValidate_way());
+            componentVounch.setSupplier(right.getSupplier());
+*/
+/*            componentVounch.setRoyaltyPercent(right.getValue());
+            componentVounch.setRoyaltyAmount(right.getValue());
+            componentVounch.setRoyaltyAmount(right.getValue());
+            componentVounch.setCollection_method(royalty.getCollection_method());
+            componentVounch.setValidate_way(royalty.getValidate_way());
 
-            component.setRoyaltyPercent(royalty.getPercent());*/
-            return component;
+            componentVounch.setRoyaltyPercent(royalty.getPercent());*//*
+
+            return componentVounch;
         }).collect(Collectors.toList());
 
         list = componentVounchRepository.saveAll(list);
@@ -634,6 +639,7 @@ public class ComponentRightServiceImpl {
     }
 
 
+*/
 
 
     public void assingtoComponent(CompoentRightAssigtToTargeVo voucherTicket, List<Triplet<Component,LineItem,EnumComponentVoucherType>> components , Long limit) {
@@ -657,7 +663,7 @@ public class ComponentRightServiceImpl {
 
             componentVounch.setRedeem_voucher_key(idGenService.nextId(""));
 
-            componentVounch.setName(right.getName());
+
 
             componentVounch.setProduct(lineItem.getProduct());
             componentVounch.setLineItem(lineItem.getId());
@@ -677,23 +683,31 @@ public class ComponentRightServiceImpl {
             componentVounch.setComponentRight(right.getComponentRightId());
 
 
-            componentVounch.setReference(voucherTicket.getPass().getCode());
+            componentVounch.setReference(voucherTicket.getReference());
             componentVounch.setStatus(EnumComponentVoucherStatus.NotRedeemed);
 
 
 
             //    component.setRatePlan(EnumReferralEvents.);
             componentVounch.setSource(right.getSource());
-            if(right.getSource().equals(EnumProductComponentSource.partner)){
-                Assert.notNull(right.getSubscription(), "系统已有 componment Right 不能为空，当前空，新建 component 失败");
-                Assert.notNull(right.getRatePlan(), "系统已有 componment RatePlan 不能为空，当前空，新建 component 失败");
-                componentVounch.setRatePlan(right.getRatePlan());
+            if(right.getType().equals(EnumComponentVoucherType.Burdle)){
 
-                componentVounch.setSubscription(right.getSubscription());
+             //   if(right.getSource().equals(EnumProductComponentSource.partner)){
+             //   Assert.notNull(right.getSubscription(), "系统已有 componment Right 不能为空，当前空，新建 component 失败");
+            //    Assert.notNull(right.getRatePlan(), "系统已有 componment RatePlan 不能为空，当前空，新建 component 失败");
+           //     componentVounch.setRatePlan(right.getRatePlan());
+           //     componentVounch.setSubscription(right.getSubscription());
+                componentVounch.setName("这是一个代理的产品");
+                componentVounch.setLimit(1l);
+            }else{
+                componentVounch.setName(right.getName());
+                componentVounch.setLimit(limit);
             }
 
-            componentVounch.setVoucherId(voucherTicket.getPass().getId());
-            componentVounch.setLimit(limit);
+            componentVounch.setReferenceId(voucherTicket.getReferenceId());
+            componentVounch.setReferenceType(voucherTicket.getReferenceType());
+
+            componentVounch.setOriginalProduct(right.getOriginalProduct());
             componentVounch.setTry_(1l);
             componentVounch.setRedeemed_quantity(0l);
             componentVounch.setUnit_off(right.getUnit_off());
@@ -739,5 +753,95 @@ public class ComponentRightServiceImpl {
 
     public void bulkUpdata(List<ComponentVounch> componentVounchList) {
         componentVounchRepository.saveAll(componentVounchList);
+    }
+
+    public void sentEntries(String code, RedemptionTryResp resp, List<ComponentVounch> componentVounchList) {
+
+        Hashids hashids = new Hashids("this is my pepper");
+
+
+
+        LocalDateTime now = LocalDateTime.now();
+        Timestamp timestamp = Timestamp.valueOf(now);
+
+
+        resp.setEntries(componentVounchList.stream()
+                .map(e->{
+                    RedemptionTryResp.RedemptionEntryResp redemptionEntryResp = new RedemptionTryResp.RedemptionEntryResp();
+
+                    SecurityUtils.encryption_base64(e.getRedeem_voucher_key());
+
+                    PersonBean.Person person = PersonBean.Person.newBuilder()
+                            .setAge(timestamp.getTime())
+                            .setName(e.getRedeem_voucher_key())
+                            .build();
+
+                    hashids.encodeHex(person.toByteString().toStringUtf8());
+
+
+                    String hash = hashids.encodeHex(e.getRedeem_voucher_key());
+
+                    redemptionEntryResp.setRedeem_voucher_key_crypt(hash);
+                    String numbers = hashids.decodeHex(hash);
+
+                    String probuff = Base64.getEncoder().encodeToString(person.toByteArray());
+                    System.out.println(")))))))))))+++++++++"+probuff);
+
+                    try {
+                        PersonBean.Person person1 = PersonBean.Person.parseFrom(Base64.getDecoder().decode(Base64.getEncoder().encodeToString(person.toByteArray())));
+
+                        System.out.println(")))))))))))+++++++++"+person1.toString());
+
+                    } catch (InvalidProtocolBufferException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+
+                    //  redemptionEntryResp.setRedeem_voucher_key_crypt(SecurityUtils.encryption(e.getRedeem_voucher_key()));
+
+
+                    String encodedString =
+                            Base64.getEncoder().withoutPadding().encodeToString(person.toByteArray());
+                    redemptionEntryResp.setRedeem_voucher_key_crypt_encode(probuff);
+                    redemptionEntryResp.setRedeem_voucher_key_crypt_encode_withoutPadding(encodedString);
+
+
+                    redemptionEntryResp.setRedeem_voucher_key(e.getRedeem_voucher_key());
+                    redemptionEntryResp.setLable(e.getName());
+                    redemptionEntryResp.setLimit(e.getLimit().intValue());
+
+                    redemptionEntryResp.setStart_date(e.getStart_date());
+                    redemptionEntryResp.setEnd_date(e.getEnd_date());
+                    redemptionEntryResp.setRemaining(e.getLimit().intValue()-e.getRedeemed_quantity().intValue());
+                    redemptionEntryResp.setTryRedeem(e.getTry_());
+
+
+                    //    redemptionEntryResp.setRemaining(Long.valueOf(e.getLimit()-e.getRedeemed_quantity()).intValue());
+                    redemptionEntryResp.setCheck_in(redemptionEntryResp.getRemaining() >= e.getTry_());
+                    return redemptionEntryResp;
+
+                })
+                .sorted(Comparator.comparing(RedemptionTryResp.RedemptionEntryResp::isCheck_in))
+                .collect(Collectors.toList()));
+
+
+        resp.setRedeemAllowed(resp.getEntries().stream().map(e->e.isCheck_in()).findAny().isPresent());
+
+
+
+
+
+
+
+        PersonBean.Person person = PersonBean.Person.newBuilder()
+                .setAge(timestamp.getTime())
+                .setName(code)
+                .build();
+
+
+
+        String encodedString =
+                Base64.getEncoder().withoutPadding().encodeToString(person.toByteArray());
+        resp.setCrypto_code(encodedString);
     }
 }

@@ -1,8 +1,15 @@
 package com.lt.dom.thirdTS.domainTsToLt;
 
+import org.javatuples.Triplet;
+import org.springframework.util.MultiValueMap;
+
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class TsReqLt退单接口 extends TsReqLtBase{
 
@@ -14,6 +21,20 @@ public class TsReqLt退单接口 extends TsReqLtBase{
     private String codes;//退单凭证，多个','分割
 
     private String remark;//:退单备注
+
+    public static TsReqLt退单接口 from_(MultiValueMap<String, String> ob_) {
+        TsReqLt退单接口 tsReqLtBase = new TsReqLt退单接口();
+
+        tsReqLtBase.setSerial_no((String)ob_.getFirst("serial_no"));
+
+        tsReqLtBase.setOrders_id(ob_.getFirst("orders_id"));
+        tsReqLtBase.setSize(Integer.valueOf( ob_.getFirst("size")));
+        tsReqLtBase.setCodes((String)  ob_.getFirst("codes"));
+
+        tsReqLtBase.setRemark((String)  ob_.getFirst("remark"));
+
+        return tsReqLtBase;
+    }
 
     public Integer getSize() {
         return size;

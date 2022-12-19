@@ -154,6 +154,8 @@ private String code;
     @Size(min = 1,max = 100,message = "名称长度必须为1到100")
     private String name_long;
     private Long typeTo;
+
+   // @Enumerated(EnumType.STRING)
     private EnumProductStatus status;
 
     private Boolean acitve;
@@ -221,9 +223,9 @@ private String code;
 
 
     private String royaltyId;
-    private long supplierId;
+    private Long supplierId;
 
-    public long getSupplierId() {
+    public Long getSupplierId() {
         return supplierId;
     }
 

@@ -79,7 +79,7 @@ public class DeviceController {
                 "device_type_list",EnumDeviceType.from(Arrays.asList(EnumDeviceType.OUTLET,
                         EnumDeviceType.HANDSET,
                         EnumDeviceType.FICIAL_RECOGNITION,
-                        EnumDeviceType.QRCODE_READER))
+                        EnumDeviceType.QRCODE_READER,EnumDeviceType.BUS_QRCODE_READER))
         ));
 
 

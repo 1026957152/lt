@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 
 public enum EnumMiniappPagePath {
     home_city_pass("/pages/ownercard/show"),
+
+    home_city_hero_card("/pages/onecard/show"),
+
+
     user_support("/pages/user/about"),
     address_list("/pages/user/address/list"),
     address_add("/pages/user/address/post"),

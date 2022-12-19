@@ -31,8 +31,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -307,7 +309,7 @@ public class PaymentServiceImpl {
 
 
 
-    @Transactional
+    @Transactional(propagation= Propagation.NESTED)
     public void paidChage(Charge charge, Payment payment,Reservation reservation) {
 
 

@@ -2,6 +2,7 @@ package com.lt.dom.serviceOtc.product;
 
 
 import cn.hutool.core.util.ObjectUtil;
+import com.lt.dom.FulfiiledItemRepository;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.controllerOct.RedemptionRestController;
 import com.lt.dom.error.BookNotFoundException;
@@ -23,6 +24,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,6 +42,12 @@ public class CityPassServiceImpl {
 
     @Autowired
     private ComponentRightServiceImpl componentRightService;
+
+
+
+
+    @Autowired
+    private FulfillServiceImpl fulfillService;
 
     @Autowired
     private UserRepository userRepository;
@@ -78,8 +86,7 @@ public class CityPassServiceImpl {
             ;
 
 
-    @Autowired
-    private FulfillmentRepository fulfillmentRepository;
+
     @Autowired
     private IntelliCodeRepository intelliCodeRepository;
 
@@ -359,6 +366,11 @@ public class CityPassServiceImpl {
 
                     compoentRightAssigtToTargeVo.setPass(pass);
                     compoentRightAssigtToTargeVo.setBooking(reservation);
+                    compoentRightAssigtToTargeVo.setReferenceId(pass.getId());
+                    compoentRightAssigtToTargeVo.setReferenceType(EnumRelatedObjectType.pass);
+                    compoentRightAssigtToTargeVo.setReference(pass.getCode());
+
+
 
                     if(user.getPlatform().equals(EnumPlatform.TS)){
 /*                        Pass pass = passService.create_virtual(lineItem,cardholder,10);
@@ -386,6 +398,14 @@ public class CityPassServiceImpl {
                     Long limit = 2l;
 
                     List<Component> componentRightList = componentRepository.findAllByProduct(lineItem.getProduct());
+
+/*                    if(true){
+                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+
+                      //  throw new RuntimeException();
+                    }*/
+
+
                     componentRightService.assingtoComponent(compoentRightAssigtToTargeVo,
                             componentRightList.stream().map(e->{
                                 Triplet<Component,LineItem,EnumComponentVoucherType> componentVounchLineItemPair =
@@ -400,12 +420,20 @@ public class CityPassServiceImpl {
 
 
 
-                    if(tra.getTel_home()!= null){
-                        String greetings = String.format(
-                                "你的验证码是%s",
-                                "恭喜你");
+                    fulfillService.create(reservation,tra);
 
-                        smsService.singleSend(greetings,tra.getTel_home());
+                    if(tra.getTel_home()!= null){
+
+                        try {
+                            String greetings = String.format(
+                                    "你的验证码是%s",
+                                    tra.hashCode());
+
+                            smsService.singleSend(greetings,tra.getTel_home());
+
+                        }catch (Exception e){
+                            logger.error("短信发送失败 {} ",e.getMessage());
+                        }
                     }
 
 
@@ -520,11 +548,12 @@ public class CityPassServiceImpl {
         if(!voucher.isActive()){
             throw new BookNotFoundException(Enumfailures.voucher_not_active,"该券状态不活跃");
         }
-/*
-        if(voucher.getStatus().equals(EnumVoucherStatus.Redeemed)){
+
+
+/*      if(voucher.getStatus().equals(EnumVoucherStatus.Redeemed)){
             throw new ExistException(Enumfailures.invalid_voucher,"该券已核销,无法再次核销");
-        }
-*/
+        }*/
+
 
 
 
@@ -565,7 +594,6 @@ public class CityPassServiceImpl {
 
 
 
-
         RedemptionTryResp resp = new RedemptionTryResp();
 
         resp.setType_text(EnumRedeamptionType.PASS.toString());
@@ -599,7 +627,13 @@ public class CityPassServiceImpl {
                     "cropped_back": "https://example.plaid.com/verifications/idv_52xR9LKo77r1Np/documents/1/cropped_back.jpeg",
                     "face": "https://example.plaid.com/verifications/idv_52xR9LKo77r1Np/documents/1/face.jpeg"
         },*/
-        resp.setEntries(componentVounchList.stream()
+
+
+        componentRightService.sentEntries(voucher.getCode(), resp,componentVounchList);
+
+
+     //   resp.setCrypto_code(pass.getCode());
+    /*    resp.setEntries(componentVounchList.stream()
             //    .filter(e->!(e.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed)))
                 .map(e->{
                     RedemptionTryResp.RedemptionEntryResp redemptionEntryResp = new RedemptionTryResp.RedemptionEntryResp();
@@ -613,6 +647,7 @@ public class CityPassServiceImpl {
                     redemptionEntryResp.setEnd_date(e.getEnd_date());
                     redemptionEntryResp.setRemaining(e.getLimit().intValue()-e.getRedeemed_quantity().intValue());
 
+                    redemptionEntryResp.setTryRedeem(e.getTry_());
 
                     //    redemptionEntryResp.setRemaining(Long.valueOf(e.getLimit()-e.getRedeemed_quantity()).intValue());
                     redemptionEntryResp.setCheck_in(redemptionEntryResp.getRemaining() >= e.getTry_() && triplet来自设备.contains(e.getComponentRight()));
@@ -623,7 +658,10 @@ public class CityPassServiceImpl {
                 .collect(Collectors.toList()));
 
         resp.setCheckin(resp.getEntries().stream().map(e->e.isCheck_in()).findAny().isPresent());
-        resp.setCrypto_code(voucher.getCode());
+*/
+
+
+
 
         EntityModel redemptionEntryEntityModel =  EntityModel.of(resp);
 
@@ -680,9 +718,11 @@ public class CityPassServiceImpl {
 
         List<Validator_> validator_s = validatorRepository.findAllByTypeAndUser(EnumValidatorType.特定的人员,userVo.getUser_id());
 
+
         if(validator_s.isEmpty()){
             throw new BookNotFoundException(Enumfailures.not_found,"职工得 核销分配 对象 为空，请添加"+userVo.getPhone());
         }
+
         List<Long> triplet来自设备 =
                 validator_s.stream().map(e->e.getComponentRightId()).collect(Collectors.toList());
 
@@ -692,8 +732,6 @@ public class CityPassServiceImpl {
         if(components.size() ==0){
             throw new BookNotFoundException(Enumfailures.not_found,"该券 无可核销得 权益"+voucher.getCode());
         }
-
-
 
 
         List<ComponentVounch> componentVounchList = components.stream()  // TODO 找到了这里的 权限
@@ -778,12 +816,14 @@ public class CityPassServiceImpl {
         if(lineItemList.size()==0){
             return;
         }
-        if(lineItemList.stream().filter(e->e.isCheckin()!= null && e.isCheckin()).findAny().isPresent()){
+        if(lineItemList.stream()
+                .filter(e->e.isCheckin()!= null)
+                .filter(e->e.isCheckin()).findAny().isPresent()){
 
 
-            String info = lineItemList.stream().filter(e->e.isCheckin() == null || !e.isCheckin()).map(e->{
+            String info = lineItemList.stream().filter(e->e.isCheckin() != null && e.isCheckin()).map(e->{
 
-                String lable = String.format("%s*%s",e.getTitle(),e.getBooking());
+                String lable = String.format("%s-%s-%s",e.getId(),e.getTitle(),e.getBooking());
 
                 return lable;
             }).collect(Collectors.joining(","));

@@ -17,7 +17,7 @@ queue:
   name: teste
 
 server:
-  port: 8080
+  port: 8081
 
 #server:
 #  port: 443
@@ -72,13 +72,16 @@ spring:
       hibernate:
         jdbc.batch_size: 30
         order_inserts: true
-        #dialect: org.hibernate.dialect.H2Dialect
-        dialect: org.hibernate.dialect.MySQL5Dialect
+        #dialect: org.hibernate.dialect.H2Dialect  MySQL8Dialect
+        dialect.storage_engine: innodb
+    #database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect  #使用innodb引擎建表
     show-sql: true
 
     generate-ddl: true  # 这个
     hibernate.ddl-auto: update #create-drop
 #    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+
 
   mvc:
     static-path-pattern: /oct/**

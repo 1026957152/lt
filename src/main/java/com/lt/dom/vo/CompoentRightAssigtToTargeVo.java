@@ -4,6 +4,7 @@ package com.lt.dom.vo;
 import com.lt.dom.oct.Pass;
 import com.lt.dom.oct.Reservation;
 import com.lt.dom.otcenum.EnumPlatform;
+import com.lt.dom.otcenum.EnumRelatedObjectType;
 
 
 public class CompoentRightAssigtToTargeVo {
@@ -14,6 +15,9 @@ public class CompoentRightAssigtToTargeVo {
     private EnumPlatform platform;
     private Pass pass;
     private Reservation booking;
+    private String reference;
+    private Long referenceId;
+    private EnumRelatedObjectType referenceType;
 
 
     public void setOrders_id(String orders_id) {
@@ -54,5 +58,29 @@ public class CompoentRightAssigtToTargeVo {
 
     public Reservation getBooking() {
         return booking;
+    }
+
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public Long getReferenceId() {
+        return referenceId;
+    }
+
+    public void setReferenceId(Long referenceId) {
+        this.referenceId = referenceId;
+    }
+
+    public void setReferenceType(EnumRelatedObjectType referenceType) {
+        this.referenceType = referenceType;
+    }
+
+    public EnumRelatedObjectType getReferenceType() {
+        return referenceType;
     }
 }

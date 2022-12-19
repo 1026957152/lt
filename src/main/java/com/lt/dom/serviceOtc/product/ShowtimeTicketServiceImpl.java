@@ -13,8 +13,12 @@ import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.ComponentRightServiceImpl;
 import com.lt.dom.serviceOtc.IdGenServiceImpl;
 import com.lt.dom.serviceOtc.ProductServiceImpl;
+import com.lt.dom.vo.CompoentRightAssigtToTargeVo;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
+import org.javatuples.Triplet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
@@ -32,6 +36,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class ShowtimeTicketServiceImpl {
+    Logger logger = LoggerFactory.getLogger(ShowtimeTicketServiceImpl.class);
+
 
     @Autowired
     private LtConfig ltConfig;
@@ -140,12 +146,13 @@ public class ShowtimeTicketServiceImpl {
         lineItemList = lineItemList.stream().filter(e->e.getLineType().equals(lineType)).collect(Collectors.toList());
 
 
-        lineItemList.stream().forEach(bookingProduct -> {
+        lineItemList.stream().forEach(lineItem -> {
 
 
 
 
-            Quartet<Zone,Movie,Theatre,Sku> triplet =  productService.showTime(bookingProduct.getSku());
+
+            Quartet<Zone,Movie,Theatre,Sku> triplet =  productService.showTime(lineItem.getSku());
 
             Zone zone = triplet.getValue0();
             Movie movie = triplet.getValue1();
@@ -153,13 +160,13 @@ public class ShowtimeTicketServiceImpl {
             Sku sku = triplet.getValue3();
 
 
-            Optional<Product> productOptional = productRepository.findById(bookingProduct.getProduct());
+            Optional<Product> productOptional = productRepository.findById(lineItem.getProduct());
             Product product = productOptional.get();
 
-                    List<Component> componentRightList = componentRepository.findAllByProduct(bookingProduct.getProduct());
+                    List<Component> componentRightList = componentRepository.findAllByProduct(lineItem.getProduct());
 
 
-                    List<VoucherTicket> vouchers = LongStream.range(0, bookingProduct.getQuantity()).boxed().map(x -> {
+                    List<VoucherTicket> vouchers = LongStream.range(0, lineItem.getQuantity()).boxed().map(x -> {
                         VoucherTicket voucher = new VoucherTicket();
 
                         voucher.setBooking(reservation.getId());
@@ -207,8 +214,20 @@ public class ShowtimeTicketServiceImpl {
 
                     vouchers = voucherTicketRepository.saveAll(vouchers);
                     vouchers.stream().forEach(e->{
-                        componentRightService.assingtoTicket(e,componentRightList, limit);
 
+                        CompoentRightAssigtToTargeVo compoentRightAssigtToTargeVo = new CompoentRightAssigtToTargeVo();
+
+
+                        logger.error("订单数量和 新建一个年卡 "+reservation.getPlatform());
+                        compoentRightAssigtToTargeVo.setBooking(reservation);
+
+                        componentRightService.assingtoComponent(compoentRightAssigtToTargeVo,
+                                componentRightList.stream().map(ee->{
+                                    Triplet<Component,LineItem,EnumComponentVoucherType> componentVounchLineItemPair =
+                                            Triplet.with(ee,lineItem,ee.getType());
+                                    return componentVounchLineItemPair;
+                                }).collect(Collectors.toList()),
+                                limit);
                     });
 
 

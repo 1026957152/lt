@@ -13,6 +13,8 @@ import com.lt.dom.repository.UserRepository;
 import com.lt.dom.repository.ValidatorRepository;
 import com.lt.dom.serviceOtc.ValidatorScanServiceImpl;
 import com.lt.dom.serviceOtc.ValidatorServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +38,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/oct")
 public class ValidatorRestController {
 
+    private static final Logger logger = LoggerFactory.getLogger(RedemptionRestController.class);
 
     @Autowired
     private ValidatorScanServiceImpl validatorScanService;
@@ -203,6 +206,8 @@ public class ValidatorRestController {
     @PutMapping(value = "/users/{USER_ID}/validators", produces = "application/json")
     public EntityModel update(@PathVariable long USER_ID,@RequestBody @Valid ValidatorEditResp validatorEditResp ) {
 
+
+        logger.debug("参数{} ",validatorEditResp.toString());
 
         Optional<User> supplierOptional =userRepository.findById(USER_ID);
         if(supplierOptional.isEmpty()) {

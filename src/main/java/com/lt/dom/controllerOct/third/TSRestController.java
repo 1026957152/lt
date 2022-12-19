@@ -182,16 +182,15 @@ public class TSRestController {
 
 
 
-
-        if (tsReqLt产品列表 instanceof TsReqLt退单接口){
+      if (tsReqLt产品列表.getMethod().equals(EnumMethord.item_refund)){
             if(tsReqLt产品列表.get_pid().equals("dddddd")){
                 throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
             }
 
-            TsReqLt退单接口 tsReqLt产品列表1 = (TsReqLt退单接口) tsReqLt产品列表;
+          TsReqLt退单接口 tsReqLt退单接口 = TsReqLt退单接口.from_(ob_);
 
-            System.out.println("TsReqLt退单接口dddddddddddd"+tsReqLt产品列表1.toString());
-            TsReqLt退单接口 tsReqLt退单接口 =new TsReqLt退单接口();// tsToLtService.getTsReqLt产品列表(tsReqLt产品列表1);
+
+            System.out.println("TsReqLt退单接口dddddddddddd"+tsReqLt退单接口.toString());
 
             try{
                 if(tsReqLt产品列表.get_pid().equals("dddddd")){

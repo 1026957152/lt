@@ -32,8 +32,11 @@ public class BusRouteResp extends BaseResp {
     private String shortName;
     private String name;
     private String description;
-    private List<EntityModel> stops;
+    private List stops;
     private List<BusVehicleResp> buses;
+
+    private String websocketUrl;
+    private String websocketDestination;
 
     public static BusRouteResp of(BusRoute e) {
         BusRouteResp busRouteResp = new BusRouteResp();
@@ -41,7 +44,8 @@ public class BusRouteResp extends BaseResp {
         busRouteResp.setName(e.getName());
         busRouteResp.setShortName(e.getShortName());
         busRouteResp.setDescription(e.getDescription());
-
+        busRouteResp.setCreatedDate(e.getCreatedDate());
+        busRouteResp.setModifiedDate(e.getModifiedDate());
         return busRouteResp;
     }
 
@@ -86,11 +90,11 @@ public class BusRouteResp extends BaseResp {
         return description;
     }
 
-    public void setStops(List<EntityModel> stops) {
+    public void setStops(List stops) {
         this.stops = stops;
     }
 
-    public List<EntityModel> getStops() {
+    public List getStops() {
         return stops;
     }
 
@@ -109,5 +113,22 @@ public class BusRouteResp extends BaseResp {
 
     public List<BusVehicleResp> getBuses() {
         return buses;
+    }
+
+
+    public void setWebsocketUrl(String websocketUrl) {
+        this.websocketUrl = websocketUrl;
+    }
+
+    public String getWebsocketUrl() {
+        return websocketUrl;
+    }
+
+    public void setWebsocketDestination(String websocketDestination) {
+        this.websocketDestination = websocketDestination;
+    }
+
+    public String getWebsocketDestination() {
+        return websocketDestination;
     }
 }

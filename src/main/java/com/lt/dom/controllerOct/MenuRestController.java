@@ -1,20 +1,10 @@
 package com.lt.dom.controllerOct;
 
 import com.lt.dom.OctResp.MenuResp;
-import com.lt.dom.oct.Menu;
-import com.lt.dom.oct.Product;
 import com.lt.dom.otcenum.EnumMenu;
-import com.lt.dom.repository.ProductRepository;
-import com.lt.dom.repository.VoucherRepository;
-import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -555,6 +545,39 @@ public class MenuRestController {
 
 
 
+
+        MenuResp menuResp_bus =new MenuResp("/transfer","/bus",
+                "Transfer",
+                new MenuResp.Meta( "驼城小易", "el-icon-files",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
+                )
+        );
+
+        menuResp_bus.getChildren().add(new MenuResp("/transfer/line/index","IndexLine",
+                new MenuResp.Meta( "路线管理", "el-icon-copy-document",Arrays.asList("ROLE_ADMIN"))
+        ));
+
+        menuResp_bus.getChildren().add(new MenuResp("/transfer/line/post",true,"DetaiLine",
+                new MenuResp.Meta( "路线详情", "el-icon-copy-document",Arrays.asList("ROLE_ADMIN"),true)
+        ));
+
+
+
+        menuResp_bus.getChildren().add(new MenuResp("/transfer/bus/index","IndexBus",
+                new MenuResp.Meta( "车辆列表","el-icon-files", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+        menuResp_bus.getChildren().add(new MenuResp("/transfer/bus/post",true,"DetailBus",
+                new MenuResp.Meta( "车辆详情", Arrays.asList("ROLE_ADMIN"),true)
+        ));
+        menuRespList.addAll(Arrays.asList(menuResp_bus));
+
+
+
+
+
+
+
+
+
         MenuResp menuResp_invoice =new MenuResp("/invoice","/Invoice",
                 "Invoice",
                 new MenuResp.Meta( "票据管理", "el-icon-menu",Arrays.asList("ROLE_ADMIN","ROLE_GOVERNMENT")
@@ -804,7 +827,7 @@ public class MenuRestController {
         menuResp_device.getChildren().add(new MenuResp("/device/index","IndexDevice",
                 new MenuResp.Meta( "设备列表", "el-icon-film")
         ));
-        menuResp_device.getChildren().add(new MenuResp("/device/detail","DetailDevice",
+        menuResp_device.getChildren().add(new MenuResp("/device/detail",true,"DetailDevice",
                 new MenuResp.Meta( "设备详情", "el-icon-film")
         ));
         menuRespList.addAll(Arrays.asList(menuResp_device));

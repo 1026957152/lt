@@ -24,6 +24,7 @@ public class MediaResp extends BaseResp{
     private PhotoResp audio;
     private PhotoResp introductionAudio;
     private String code;
+    private String path;
 
     public PhotoResp getAudio() {
         return audio;
@@ -148,6 +149,14 @@ public class MediaResp extends BaseResp{
 
     public String getCode() {
         return code;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getPath() {
+        return path;
     }
 
     public static class Description {

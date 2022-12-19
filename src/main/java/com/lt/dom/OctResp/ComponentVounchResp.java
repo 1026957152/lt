@@ -71,7 +71,7 @@ public class ComponentVounchResp  extends Base{   // 这个是 下单的时候�
     //    componentVounchResp.setRoyaltyRule(e.getRoyaltyRule());
         componentVounchResp.setCode(e.getCode());
         componentVounchResp.setRoyaltyRuleId(e.getRoyaltyRuleId());
-        componentVounchResp.setVoucherId(e.getVoucherId());
+        componentVounchResp.setVoucherId(e.getReferenceId());
 
 
         if(e.getBelongType() == null){

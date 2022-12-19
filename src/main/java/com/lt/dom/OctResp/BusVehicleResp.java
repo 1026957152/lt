@@ -2,7 +2,9 @@ package com.lt.dom.OctResp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.EnumTag;
+import com.lt.dom.proto.req.BusAndStopUpdateMessage;
 import com.lt.dom.oct.BusVehicle;
+
 
 import java.util.List;
 
@@ -11,8 +13,47 @@ import java.util.List;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BusVehicleResp {
+public class BusVehicleResp extends BaseResp{
 
+
+
+    public static class Live {
+
+        private Double lat;
+        private Double lng;
+
+        public static Live of(BusAndStopUpdateMessage.BusUpdateMessage message) {
+            Live live1 = new Live();
+            live1.setLat(message.getLat());
+            live1.setLng(message.getLng());
+            return live1;
+        }
+
+        public void setLat(Double lat) {
+            this.lat = lat;
+        }
+
+        public Double getLat() {
+            return lat;
+        }
+
+        public void setLng(Double lng) {
+            this.lng = lng;
+        }
+
+        public Double getLng() {
+            return lng;
+        }
+    }
+    private Live live;
+
+    public Live getLive() {
+        return live;
+    }
+
+    public void setLive(Live live) {
+        this.live = live;
+    }
 
     private List<EnumTag> tag_keys;
 
@@ -36,6 +77,8 @@ public class BusVehicleResp {
         BusVehicleResp busVehicleResp = new BusVehicleResp();
         busVehicleResp.setPlateName(e.getPlateName());
         busVehicleResp.setCode(e.getCode());
+        busVehicleResp.setCreatedDate(e.getCreatedDate());
+        busVehicleResp.setModifiedDate(e.getModifiedDate());
         return busVehicleResp;
     }
 

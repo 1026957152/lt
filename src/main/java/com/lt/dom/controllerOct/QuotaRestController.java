@@ -4,7 +4,7 @@ import com.lt.dom.oct.Product;
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.VoucherRepository;
 import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import com.lt.dom.serviceOtc.FulfillServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +29,7 @@ public class QuotaRestController {
     private VoucherRepository voucherRepository;
 
     @Autowired
-    private VonchorServiceImpl vonchorService;
+    private FulfillServiceImpl vonchorService;
     @Autowired
     private AvailabilityServiceImpl availabilityService;
 

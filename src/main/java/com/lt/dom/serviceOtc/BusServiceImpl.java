@@ -1,10 +1,13 @@
 package com.lt.dom.serviceOtc;
 
 
+import com.lt.dom.OctResp.BusRouteEditReq;
+import com.lt.dom.OctResp.BusVehicleEdit;
 import com.lt.dom.OctResp.MovieEdit;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.EnumDocumentType;
+import com.lt.dom.otcenum.EnumWayPointType;
 import com.lt.dom.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +16,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +29,8 @@ public class BusServiceImpl {
 
     @Autowired
     private BusStopRepository stopRepository;
+
+
 
     @Autowired
     private BusRouteRepository busRouteRepository;
@@ -41,6 +47,9 @@ public class BusServiceImpl {
 
     @Autowired
     private AttributeRepository attributeRepository;
+
+    @Autowired
+    private DeviceRepository deviceRepository;
 
 
     @Autowired
@@ -92,6 +101,37 @@ public class BusServiceImpl {
 
     }
 
+
+
+
+    public BusRoute updateStops(BusRoute busRoute, BusRouteEditReq.StopTab  theatreReq) {
+
+
+        Map<Long,BusRouteEditReq.StopTab.StopRegistrationReq> aaa = theatreReq.getStops().stream().collect(Collectors.toMap(e->e.getId(),ee->ee));
+        List<BusStop> busStopList = busStopRepository.findAllById(theatreReq.getStops().stream().map(e->e.getId()).collect(Collectors.toList()));
+        BusRoute route = busRoute;
+        busStopList.stream().forEach(e->{
+
+            BusRouteEditReq.StopTab.StopRegistrationReq req = aaa.get(e.getId());
+            StopRegistration stopRegistration = new StopRegistration();
+            stopRegistration.setStop(e);
+            stopRegistration.setRoute(route);
+            stopRegistration.setLabel(req.getLable());
+            stopRegistration.setType(EnumWayPointType.stopOver);
+
+            stopRegistration.setId(new CourseRatingKey(route.getId(), e.getId()));
+            route.addStationInList(stopRegistration);
+
+        });
+
+
+        busRoute = busRouteRepository.save(route);
+
+
+        return busRoute;
+
+
+    }
     public BusRoute addStop(BusRoute busRoute, List<BusStopReq>  theatreReq) {
 
 
@@ -138,6 +178,41 @@ public class BusServiceImpl {
 
     }
 
+
+
+    public BusRoute updateBuses(BusRoute busRoute, BusRouteEditReq.BusTab  theatreReq) {
+
+
+        List<BusVehicle> busStopList = busVehicleRepository.findAllById(theatreReq.getBuses().stream().map(e->e.getId()).collect(Collectors.toList()));
+
+        ;
+/*
+        busStopList = busVehicleRepository.saveAll(busStopList.stream().map(e->{
+             e.setRoute(null);
+             return e;
+        }).collect(Collectors.toList()));*/
+
+        busRoute.getBuses().clear();
+
+
+
+        BusRoute finalBusRoute = busRoute;
+        busRoute.getBuses().addAll(busStopList.stream().map(e->{
+            e.setRoute(finalBusRoute);
+            return e;
+        }).collect(Collectors.toList()));
+
+
+
+
+
+        busRoute = busRouteRepository.save(busRoute);
+
+
+        return busRoute;
+
+
+    }
 
 
 
@@ -366,6 +441,9 @@ public class BusServiceImpl {
 
 
     }
+
+
+
     @Transactional
     public Movie update(Movie theatre, MovieEdit theatreReq) {
 
@@ -447,6 +525,32 @@ public class BusServiceImpl {
         return theatre;
     }
 
+
+    @Transactional
+    public BusVehicle updateDevice(BusVehicle theatre, BusVehicleEdit.DeviceTab theatreReq) {
+
+
+
+        theatre.getBusVehicleDevices().clear();
+
+        BusVehicle finalTheatre = theatre;
+        theatre.setBusVehicleDevices(theatreReq.getDeviceReqs().stream().map(e->{
+
+            Optional<Device> deviceOptional = deviceRepository.findById(e.getId());
+
+
+            BusVehicleDevice busVehicleDevice = new BusVehicleDevice();
+            busVehicleDevice.setBusVehicle(finalTheatre);
+            busVehicleDevice.setDevice(deviceOptional.get());
+            busVehicleDevice.setId(new BusVehicleDeviceKey(finalTheatre.getId(),deviceOptional.get().getId()));
+
+            return busVehicleDevice;
+        }).collect(Collectors.toList()));
+
+
+        theatre = busVehicleRepository.save(theatre);
+        return theatre;
+    }
 
     public Showtime createShowtime(Supplier supplier, Theatre theatre, Movie movie, SeatingLayout seatingLayout, ShowtimeReq movieReq) {
         Showtime showtime = new Showtime();

@@ -35,6 +35,7 @@ public class VoucherTicket extends Base{
     private Long voucher;
     private String lable;
     private String data_json;
+    private Long bookingLine;
 
     public void setData_json(String data_json) {
         this.data_json = data_json;
@@ -42,6 +43,14 @@ public class VoucherTicket extends Base{
 
     public String getData_json() {
         return data_json;
+    }
+
+    public Long getBookingLine() {
+        return bookingLine;
+    }
+
+    public void setBookingLine(Long bookingLine) {
+        this.bookingLine = bookingLine;
     }
 
     public static class Showtime {

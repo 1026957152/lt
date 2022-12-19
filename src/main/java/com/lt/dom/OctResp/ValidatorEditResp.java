@@ -6,6 +6,7 @@ import com.lt.dom.oct.Employee;
 import com.lt.dom.oct.Role;
 import com.lt.dom.oct.Supplier;
 import com.lt.dom.oct.User;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.springframework.hateoas.EntityModel;
@@ -38,6 +39,9 @@ public class ValidatorEditResp {
         this.ids = ids;
     }
 
-
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
 
 }

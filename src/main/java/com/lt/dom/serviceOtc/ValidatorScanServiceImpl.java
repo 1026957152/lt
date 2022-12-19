@@ -93,7 +93,7 @@ public class ValidatorScanServiceImpl {
       //  List<ComponentRightVounch> componentRightVounches = componentRight.getComponentRightVounches();
 
 
-        List<ComponentVounch> componentVounchList = componentVounchRepository.findByVoucherId(vounchLicense.getVounchId());
+        List<ComponentVounch> componentVounchList = componentVounchRepository.findByReferenceId(vounchLicense.getVounchId());
        // List<ComponentRightVounch> componentRightVounchList = voucher.getComponentRightVounchList();
 
         ExampleMatcher modelMatcher = ExampleMatcher.matching()
@@ -102,7 +102,7 @@ public class ValidatorScanServiceImpl {
 
         ComponentVounch probe = new ComponentVounch();
         probe.setComponentRight(componentRight.getId());
-        probe.setVoucherId(vounchLicense.getVounchId());
+        probe.setReferenceId(vounchLicense.getVounchId());
 
         Example<ComponentVounch> example = Example.of(probe, modelMatcher);
 
@@ -130,7 +130,7 @@ public class ValidatorScanServiceImpl {
         //  List<ComponentRightVounch> componentRightVounches = componentRight.getComponentRightVounches();
 
 
-        List<ComponentVounch> componentVounchList = componentVounchRepository.findByVoucherId(voucher.getId());
+        List<ComponentVounch> componentVounchList = componentVounchRepository.findByReferenceId(voucher.getId());
 
         ExampleMatcher modelMatcher = ExampleMatcher.matching()
                 .withIgnorePaths("id")
@@ -138,7 +138,7 @@ public class ValidatorScanServiceImpl {
 
         ComponentVounch probe = new ComponentVounch();
         probe.setComponentRight(componentRight.getId());
-        probe.setVoucherId(voucher.getId());
+        probe.setReferenceId(voucher.getId());
 
         Example<ComponentVounch> example = Example.of(probe, modelMatcher);
 

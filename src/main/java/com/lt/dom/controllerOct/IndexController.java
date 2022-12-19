@@ -21,6 +21,8 @@ import com.lt.dom.specification.SightsQueryfieldsCriteria;
 import com.lt.dom.vo.UserVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.EntityModel;
@@ -35,10 +37,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.data.jpa.domain.Specification.where;
@@ -51,6 +50,7 @@ public class IndexController {
 
 
 
+    private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
 
     @Value("${blog_flag}")
@@ -93,6 +93,8 @@ public class IndexController {
     private AttributeServiceImpl attributeService;
     @Autowired
     private TripRepository tripRepository;
+    @Autowired
+    private TripPlanRepository tripPlanRepository;
 
 
 
@@ -118,6 +120,9 @@ public class IndexController {
     private MediaServiceImpl mediaService;
     @Autowired
     private ProductServiceImpl productService;
+
+
+
 
     @Autowired
     private PlaceRepository placeRepository;
@@ -228,12 +233,17 @@ public class IndexController {
 
                 EntityModel attractionEntityModel = EntityModel.of(attractionResp);
                 attractionEntityModel.add(linkTo(methodOn(AttractionRestController.class).getAttraction(e.getId(), null)).withSelfRel().expand());
+                attractionEntityModel.add(linkTo(methodOn(AttractionRestController.class).createTrip(e.getId(),null)).withRel("addToTripPlan").expand());
+
+
 
                 return attractionEntityModel;
             }).collect(Collectors.toList()));
 
 
         }
+
+
 /*
 
         Map<Long,List<Campaign>> longListMap =  campaignList.stream().collect(Collectors.groupingBy(e->e.getScenario()));
@@ -335,8 +345,13 @@ public class IndexController {
         List<Media>  mediaList_carousel  = mediaService.fromValueList(valueListItems_carousel.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList()));
 
         homeResp.setCarousel(mediaList_carousel.stream().map(e->{
-            return MediaResp.simpleFrom(e);
+            MediaResp mediaResp = MediaResp.simpleFrom(e);
 
+
+            String link = linkTo(methodOn(IndexController.class).heroPass(null)).withSelfRel().getHref();
+
+            mediaResp.setPath(featureService.fill(Enumfeatured.city_hero).getValue0().getPath());
+            return mediaResp;
         }).collect(Collectors.toList()));
 
 
@@ -434,21 +449,55 @@ public class IndexController {
             homeResp.setPickupDropoff(entityModel_pickup);
         }
 
+        List<Object> objectList = new ArrayList<>();
+
+        List<TripPlan> tripPlans = tripPlanRepository.findAll();
         List<Trip> bookingRuleList = tripRepository.findAll();
 
 
-        List<EntityModel> listMap = bookingRuleList.stream().map(e->{
-            TripResp movieResp = TripResp.simpleFrom(e);
+        objectList.addAll(tripPlans);
+        objectList.addAll(bookingRuleList);
 
 
-            movieResp.setAttraction_count(1);
-            movieResp.setDuration("1天");
-            movieResp.setTripCover(fileStorageService.loadDocumentWithDefault(EnumDocumentType.trip_cover,e.getCode()));
 
-            EntityModel entityModel_trip = EntityModel.of(movieResp);
-            entityModel_trip.add(linkTo(methodOn(TripRestController.class).getTrip(e.getId())).withSelfRel());
+        List<EntityModel> listMap = objectList.stream().map(e->{
 
-            return entityModel_trip;
+            TripResp movieResp = null;
+
+            if(e instanceof TripPlan){
+
+                TripPlan tripPlan= (TripPlan)e;
+                movieResp = TripResp.simpleFrom(tripPlan);
+                movieResp.setType("TripPlan");
+                movieResp.setAttraction_count(tripPlan.getAttractions().size());
+                movieResp.setDuration("1天");
+                movieResp.setTripCover(fileStorageService.loadDocumentWithDefault(EnumDocumentType.trip_cover,tripPlan.getCode()));
+
+                EntityModel entityModel_trip = EntityModel.of(movieResp);
+                entityModel_trip.add(linkTo(methodOn(TripRestController.class).getTrip(tripPlan.getId())).withSelfRel());
+                return entityModel_trip;
+            }
+
+            if(e instanceof Trip){
+
+
+
+                Trip tripPlan= (Trip)e;
+                movieResp = TripResp.simpleFrom(tripPlan);
+                movieResp.setType("Trip");
+                movieResp.setAttraction_count(1);
+                movieResp.setDuration("1天");
+                movieResp.setTripCover(fileStorageService.loadDocumentWithDefault(EnumDocumentType.trip_cover,tripPlan.getCode()));
+
+                EntityModel entityModel_trip = EntityModel.of(movieResp);
+                entityModel_trip.add(linkTo(methodOn(TripRestController.class).getTripPlaner(tripPlan.getId())).withSelfRel());
+                return entityModel_trip;
+            }
+
+
+            return null;
+
+
         }).collect(Collectors.toList());
 
 
@@ -456,6 +505,10 @@ public class IndexController {
             homeResp.setPlanner(listMap);
         }
 
+
+
+        entityModel.add(linkTo(methodOn(TripRestController.class).Page_planTrip()).withRel("Page_planTrip").expand());
+        entityModel.add(linkTo(methodOn(TripRestController.class).tripPlanerListTripPlaner(null,null)).withRel("listTripPlaner").expand());
 
 
         return entityModel;

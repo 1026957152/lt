@@ -34,6 +34,13 @@ public class ComponentVounch extends Base{
     @Enumerated(EnumType.STRING)
     private EnumComponentVoucherType type;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private EnumRelatedObjectType referenceType;
+
+    @NotNull
+    private Long originalProduct;
+
     public EnumComponentVoucherType getType() {
         return type;
     }
@@ -117,14 +124,14 @@ public class ComponentVounch extends Base{
     private String redeem_voucher_key;
     @Transient
     private Voucher voucher;
-    private Long voucherId;
+    private Long referenceId;
 
-    public Long getVoucherId() {
-        return voucherId;
+    public Long getReferenceId() {
+        return referenceId;
     }
 
-    public void setVoucherId(Long voucherId) {
-        this.voucherId = voucherId;
+    public void setReferenceId(Long voucherId) {
+        this.referenceId = voucherId;
     }
 
 
@@ -133,6 +140,7 @@ public class ComponentVounch extends Base{
     private String note;
 
 
+    @NotNull
     private Long redeemed_quantity;// (integer, required) - How many times a voucher has already been redeemed.
 
     private Integer redeemed_amount;// (integer) - Total Amount redeemed by the voucher. Value is multiplied by 100 to precisely represent 2 decimal places. For example, $100 balance is written as 10000.
@@ -359,5 +367,21 @@ public class ComponentVounch extends Base{
 
     public Long getLineItem() {
         return lineItem;
+    }
+
+    public void setReferenceType(EnumRelatedObjectType referenceType) {
+        this.referenceType = referenceType;
+    }
+
+    public EnumRelatedObjectType getReferenceType() {
+        return referenceType;
+    }
+
+    public void setOriginalProduct(Long originalProduct) {
+        this.originalProduct = originalProduct;
+    }
+
+    public Long getOriginalProduct() {
+        return originalProduct;
     }
 }

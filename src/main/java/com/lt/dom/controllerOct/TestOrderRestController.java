@@ -2,15 +2,13 @@ package com.lt.dom.controllerOct;
 
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.VoucherRepository;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import com.lt.dom.serviceOtc.FulfillServiceImpl;
 import com.lt.dom.state.ApplicationReviewStates;
 import com.lt.dom.state.WorkflowOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Date;
 
 @RestController
 @RequestMapping("/oct")
@@ -24,7 +22,7 @@ public class TestOrderRestController {
     private VoucherRepository voucherRepository;
 
     @Autowired
-    private VonchorServiceImpl vonchorService;
+    private FulfillServiceImpl vonchorService;
     @Autowired
     private WorkflowOrderService orderServer;
 

@@ -6,6 +6,7 @@ import com.lt.dom.otcenum.EnumPrivacyLevel;
 
 import javax.persistence.Entity;
 import java.time.LocalDate;
+import java.util.List;
 
 public class TripReq {
 
@@ -16,8 +17,19 @@ public class TripReq {
     private Boolean is_deleted;//Trip was soft deleted and should not be displayed.
 
     private EnumPrivacyLevel privacy_level;
+    private List<Long> attractionIds;
 
-/*    privacy_level: enum["private", "shareable", "public"]
+    public List<Long> getAttractionIds() {
+        return attractionIds;
+    }
+
+    public void setAttractionIds(List<Long> attractionIds) {
+        this.attractionIds = attractionIds;
+    }
+
+
+
+    /*    privacy_level: enum["private", "shareable", "public"]
     privileges: {
         edit: bool
         manage: bool

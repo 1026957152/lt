@@ -23,6 +23,7 @@ import java.util.List;
 @EnableAsync
 @EnableJpaAuditing
 @EnableScheduling
+
 //@EnableRabbit
 public class DomApplication {
 

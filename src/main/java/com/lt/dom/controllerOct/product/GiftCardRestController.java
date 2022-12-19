@@ -3,26 +3,20 @@ package com.lt.dom.controllerOct.product;
 import com.lt.dom.OctResp.ProductResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.*;
 import com.lt.dom.otcReq.product.ProductGiftVoucherPojo;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.SupplierRepository;
 import com.lt.dom.serviceOtc.ProductServiceImpl;
 import com.lt.dom.serviceOtc.ValidatorScanServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import com.lt.dom.serviceOtc.FulfillServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,7 +32,7 @@ public class GiftCardRestController {
     private ProductServiceImpl productService;
 
     @Autowired
-    private VonchorServiceImpl vonchorService;
+    private FulfillServiceImpl vonchorService;
 
     @Autowired
     private SupplierRepository supplierRepository;

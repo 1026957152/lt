@@ -3,6 +3,7 @@ package com.lt.dom.OctResp;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.Base;
 import com.lt.dom.oct.Trip;
+import com.lt.dom.oct.TripPlan;
 import com.lt.dom.otcenum.EnumPrivacyLevel;
 
 import javax.persistence.Entity;
@@ -33,6 +34,7 @@ public class TripResp {
     private List itinerary;
     private Integer attraction_count;
     private String duration;
+    private String type;
 
     public static TripResp from(Trip trip) {
         TripResp tripResp = new TripResp();
@@ -56,6 +58,16 @@ public class TripResp {
 
         return tripResp;
     }
+
+    public static TripResp simpleFrom(TripPlan e) {
+        TripResp tripResp = new TripResp();
+
+        tripResp.setName(e.getName());
+
+        return tripResp;
+
+    }
+
     public String getName() {
         return name;
     }
@@ -168,5 +180,13 @@ public class TripResp {
 
     public String getDuration() {
         return duration;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
     }
 }

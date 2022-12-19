@@ -120,10 +120,16 @@ public class VoucherTicketRestController {
 
             List<ComponentVounch> components = componentVounchRepository.findAllByReference(voucherTicket.getCode());
             voucherTicketResp.setComponents(components.stream().map(e->{
+
                 ComponentVounchResp componentResp= ComponentVounchResp.from(e);
 
-                ComponentRight componentRight = componentRightRepository.findById(e.getComponentRight()).get();
-                componentResp.setComponentRightCode(componentRight.getCode());
+                if(e.getType().equals(EnumComponentVoucherType.Right)){
+                    ComponentRight componentRight = componentRightRepository.findById(e.getComponentRight()).get();
+                    componentResp.setComponentRightCode(componentRight.getCode());
+                }else{
+
+                }
+
                 return componentResp;
             }).collect(Collectors.toList()));
 

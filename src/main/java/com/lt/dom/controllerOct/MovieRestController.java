@@ -397,7 +397,7 @@ public class MovieRestController {
         MovieEdit.StarringActorTab starringActorTab = MovieEdit.StarringActorResp.from();
 
 
-        starringActorTab.setStarringActors(movie.getStarringActors().stream().map(star->{
+        starringActorTab.setDeviceResps(movie.getStarringActors().stream().map(star->{
             MovieEdit.StarringActorResp starringActor = new MovieEdit.StarringActorResp();
             starringActor.setDesc(star.getDesc());
             starringActor.setName(star.getName());

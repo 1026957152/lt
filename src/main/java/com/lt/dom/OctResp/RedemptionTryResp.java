@@ -24,7 +24,8 @@ import java.util.stream.Collectors;
 public class RedemptionTryResp {
 
     private String type_text;
-    private Boolean checkin;
+
+    private Boolean redeemAllowed;
 
     public void setType_text(String type_text) {
         this.type_text = type_text;
@@ -34,12 +35,13 @@ public class RedemptionTryResp {
         return type_text;
     }
 
-    public void setCheckin(Boolean checkin) {
-        this.checkin = checkin;
+
+    public void setRedeemAllowed(Boolean redeemAllowed) {
+        this.redeemAllowed = redeemAllowed;
     }
 
-    public Boolean isCheckin() {
-        return checkin;
+    public Boolean isRedeemAllowed() {
+        return redeemAllowed;
     }
 
     public static class PhotoId {
@@ -120,6 +122,10 @@ public class RedemptionTryResp {
         private String redeem_voucher_key;
         private LocalDate start_date;
         private LocalDate end_date;
+        private String redeem_voucher_key_crypt;
+        private String redeem_voucher_key_crypt_encode;
+        private String redeem_voucher_key_crypt_encode_withoutPadding;
+        private Long tryRedeem;
 
         public void setLable(String lable) {
             this.lable = lable;
@@ -176,6 +182,38 @@ public class RedemptionTryResp {
 
         public LocalDate getEnd_date() {
             return end_date;
+        }
+
+        public void setRedeem_voucher_key_crypt(String redeem_voucher_key_crypt) {
+            this.redeem_voucher_key_crypt = redeem_voucher_key_crypt;
+        }
+
+        public String getRedeem_voucher_key_crypt() {
+            return redeem_voucher_key_crypt;
+        }
+
+        public void setRedeem_voucher_key_crypt_encode(String redeem_voucher_key_crypt_encode) {
+            this.redeem_voucher_key_crypt_encode = redeem_voucher_key_crypt_encode;
+        }
+
+        public String getRedeem_voucher_key_crypt_encode() {
+            return redeem_voucher_key_crypt_encode;
+        }
+
+        public void setRedeem_voucher_key_crypt_encode_withoutPadding(String redeem_voucher_key_crypt_encode_withoutPadding) {
+            this.redeem_voucher_key_crypt_encode_withoutPadding = redeem_voucher_key_crypt_encode_withoutPadding;
+        }
+
+        public String getRedeem_voucher_key_crypt_encode_withoutPadding() {
+            return redeem_voucher_key_crypt_encode_withoutPadding;
+        }
+
+        public void setTryRedeem(Long tryRedeem) {
+            this.tryRedeem = tryRedeem;
+        }
+
+        public Long getTryRedeem() {
+            return tryRedeem;
         }
     }
         private EnumRedeamptionType type;
@@ -282,7 +320,7 @@ public class RedemptionTryResp {
 
 
     private EnumAssociatedType relatedObjectType;
-    private long relatedObjectId;
+    private Long relatedObjectId;
 
     public EnumAssociatedType getRelatedObjectType() {
         return relatedObjectType;
@@ -292,11 +330,11 @@ public class RedemptionTryResp {
         this.relatedObjectType = related_object_type;
     }
 
-    public long getRelatedObjectId() {
+    public Long getRelatedObjectId() {
         return relatedObjectId;
     }
 
-    public void setRelatedObjectId(long related_object_id) {
+    public void setRelatedObjectId(Long related_object_id) {
         this.relatedObjectId = related_object_id;
     }
 

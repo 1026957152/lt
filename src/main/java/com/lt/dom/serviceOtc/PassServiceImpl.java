@@ -18,6 +18,7 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.util.AtomicSequenceGenerator;
 import com.lt.dom.util.ZxingBarcodeGenerator;
+import com.lt.dom.vo.PersonBean;
 import com.lt.dom.vo.UserVo;
 import org.apache.commons.lang.RandomStringUtils;
 import org.javatuples.Pair;
@@ -27,10 +28,17 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStreamReader;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -543,6 +551,23 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
             System.out.println(pass.getNumber());
             System.out.println(pass.getExpiringDate());
 
+            LocalDateTime now = LocalDateTime.now();
+            Timestamp timestamp = Timestamp.valueOf(now);
+
+
+            PersonBean.Person person = PersonBean.Person.newBuilder()
+                    .setAge(timestamp.getTime())
+                    .setName(pass.getCode())
+                    .build();
+
+
+
+            String encodedString =
+                    Base64.getEncoder().withoutPadding().encodeToString(person.toByteArray());
+ /*           redemptionEntryResp.setRedeem_voucher_key_crypt_encode(probuff);
+            redemptionEntryResp.setRedeem_voucher_key_crypt_encode_withoutPadding(encodedString);
+*/
+
 
             EntityModel entityModel = EntityModel.of(Map.of(
                     "region","榆林",
@@ -550,9 +575,10 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
                     "tip","html 格式",
 
                     "by_logo",fileStorageService.loadDocumentWithDefault("lt.png"),
+
                     "code",pass.getCode(),
                     "number",pass.getNumber(),
-                    "code_base64_src",   ZxingBarcodeGenerator.base64_png_src(pass.getCode()),
+                    "code_base64_src",   ZxingBarcodeGenerator.base64_png_src(encodedString),
 
             "expiringDate",pass.getExpiringDate(),
                     "path",EnumMiniappPagePath.home_city_pass.getPath()+"?url="+link));
@@ -595,6 +621,35 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
         }
     }
 
+    public static byte[] compress(byte[] str) throws Exception {
+        if (str == null || str.length == 0) {
+            return null;
+        }
+        System.out.println("String length : " + str.length);
+        ByteArrayOutputStream obj=new ByteArrayOutputStream();
+        GZIPOutputStream gzip = new GZIPOutputStream(obj);
+        gzip.write(str);
+        gzip.close();
+        System.out.println("压缩后 String length : " + obj.toByteArray().length);
+
+        return obj.toByteArray();
+    }
+
+    public static String decompress(byte[] str) throws Exception {
+        if (str == null ) {
+            return null;
+        }
+
+        GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(str));
+        BufferedReader bf = new BufferedReader(new InputStreamReader(gis, "UTF-8"));
+        String outStr = "";
+        String line;
+        while ((line=bf.readLine())!=null) {
+            outStr += line;
+        }
+        System.out.println("Output String lenght : " + outStr.length());
+        return outStr;
+    }
     public void withMe(UserResp userResp, User user) {
 
 

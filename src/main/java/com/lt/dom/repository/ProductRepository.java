@@ -39,4 +39,7 @@ public interface ProductRepository extends JpaRepository<Product
     List<Product> findAllByStatusAndPrivacyLevel(EnumProductStatus active, EnumPrivacyLevel public_);
 
     Page<Product> findAllByIdIn(List<Long> list, Pageable of);
+
+    List<Product> findAllBySupplierId(Long id);
+
 }

@@ -1,15 +1,10 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.oct.Quota;
-import com.lt.dom.oct.Campaign;
 import com.lt.dom.oct.Product;
-import com.lt.dom.otcReq.ClainQuotaReq;
-import com.lt.dom.otcReq.QuotaReq;
 import com.lt.dom.repository.CampaignRepository;
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.serviceOtc.ClainQuotaServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
-import io.swagger.v3.oas.annotations.Operation;
+import com.lt.dom.serviceOtc.FulfillServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +26,7 @@ public class VoucherQuotaRestController {
     private CampaignRepository campaignRepository;
 
     @Autowired
-    private VonchorServiceImpl vonchorService;
+    private FulfillServiceImpl vonchorService;
     @Autowired
     private ClainQuotaServiceImpl clainQuotaService;
 

@@ -288,6 +288,14 @@ public class UserVoServiceImpl {
 
             supplierRespEntityModel.add(linkTo(methodOn(MerchantSupplierRestController.class).Page_marchant_supplier(employee.getSuplierId())).withRel("Page_marchant_supplier"));
 
+            supplierRespEntityModel.add(linkTo(methodOn(BusRestController.class).Page_listRoute(employee.getSuplierId())).withRel("Page_listRoute"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(BusRestController.class).Page_listBus(employee.getSuplierId())).withRel("Page_listBus"));
+
+            supplierRespEntityModel.add(linkTo(methodOn(BusRestController.class).Page_listStop(employee.getSuplierId())).withRel("Page_listStop"));
+
+
+
 
 
             userResp.setSupplier(supplierRespEntityModel);

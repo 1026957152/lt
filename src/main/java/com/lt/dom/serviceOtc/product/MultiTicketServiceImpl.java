@@ -16,6 +16,9 @@ import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
 import com.lt.dom.vo.*;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
@@ -32,9 +35,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class MultiTicketServiceImpl {
+    Logger logger = LoggerFactory.getLogger(MultiTicketServiceImpl.class);
 
-    @Autowired
-    private LtConfig ltConfig;
+
 
     @Autowired
     private MovieProductRepository movieProductRepository;
@@ -49,7 +52,8 @@ public class MultiTicketServiceImpl {
 
 
 
-
+    @Autowired
+    private ValidatorServiceImpl validatorService;
 
     @Autowired
     private ValidatorRepository validatorRepository;
@@ -59,8 +63,6 @@ public class MultiTicketServiceImpl {
     @Autowired
     private ComponentRightRepository componentRightRepository;
 
-    @Autowired
-    private RedeemServiceImpl redeemService;
 
     @Autowired
     private RightRedemptionEntryRepository rightRedemptionEntryRepository;
@@ -185,12 +187,12 @@ public class MultiTicketServiceImpl {
         lineItemList = lineItemList.stream().filter(e->e.getLineType().equals(lineType)).collect(Collectors.toList());
 
 
-        lineItemList.stream().forEach(bookingProduct -> {
+        lineItemList.stream().forEach(lineItem -> {
 
 /*
 
 
-            Quartet<Zone,Movie,Theatre,Sku> triplet =  productService.showTime(bookingProduct.getSku());
+            Quartet<Zone,Movie,Theatre,Sku> triplet =  productService.showTime(lineItem.getSku());
 
             Zone zone = triplet.getValue0();
             Movie movie = triplet.getValue1();
@@ -198,20 +200,25 @@ public class MultiTicketServiceImpl {
             Sku sku = triplet.getValue3();*/
 
 
-            Optional<Product> productOptional = productRepository.findById(bookingProduct.getProduct());
+            Optional<Product> productOptional = productRepository.findById(lineItem.getProduct());
             Product product = productOptional.get();
 
 
-            List<ProductBundle> productBundleList = product.getBundles();
+           // List<ProductBundle> productBundleList = product.getBundles();
 
+/*
                     List<Component> componentRightList = new ArrayList<>();
                     productBundleList.stream().forEach(e->{
                         List<Component> components = componentRepository.findAllByProduct(e.getBurdle());
                         componentRightList.addAll(components);
                     });
+*/
 
 
-                    List<VoucherTicket> vouchers = LongStream.range(0, bookingProduct.getQuantity()).boxed().map(x -> {
+                    List<Component> componentRightList = componentRepository.findAllByProduct(product.getId());
+
+
+                    List<VoucherTicket> vouchers = LongStream.range(0, lineItem.getQuantity()).boxed().map(x -> {
 
                         VoucherTicket voucher = new VoucherTicket();
                         voucher.setBooking(reservation.getId());
@@ -254,7 +261,29 @@ public class MultiTicketServiceImpl {
                     vouchers = voucherTicketRepository.saveAll(vouchers);
                     Long limit = 2l;
                    vouchers.stream().forEach(e->{
-                        componentRightService.assingtoTicket(e,componentRightList,limit);
+                      //  componentRightService.assingtoTicket(e,componentRightList,limit);
+
+
+
+
+
+
+
+                       CompoentRightAssigtToTargeVo compoentRightAssigtToTargeVo = new CompoentRightAssigtToTargeVo();
+
+
+                       logger.error("订单数量和 新建一个年卡 "+reservation.getPlatform());
+                       compoentRightAssigtToTargeVo.setBooking(reservation);
+                       compoentRightAssigtToTargeVo.setReference(e.getCode());
+                       compoentRightAssigtToTargeVo.setReferenceId(e.getId());
+                       compoentRightAssigtToTargeVo.setReferenceType(EnumRelatedObjectType.voucher);
+                       componentRightService.assingtoComponent(compoentRightAssigtToTargeVo,
+                               componentRightList.stream().map(ee->{
+                                   Triplet<Component,LineItem,EnumComponentVoucherType> componentVounchLineItemPair =
+                                           Triplet.with(ee,lineItem,ee.getType());
+                                   return componentVounchLineItemPair;
+                               }).collect(Collectors.toList()),
+                               limit);
 
                     });
 
@@ -363,20 +392,35 @@ public class MultiTicketServiceImpl {
 
         List<ComponentVounch> componentVounchList = components.stream()  // TODO 找到了这里的 权限
            //     .filter(e-> triplet来自设备.contains(e.getComponentRight()))
+                .filter(e-> e.getType().equals(EnumComponentVoucherType.Right))
                 .map(e->{
-
-                    Optional<ComponentRight> componentRight = componentRightRepository.findById(e.getComponentRight());
-                    e.setName(componentRight.get().getName());
+                        Optional<ComponentRight> componentRight = componentRightRepository.findById(e.getComponentRight());
+                        e.setName(componentRight.get().getName());
                     return e;
                 }).collect(Collectors.toList());
 
 
 
+        List<Product> productList = productRepository.findAllBySupplierId(userVo.getSupplier().getId());
+
+        List<Long> longList_公司允许的 = productList.stream().map(e->e.getId()).collect(Collectors.toList());
+
+
+
+        List<ComponentVounch> burdle_vouchers = components.stream()  // TODO 找到了这里的 权限
+                .filter(e-> e.getType().equals(EnumComponentVoucherType.Burdle))
+                .filter(e->longList_公司允许的.contains(e.getOriginalProduct()))
+                .map(e->{
+                    return e;
+                }).collect(Collectors.toList());
+
+
+        componentVounchList.addAll(burdle_vouchers);
+
 
 
 
         RedemptionTryResp resp = new RedemptionTryResp();
-
         resp.setType_text(EnumRedeamptionType.VOUCHER.toString());
 
 
@@ -417,7 +461,7 @@ public class MultiTicketServiceImpl {
 
             redemptionEntryResp.setLable(e.getName());
             redemptionEntryResp.setLimit(e.getLimit().intValue());
-                    redemptionEntryResp.setRemaining(e.getTry_().intValue());
+            redemptionEntryResp.setRemaining(e.getTry_().intValue());
 
                 //    redemptionEntryResp.setRemaining(Long.valueOf(e.getLimit()-e.getRedeemed_quantity()).intValue());
             redemptionEntryResp.setCheck_in(triplet来自设备.contains(e.getComponentRight()));
@@ -450,6 +494,8 @@ public class MultiTicketServiceImpl {
     public EntityModel redeem(CodeWithLatLngVo code, UserVo userVo) {
 
 
+        logger.debug("核销联票类型");
+
         Optional<User> user = userRepository.findById(userVo.getUser_id());
 
 
@@ -477,29 +523,13 @@ public class MultiTicketServiceImpl {
 
 
 
-        List<Validator_> validator_s = validatorRepository.findAllByTypeAndUser(EnumValidatorType.特定的人员,userVo.getUser_id());
 
-        if(validator_s.isEmpty()){
-            throw new BookNotFoundException(Enumfailures.not_found,"职工得 核销分配 对象 为空，请添加"+userVo.getPhone());
-        }
-        List<Long> triplet来自设备 =
-                validator_s.stream().map(e->e.getComponentRightId()).collect(Collectors.toList());
+        List<ComponentVounch> componentVounchList = validatorService.check(userVo.getUser_id(), userVo.getSupplier().getId(),voucher.getCode());
 
 
-        List<ComponentVounch> components = componentVounchRepository.findAllByReference(voucher.getCode());
-
-        if(components.size() ==0){
-            throw new BookNotFoundException(Enumfailures.not_found,"该券 无可核销得 权益"+voucher.getCode());
-        }
 
 
-        List<ComponentVounch> componentVounchList = components.stream()  // TODO 找到了这里的 权限
-                .filter(e->{
-
-                    return triplet来自设备.contains(e.getComponentRight());
-                }).collect(Collectors.toList());
-
-
+        logger.debug("核销联票类型 多少"+componentVounchList.size());
         ValidatedByTypeVo verifier核销人员 = new ValidatedByTypeVo();
         verifier核销人员.setValidatorType(EnumValidatorType.特定的人员);
 
@@ -516,7 +546,6 @@ public class MultiTicketServiceImpl {
 
 
         RedemptionForCustomerVo redemptionForCustomerVo = new RedemptionForCustomerVo();
-
         redemptionForCustomerVo.setId(traveler用户.getId());
         redemptionForCustomerVo.setRealName(traveler用户.getRealName());
         redemptionForCustomerVo.setCode(traveler用户.getCode());

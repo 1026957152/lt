@@ -1,40 +1,25 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.OctResp.EmployeeResp;
-import com.lt.dom.OctResp.EnumResp;
-import com.lt.dom.OctResp.EnumWithValueResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.EmployerUpdatePojo;
-import com.lt.dom.otcReq.SettingReq;
 import com.lt.dom.otcReq.SettingUpdateReq;
-import com.lt.dom.otcenum.EnumRole;
 import com.lt.dom.otcenum.EnumSettingSpace;
-import com.lt.dom.otcenum.EnumSettings;
-import com.lt.dom.otcenum.EnumValueListType;
 import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.SettingRepository;
 import com.lt.dom.repository.SupplierRepository;
 import com.lt.dom.repository.VoucherRepository;
-import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.SettingServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import com.lt.dom.vo.SettingVo;
 import io.swagger.v3.oas.annotations.Operation;
-import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 

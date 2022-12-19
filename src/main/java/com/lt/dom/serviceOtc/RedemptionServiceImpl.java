@@ -126,7 +126,7 @@ public class RedemptionServiceImpl {
 
         ComponentVounch probe = new ComponentVounch();
         probe.setComponentRight(componentRight.getId());
-        probe.setVoucherId(voucher.getId());
+        probe.setReferenceId(voucher.getId());
 
         Example<ComponentVounch> example = Example.of(probe, modelMatcher);
 
@@ -334,23 +334,18 @@ public class RedemptionServiceImpl {
 
 
 
-
         Redemption redemption = new Redemption();
-
         redemption.setCode(idGenService.redemptionNo());
         redemption.setRelatedObjectId(voucher.getRelatedObjectId());
         redemption.setRelatedObjectType(voucher.getRelatedObjectType());
         redemption.setQuantity(1l);
         redemption.setRedeemed_quantity(0l);
-
         redemption.setLog_RelatedObject_lable(voucher.getLable());
         redemption.setLog_RelatedObject_code(voucher.getRelatedObjectCode());
       //  redemption.setLog_RelatedObject_type(voucher.getRelatedObject_subType().name());
 
-
         redemption.setValidatorType(verifier核销人员.getValidatorType());
         redemption.setValidator(verifier核销人员.funGetValidator());
-
 
         redemption.setCustomer(traveler用户.getId());
         redemption.setLog_Customer_name(traveler用户.getRealName());
@@ -426,7 +421,6 @@ public class RedemptionServiceImpl {
             Assert.notNull(component.getRatePlan(), "系统已有 componment RatePlan 不能为空，当前空，新建 Usage 失败");
 
             component.getSubscription();  // 对他进行了一次核销， 对他进行了二次核销
-
             Usage usage = new Usage();
             usage.setQty(1l);
             usage.setSubscription(component.getSubscription());
@@ -443,19 +437,29 @@ public class RedemptionServiceImpl {
         entry.setCode(idGenService.redemptionEntryCode());
 
         entry.setRelatedObjectType(EnumRelatedObjectType.voucher);
-        entry.setRelatedObjectId(voucher权益.getVoucherId());
+        entry.setRelatedObjectId(voucher权益.getReferenceId());
 
 
 
         entry.setComponentVoucher(voucher权益.getId());
 
-        Optional<ComponentRight> componentOptional = componentRightRepository.findById(voucher权益.getComponentRight());
-        ComponentRight componentRight = componentOptional.get();
+        if(voucher权益.getType().equals(EnumComponentVoucherType.Right)){
+            Optional<ComponentRight> componentOptional = componentRightRepository.findById(voucher权益.getComponentRight());
+            ComponentRight componentRight = componentOptional.get();
+            entry.setLog_Component_right_name(componentRight.getName());
+            entry.setLog_Component_right_code(componentRight.getCode());
+            entry.setComponent_right(voucher权益.getComponentRight());
 
-        entry.setComponent_right(voucher权益.getComponentRight());
+        }
+
+        if(voucher权益.getType().equals(EnumComponentVoucherType.Burdle)){
+
+            entry.setLog_Component_right_name("componentRight.getName()");
+            entry.setLog_Component_right_code("componentRight.getCode()");
+        }
+
         entry.setRedeemed_quantity(voucher权益.getTry_());
-        entry.setLog_Component_right_name(componentRight.getName());
-        entry.setLog_Component_right_code(componentRight.getCode());
+
 
 
         entry.setRedemption(redemption.getId());

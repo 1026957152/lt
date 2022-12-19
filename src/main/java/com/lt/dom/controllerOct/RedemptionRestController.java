@@ -1,21 +1,21 @@
 package com.lt.dom.controllerOct;
 
 import com.google.gson.Gson;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.lt.dom.JwtUtils;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.error.*;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.RedemByCryptoCodePojo;
-import com.lt.dom.otcReq.RedemBycodePojo;
-import com.lt.dom.otcReq.ReviewReq;
-import com.lt.dom.otcReq.VoucherTicketResp;
+import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.serviceOtc.product.BusTicketServiceImpl;
 import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
 import com.lt.dom.serviceOtc.product.MultiTicketServiceImpl;
 import com.lt.dom.vo.CodeWithLatLngVo;
+import com.lt.dom.vo.PersonBean;
 import com.lt.dom.vo.UserVo;
 import com.lt.dom.vo.WrittenOffMerchantVo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,12 +37,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -60,6 +59,20 @@ public class RedemptionRestController {
 
     @Autowired
     private MultiTicketServiceImpl multiTicketService;
+    @Autowired
+    private BusTicketServiceImpl busTicketService;
+
+
+    @Autowired
+    private PassRepository passRepository;
+
+    @Autowired
+    private DeviceRepository deviceRepository;
+    @Autowired
+    private ValidatorServiceImpl validatorService;
+
+
+
 
 
     @Autowired
@@ -154,6 +167,12 @@ public class RedemptionRestController {
 
 
     }
+
+
+
+
+
+
 
     @GetMapping(value = "/redemptions/{REDEMPTION_ID}", produces = "application/json")
     public EntityModel<Redemption> getRedemption(@PathVariable long REDEMPTION_ID) {
@@ -448,7 +467,7 @@ public class RedemptionRestController {
         Gson gson = new Gson();
 
 
-      RedemBycodePojo.Code code = new RedemBycodePojo.Code();//  gson.fromJson(pojo_.getCode(),RedemBycodePojo.Code.class);
+        RedemBycodePojo.Code code = new RedemBycodePojo.Code();//  gson.fromJson(pojo_.getCode(),RedemBycodePojo.Code.class);
         code.setCode(pojo_.getCode());
 
     //    code.setCode(qrcodeService._decode(code.getCode()));
@@ -473,10 +492,7 @@ public class RedemptionRestController {
         }
 
 
-        EntityModel entityModel_city = cityPassService.validate(code,userVo);
-        if(entityModel_city != null){
-            return entityModel_city;
-        }
+
 
         if(code.getCode().startsWith("TT-NI")){
             Optional<Voucher> optionalVoucher = voucherRepository.findByCode(code.getCode());
@@ -584,11 +600,146 @@ public class RedemptionRestController {
             return validateService.user扫文旅码(user,userOv,componentVounchList);
         }
 
+
+
+        PersonBean.Person person = null;
+        try {
+            person = PersonBean.Person.parseFrom(Base64.getDecoder().decode(code.getCode()));
+
+
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(person.getAge()), TimeZone
+                    .getDefault().toZoneId());
+            logger.info("扫到了 主人卡 ,{},  {}",person.getName(),localDateTime);
+
+            code.setCode(person.getName());
+        } catch (InvalidProtocolBufferException e) {
+            logger.error("解析扫码错误,{}",code.getCode());
+            throw new RuntimeException(e);
+        }catch (Exception e){
+            logger.error("解析扫码错误,{}  {}a    q",code.getCode(),e);
+          //  throw new BookNotFoundException(Enumfailures.not_found,"解析码错误");
+            code.setCode(pojo_.getCode());
+        }
+
+
+
+        EntityModel entityModel_city = cityPassService.validate(code,userVo);
+        if(entityModel_city != null){
+            return entityModel_city;
+        }
+
+
+
+
         throw new BookNotFoundException("找不到核销券","找不到核销券");
     }
 
 
 
+
+
+    //TODO 这里有点问题
+    @PostMapping(value = "/validate_busticket", produces = "application/json")
+    public Object bus_ticket_validator(@RequestBody RedemBycodeFromBusScannerPojo pojo_) {
+
+
+
+        Optional<Device> deviceOptional = deviceRepository.findByCode(pojo_.getDeviceCode());
+
+
+        if(deviceOptional.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到设备");
+        }
+        Device device = deviceOptional.get();
+
+        if(!device.getType().equals(EnumDeviceType.BUS_QRCODE_READER)){
+            throw new BookNotFoundException(Enumfailures.not_found,"不支持的设备");
+        }
+
+
+
+
+
+        System.out.println("参数啊啊 {}"+pojo_.toString());
+
+
+        RedemBycodePojo.Code code = new RedemBycodePojo.Code();
+
+
+        CodeWithLatLngVo codeWithLatLngVo = new CodeWithLatLngVo();
+/*        codeWithLatLngVo.setC(code.getCode());
+        codeWithLatLngVo.setCt(code.getLatitude());
+        codeWithLatLngVo.setCg(code.getLongitude());*/
+        codeWithLatLngVo.setSt(pojo_.getLatitude());
+        codeWithLatLngVo.setSg(pojo_.getLongitude());
+
+        code.setCode(pojo_.getCode());
+
+
+
+
+        EntityModel entityModel = busTicketService.validate(code,device);
+
+
+
+
+        if(entityModel != null){
+            return entityModel;
+        }
+        throw new BookNotFoundException("找不到核销券","找不到核销券");
+
+
+    }
+
+
+    //TODO 这里有点问题
+    @PostMapping(value = "/quick_redeem_busticket", produces = "application/json")
+    public Object quick_redeem_busticket(@RequestBody RedemBycodeFromBusScannerPojo pojo_) {
+
+
+
+        Optional<Device> deviceOptional = deviceRepository.findByCode(pojo_.getDeviceCode());
+
+
+        if(deviceOptional.isEmpty()){
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到设备");
+        }
+        Device device = deviceOptional.get();
+
+        if(!device.getType().equals(EnumDeviceType.BUS_QRCODE_READER)){
+            throw new BookNotFoundException(Enumfailures.not_found,"不支持的设备");
+        }
+
+
+
+
+
+        System.out.println("参数啊啊 {}"+pojo_.toString());
+
+
+        RedemBycodePojo.Code code = new RedemBycodePojo.Code();
+
+
+        CodeWithLatLngVo codeWithLatLngVo = new CodeWithLatLngVo();
+/*        codeWithLatLngVo.setC(code.getCode());
+        codeWithLatLngVo.setCt(code.getLatitude());
+        codeWithLatLngVo.setCg(code.getLongitude());*/
+        codeWithLatLngVo.setSt(pojo_.getLatitude());
+        codeWithLatLngVo.setSg(pojo_.getLongitude());
+
+        codeWithLatLngVo.setC(pojo_.getCode());
+
+
+        EntityModel entityModel =  busTicketService.redeem(codeWithLatLngVo,device);
+
+
+        if(entityModel != null){
+            return entityModel;
+        }
+        throw new BookNotFoundException("找不到核销券","找不到核销券");
+
+
+    }
 
 /*
 
@@ -686,6 +837,7 @@ public class RedemptionRestController {
     @PostMapping(value = "/crypto_redemptions", produces = "application/json")
     public Object redeemVonchor(@RequestBody RedemByCryptoCodePojo pojo___) {
 
+        logger.debug("参数 {}", pojo___);
 
         Authentication authentication = authenticationFacade.getAuthentication();
 
@@ -705,10 +857,9 @@ public class RedemptionRestController {
 
 
         EntityModel entityModel = multiTicketService.redeem(codeWithLatLngVo,userOv);
-        if(entityModel != null){
-            return entityModel;
-        }
-        entityModel = cityPassService.redeem(codeWithLatLngVo,userOv);
+
+
+
         if(entityModel != null){
             return entityModel;
         }
@@ -792,6 +943,33 @@ public class RedemptionRestController {
             return RedemptionResp.from(pair);
 
         }
+
+
+        PersonBean.Person person = null;
+        try {
+            person = PersonBean.Person.parseFrom(Base64.getDecoder().decode(codeWithLatLngVo.getC()));
+
+
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(person.getAge()), TimeZone
+                    .getDefault().toZoneId());
+            logger.info("扫到了 主人卡 ,{},  {}",person.getName(),localDateTime);
+        } catch (InvalidProtocolBufferException e) {
+            logger.error("解析扫码错误,{}",codeWithLatLngVo.getC());
+            throw new RuntimeException(e);
+        }
+
+
+        codeWithLatLngVo.setC(person.getName());
+        entityModel = cityPassService.redeem(codeWithLatLngVo,userOv);
+        if(entityModel != null){
+            return entityModel;
+        }
+
+
+
+
+
+
 
         throw new BookNotFoundException(Enumfailures.not_found,"找不到核销券"+pojo___.getCrypto_code());
     }

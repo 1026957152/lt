@@ -1,7 +1,6 @@
 package com.lt.dom.repository;
 
 import com.lt.dom.oct.ComponentVounch;
-import com.lt.dom.oct.Pass;
 import com.lt.dom.otcenum.EnumBelongType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +15,7 @@ public interface ComponentVounchRepository extends JpaRepository<ComponentVounch
 
 	List<ComponentVounch> findByComponentRight(long id);
 
-	List<ComponentVounch> findByVoucherId(long id);
+	List<ComponentVounch> findByReferenceId(long id);
 
     List<ComponentVounch> findAllByUser(long id);
 

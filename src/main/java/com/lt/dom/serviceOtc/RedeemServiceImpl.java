@@ -148,7 +148,7 @@ public class RedeemServiceImpl {
 
         ComponentVounch probe = new ComponentVounch();
         probe.setComponentRight(componentRight.getId());
-        probe.setVoucherId(voucher.getId());
+        probe.setReferenceId(voucher.getId());
 
         Example<ComponentVounch> example = Example.of(probe, modelMatcher);
 

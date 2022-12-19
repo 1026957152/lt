@@ -256,8 +256,10 @@ public class VoucherServiceImpl {
     }
 
 
+/*
     public void createVoucherBig(Reservation reservation, List<LineItem> lineItemList, User payer, int i) {
 
+*/
 /*
         VoucherTicket voucher_voucher = new VoucherTicket();
         voucher_voucher.setBooking(reservation.getId());
@@ -269,7 +271,8 @@ public class VoucherServiceImpl {
         voucher_voucher.setActive(false);
         voucher_voucher = voucherTicketRepository.save(voucher_voucher);
 
-*/
+*//*
+
 
 
 
@@ -304,8 +307,10 @@ public class VoucherServiceImpl {
             List<VoucherTicket> vouchers = LongStream.range(0, bookingProduct.getQuantity()).boxed().map(x -> {
                         VoucherTicket voucher = new VoucherTicket();
                         // String no = VoucherCodes.generate(config);
+*/
 /*            System.out.println("Execute method asynchronously. "
-                    + no);*/
+                    + no);*//*
+
 
                         voucher.setBooking(reservation.getId());
                         voucher.setUser(payer.getId());
@@ -348,7 +353,7 @@ public class VoucherServiceImpl {
 
             vouchers = voucherTicketRepository.saveAll(vouchers);
             vouchers.stream().forEach(e->{
-                componentRightService.assingtoTicket(e,componentRightList, limit);
+                //componentRightService.assingtoTicket(e,componentRightList, limit);
 
             });
 
@@ -359,5 +364,6 @@ public class VoucherServiceImpl {
 
 
     }
+*/
 
 }

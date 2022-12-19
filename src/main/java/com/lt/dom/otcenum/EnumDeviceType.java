@@ -20,6 +20,8 @@ public enum EnumDeviceType {
     FICIAL_RECOGNITION("facial recognition"),
     QRCODE_READER("qrcode reader"),
 
+
+    BUS_QRCODE_READER("handset"),
 /*
 
     PHONE("barcode"),

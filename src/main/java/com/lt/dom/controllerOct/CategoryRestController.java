@@ -1,26 +1,14 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.OctResp.BookingResp;
 import com.lt.dom.OctResp.CategoryResp;
-import com.lt.dom.OctResp.ProductResp;
-import com.lt.dom.OctResp.RegionResp;
-import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
-import com.lt.dom.error.No_voucher_suitable_for_publicationException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.BookingPojo;
 import com.lt.dom.otcReq.CategoryPojo;
 import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.CategoryRepository;
-import com.lt.dom.repository.ProductRepository;
-import com.lt.dom.repository.VoucherRepository;
-import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.CategoryServiceImpl;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
-import io.swagger.v3.oas.annotations.Operation;
-import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,13 +18,9 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 

@@ -74,7 +74,7 @@ public class ReportRestController {
     @Autowired
     private TravelerRepository travelerRepository;
     @Autowired
-    private VonchorServiceImpl vonchorService;
+    private FulfillServiceImpl vonchorService;
     @Autowired
     private RedemptionEntryRepository redemptionEntryRepository;
 

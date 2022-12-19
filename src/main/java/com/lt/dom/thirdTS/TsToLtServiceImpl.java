@@ -3,6 +3,7 @@ package com.lt.dom.thirdTS;
 
 import cn.gjing.EncryptionUtil;
 import com.beust.jcommander.internal.Lists;
+import com.lt.dom.FulfiiledItemRepository;
 import com.lt.dom.OctResp.TermResp;
 import com.lt.dom.controllerOct.BookingRestController;
 import com.lt.dom.error.BookNotFoundException;
@@ -63,6 +64,11 @@ public class TsToLtServiceImpl {
 
     @Autowired
     private BookingServiceImpl bookingService;
+
+    @Autowired
+    private FulfiiledItemRepository fulfiiledItemRepository;
+
+
 
 
     @Autowired
@@ -492,12 +498,6 @@ public class TsToLtServiceImpl {
         data.getSerial_no(); // //退票流水号，如传此字段时，审核通知会返回对应的流水号
 
 
-        if(!data.getFormat().equals("json")){
-            throw new BookNotFoundException(Enumfailures.resource_not_found,"格式 json");
-
-        }
-
-
 
 
         List<String> codes =Arrays.asList(data.getCodes().split(","));
@@ -675,6 +675,13 @@ public class TsToLtServiceImpl {
         LineItem lineItem = lineItems.get(0);
 
 
+        List<Fulfilled_item> fulfilled_items = fulfiiledItemRepository.findAllByBooking(reservation.getId());
+/*        if(lineItem.getFulfillment_behavior().equals(EnumFulfillment_behavior.Create_pass)){
+
+            Fulfilled_item. 有是个 fulfilled_item
+        }*/
+      //  lineItem.getFulfillmentInstructionsType().equals(Enumf);
+
 
 
         LtRespToTs下单接口.InfoDTO infoDTO = new LtRespToTs下单接口.InfoDTO();
@@ -685,7 +692,7 @@ public class TsToLtServiceImpl {
 
 
 
-        infoDTO.setCodes(Arrays.asList(reservation.getCode())); //文字码(码号)组，一人一码的产品会有数据
+        infoDTO.setCodes(fulfilled_items.stream().map(e->e.getCode()).collect(Collectors.toList())); //文字码(码号)组，一人一码的产品会有数据
         infoDTO.setContent(reservation.getCode()); //发送内容
 
         LtRespToTs下单接口.InfoDTO.ParamsDTO paramsDTO = new  LtRespToTs下单接口.InfoDTO.ParamsDTO();

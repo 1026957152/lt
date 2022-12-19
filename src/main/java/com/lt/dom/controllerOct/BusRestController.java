@@ -2,15 +2,22 @@ package com.lt.dom.controllerOct;
 
 
 import com.lt.dom.OctResp.*;
+import com.lt.dom.proto.BusRouteProto;
+import com.lt.dom.proto.BusStopRespProto;
+import com.lt.dom.proto.BusVehicleRespProto;
+import com.lt.dom.proto.HomeBusProto;
 import com.lt.dom.OctResp.home.HomeBusResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.*;
+import com.lt.dom.proto.req.BusAndStopUpdateMessage;
+import com.lt.dom.proto.req.BusVehicleSummaryVo;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.BusServiceImpl;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,15 +27,13 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -58,6 +63,10 @@ public class BusRestController {
 
     @Autowired
     private PlaceRepository placeRepository;
+
+    @Autowired
+    private BusVehicleRepository busVehicleRepository;
+
 
 
     @Autowired
@@ -91,21 +100,68 @@ public class BusRestController {
     public EntityModel<Media> Page_bues() {
 
 
-        List<BusRoute> supplierOptional = busRouteRepository.findAll();
-        if(supplierOptional.isEmpty()) {
+
+            String url = String.format("%s/position/city/busMap","http://10.0.0.41:891");
+
+
+            // 发送请求参数
+
+            RestTemplate restTemplate = new RestTemplate();
+
+
+            ResponseEntity<BusVehicleSummaryVo> responseEntity = restTemplate.getForEntity(url, BusVehicleSummaryVo.class);
+            System.out.println("getStatusCode"+responseEntity.getStatusCode());
+        BusVehicleSummaryVo buffer = responseEntity.getBody();
+
+
+        Map<String,BusAndStopUpdateMessage.LineUpdateMessage> lineUpdateMessageMap = buffer.getLines().stream().collect(Collectors.toMap(e->e.getLineCode(),e->e));
+
+
+        List<BusRoute> busRouteList = busRouteRepository.findAll();
+        if(busRouteList.isEmpty()) {
             throw new BookNotFoundException("没有找到供应商","没找到");
         }
 
 
         HomeBusResp homeBusResp = new HomeBusResp();
 
-        List<EntityModel> list = supplierOptional.stream().map(supplier->{
-            BusRouteResp busRouteResp = BusRouteResp.of(supplier);
 
-            busRouteResp.setStops(supplier.getStops().stream().map(e->{
+        List<EntityModel> list = busRouteList.stream().map(busRoute->{
+            BusRouteResp busRouteResp = BusRouteResp.of(busRoute);
+
+
+            BusAndStopUpdateMessage.LineUpdateMessage message = lineUpdateMessageMap.get(busRoute.getCode());
+            Map<String, BusAndStopUpdateMessage.StopUpdateMessage> stringMap = null;
+            Map<String, BusAndStopUpdateMessage.BusUpdateMessage> busVehicleMap = null;
+            if(message != null){
+                stringMap = message.getStops().stream().collect(Collectors.toMap(e->e.getNumber(), e->e));
+                busVehicleMap = message.getBuses().stream().collect(Collectors.toMap(e->e.getNumber(), e->e));
+
+            }
+
+
+
+            Map<String, BusAndStopUpdateMessage.StopUpdateMessage> finalStringMap = stringMap;
+            Map<String, BusAndStopUpdateMessage.BusUpdateMessage> finalBusVehicleMap = busVehicleMap;
+
+
+
+            busRouteResp.setWebsocketUrl("ws://10.0.0.41:8080/position/socket");
+            busRouteResp.setWebsocketDestination("/topic/notification");
+            busRouteResp.setStops(busRoute.getStops().stream().map(e->{
                 BusStopResp busStopReq = BusStopResp.fromWithId(e.getStop());
 
-                busStopReq.setDeparture_time(LocalTime.now());
+
+                if(finalStringMap != null){
+                    BusAndStopUpdateMessage.StopUpdateMessage stopUpdateMessage = finalStringMap.get(e.getStop().getCode());
+
+                    if(stopUpdateMessage != null){
+                        busStopReq.setLive(BusStopResp.Live.of(stopUpdateMessage));
+
+                    }
+
+                }
+
 
                 busStopReq.setPlaces(e.getStop().getPlaceRegistrations().stream().map(placeR->{
 
@@ -122,7 +178,7 @@ public class BusRestController {
                             placeResp.setLink(true);
                         }
 
-                            break;
+                        break;
                         case movie_theater:{
                             Link link = linkTo(methodOn(TheatreRestController.class).getTheatre(place.getType_reference())).withSelfRel();
                             entityModel.add(link);
@@ -135,23 +191,36 @@ public class BusRestController {
                             placeResp.setLink(false);
 
                     }
-               //     entityModel.add(linkTo(methodOn(TripRestController.class).getPlace(place.getId())).withSelfRel());
+                    //     entityModel.add(linkTo(methodOn(TripRestController.class).getPlace(place.getId())).withSelfRel());
 
                     return entityModel;
                 }).collect(Collectors.toList()));
 
                 EntityModel entityModel = EntityModel.of(busStopReq);
-                entityModel.add(linkTo(methodOn(BusRestController.class).listPlace(e.getStop().getId())).withSelfRel());
+                entityModel.add(linkTo(methodOn(BusRestController.class).listStop(e.getStop().getId())).withSelfRel());
 
                 entityModel.add(linkTo(methodOn(BusRestController.class).getStop(e.getStop().getId())).withSelfRel());
                 return entityModel;
             }).collect(Collectors.toList()));
 
 
-            busRouteResp.withBuses(supplier.getBuses());
+            busRouteResp.setBuses(busRoute.getBuses().stream().map(e->{
+                BusVehicleResp busVehicleResp = BusVehicleResp.from(e);
+
+
+                if(finalBusVehicleMap != null){
+                    BusAndStopUpdateMessage.BusUpdateMessage busUpdateMessage = finalBusVehicleMap.get(e.getNumber());
+                    if(busUpdateMessage!= null){
+                        busVehicleResp.setLive(BusVehicleResp.Live.of(busUpdateMessage));
+                    }
+                }
+
+
+                return busVehicleResp;
+            }).collect(Collectors.toList()));
 
             EntityModel entityModel = EntityModel.of(busRouteResp);
-            entityModel.add(linkTo(methodOn(BusRestController.class).getRoute(supplier.getId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(BusRestController.class).getRoute(busRoute.getId())).withSelfRel());
             return entityModel;
         }).collect(Collectors.toList());
 
@@ -268,7 +337,7 @@ public class BusRestController {
 
 
     @GetMapping(value = "/busStops/{SUPPLIER_ID}", produces = "application/json")
-    public List listPlace(@PathVariable long SUPPLIER_ID ) {
+    public List listStop(@PathVariable long SUPPLIER_ID ) {
 
 
         Optional<BusStop> supplierOptional = busStopRepository.findById(SUPPLIER_ID);
@@ -294,8 +363,30 @@ public class BusRestController {
     }
 
 
+
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/Page_listRoute", produces = "application/json")
+    public EntityModel<Media> Page_listRoute(@PathVariable Long SUPPLIER_ID ) {
+
+        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
+        Supplier supplier = supplierOptional.get();
+
+        Map map = Map.of();
+
+
+        EntityModel entityModel = EntityModel.of(map);
+        entityModel.add(linkTo(methodOn(BusRestController.class).listRoute(supplier.getId(),null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(BusRestController.class).createRoute(supplier.getId(),null)).withRel("create"));
+
+        return entityModel;
+
+    }
+
+
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/routes", produces = "application/json")
-    public PagedModel listRoute(@PathVariable long SUPPLIER_ID ,Pageable pageable, PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
+    public PagedModel listRoute(@PathVariable Long SUPPLIER_ID ,Pageable pageable, PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
 
 
         Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
@@ -312,7 +403,8 @@ public class BusRestController {
             BusRouteResp movieResp = BusRouteResp.of(e);
 
             EntityModel entityModel = EntityModel.of(movieResp);
-            entityModel.add(linkTo(methodOn(BusRestController.class).getMovieEdit(e.getId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(BusRestController.class).getRouteEidt(e.getId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(BusRestController.class).deleteBusRoute(e.getId())).withRel("delete"));
 
 
             return entityModel;
@@ -320,9 +412,39 @@ public class BusRestController {
 
     }
 
+    @Operation(summary = "4、删除Product对象")
+    @DeleteMapping(value = "/routes/{PRODUCT_ID}", produces = "application/json")
+    public ResponseEntity<Void> deleteBusRoute(@PathVariable long PRODUCT_ID) {
+
+        busRouteRepository.deleteById(PRODUCT_ID);
+
+        return ResponseEntity.ok().build();
+    }
+
+
+
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/Page_listStop", produces = "application/json")
+    public EntityModel Page_listStop(@PathVariable Long SUPPLIER_ID ) {
+
+        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
+        Supplier supplier = supplierOptional.get();
+
+        Map map = Map.of();
+
+
+        EntityModel entityModel = EntityModel.of(map);
+        entityModel.add(linkTo(methodOn(BusRestController.class).listStop(supplier.getId(),null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(BusRestController.class).createStop(supplier.getId(),null)).withRel("create"));
+
+        return entityModel;
+
+    }
 
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/stops", produces = "application/json")
-    public PagedModel listPlace(@PathVariable long SUPPLIER_ID , Pageable pageable, PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
+    public PagedModel listStop(@PathVariable long SUPPLIER_ID , Pageable pageable, PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
 
 
         Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
@@ -426,7 +548,7 @@ public class BusRestController {
         BusRoute supplier = supplierOptional.get();
         BusRouteResp busRouteResp = BusRouteResp.of(supplier);
 
-;
+
         busRouteResp.setStops(supplier.getStops().stream().map(e->{
             BusStopResp busStopReq = BusStopResp.fromWithId(e.getStop());
 
@@ -443,7 +565,7 @@ public class BusRestController {
             }).collect(Collectors.toList()));
 
             EntityModel entityModel = EntityModel.of(busStopReq);
-            entityModel.add(linkTo(methodOn(BusRestController.class).listPlace(e.getStop().getId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(BusRestController.class).listStop(e.getStop().getId())).withRel("listPlace"));
 
             entityModel.add(linkTo(methodOn(BusRestController.class).getStop(e.getStop().getId())).withSelfRel());
             return entityModel;
@@ -478,31 +600,53 @@ public class BusRestController {
 
 
     @GetMapping(value = "/routes/{ROUTE_ID}/edit", produces = "application/json")
-    public EntityModel<BusRoute> getRouteEidt(@PathVariable long ROUTE_ID ,@RequestBody @Valid BusRouteReq movieReq) {
+    public EntityModel<BusRoute> getRouteEidt(@PathVariable long ROUTE_ID ) {
+
+        Optional<BusRoute> supplierOptional = busRouteRepository.findById(ROUTE_ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
+        BusRoute busRoute = supplierOptional.get();
+        BusRouteEditReq busRouteResp = BusRouteEditReq.of(busRoute);
+        ;
+
+        BusRouteEditReq.StopTab stopTab =BusRouteEditReq.StopTab.of(busRoute.getStops());
+
+
+
+        EntityModel entityModel_stopTab = EntityModel.of(stopTab);
+        entityModel_stopTab.add(linkTo(methodOn(BusRestController.class).updateStop(busRoute.getId(),null)).withRel("edit"));
+        busRouteResp.setStopTab(entityModel_stopTab);
+
+
+        BusRouteEditReq.BusTab busTab = BusRouteEditReq.BusTab.of(busRoute.getBuses());
+
+        EntityModel entityModel_busTab = EntityModel.of(busTab);
+        entityModel_busTab.add(linkTo(methodOn(BusRestController.class).updateRouteBus(busRoute.getId(),null)).withRel("edit"));
+        busRouteResp.setBusTab(entityModel_busTab);
+
+
+        EntityModel entityModel = EntityModel.of(busRouteResp);
+        entityModel.add(linkTo(methodOn(BusRestController.class).editRoute(busRoute.getId(),null)).withSelfRel());
+        return entityModel;
+
+    }
+    @PutMapping(value = "/routes/{ROUTE_ID}/stops", produces = "application/json")
+    public EntityModel<BusRoute> updateStop(@PathVariable long ROUTE_ID ,@RequestBody @Valid BusRouteEditReq.StopTab stopReqs) {
 
         Optional<BusRoute> supplierOptional = busRouteRepository.findById(ROUTE_ID);
         if(supplierOptional.isEmpty()) {
             throw new BookNotFoundException("没有找到供应商","没找到");
         }
         BusRoute supplier = supplierOptional.get();
-        BusRouteResp busRouteResp = BusRouteResp.of(supplier);
-        ;
-        busRouteResp.setStops(supplier.getStops().stream().map(e->{
-            BusStopResp busStopReq = BusStopResp.fromWithId(e.getStop());
-            EntityModel entityModel = EntityModel.of(busStopReq);
-            entityModel.add(linkTo(methodOn(BusRestController.class).getStop(e.getStop().getId())).withSelfRel());
-            return entityModel;
-        }).collect(Collectors.toList()));
+        BusRoute busRoute = buseservice.updateStops(supplier,stopReqs);
 
-
-        busRouteResp.withBuses(supplier.getBuses());
-
+        BusRouteResp busRouteResp = BusRouteResp.of(busRoute);
         EntityModel entityModel = EntityModel.of(busRouteResp);
-        entityModel.add(linkTo(methodOn(BusRestController.class).editRoute(supplier.getId(),null)).withSelfRel());
+        entityModel.add(linkTo(methodOn(BusRestController.class).getRoute(supplier.getId())).withSelfRel());
         return entityModel;
 
     }
-
 
     @PostMapping(value = "/routes/{ROUTE_ID}/stops", produces = "application/json")
     public EntityModel<BusRoute> addStop(@PathVariable long ROUTE_ID ,@RequestBody @Valid List<BusStopReq> stopReqs) {
@@ -561,6 +705,25 @@ public class BusRestController {
 
         //   BusStopResp busRouteResp = BusStopResp.of(placeRegistration.get());
         EntityModel entityModel = EntityModel.of(busRoute);
+        entityModel.add(linkTo(methodOn(BusRestController.class).getRoute(supplier.getId())).withSelfRel());
+        return entityModel;
+
+    }
+
+
+
+    @PutMapping(value = "/routes/{ROUTE_ID}/buses", produces = "application/json")
+    public EntityModel<BusRoute> updateRouteBus(@PathVariable long ROUTE_ID ,@RequestBody @Valid BusRouteEditReq.BusTab stopReqs) {
+
+        Optional<BusRoute> supplierOptional = busRouteRepository.findById(ROUTE_ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
+        BusRoute supplier = supplierOptional.get();
+        BusRoute busRoute = buseservice.updateBuses(supplier,stopReqs);
+
+        BusRouteResp busRouteResp = BusRouteResp.of(busRoute);
+        EntityModel entityModel = EntityModel.of(busRouteResp);
         entityModel.add(linkTo(methodOn(BusRestController.class).getRoute(supplier.getId())).withSelfRel());
         return entityModel;
 
@@ -628,21 +791,21 @@ public class BusRestController {
 
     }
 
-    @PutMapping(value = "/buses/{Movie_ID}", produces = "application/json")
-    public EntityModel<Movie> editMovie(@PathVariable long Movie_ID ,@RequestBody @Valid MovieEdit MovieReq) {
+    @PutMapping(value = "/buses/{Movie_ID}/deviceTab", produces = "application/json")
+    public EntityModel<BusVehicle> editBusDevice(@PathVariable long Movie_ID , @RequestBody @Valid BusVehicleEdit.DeviceTab MovieReq) {
 
-        Optional<Movie> supplierOptional = MovieRepository.findById(Movie_ID);
+        Optional<BusVehicle> supplierOptional = busVehicleRepository.findById(Movie_ID);
         if(supplierOptional.isEmpty()) {
             throw new BookNotFoundException("没有找到供应商","没找到");
         }
 
-        Movie supplier = supplierOptional.get();
+        BusVehicle supplier = supplierOptional.get();
 
 
-        Movie Movie = buseservice.update(supplier,MovieReq);
+        BusVehicle busVehicle = buseservice.updateDevice(supplier,MovieReq);
 
 
-        EntityModel entityModel = EntityModel.of(Movie);
+        EntityModel entityModel = EntityModel.of(busVehicle);
 
         return entityModel;
 
@@ -822,37 +985,39 @@ public class BusRestController {
 
 
     @GetMapping(value = "/buses/{Movie_ID}/edit", produces = "application/json")
-    public EntityModel<Movie> getMovieEdit(@PathVariable long Movie_ID) {
+    public EntityModel<BusVehicle> getBusVehicleEdit(@PathVariable long Movie_ID) {
 
-        Optional<Movie> validatorOptional = MovieRepository.findById(Movie_ID);
+        Optional<BusVehicle> validatorOptional = busVehicleRepository.findById(Movie_ID);
         if(validatorOptional.isEmpty()){
 
             throw new BookNotFoundException(Enumfailures.not_found,"找不到产品");
 
         }
-        Movie movie = validatorOptional.get();
-        List<Movie> movieList = movieRepository.findAll();
-        MovieEdit movieResp = MovieEdit.from(movie);
-        movieResp.setParameterList(
-                Map.of("movie_list",Movie.List(movieList))
+
+
+
+
+        BusVehicle busVehicle = validatorOptional.get();
+
+
+        BusVehicleEdit busVehicleEdit = BusVehicleEdit.from(busVehicle);
+        busVehicleEdit.setParameterList(
+                Map.of("movie_list",new ArrayList())
         );
-        MovieEdit.StarringActorTab starringActorTab = MovieEdit.StarringActorResp.from();
+        BusVehicleEdit.DeviceTab deviceTab = new BusVehicleEdit.DeviceTab();
 
 
-        starringActorTab.setStarringActors(movie.getStarringActors().stream().map(star->{
-            MovieEdit.StarringActorResp starringActor = new MovieEdit.StarringActorResp();
-            starringActor.setDesc(star.getDesc());
-            starringActor.setName(star.getName());
-            starringActor.setPhoto(fileStorageService.loadDocumentWithCodeEdit( EnumDocumentType.movie_star_photo,star.getUuid()));
+
+
+        deviceTab.setDeviceReqs(busVehicle.getBusVehicleDevices().stream().map(star->{
+            BusVehicleEdit.DeviceReq starringActor = BusVehicleEdit.DeviceReq.from(star.getDevice());
 
             return starringActor;
         }).collect(Collectors.toList()));
-        EntityModel entityModel_starringActorTab = EntityModel.of(starringActorTab);
+        EntityModel entityModel_starringActorTab = EntityModel.of(deviceTab);
 
-        entityModel_starringActorTab.add(linkTo(methodOn(BusRestController.class).editMovie(movie.getId(),null)).withRel("edit"));
-        movieResp.setStarringActorTab(entityModel_starringActorTab);
-
-
+        entityModel_starringActorTab.add(linkTo(methodOn(BusRestController.class).editBusDevice(busVehicle.getId(),null)).withRel("edit"));
+        busVehicleEdit.setDeviceTab(entityModel_starringActorTab);
 
 
 
@@ -865,19 +1030,11 @@ public class BusRestController {
 
 
 
-        Map<String,Attribute> attributeList = attributeRepository.findAllByObjectCode(movie.getCode()).stream().collect(Collectors.toMap(e->e.getKey(),e->e));
 
 
+ /*
 
-
-        Attribute 演出介绍 =attributeList.getOrDefault("show_intro",new Attribute());
-        Attribute 剧情介绍 =attributeList.getOrDefault("story_intro",new Attribute());// attributeList.stream().filter(e->e.getKey().equals("story_intro")).findAny().get() ;
-
-        Attribute 演出团体 =attributeList.getOrDefault("team_intro",new Attribute());// attributeList.stream().filter(e->e.getKey().equals("team_intro")).findAny().get() ;
-
-
-
-        MovieEdit.AboutTap aboutTap = MovieEdit.AboutTap.from(演出介绍,剧情介绍,演出团体);
+        MovieEdit.AboutTap aboutTap = MovieEdit.AboutTap.from();
 
         aboutTap.setParameterList(
                 Map.of(
@@ -885,18 +1042,18 @@ public class BusRestController {
 
                 ));
         EntityModel entityModel_aboutTap = EntityModel.of(aboutTap);
-        entityModel_aboutTap.add(linkTo(methodOn(BusRestController.class).editAttractionAboutTab(movie.getId(),null)).withRel("edit"));
-        movieResp.setAboutTab(entityModel_aboutTap);
+        entityModel_aboutTap.add(linkTo(methodOn(BusRestController.class).editAttractionAboutTab(busVehicle.getId(),null)).withRel("edit"));
+        busVehicleEdit.setAboutTab(entityModel_aboutTap);
+*/
 
 
+        busVehicleEdit.setCover(fileStorageService.loadDocumentWithCodeEdit( EnumDocumentType.movie_cover,busVehicle.getCode()));
+        busVehicleEdit.setVideo(fileStorageService.loadDocumentWithCodeEdit( EnumDocumentType.movie_vidio,busVehicle.getCode()));
 
-        movieResp.setCover(fileStorageService.loadDocumentWithCodeEdit( EnumDocumentType.movie_cover,movie.getCode()));
-        movieResp.setVideo(fileStorageService.loadDocumentWithCodeEdit( EnumDocumentType.movie_vidio,movie.getCode()));
 
+        EntityModel entityModel = EntityModel.of(busVehicleEdit);
 
-        EntityModel entityModel = EntityModel.of(movieResp);
-
-        entityModel.add(linkTo(methodOn(BusRestController.class).editMovie(movie.getId(),null)).withRel("edit"));
+        entityModel.add(linkTo(methodOn(BusRestController.class).editBusDevice(busVehicle.getId(),null)).withRel("edit"));
 
 
 
@@ -908,6 +1065,33 @@ public class BusRestController {
     }
 
 
+
+
+
+
+
+
+
+
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/Page_listBus", produces = "application/json")
+    public EntityModel Page_listBus(@PathVariable Long SUPPLIER_ID ) {
+
+        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
+        Supplier supplier = supplierOptional.get();
+
+        Map map = Map.of();
+
+
+        EntityModel entityModel = EntityModel.of(map);
+        entityModel.add(linkTo(methodOn(BusRestController.class).listBus(supplier.getId(),null,null)).withRel("list"));
+        entityModel.add(linkTo(methodOn(BusRestController.class).createBusVehicle(supplier.getId(),null)).withRel("create"));
+
+        return entityModel;
+
+    }
 
 
 
@@ -928,6 +1112,34 @@ public class BusRestController {
         EntityModel entityModel = EntityModel.of(busVehicle);
 
         return entityModel;
+
+    }
+
+
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/bus_vehicles", produces = "application/json")
+    public PagedModel listBus(@PathVariable Long SUPPLIER_ID ,Pageable pageable, PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
+
+
+        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
+
+        Supplier supplier = supplierOptional.get();
+
+        Page<BusVehicle> bookingRuleList = busVehicleRepository.findAllBySupplier(pageable,supplier.getId());
+
+        return assembler.toModel(bookingRuleList.map(e->{
+
+            BusVehicleResp movieResp = BusVehicleResp.from(e);
+
+            EntityModel entityModel = EntityModel.of(movieResp);
+            entityModel.add(linkTo(methodOn(BusRestController.class).getBusVehicleEdit(e.getId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(BusRestController.class).deleteBus(e.getId())).withRel("delete"));
+
+
+            return entityModel;
+        }));
 
     }
 
@@ -974,4 +1186,71 @@ public class BusRestController {
         return entityModel;
 
     }
+
+
+    @DeleteMapping(value = "/bus_vehicles/{PRODUCT_ID}", produces = "application/json")
+    public ResponseEntity<Void> deleteBus(@PathVariable long PRODUCT_ID) {
+
+        busVehicleRepository.deleteById(PRODUCT_ID);
+
+        return ResponseEntity.ok().build();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @GetMapping(value = "/getBusData", produces = "application/json")
+    public HomeBusProto getBusData() {
+
+
+
+
+
+        List<BusRoute> supplierOptional = busRouteRepository.findAll();
+
+
+        HomeBusProto homeBusResp = new HomeBusProto();
+
+
+        List<BusRouteProto> list = supplierOptional.stream().map(supplier->{
+            BusRouteProto busRouteResp = BusRouteProto.of(supplier);
+
+
+
+            busRouteResp.setStops(supplier.getStops().stream().map(e->{
+                BusStopRespProto busStopReq = BusStopRespProto.fromWithId(e.getStop());
+
+                return busStopReq;
+            }).collect(Collectors.toList()));
+
+
+            busRouteResp.withBuses(supplier.getBuses().stream().map(e->{
+                BusVehicleRespProto busVehicleResp = BusVehicleRespProto.from(e);
+                return busVehicleResp;
+            }).collect(Collectors.toList()));
+
+            return busRouteResp;
+        }).collect(Collectors.toList());
+
+
+        homeBusResp.setLines(list);
+
+        return homeBusResp;
+
+    }
+
 }

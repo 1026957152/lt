@@ -229,6 +229,7 @@ public class DeviceService {
         device.setManufacturer("Manufacturer");
         device.setId_(UUID.randomUUID().toString());
 
+        device.setCode(idGenService.nextId("device_"));
 
 
         if(deviceRegisterPojo.getType().equals(EnumDeviceType.OUTLET)){

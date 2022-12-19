@@ -1,18 +1,11 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.OctResp.ClainQuotaStatisticsResp;
 import com.lt.dom.oct.Campaign;
 import com.lt.dom.oct.ClainQuota;
-import com.lt.dom.oct.Product;
-import com.lt.dom.oct.Quota;
 import com.lt.dom.otcReq.ClainQuotaReq;
 import com.lt.dom.otcenum.EnumClainQuotaType;
 import com.lt.dom.repository.CampaignRepository;
-import com.lt.dom.repository.ProductRepository;
-import com.lt.dom.repository.VoucherRepository;
-import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.ClainQuotaServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,9 +1,8 @@
 package com.lt.dom.controllerOct;
 
 
-import com.lt.dom.OctResp.PhotoResp;
-import com.lt.dom.OctResp.PlaceResp;
-import com.lt.dom.OctResp.TripResp;
+import com.lt.dom.OctResp.*;
+import com.lt.dom.OctResp.home.HomeResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.PlaceEditReq;
@@ -14,6 +13,7 @@ import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
 import com.lt.dom.serviceOtc.IAuthenticationFacade;
 import com.lt.dom.serviceOtc.TripServiceImpl;
+import com.lt.dom.serviceOtc.ValueListServiceImpl;
 import com.lt.dom.vo.UserVo;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +53,8 @@ public class TripRestController {
     @Autowired
     private TripServiceImpl tripService;
 
-
+    @Autowired
+    private TripPlanRepository tripPlanRepository;
     @Autowired
     private TripRepository tripRepository;
     @Autowired
@@ -61,6 +62,14 @@ public class TripRestController {
 
     @Autowired
     private FileStorageServiceImpl fileStorageService;
+
+    @Autowired
+    private AttractionRepository attractionRepository;
+
+    @Autowired
+    private ValueListServiceImpl valueListService;
+
+
 
 
 
@@ -479,13 +488,13 @@ public class TripRestController {
 
 
     @PostMapping(value = "/user_trips", produces = "application/json")
-    public EntityModel<Trip> createUserTrip(@RequestBody @Valid TripReq tripReq) {
+    public EntityModel<TripPlan> createUserTrip(@RequestBody @Valid TripReq tripReq) {
 
         Authentication authentication =  authenticationFacade.getAuthentication();
         UserVo userVo = authenticationFacade.getUserVo(authentication);
 
 
-        Trip Trip = tripService.createUserTrip(userVo.getUser_id(),tripReq);
+        TripPlan Trip = tripService.createUserTripPlan(userVo.getUser_id(),tripReq);
 
 
         EntityModel entityModel = EntityModel.of(Trip);
@@ -493,4 +502,135 @@ public class TripRestController {
         return entityModel;
 
     }
+
+
+
+
+
+
+
+    @GetMapping(value = "/Page_planTrip", produces = "application/json")
+    public EntityModel<Trip> Page_planTrip( ) {
+
+
+
+        //配置推荐的景区
+        List<ValueListItem> valueListItems = valueListService.getByName(EnumValueListDefault.home_page_attractions_recommendation);
+        System.out.println("测试顺序啊啊 "+ valueListItems.toString());
+
+        System.out.println("测试顺序啊啊  stream 获得id后"+ valueListItems.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList()).toString());
+
+        List<Long> sortList = valueListItems.stream().map(e->Long.valueOf(e.getValue())).collect(Collectors.toList());
+
+
+        Map<Long,Attraction>  attractionList  = attractionRepository
+                .findAllByIdInAndPrivacyLevel(sortList,EnumPrivacyLevel.public_).stream().collect(Collectors.toMap(e->e.getId(), e->e));
+
+
+       List  respList  = sortList.stream().map(i -> {
+
+                Attraction e = attractionList.get(i);
+
+                System.out.println("stream里的顺序 " + e.getId());
+
+
+                AttractionResp attractionResp = AttractionResp.simpleFromId(e, fileStorageService.loadDocumentWithDefault(Arrays.asList(EnumPhotos.full), EnumDocumentType.attraction_thumb, e.getCode()));
+
+
+                attractionResp.setTags(Arrays.asList(EnumKnownfor.Architecture.toString()));
+
+
+                EntityModel attractionEntityModel = EntityModel.of(attractionResp);
+                attractionEntityModel.add(linkTo(methodOn(AttractionRestController.class).getAttraction(e.getId(), null)).withSelfRel().expand());
+
+                return attractionEntityModel;
+            }).collect(Collectors.toList());
+
+
+
+        Map map = Map.of("title","最近活动","recommend_attractions",respList);
+
+        EntityModel entityModel = EntityModel.of(map);
+
+        entityModel.add(linkTo(methodOn(TripRestController.class).createUserTrip(null)).withRel("createTrip"));
+
+
+        return entityModel;
+
+    }
+
+
+
+
+    @GetMapping(value = "/trip_plans/{Trip_ID}/edit", produces = "application/json")
+    public EntityModel<TripPlan> getTripPlaner(@PathVariable long Trip_ID) {
+
+        Optional<TripPlan> validatorOptional = tripPlanRepository.findById(Trip_ID);
+        if(validatorOptional.isEmpty()){
+
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到产品");
+
+        }
+        TripPlan tripPlan = validatorOptional.get();
+        TripPlanResp tripResp = TripPlanResp.from(tripPlan);
+
+
+
+
+
+        tripResp.setAttractions(tripPlan.getAttractions().stream().map(e->{
+            AttractionResp attractionResp = AttractionResp.from(e);
+            return attractionResp;
+        }).collect(Collectors.toList()));
+
+
+        tripResp.setItinerary(Arrays.asList().stream().map(e->{
+
+            return EntityModel.of("");
+        }).collect(Collectors.toList()));
+
+        EntityModel entityModel = EntityModel.of(tripResp);
+        entityModel.add(linkTo(methodOn(TripRestController.class).getTripPlaner(tripPlan.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(TripRestController.class).getTripPlaner(tripPlan.getId())).withSelfRel());
+
+        return entityModel;
+
+    }
+
+
+
+
+
+
+
+
+    @GetMapping(value = "/trip_planers", produces = "application/json")
+    public PagedModel tripPlanerListTripPlaner(Pageable pageable, PagedResourcesAssembler<EntityModel<BalanceTransaction>> assembler) {
+
+
+        Authentication authentication =  authenticationFacade.getAuthentication();
+        UserVo userVo = authenticationFacade.getUserVo(authentication);
+
+
+
+        Page<TripPlan> bookingRuleList = tripPlanRepository.findAll(pageable);
+
+        return assembler.toModel(bookingRuleList.map(e->{
+
+            TripPlanResp movieResp = TripPlanResp.from(e);
+
+            EntityModel entityModel = EntityModel.of(movieResp);
+            entityModel.add(linkTo(methodOn(TripRestController.class).getTrip(e.getId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(TripRestController.class).editTrip(e.getId(),null)).withRel("edit"));
+
+
+            return entityModel;
+        }));
+
+    }
+
+
+
+
+
 }

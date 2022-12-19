@@ -1,20 +1,11 @@
 package com.lt.dom.controllerOct;
 
-import com.lt.dom.oct.Product;
-import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.VoucherRepository;
 import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.SeckillServiceServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
+import com.lt.dom.serviceOtc.FulfillServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/oct")
@@ -28,7 +19,7 @@ public class ExposerRestController {
     private VoucherRepository voucherRepository;
 
     @Autowired
-    private VonchorServiceImpl vonchorService;
+    private FulfillServiceImpl vonchorService;
     @Autowired
     private AvailabilityServiceImpl availabilityService;
 

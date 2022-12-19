@@ -22,7 +22,8 @@ public class BusRoute extends Base{
         return buses;
     }
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY,cascade = { CascadeType.ALL },mappedBy="route")
+
 //	@Nullable
     private List<BusVehicle> buses;
 

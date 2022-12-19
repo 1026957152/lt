@@ -55,13 +55,13 @@ public class MovieEdit extends BaseResp{
         private Map parameterList;
 
 
-        private List<StarringActorResp> starringActors;//	A comma seperated list of actors.
-        public List<StarringActorResp> getStarringActors() {
-            return starringActors;
+        private List<StarringActorResp> deviceResps;//	A comma seperated list of actors.
+        public List<StarringActorResp> getDeviceResps() {
+            return deviceResps;
         }
 
-        public void setStarringActors(List<StarringActorResp> starringActors) {
-            this.starringActors = starringActors;
+        public void setDeviceResps(List<StarringActorResp> deviceResps) {
+            this.deviceResps = deviceResps;
         }
 
     }

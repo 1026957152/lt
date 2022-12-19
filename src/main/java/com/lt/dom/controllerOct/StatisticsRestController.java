@@ -4,28 +4,18 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdcardUtil;
 import com.lt.dom.oct.Passenger;
-import com.lt.dom.oct.Product;
 import com.lt.dom.repository.PassengerRepository;
 import com.lt.dom.repository.ProductRepository;
-import com.lt.dom.repository.VoucherRepository;
 import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
-import com.lt.dom.serviceOtc.VonchorServiceImpl;
-import com.lt.dom.thirdMt.mtTolt.MtpOrderPayResponse实名;
+import com.lt.dom.serviceOtc.FulfillServiceImpl;
 import com.lt.dom.vo.AgeRang_bigData;
-import org.checkerframework.checker.units.qual.A;
-import org.javatuples.Pair;
-import org.javatuples.Tuple;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,7 +31,7 @@ public class StatisticsRestController {
     private IdcardUtil idcardUtil;
 
     @Autowired
-    private VonchorServiceImpl vonchorService;
+    private FulfillServiceImpl vonchorService;
     @Autowired
     private AvailabilityServiceImpl availabilityService;
 

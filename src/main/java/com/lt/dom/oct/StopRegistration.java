@@ -15,6 +15,8 @@ class StopRegistration {
 
 
     public EnumSideOfStreetType sideOfStreetType;
+
+    @Enumerated(EnumType.STRING)
     public EnumWayPointType type;
 
 

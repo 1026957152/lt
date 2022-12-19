@@ -7,11 +7,12 @@ import com.lt.dom.otcReq.MovieReq;
 import com.lt.dom.otcReq.PlaceReq;
 import com.lt.dom.otcReq.TripReq;
 import com.lt.dom.otcenum.EnumDocumentType;
-import com.lt.dom.repository.PlaceRepository;
-import com.lt.dom.repository.ShowtimeRepository;
-import com.lt.dom.repository.TripRepository;
+import com.lt.dom.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.List;
 
 @Service
 public class TripServiceImpl {
@@ -21,6 +22,8 @@ public class TripServiceImpl {
     @Autowired
     private TripRepository tripRepository;
 
+    @Autowired
+    private TripPlanRepository tripPlanRepository;
 
     @Autowired
     private IdGenServiceImpl idGenService;
@@ -28,6 +31,8 @@ public class TripServiceImpl {
     @Autowired
     private FileStorageServiceImpl fileStorageService;
 
+    @Autowired
+    private AttractionRepository attractionRepository;
 
 
     public Trip createUserTrip(Long user,TripReq theatreReq) {
@@ -182,5 +187,78 @@ public class TripServiceImpl {
         }
 
         return showtime;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public TripPlan createUserTripPlan(Long user,TripReq theatreReq) {
+
+        List<Attraction> attractionList = attractionRepository.findAllById(theatreReq.getAttractionIds());
+
+        TripPlan theatre = new TripPlan();
+        theatre.setName(theatreReq.getName());
+
+        theatre.setUser(user);
+
+
+ /*     theatre.setName_long(theatreReq.getName_long());
+        theatre.setDesc_short(theatreReq.getDesc_short());
+        theatre.setDesc_long(theatreReq.getDesc_long());*/
+
+        theatre.setCode(idGenService.tripCode());
+        theatre.setDay_count(theatreReq.getDay_count());
+        theatre.setEnds_on(theatreReq.getEnds_on());
+        theatre.setStarts_on(theatreReq.getStarts_on());
+        theatre.setPrivacy_level(theatreReq.getPrivacy_level());
+
+        theatre = tripPlanRepository.save(theatre);
+
+
+
+        theatre.setAttractions(new HashSet<>(attractionList));
+
+
+        if(theatreReq.getTripCover()!=null){
+
+            fileStorageService.updateFromTempDocument(theatre.getCode(),theatreReq.getTripCover(), EnumDocumentType.trip_cover);
+
+        }
+
+        return theatre;
+
+
+    }
+
+
+
+
+
+
+    public TripPlan addTripPlan(TripPlan tripPlan,Attraction attraction) {
+
+
+
+        tripPlan.getAttractions().add(attraction);
+
+
+
+        tripPlan = tripPlanRepository.save(tripPlan);
+
+
+        return tripPlan;
+
+
     }
 }

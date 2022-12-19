@@ -2,11 +2,11 @@ package com.lt.dom.oct;
 
 import com.lt.dom.otcenum.EnumPrivacyLevel;
 
-import javax.persistence.Entity;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class TripPlan extends Base{
@@ -19,7 +19,26 @@ public class TripPlan extends Base{
 
     private EnumPrivacyLevel privacy_level;
 
-/*    privacy_level: enum["private", "shareable", "public"]
+
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "trip_plan_attraction",
+            joinColumns = @JoinColumn(
+                    name = "trip_plan_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "attraction_id", referencedColumnName = "id"))
+    private Set<Attraction> attractions;
+
+    public Set<Attraction> getAttractions() {
+        return attractions;
+    }
+
+    public void setAttractions(Set<Attraction> attractions) {
+        this.attractions = attractions;
+    }
+
+    /*    privacy_level: enum["private", "shareable", "public"]
     privileges: {
         edit: bool
         manage: bool
@@ -55,6 +74,7 @@ public class TripPlan extends Base{
 
     private long supplier;
     private String code;
+    private Long user;
 
     public String getName() {
         return name;
@@ -118,5 +138,13 @@ public class TripPlan extends Base{
 
     public String getCode() {
         return code;
+    }
+
+    public void setUser(Long user) {
+        this.user = user;
+    }
+
+    public Long getUser() {
+        return user;
     }
 }

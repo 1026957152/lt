@@ -27,4 +27,6 @@ public interface ValidatorRepository extends JpaRepository<Validator_
     void deleteAllByDevice(long id);
 
     Page<Validator_> findAllByTypeAndUser(EnumValidatorType 特定的人员, long id, Pageable pageable);
+
+    void deleteAllByUser(Long id);
 }

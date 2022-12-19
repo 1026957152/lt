@@ -30,6 +30,18 @@ public class BusVehicle extends Base{
     @Column(name = "platename")
     private String plateName;
 
+
+    @Column(name = "number")
+    private String number;
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
     @Column(name = "seatsbooked")
     private Integer seatsbooked = 0;
 
@@ -40,8 +52,22 @@ public class BusVehicle extends Base{
     @JoinTable
     private List<BusSeat> seat = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE })
+    @ManyToOne(fetch = FetchType.LAZY)
     private BusRoute route;
+
+
+
+    @OneToMany(mappedBy= "busVehicle",
+            cascade = CascadeType.ALL)  // orphanRemoval = true
+    private List<BusVehicleDevice> busVehicleDevices;
+
+    public List<BusVehicleDevice> getBusVehicleDevices() {
+        return busVehicleDevices;
+    }
+
+    public void setBusVehicleDevices(List<BusVehicleDevice> busVehicleDevices) {
+        this.busVehicleDevices = busVehicleDevices;
+    }
 
     @Column(name = "dailystarttime")
     private DateTime dailyStartTime;

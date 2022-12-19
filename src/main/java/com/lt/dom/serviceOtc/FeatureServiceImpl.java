@@ -35,22 +35,13 @@ public class FeatureServiceImpl {
     @Autowired
     private PreferenceServiceImpl preferenceService;
 
-
-
-    public void fill(HomeResp homeResp) {
-
-        List<Enumfeatured> enumfeatureds = Arrays.stream(Enumfeatured.values()).collect(Collectors.toList());
-        if(miniapp_release){
-            enumfeatureds = new ArrayList<>();
-        }
-
-        homeResp.setFeatures(enumfeatureds.stream().map(e->{
+    public Pair<FeatureResp,EntityModel<FeatureResp>> fill(Enumfeatured  e) {
 
             FeatureResp resp = FeatureResp.from(e);
             EntityModel<FeatureResp> entityModel1 = EntityModel.of(resp);
 
 
-           // resp.setFeature_image(fileStorageService.loadDocument(Arrays.asList(EnumPhotos.thumb),EnumDocumentType.home_page_feature_logo,e.name()));
+            // resp.setFeature_image(fileStorageService.loadDocument(Arrays.asList(EnumPhotos.thumb),EnumDocumentType.home_page_feature_logo,e.name()));
             resp.setFeature_image(e.getFeature_image());
             if(e.equals(Enumfeatured.tours)){
                 String link = linkTo(methodOn(TripRestController.class).Page_listTrip()).withSelfRel().getHref();
@@ -60,13 +51,13 @@ public class FeatureServiceImpl {
             if(e.equals(Enumfeatured.city_hero)){
                 String link = linkTo(methodOn(IndexController.class).heroPass(null)).withSelfRel().getHref();
                 entityModel1.add(linkTo(methodOn(IndexController.class).heroPass(null)).withSelfRel());
-                resp.setPath("/pages/onecard/show?url="+link);
+                resp.setPath(EnumMiniappPagePath.home_city_hero_card.getPath()+"?url="+link);
             }
 
             if(e.equals(Enumfeatured.city_pass)){
                 String link = linkTo(methodOn(IndexController.class).cityPass(null)).withSelfRel().getHref();
                 entityModel1.add(linkTo(methodOn(IndexController.class).cityPass(null)).withSelfRel());
-                resp.setPath("/pages/passcard/show?url="+link);
+                resp.setPath(EnumMiniappPagePath.home_city_pass.getPath()+"?url="+link);
             }
 
 
@@ -99,7 +90,7 @@ public class FeatureServiceImpl {
 
             if(e.equals(Enumfeatured.导游)){
                 String link = linkTo(methodOn(BookingMakeplanController.class).home(3,null,null)).withSelfRel().getHref();
-              //  entityModel1.add(linkTo(methodOn(BookingMakeplanController.class).getGuideList(3,null,null)).withSelfRel());
+                //  entityModel1.add(linkTo(methodOn(BookingMakeplanController.class).getGuideList(3,null,null)).withSelfRel());
                 resp.setPath("/pages/provider/list?url="+link);
             }
             if(e.equals(Enumfeatured.bigdata)){
@@ -118,7 +109,22 @@ public class FeatureServiceImpl {
                 //  entityModel1.add(linkTo(methodOn(BookingMakeplanController.class).getGuideList(3,null,null)).withSelfRel());
                 resp.setPath("/pages/bus/index?url="+link);
             }
-            return entityModel1;
+            return Pair.with(resp,entityModel1);
+    }
+
+    public void fill(HomeResp homeResp) {
+
+        List<Enumfeatured> enumfeatureds = Arrays.stream(Enumfeatured.values()).collect(Collectors.toList());
+        if(miniapp_release){
+            enumfeatureds = new ArrayList<>();
+        }
+
+        homeResp.setFeatures(enumfeatureds.stream().map(e->{
+
+
+            return fill(e).getValue1();
+
+
         }).collect(Collectors.toList()));
     }
 

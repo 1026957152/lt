@@ -3,6 +3,7 @@ package com.lt.dom.OctResp.home;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.OctResp.MediaResp;
 import com.lt.dom.OctResp.MuseumResp;
+
 import org.javatuples.Pair;
 import org.springframework.hateoas.EntityModel;
 
@@ -14,6 +15,7 @@ public class HomeBusResp {
 
     private List lines;
     private List<EntityModel> availableFares;
+
 
 
     public <T> void setLines(List lines) {
@@ -31,4 +33,7 @@ public class HomeBusResp {
     public List<EntityModel> getAvailableFares() {
         return availableFares;
     }
+
+
+
 }

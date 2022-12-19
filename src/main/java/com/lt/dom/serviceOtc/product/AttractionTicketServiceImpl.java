@@ -17,7 +17,11 @@ import com.lt.dom.serviceOtc.AvailabilityServiceImpl;
 import com.lt.dom.serviceOtc.ComponentRightServiceImpl;
 import com.lt.dom.serviceOtc.IdGenServiceImpl;
 import com.lt.dom.serviceOtc.ProductServiceImpl;
+import com.lt.dom.vo.CompoentRightAssigtToTargeVo;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
@@ -34,8 +38,7 @@ import static com.lt.dom.serviceOtc.JsonParse.GSON;
 @Service
 public class AttractionTicketServiceImpl {
 
-    @Autowired
-    private LtConfig ltConfig;
+    Logger logger = LoggerFactory.getLogger(AttractionTicketServiceImpl.class);
 
     @Autowired
     private AttractionRepository attractionRepository;
@@ -174,20 +177,20 @@ System.out.println("建立  取票却啊啊啊啊  ，团购票啊啊啊啊啊�
 
 
 
-        lineItemList.stream().forEach(bookingProduct -> {
+        lineItemList.stream().forEach(lineItem   -> {
 
 
-            Pair<Product,Attraction> productAttractionPair = productService.attract(bookingProduct.getProduct());
+            Pair<Product,Attraction> productAttractionPair = productService.attract(lineItem.getProduct());
 
             Attraction attraction = productAttractionPair.getValue1();
             Product product = productAttractionPair.getValue0();
 
 
 
-                    List<Component> componentRightList = componentRepository.findAllByProduct(bookingProduct.getProduct());
+                    List<Component> componentRightList = componentRepository.findAllByProduct(lineItem.getProduct());
 
 
-                    List<VoucherTicket> vouchers = LongStream.range(0, bookingProduct.getQuantity()).boxed().map(x -> {
+                    List<VoucherTicket> vouchers = LongStream.range(0, lineItem.getQuantity()).boxed().map(x -> {
 
                         System.out.println("建立  取票却啊啊啊啊  ，团购票啊啊啊啊啊啊"+x+"第几啊啊");
 
@@ -230,7 +233,21 @@ System.out.println("建立  取票却啊啊啊啊  ，团购票啊啊啊啊啊�
 
                     vouchers = voucherTicketRepository.saveAll(vouchers);
                     vouchers.stream().forEach(e->{
-                        componentRightService.assingtoTicket(e,componentRightList, limit);
+
+
+                        CompoentRightAssigtToTargeVo compoentRightAssigtToTargeVo = new CompoentRightAssigtToTargeVo();
+
+
+                        logger.error("订单数量和 新建一个年卡 "+reservation.getPlatform());
+                        compoentRightAssigtToTargeVo.setBooking(reservation);
+
+                        componentRightService.assingtoComponent(compoentRightAssigtToTargeVo,
+                                componentRightList.stream().map(ee->{
+                                    Triplet<Component,LineItem,EnumComponentVoucherType> componentVounchLineItemPair =
+                                            Triplet.with(ee,lineItem,ee.getType());
+                                    return componentVounchLineItemPair;
+                                }).collect(Collectors.toList()),
+                                limit);
 
                     });
 

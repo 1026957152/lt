@@ -1,5 +1,6 @@
 package com.lt.dom.OctResp;
 
+import com.lt.dom.proto.req.BusAndStopUpdateMessage;
 import com.lt.dom.oct.BusStop;
 
 import java.time.LocalTime;
@@ -7,7 +8,7 @@ import java.util.List;
 
 //https://www3.septa.org/#/Real%20Time%20Data/trainView
 
-public class BusStopResp {
+public class BusStopResp extends BaseResp {
     private Double lat;
     private Double lng;
     private List places;
@@ -21,6 +22,9 @@ public class BusStopResp {
         busStopResp.setLng(e.getLng());
         busStopResp.setDescription(e.getDescription());
         busStopResp.setId(e.getId());
+
+        busStopResp.setCreatedDate(e.getCreatedDate());
+        busStopResp.setModifiedDate(e.getModifiedDate());
         return busStopResp;
     }
 
@@ -130,5 +134,46 @@ public class BusStopResp {
 
     public LocalTime getDeparture_time() {
         return departure_time;
+    }
+
+
+    public static class Live {
+
+        private String departure_time;
+        private String departure_distance;
+
+        public String getDeparture_time() {
+            return departure_time;
+        }
+
+        public void setDeparture_time(String departure_time) {
+            this.departure_time = departure_time;
+        }
+
+        public String getDeparture_distance() {
+            return departure_distance;
+        }
+
+        public void setDeparture_distance(String departure_distance) {
+            this.departure_distance = departure_distance;
+        }
+
+        public static BusStopResp.Live of(BusAndStopUpdateMessage.StopUpdateMessage message) {
+            BusStopResp.Live live1 = new BusStopResp.Live();
+
+            live1.setDeparture_time(message.getUpcomingTime());
+            live1.setDeparture_distance(message.getUpcomingDistance());
+            return live1;
+        }
+
+    }
+    private BusStopResp.Live live;
+
+    public Live getLive() {
+        return live;
+    }
+
+    public void setLive(Live live) {
+        this.live = live;
     }
 }
