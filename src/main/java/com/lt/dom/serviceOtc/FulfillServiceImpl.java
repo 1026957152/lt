@@ -24,7 +24,7 @@ public class FulfillServiceImpl {
     public void create(Reservation reservation,Traveler tra) {
         Fulfilled_item fulfilled_item = new Fulfilled_item();
         fulfilled_item.setBooking(reservation.getId());
-        fulfilled_item.setCode(idGenService.nextId(""));
+        fulfilled_item.setCode(idGenService.fillmentItem_Code());
         fulfilled_item.setTravelers(Arrays.asList(tra));
         // fulfilled_item.setLog_customer_name();
         fulfiiledItemRepository.save(fulfilled_item);

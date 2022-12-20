@@ -296,6 +296,9 @@ public class UserVoServiceImpl {
 
 
 
+            supplierRespEntityModel.add(linkTo(methodOn(RedemptionRestController.class).validate_by_id_number(null)).withRel("redeem_by_id_number"));
+
+
 
 
             userResp.setSupplier(supplierRespEntityModel);

@@ -58,6 +58,11 @@ public class RedemptionRestController {
     private IAuthenticationFacade authenticationFacade;
 
     @Autowired
+    private CardholderRepository cardholderRepository;
+
+
+
+    @Autowired
     private MultiTicketServiceImpl multiTicketService;
     @Autowired
     private BusTicketServiceImpl busTicketService;
@@ -635,6 +640,41 @@ public class RedemptionRestController {
     }
 
 
+
+
+
+    //TODO 这里有点问题
+    @PostMapping(value = "/validate_by_id_number", produces = "application/json")
+    public Object validate_by_id_number(@RequestBody OnecodeScanPojo pojo___) {
+
+
+
+        //  User user_文旅码用户 = intoOnecodeService.byCode(pojo___.getCode());
+
+
+        Authentication authentication = authenticationFacade.getAuthentication();
+
+        UserVo userOv_景区检票员 = authenticationFacade.getUserVo(authentication);
+
+
+        List<Cardholder> cardholderList = cardholderRepository.findByIdentity(pojo___.getId());
+
+
+        RedemBycodePojo.Code redemBycodePojo = new RedemBycodePojo.Code();
+        redemBycodePojo.setCode(cardholderList.get(0).getIdentity());
+        EntityModel entityModel = cityPassService.validate_by_idnumber(redemBycodePojo,userOv_景区检票员);
+
+
+        if(entityModel!= null){
+            return entityModel;
+        }
+
+
+        throw new BookNotFoundException(Enumfailures.not_found,"找不到这个权益券 "+pojo___.getCode());
+
+
+
+    }
 
 
 

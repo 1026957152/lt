@@ -6,12 +6,14 @@ import com.lt.dom.OctResp.PassResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.OnecodeScanPojo;
+import com.lt.dom.otcReq.RedemBycodePojo;
 import com.lt.dom.otcenum.EnumValidatorType;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.AuthenticationFacade;
 import com.lt.dom.serviceOtc.IntoOnecodeServiceImpl;
 import com.lt.dom.serviceOtc.ValidateServiceImpl;
+import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
 import com.lt.dom.util.ZxingBarcodeGenerator;
 import com.lt.dom.vo.DeviceScanValidatorVo;
 import com.lt.dom.vo.UserVo;
@@ -36,7 +38,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 @RequestMapping("/oct")
 public class HandSetController {
-
+    @Autowired
+    private CityPassServiceImpl cityPassService;
     @Autowired
     private CardholderRepository cardholderRepository;
     @Autowired
@@ -164,16 +167,28 @@ public class HandSetController {
         UserVo userOv_景区检票员 = authenticationFacade.getUserVo(authentication);
 
 
-        Supplier supplier = userOv_景区检票员.getSupplier();
+      //  Supplier supplier = userOv_景区检票员.getSupplier();
 
 
 
         List<Cardholder> cardholderList = cardholderRepository.findByIdentity(pojo___.getId());
 
 
+        RedemBycodePojo.Code redemBycodePojo = new RedemBycodePojo.Code();
+        redemBycodePojo.setCode(cardholderList.get(0).getIdentity());
+        EntityModel entityModel = cityPassService.validate_by_idnumber(redemBycodePojo,userOv_景区检票员);
 
 
-        Optional<ComponentVounch> componentVounchList = componentVounchRepository.findByCode(pojo___.getCode());
+        if(entityModel!= null){
+            return entityModel;
+        }
+
+
+        throw new BookNotFoundException(Enumfailures.not_found,"找不到这个权益券 "+pojo___.getCode());
+
+
+
+    /*    Optional<ComponentVounch> componentVounchList = componentVounchRepository.findByCode(pojo___.getCode());
 
         if(componentVounchList.isEmpty()){
             throw new BookNotFoundException(Enumfailures.not_found,"找不到这个权益券 "+pojo___.getCode());
@@ -191,6 +206,6 @@ public class HandSetController {
 
         return  validateService.人员扫码(userOv_景区检票员,user_文旅码用户.get(),validator_s,
                 Arrays.asList(componentVounchList.get()));
-
+*/
     }
 }

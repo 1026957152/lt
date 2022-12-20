@@ -27,7 +27,12 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
+    CodeConfig fullfillItem_Plan = new CodeConfig(6,"123456789",null,null,"fufi_##########");
 
+    public String fillmentItem_Code(){
+        String no = VoucherCodes.generate(fullfillItem_Plan);
+        return no;
+    }
     CodeConfig configRatePlan = new CodeConfig(6,null,null,null,"plan_#######");
 
     public String ratePlanCode(){
@@ -380,7 +385,7 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
 
 
     }
-    CodeConfig bookingConfig = new CodeConfig(20,null,null,null,"res_#########");
+    CodeConfig bookingConfig = new CodeConfig(20,"0123456789",null,null,"res_#########");
     public String bookingNo(){
 
         String no = VoucherCodes.generate(bookingConfig);

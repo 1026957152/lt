@@ -63,6 +63,10 @@ public class CityPassServiceImpl {
     private ReservationRepository reservationRepository;
     @Autowired
     private CardholderRepository cardholderRepository;
+    @Autowired
+    private ValidatorServiceImpl validatorService;
+
+
 
     @Autowired
     private RedemptionServiceImpl redemptionService;
@@ -509,6 +513,63 @@ public class CityPassServiceImpl {
 
 
 
+
+    public EntityModel validate_by_idnumber(RedemBycodePojo.Code code, UserVo userVo) {
+
+
+
+        List<Cardholder> cardholderList = cardholderRepository.findByIdentity(code.getCode());
+
+
+        if(cardholderList.isEmpty()) {
+
+            return null;
+        }
+
+        Cardholder cardholder = cardholderList.get(0);
+
+
+
+        Pass pass = cardholder.getPass();
+
+
+
+        List<ComponentVounch> componentVounchList = validatorService.check(userVo.getUser_id(), userVo.getSupplier().getId(),pass.getCode());
+
+
+
+        logger.error("和验证 可用核销的权益"+componentVounchList);
+
+
+        if(pass.getBooking()!= null){
+
+            bookingBaseService.checkin(pass.getBookingLine());
+        }
+
+
+
+
+        RedemptionTryResp resp = new RedemptionTryResp();
+
+        resp.setType_text(EnumRedeamptionType.PASS.toString());
+
+
+        componentRightService.sentEntries(pass.getCode(),resp,componentVounchList);
+        resp.setCrypto_code(pass.getCode());
+
+
+        EntityModel redemptionEntryEntityModel =  EntityModel.of(resp);
+
+
+
+        redemptionEntryEntityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchor(null)).withRel("redeemByCryptoCode"));
+        redemptionEntryEntityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchorByCryptoCode(null)).withRel("redeem"));
+
+        return redemptionEntryEntityModel;
+
+
+
+    }
 
 
 

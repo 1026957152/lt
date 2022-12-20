@@ -169,7 +169,9 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().antMatchers("/oct/login",
+        return (web) -> web.ignoring().antMatchers(
+                "/index.html",
+                "/oct/login",
                 "/websocket",
                 "/xh/v1/back-center/login",
                 "/oct/openid/merchants_settled/*",
