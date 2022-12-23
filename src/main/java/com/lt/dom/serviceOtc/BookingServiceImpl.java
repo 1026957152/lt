@@ -654,6 +654,7 @@ public class BookingServiceImpl {
             lineItem.setTravelers(e.getTraveler().stream().map(travelerReq -> {
                 Traveler traveler = new Traveler();
 
+                System.out.println("================== 这里添加了 游客信息"+traveler.toString());
                 traveler.setName(travelerReq.getName());
                 traveler.setIdNo(travelerReq.getId_card());
                 traveler.setTel_home(travelerReq.getPhone());
@@ -1078,6 +1079,14 @@ public class BookingServiceImpl {
 
 
         return reservationRepository.save(reservation);
+
+    }
+
+
+
+    public void refund_check(PlatRefundVo platRefundVo, Reservation reservation) {
+        List<LineItem> lineItemList = lineItemRepository.findAllByBooking(reservation.getId());
+        cityPassService.refund(reservation,lineItemList,platRefundVo);
 
     }
 

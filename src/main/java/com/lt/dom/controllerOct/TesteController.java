@@ -1,5 +1,6 @@
 package com.lt.dom.controllerOct;
 
+import com.lt.dom.proto.rabit.CityPassBooking;
 import com.lt.dom.rabbit.*;
 import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
@@ -11,13 +12,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Random;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping("/teste")
 public class TesteController {
 
  //   @Autowired
     private QueueSender queueSender;
-   // @Autowired
+   @Autowired
     private RabbitTemplate rabbitTemplate;
 
    // @Autowired
@@ -41,11 +45,25 @@ public class TesteController {
     public String send_(){
         // queueSender.send("test message");
 
+        String url = linkTo(methodOn(BookingRestController.class).getReservation(1l)).withSelfRel().getHref();
+
+        CityPassBooking cityPassBooking = new CityPassBooking();
+
+        cityPassBooking.setEticket(url);
+
+        cityPassBooking.set姓名("招远");
+        cityPassBooking.set码号("13468801683");
+        cityPassBooking.setSKU名称("招远");
+        cityPassBooking.set购买数量("1");
+        cityPassBooking.set开始日期("2022-21-22");
+        cityPassBooking.set过期日期("2022-23-24");
+        cityPassBooking.set客服电话("13468801683");
+
 
 
         CorrelationData correlationData = new CorrelationData();
         correlationData.setId("zheaven123456");//id + 时间戳 （必须是全局唯一的）
-        rabbitTemplate.convertAndSend(RabbitMQConfig.topicExchangeName, RabbitMQConfig.routing_key,"dddddddddddddd",correlationData);
+        rabbitTemplate.convertAndSend(RabbitMQConfig.topicExchangeName, RabbitMQConfig.routing_key,cityPassBooking,correlationData);
 
 
         return "ok. done";

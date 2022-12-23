@@ -1,5 +1,7 @@
 package com.lt.dom.thirdTS.domainLtToTs;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
@@ -158,5 +160,11 @@ public class LtReqTs验证核销通知 {
 
     public void setFormat(String format) {
         this.format = format;
+    }
+
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
     }
 }

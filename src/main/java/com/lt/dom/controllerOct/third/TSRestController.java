@@ -69,12 +69,12 @@ public class TSRestController {
 
     //@PostMapping(path = "",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 
-  @PostMapping(path = "",consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+    @PostMapping(path = "",consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     // public Object jk(TsReqLt下单接口 body_ ){
-     public Object jk(@RequestParam  MultiValueMap<String,String> ob_ ){
+    public Object jk(@RequestParam  MultiValueMap<String,String> ob_ ){
 
 
-     //
+        //
         System.out.println("================="+ob_.toString());
         Map<String, String> body = new HashMap<>();
         System.out.println("dddddddddddd"+body.toString());
@@ -92,7 +92,7 @@ public class TSRestController {
         System.out.println("dddddddddddd"+json);
 
 
-    //    ob_.remove(ob_.keySet().stream().filter(e->e.startsWith("players")).collect(Collectors.toList()));
+        //    ob_.remove(ob_.keySet().stream().filter(e->e.startsWith("players")).collect(Collectors.toList()));
 
 
 
@@ -182,12 +182,12 @@ public class TSRestController {
 
 
 
-      if (tsReqLt产品列表.getMethod().equals(EnumMethord.item_refund)){
+        if (tsReqLt产品列表.getMethod().equals(EnumMethord.item_refund)){
             if(tsReqLt产品列表.get_pid().equals("dddddd")){
                 throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
             }
 
-          TsReqLt退单接口 tsReqLt退单接口 = TsReqLt退单接口.from_(ob_);
+            TsReqLt退单接口 tsReqLt退单接口 = TsReqLt退单接口.from_(ob_);
 
 
             System.out.println("TsReqLt退单接口dddddddddddd"+tsReqLt退单接口.toString());
@@ -204,6 +204,7 @@ public class TSRestController {
                 ltRespToTs产品列表.setInfo(infoDTO);
                 ltRespToTs产品列表.setSuccess(true);
                 ltRespToTs产品列表.setMessage("成功");
+                logger.debug("退单返回内容:{}",ltRespToTs产品列表);
                 return ltRespToTs产品列表;
 
 
@@ -215,6 +216,9 @@ public class TSRestController {
 
                 ltRespToTs产品列表.setSuccess(false);
                 ltRespToTs产品列表.setMessage("失败"+ e.toString());
+
+
+                logger.debug("退单返回内容:{}",ltRespToTs产品列表);
                 return ltRespToTs产品列表;
             }
         }
@@ -339,16 +343,16 @@ public class TSRestController {
             return ltRespToTs产品列表;
 
 
-    }catch (Exception e){
+        }catch (Exception e){
 
-        e.printStackTrace();
+            e.printStackTrace();
 
             LtRespToTs退单接口 ltRespToTs产品列表 = new LtRespToTs退单接口();
 
             ltRespToTs产品列表.setSuccess(false);
             ltRespToTs产品列表.setMessage("失败"+ e.toString());
-        return ltRespToTs产品列表;
-    }
+            return ltRespToTs产品列表;
+        }
 
 
     }
@@ -379,8 +383,8 @@ public class TSRestController {
         TsReqLt重发接口_修改订单.ToTsReqLt重发接口_修改订单 toTsReqLt重发接口_修改订单 = new TsReqLt重发接口_修改订单.ToTsReqLt重发接口_修改订单();
 
         toTsReqLt重发接口_修改订单.setName("4"); //审核结果： 3退票成功，4退票不通过
-  //      toTsReqLt重发接口_修改订单.setSerial_no(""); //退票记录id（申请退票有传此数据时，会返回申请退票时传入的流水号）
-  //     toTsReqLt重发接口_修改订单.setMessage("ddd"); ;//本平台订单ID（天时同城）
+        //      toTsReqLt重发接口_修改订单.setSerial_no(""); //退票记录id（申请退票有传此数据时，会返回申请退票时传入的流水号）
+        //     toTsReqLt重发接口_修改订单.setMessage("ddd"); ;//本平台订单ID（天时同城）
         toTsReqLt重发接口_修改订单.setOrders_id(1);  //管理员审核备注/说明
 
         LtRespToTs重发接口_修改订单 ltRespToTs产品列表 = tsToLtService.getTsReqLt重发接口_修改订单(toTsReqLt重发接口_修改订单);
@@ -404,7 +408,7 @@ public class TSRestController {
 
 
         toLtReqTs退单审核通知.setType(4); //审核结果： 3退票成功，4退票不通过
-        toLtReqTs退单审核通知.setSerial_no(""); //退票记录id（申请退票有传此数据时，会返回申请退票时传入的流水号）
+        toLtReqTs退单审核通知.setSerial_no("9999"); //退票记录id（申请退票有传此数据时，会返回申请退票时传入的流水号）
         toLtReqTs退单审核通知.setMessage("ddd"); ;//本平台订单ID（天时同城）
         toLtReqTs退单审核通知.setOrders_id("ddd");  //管理员审核备注/说明
         TsRespLt退单审核通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs退单审核通知(toLtReqTs退单审核通知);

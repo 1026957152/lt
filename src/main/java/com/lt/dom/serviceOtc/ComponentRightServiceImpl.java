@@ -778,7 +778,6 @@ public class ComponentRightServiceImpl {
 
                     hashids.encodeHex(person.toByteString().toStringUtf8());
 
-
                     String hash = hashids.encodeHex(e.getRedeem_voucher_key());
 
                     redemptionEntryResp.setRedeem_voucher_key_crypt(hash);

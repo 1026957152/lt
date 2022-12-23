@@ -3,9 +3,7 @@ package com.lt.dom.oct;
 
 import com.lt.dom.otcenum.EnumRelatedObjectType;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
@@ -32,6 +30,7 @@ public class Contact extends Base {
 
 
 
+        @Enumerated(EnumType.STRING)
         private EnumRelatedObjectType relatedObjectType;
 
         private Long relatedObjectId;

@@ -108,7 +108,7 @@ public class TsToLtServiceImpl {
                 values.add(k + "=" + v);
             }
         }
-     //   values.add("key="+ key);
+        //   values.add("key="+ key);
         String sign = StringUtils.join(values, "&");
         //return encodeByMD5(sign);
         return EncryptionUtil.md5(sign);
@@ -145,7 +145,7 @@ public class TsToLtServiceImpl {
 
 
 
-  //      ToTsReqLt重发接口_修改订单 toTsReqLt重发接口_修改订单 = new ToTsReqLt重发接口_修改订单();
+        //      ToTsReqLt重发接口_修改订单 toTsReqLt重发接口_修改订单 = new ToTsReqLt重发接口_修改订单();
 
 
         LtRespToTs重发接口_修改订单 ltRespToTs重发接口_修改订单 = new LtRespToTs重发接口_修改订单();
@@ -154,13 +154,13 @@ public class TsToLtServiceImpl {
     }
 
 
-        public   LtRespToTs产品列表 getTsReqLt产品列表(Pair<AgentConnection,Supplier> agent, TsReqLt产品列表 data){
+    public   LtRespToTs产品列表 getTsReqLt产品列表(Pair<AgentConnection,Supplier> agent, TsReqLt产品列表 data){
 
 
 
 
 
-    //    thirdPartyService.findAll(EnumThirdParty.TS, data.getKey_word(), PageRequest.of(data.getPage(), data.getSize()));
+        //    thirdPartyService.findAll(EnumThirdParty.TS, data.getKey_word(), PageRequest.of(data.getPage(), data.getSize()));
 
 
         List<Pair<Product,AgentProduct>> products = new ArrayList<>();
@@ -199,7 +199,7 @@ public class TsToLtServiceImpl {
                                 return pricesDTO;
                             }));
 
-           // LtRespToTs产品列表.ListDTO listDTO = getFul(e);
+            // LtRespToTs产品列表.ListDTO listDTO = getFul(e);
 /*            Optional<PricingRate> optionalPricingType = priceService.getDefault_price(e);
 
             if(optionalPricingType.isEmpty()){
@@ -227,11 +227,11 @@ public class TsToLtServiceImpl {
 
             Map<LocalDate,ListDTO.DateStocksDTO> dateDateStocksDTOMap =
                     dateStocksDTOList.stream()
-                           .collect(Collectors.toMap(pricesDTO->pricesDTO.getDate(), pricesDTO->{
-                pricesDTO.setDate(null);
-                return pricesDTO;
+                            .collect(Collectors.toMap(pricesDTO->pricesDTO.getDate(), pricesDTO->{
+                                pricesDTO.setDate(null);
+                                return pricesDTO;
 
-           }));
+                            }));
             listDTO.setDateStocks(dateDateStocksDTOMap);
 
 
@@ -251,15 +251,10 @@ public class TsToLtServiceImpl {
                 listDTO.setParams(paramsDTO);
             }
 
-            Optional<Contact> contact =  contactService.find(EnumRelatedObjectType.product,e.getId());
+            Optional<String> contact =  contactService.find_phone(EnumRelatedObjectType.product,e.getId());
             if(contact.isPresent()){
 
-                Optional<Identifier> identifierOptional = contact.get().getIdentifiers().stream().filter(identifier->identifier.getType().equals(EnumIdentifiersType.phone)).findAny();
-
-                if(identifierOptional.isPresent()){
-                    paramsDTO.setContactNumber_商家电话(identifierOptional.get().getLinkId());
-
-                }
+                paramsDTO.setContactNumber_商家电话(contact.get());
 
 
             }
@@ -276,7 +271,7 @@ public class TsToLtServiceImpl {
   /*          Map<String,SpecTypeListDTO> stringSpecTypeListDTOMap =
                     Arrays.asList(specTypeListDTO).stream().collect(Collectors.toMap(pricesDTO->pricesDTO.getId(), pricesDTO->pricesDTO));
 */
-          //  listDTO.setSpecTypeList(Arrays.asList(specTypeListDTO));
+            //  listDTO.setSpecTypeList(Arrays.asList(specTypeListDTO));
 
 
             return listDTO;
@@ -503,11 +498,24 @@ public class TsToLtServiceImpl {
         List<String> codes =Arrays.asList(data.getCodes().split(","));
 
 
+
         PlatRefundVo platRefundVo = new PlatRefundVo();
         platRefundVo.setSerial_no(data.getSerial_no());
         platRefundVo.setOrders_id(data.getOrders_id());
         platRefundVo.setPlatform(EnumPlatform.TS);
-        Optional<Reservation> reservation = reservationRepository.findByTrackingId(data.getOrders_id());
+        Optional<Reservation> reservation = reservationRepository.findByCode(data.getOrders_id());
+
+        try{
+            bookingService.refund_check(platRefundVo,reservation.get());
+
+        }catch (Exception e){
+            LtRespToTs退单接口.InfoDTO infoDTO = new LtRespToTs退单接口.InfoDTO();
+            infoDTO.setId(null);
+            infoDTO.setStatus(4); //   订单状态：2申请退票，3退票成功，4退票不通过（如果产品在天时系统中属于采购产品，退票默认需要审核【退票审核通知接口】）
+            return infoDTO;
+        }
+
+
 
         Pair<Refund,PlatRefundVo> pair = bookingService.refund(platRefundVo,reservation.get());
 
@@ -517,7 +525,7 @@ public class TsToLtServiceImpl {
 
         LtRespToTs退单接口.InfoDTO infoDTO = new LtRespToTs退单接口.InfoDTO();
         infoDTO.setId(refund.getId());
-        infoDTO.setStatus(1); //   订单状态：2申请退票，3退票成功，4退票不通过（如果产品在天时系统中属于采购产品，退票默认需要审核【退票审核通知接口】）
+        infoDTO.setStatus(3); //   订单状态：2申请退票，3退票成功，4退票不通过（如果产品在天时系统中属于采购产品，退票默认需要审核【退票审核通知接口】）
 
 
 
@@ -583,7 +591,7 @@ public class TsToLtServiceImpl {
 
 
 
-     //   List<PricingRate> pricingRates = priceService.find(product);
+        //   List<PricingRate> pricingRates = priceService.find(product);
 
 
         PricingRate pricingRate = optional.get().getValue1();
@@ -655,12 +663,14 @@ public class TsToLtServiceImpl {
         if(data.getIs_pay() == 1){ ////是否下单同时支付（1:同时支付，0:不支付）缺省时默认1
             platUserVo.setPaid(true);
             System.out.println("这里看一下， 是不是空"+data.getPrice());
-           // platUserVo.setPaidAmount(data.getSize().intValue()*Float.valueOf(data.getPrice()));
+            // platUserVo.setPaidAmount(data.getSize().intValue()*Float.valueOf(data.getPrice()));
         }
         if(data.getIs_pay() == 0){ ////是否下单同时支付（1:同时支付，0:不支付）缺省时默认1
             platUserVo.setPaid(false);
 
         }
+
+
 
 
 
@@ -680,7 +690,7 @@ public class TsToLtServiceImpl {
 
             Fulfilled_item. 有是个 fulfilled_item
         }*/
-      //  lineItem.getFulfillmentInstructionsType().equals(Enumf);
+        //  lineItem.getFulfillmentInstructionsType().equals(Enumf);
 
 
 
@@ -690,15 +700,18 @@ public class TsToLtServiceImpl {
         infoDTO.setCode(reservation.getCode()); //必含   //文字码(码号)【注:当是采购产品或审核发送的会异步返码,会通过码号推送接口推送至回调地址】
 
 
+        List<String> 码号_list = fulfilled_items.stream().map(e->e.getCode()).collect(Collectors.toList());
+
+        List<String> 码号_qrcode_list = 码号_list;
 
 
-        infoDTO.setCodes(fulfilled_items.stream().map(e->e.getCode()).collect(Collectors.toList())); //文字码(码号)组，一人一码的产品会有数据
+        infoDTO.setCodes(码号_list); //文字码(码号)组，一人一码的产品会有数据
         infoDTO.setContent(reservation.getCode()); //发送内容
 
         LtRespToTs下单接口.InfoDTO.ParamsDTO paramsDTO = new  LtRespToTs下单接口.InfoDTO.ParamsDTO();
         infoDTO.setParams(paramsDTO);
         paramsDTO.setIsRealCode(1); //游客是否可凭码号消费，是否是真实有效码号，0表示否，1表示真实可消费
-        paramsDTO.setQrcodeImages(Arrays.asList(reservation.getCode())) ; //二维码链接组，需要与codes一一对应
+        paramsDTO.setQrcodeImages(码号_qrcode_list) ; //二维码链接组，需要与codes一一对应
         infoDTO.setParams(paramsDTO);
 
         infoDTO.setPrice(lineItem.getUnitPrice().toString());//结算单价

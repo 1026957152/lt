@@ -1,14 +1,16 @@
 package com.lt.dom.serviceOtc;
 
 
-import com.lt.dom.OctResp.EmpowerResp;
-import com.lt.dom.OctResp.PhoneResp;
 import com.lt.dom.OctResp.SmsResp;
-import com.lt.dom.controllerOct.BookingRestController;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.otcenum.Enumfailures;
+import com.lt.dom.proto.rabit.CityPassBooking;
+import com.lt.dom.rabbit.RabbitMQConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -23,10 +25,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 import static com.lt.dom.serviceOtc.JsonParse.GSON;
 
@@ -34,11 +33,27 @@ import static com.lt.dom.serviceOtc.JsonParse.GSON;
 public class SMSServiceImpl {
 
     Logger logger = LoggerFactory.getLogger(SMSServiceImpl.class);
-
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     // 服务商 AppID
     @Value("${yunpian_sms.apikey}")
     private String apikey;
+    public String send_(CityPassBooking cityPassBooking, String tel_home){
+
+
+        logger.debug("发送了消息 rabit {}",cityPassBooking);
+
+        CorrelationData messageId = new CorrelationData(UUID.randomUUID().toString());
+        //第四个参数: 设置消息唯一id
+
+        CorrelationData correlationData = new CorrelationData();
+        correlationData.setId("zheaven123456");//id + 时间戳 （必须是全局唯一的）
+        rabbitTemplate.convertAndSend(RabbitMQConfig.topicExchangeName,RabbitMQConfig.routing_key,cityPassBooking,messageId);
+
+
+        return "ok. done";
+    }
 
     /**
      * 单条短信发送,智能匹配短信模板

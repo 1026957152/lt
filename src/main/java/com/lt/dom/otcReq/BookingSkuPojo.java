@@ -287,6 +287,10 @@ private String code;//
 
     public static class TravelerReq {
 
+        @Override
+        public String toString() {
+            return ReflectionToStringBuilder.toString(this);
+        }
 
         private EnumIdType idType;
 

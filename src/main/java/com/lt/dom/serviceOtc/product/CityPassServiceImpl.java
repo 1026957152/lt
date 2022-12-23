@@ -5,14 +5,21 @@ import cn.hutool.core.util.ObjectUtil;
 import com.lt.dom.FulfiiledItemRepository;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.controllerOct.RedemptionRestController;
+import com.lt.dom.controllerOct.VoucherTicketPcRestController;
+import com.lt.dom.controllerOct.VoucherTicketRestController;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
+import com.lt.dom.freemarker.EticketController;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.RedemBycodePojo;
 import com.lt.dom.otcenum.*;
+import com.lt.dom.proto.rabit.CityPassBooking;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.BookingTypeTowhoVo;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.thirdTS.LtToTsServiceImpl;
+import com.lt.dom.thirdTS.domainLtToTs.LtReqTs验证核销通知;
+import com.lt.dom.thirdTS.domainLtToTs.TsRespLt验证核销通知;
 import com.lt.dom.vo.*;
 import org.apache.commons.lang.RandomStringUtils;
 import org.javatuples.Pair;
@@ -26,6 +33,7 @@ import org.springframework.util.Assert;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -43,7 +51,12 @@ public class CityPassServiceImpl {
     @Autowired
     private ComponentRightServiceImpl componentRightService;
 
+    @Autowired
+    private ContactServiceImpl contactService;
 
+
+    @Autowired
+    private CryptoServiceImpl cryptoService;
 
 
     @Autowired
@@ -112,6 +125,10 @@ public class CityPassServiceImpl {
 
     @Autowired
     private ComponentVounchRepository componentVounchRepository;
+
+    @Autowired
+    private LtToTsServiceImpl ltToTsService;
+
 
 
 
@@ -424,18 +441,52 @@ public class CityPassServiceImpl {
 
 
 
-                    fulfillService.create(reservation,tra);
+                    Fulfilled_item fulfilled_item = fulfillService.create(reservation,tra);
 
                     if(tra.getTel_home()!= null){
 
                         try {
-                            String greetings = String.format(
-                                    "你的验证码是%s",
-                                    tra.hashCode());
 
-                            smsService.singleSend(greetings,tra.getTel_home());
+
+                            CityPassBooking cityPassBooking = new CityPassBooking();
+                            cityPassBooking.set姓名(cardholder.getName());
+                            cityPassBooking.set码号(fulfilled_item.getCode());
+                            cityPassBooking.setSKU名称(lineItem.getTitle());
+                            cityPassBooking.set购买数量("1");
+
+                            cityPassBooking.set开始日期(pass.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd")));
+                            cityPassBooking.set过期日期(pass.getExpiringDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd")));
+
+
+                            String urllink = linkTo(methodOn(EticketController.class).dig_ticket(cryptoService.hashids_encode(pass.getId()),null)).withSelfRel().getHref();
+                            cityPassBooking.setEticket(urllink);
+
+
+                            Optional<String> contact =  contactService.find_phone(EnumRelatedObjectType.product,lineItem.getProduct());
+                            if(contact.isPresent()){
+                                cityPassBooking.set客服电话( contact.get());
+
+                            }
+
+
+
+                            String greetings = String.format(
+                                    "尊敬的%s，凭此电子票（门票码号%s）扫描（或告知门票码号）验证成功即可进入，%s%s张；有效期%s至%s，客服电话：%s",
+                                    cityPassBooking.get姓名(),
+                                    cityPassBooking.get码号(),
+                                    cityPassBooking.getSKU名称(),
+                                    cityPassBooking.get购买数量(),
+                                    cityPassBooking.get开始日期(),
+                                    cityPassBooking.get过期日期(),cityPassBooking.get客服电话());
+
+                         //   smsService.singleSend(greetings,tra.getTel_home());
+
+
+                            smsService.send_(cityPassBooking,tra.getTel_home());
 
                         }catch (Exception e){
+                            e.printStackTrace();
+
                             logger.error("短信发送失败 {} ",e.getMessage());
                         }
                     }
@@ -861,6 +912,24 @@ public class CityPassServiceImpl {
 
 
 
+
+        Optional<Reservation> reservationOptional = reservationRepository.findById(voucher.getBooking());
+        Reservation reservation = reservationOptional.get();
+
+        if(reservationOptional.get().getPlatform().equals(EnumPlatform.TS)){
+            LtReqTs验证核销通知.ToLtReqTs验证核销通知 ltReqTs验证核销通知 = new LtReqTs验证核销通知.ToLtReqTs验证核销通知();
+
+            ltReqTs验证核销通知.setAmount(4);//:当前使用数量
+            ltReqTs验证核销通知.setAmount_used(1);//:累计使用数量(包含本次)
+            ltReqTs验证核销通知.setAnother_orders_id(reservation.getTrackingId()); //:本平台订单ID（天时同城）
+            ltReqTs验证核销通知.setMy_orders_id(reservation.getCode()); //:第三方订单ID
+            List<Fulfilled_item> fulfilled_items = fulfillService.find(reservation);
+
+            ltReqTs验证核销通知.setCodes(fulfilled_items.stream().map(e->e.getCode()).collect(Collectors.joining(","))); //:使用码号,多个','分割
+            TsRespLt验证核销通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs验证核销通知(ltReqTs验证核销通知);
+
+        }
+
         EntityModel redemptionEntryEntityModel =  EntityModel.of(Map.of("dd",redemptionEntryList));
 
 
@@ -893,4 +962,6 @@ public class CityPassServiceImpl {
         }
 
     }
+
+
 }

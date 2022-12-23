@@ -29,6 +29,10 @@ server:
 #    keyAlias: bootalias
 
 spring:
+  freemarker:
+    template-loader-path: classpath:/templates
+    suffix: .ftl
+
   rabbitmq:
     host: 10.0.0.41  #mq服务器ip,默认为localhost
     listener:
@@ -185,6 +189,7 @@ dll:
 logging:
   level:
     root=WARN:
+
     com:
       config: DEBUG
       serviceOtc: DEBUG
@@ -194,6 +199,8 @@ logging:
         dom.controllerOct: TRACE
     org:
       springframework:
+        web:
+          client: DEBUG
         security: DEBUG
 
 # App Properties

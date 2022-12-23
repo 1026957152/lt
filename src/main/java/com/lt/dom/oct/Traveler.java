@@ -3,6 +3,7 @@ package com.lt.dom.oct;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.lt.dom.otcenum.EnumIdType;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -162,5 +163,10 @@ public class Traveler extends Base{
 
     public LineItem getLineItem() {
         return lineItem;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
     }
 }

@@ -123,6 +123,7 @@ public class CarRestController {
                 Address address = optionalAddress.get();
                 address.setLongitude(address.getLongitude()+random(0,1,1).doubleValue()/100);
                 address.setLatitude(address.getLatitude()+random(0,1,1).doubleValue()/100);
+
                 wayPointResp.setLocation(LocationResp.latLngFrom(address));
             }
 

@@ -1,8 +1,15 @@
 package com.lt.dom.util;
 
+import java.math.BigDecimal;
 import java.util.Properties;
 
 public class CommonUtils {
+    public static BigDecimal random(int min, int max, int num){
+
+        return new BigDecimal(min+Math.random()*(max-min)).setScale(num,BigDecimal.ROUND_HALF_UP);
+
+    }
+
     /**
      * 获取zfbinfo.properties文件里的值
      * @param name key

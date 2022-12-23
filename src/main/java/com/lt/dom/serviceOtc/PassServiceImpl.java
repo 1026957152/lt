@@ -52,6 +52,9 @@ public class PassServiceImpl {
     @Autowired
     private FileStorageServiceImpl fileStorageService;
 
+    @Autowired
+    private CryptoServiceImpl cryptoService;
+
 
     @Autowired
     private PassRepository passRepository;
@@ -551,19 +554,11 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
             System.out.println(pass.getNumber());
             System.out.println(pass.getExpiringDate());
 
-            LocalDateTime now = LocalDateTime.now();
-            Timestamp timestamp = Timestamp.valueOf(now);
-
-
-            PersonBean.Person person = PersonBean.Person.newBuilder()
-                    .setAge(timestamp.getTime())
-                    .setName(pass.getCode())
-                    .build();
-
 
 
             String encodedString =
-                    Base64.getEncoder().withoutPadding().encodeToString(person.toByteArray());
+                    cryptoService.encode(pass.getCode());
+
  /*           redemptionEntryResp.setRedeem_voucher_key_crypt_encode(probuff);
             redemptionEntryResp.setRedeem_voucher_key_crypt_encode_withoutPadding(encodedString);
 */

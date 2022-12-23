@@ -64,6 +64,7 @@ public class YxdRestController {
     @Autowired
     private OpenidRepository openidRepository;
 
+/*
 
 
     @PostMapping(value = "/postman", produces = "application/json")
@@ -216,23 +217,20 @@ public class YxdRestController {
         return ltRespToTs产品列表;
 
     }
+*/
 
 
 
     @GetMapping(value = "/refundResult", produces = "application/json")
-    public TsRespLt退单审核通知 getLtReqTs退单审核通知(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
+    public TsRespLt退单审核通知 getLtReqTs退单审核通知() {
 
-
-        if(tsReqLt产品列表.get_pid().equals("dddddd")){
-            throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
-        }
 
         LtReqTs退单审核通知.ToLtReqTs退单审核通知 toLtReqTs退单审核通知 = new LtReqTs退单审核通知.ToLtReqTs退单审核通知();
 
 
 
         toLtReqTs退单审核通知.setType(4); //审核结果： 3退票成功，4退票不通过
-        toLtReqTs退单审核通知.setSerial_no(""); //退票记录id（申请退票有传此数据时，会返回申请退票时传入的流水号）
+        toLtReqTs退单审核通知.setSerial_no("uuuuuuuuuuuuuu"); //退票记录id（申请退票有传此数据时，会返回申请退票时传入的流水号）
         toLtReqTs退单审核通知.setMessage("ddd"); ;//本平台订单ID（天时同城）
         toLtReqTs退单审核通知.setOrders_id("ddd");  //管理员审核备注/说明
         TsRespLt退单审核通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs退单审核通知(toLtReqTs退单审核通知);
@@ -243,13 +241,13 @@ public class YxdRestController {
 
 
 
-    @GetMapping(value = "/item_orders_modify", produces = "application/json")
-    public TsRespLt验证核销通知 ltReqTs验证核销通知(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
+    @GetMapping(value = "/validate", produces = "application/json")
+    public TsRespLt验证核销通知 ltReqTs验证核销通知() {
 
 
-        if(tsReqLt产品列表.get_pid().equals("dddddd")){
-            throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
-        }
+
+
+
 
         LtReqTs验证核销通知.ToLtReqTs验证核销通知 ltReqTs验证核销通知 = new LtReqTs验证核销通知.ToLtReqTs验证核销通知();
 
@@ -260,7 +258,7 @@ public class YxdRestController {
         ltReqTs验证核销通知.setAmount_used(1);//:累计使用数量(包含本次)
         ltReqTs验证核销通知.setAnother_orders_id("ddd"); //:本平台订单ID（天时同城）
         ltReqTs验证核销通知.setMy_orders_id("ddd"); //:第三方订单ID
-        ltReqTs验证核销通知.setCodes(""); //:使用码号,多个','分割
+        ltReqTs验证核销通知.setCodes("12,11"); //:使用码号,多个','分割
 
 
         TsRespLt验证核销通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs验证核销通知(ltReqTs验证核销通知);
@@ -279,12 +277,9 @@ public class YxdRestController {
 
 
     @GetMapping(value = "/send", produces = "application/json")
-    public TsRespLt码号推送通知 ltReqTs码号推送通知(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
+    public TsRespLt码号推送通知 ltReqTs码号推送通知() {
 
 
-        if(tsReqLt产品列表.get_pid().equals("dddddd")){
-            throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
-        }
 
         LtReqTs码号推送通知.ToLtReqTs码号推送通知 toLtReqTs码号推送通知 = new LtReqTs码号推送通知.ToLtReqTs码号推送通知();
 
@@ -305,6 +300,7 @@ public class YxdRestController {
         toLtReqTs码号推送通知.setOut_money_one("this.out_money_one");//out_money_one:采购单价
         toLtReqTs码号推送通知.setOut_send_content("this.out_send_content");//out_send_content:发送内容
         toLtReqTs码号推送通知.setIs_real_code("this.is_real_code");//is_real_code:是否真实码号
+        toLtReqTs码号推送通知.setPost_tracking_no("this.is_real_code");//is_real_code:是否真实码号
 
 
         TsRespLt码号推送通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs码号推送通知(toLtReqTs码号推送通知);
@@ -314,23 +310,18 @@ public class YxdRestController {
     }
 
     @GetMapping(value = "/goods", produces = "application/json")
-    public TsRespLt产品信息变更通知 ltReqTs产品信息变更通知(@RequestBody TsReqLt产品列表 tsReqLt产品列表) {
-
-
-        if(tsReqLt产品列表.get_pid().equals("dddddd")){
-            throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
-        }
-
-        LtReqTs产品信息变更通知.ToLtReqTs产品信息变更通知 toLtReqTs码号推送通知 = new LtReqTs产品信息变更通知.ToLtReqTs产品信息变更通知();
+    public TsRespLt产品信息变更通知 ltReqTs产品信息变更通知() {
 
 
 
-        LtReqTs产品信息变更通知 ltReqTs验证核销通知 = new LtReqTs产品信息变更通知();
+
+
+        LtReqTs产品信息变更通知.ToLtReqTs产品信息变更通知 ltReqTs验证核销通知 = new LtReqTs产品信息变更通知.ToLtReqTs产品信息变更通知();
         ltReqTs验证核销通知.setStatus(1); //产品状态（1：正常，12：下架）
         ltReqTs验证核销通知.setSeller_code("this.seller_code"); //产品ID
 
 
-        TsRespLt产品信息变更通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs产品信息变更通知(toLtReqTs码号推送通知);
+        TsRespLt产品信息变更通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs产品信息变更通知(ltReqTs验证核销通知);
 
         return ltReqTs退单审核通知;
 

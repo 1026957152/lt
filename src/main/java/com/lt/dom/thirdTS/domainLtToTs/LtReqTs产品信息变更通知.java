@@ -1,5 +1,7 @@
 package com.lt.dom.thirdTS.domainLtToTs;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+
 import javax.validation.constraints.NotNull;
 
 public class LtReqTs产品信息变更通知 {
@@ -29,12 +31,16 @@ public class LtReqTs产品信息变更通知 {
         public void setSeller_code(String seller_code) {
             this.seller_code = seller_code;
         }
-
+        @Override
+        public String toString() {
+            return ReflectionToStringBuilder.toString(this);
+        }
         public LtReqTs产品信息变更通知 To() {
             LtReqTs产品信息变更通知 ltReqTs验证核销通知 = new LtReqTs产品信息变更通知();
-            ltReqTs验证核销通知.setStatus(this.status); //产品状态（1：正常，12：下架）
-            ltReqTs验证核销通知.setSeller_code(this.seller_code); //产品ID
+            ltReqTs验证核销通知.setStatus(this.getStatus()); //产品状态（1：正常，12：下架）
+            ltReqTs验证核销通知.setSeller_code(this.getSeller_code()); //产品ID
 
+            System.out.println("============"+ this.toString());
             return ltReqTs验证核销通知;
 
 
@@ -101,5 +107,10 @@ public class LtReqTs产品信息变更通知 {
 
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
     }
 }

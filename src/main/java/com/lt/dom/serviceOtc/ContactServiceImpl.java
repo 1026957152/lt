@@ -13,6 +13,8 @@ import com.lt.dom.repository.AttributeRepository;
 import com.lt.dom.repository.ContactRepository;
 import com.lt.dom.repository.CrossSellRepository;
 import com.lt.dom.repository.ProductRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,9 @@ import java.util.stream.Collectors;
 //https://stripe.com/docs/payments/checkout/cross-sells#create-cross-sell
 @Service
 public class ContactServiceImpl {
+
+    Logger logger = LoggerFactory.getLogger(SMSServiceImpl.class);
+
     @Autowired
     private ContactRepository contactRepository;
 
@@ -202,4 +207,28 @@ public class ContactServiceImpl {
         Optional<Contact> contactOptional = contactRepository.findByRelatedObjectTypeAndRelatedObjectId(product,id);
         return contactOptional;
     }
+
+    public Optional<String> find_phone(EnumRelatedObjectType product, Long id) {
+
+        Optional<Contact> contactOptional = contactRepository.findByRelatedObjectTypeAndRelatedObjectId(product,id);
+
+        if(contactOptional.isPresent()){
+            Contact contact = contactOptional.get();
+            Optional<Identifier> identifierOptional = contact.getIdentifiers().stream().filter(identifier->identifier.getType().equals(EnumIdentifiersType.phone)).findAny();
+
+            if(identifierOptional.isPresent()){
+
+                return Optional.of(identifierOptional.get().getLinkId());
+
+            }
+            logger.warn("没有找电话联系方式:{} , {}",contact,id);
+            return Optional.empty();
+        }
+        logger.warn("没有找打联系信息:{} , {}",product,id);
+        return Optional.empty();
+    }
+
+
+
+
 }

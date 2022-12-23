@@ -57,8 +57,8 @@ public class RefundServiceImpl {
         refund.setBooking(reservation.getId());
 
 
-      //  refund.setCharge(charge.getId());
-      //  refund.setCharge_Code(charge.getCode());
+        //  refund.setCharge(charge.getId());
+        //  refund.setCharge_Code(charge.getCode());
 
 
 
@@ -73,10 +73,6 @@ public class RefundServiceImpl {
 
         Payment payment = payments.get(0);*/
 
-        List<Charge> chargeList = chargeRepository.findByBooking(reservation.getId());
-        Charge charge = chargeList.get(0);
-
-
         Refund refund =null;
 
         if(platRefundVo.getPlatform().equals(EnumPlatform.TS)){
@@ -90,6 +86,10 @@ public class RefundServiceImpl {
             refund =  refundRepository.save(refund);
         }
         if(platRefundVo.getPlatform().equals(EnumPlatform.DERECT)){
+
+            List<Charge> chargeList = chargeRepository.findByBooking(reservation.getId());
+            Charge charge = chargeList.get(0);
+
 
             RefundReqVo refundReq = new RefundReqVo();
             refundReq.setReason(EnumRefundReason.requested_by_customer);

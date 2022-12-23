@@ -1687,6 +1687,8 @@ public class BookingRestController {
             BookingSkuPojo.ProductReq.Sku sku = new BookingSkuPojo.ProductReq.Sku();
             sku.setId(e.getId());
             sku.setQuantity(e.getQuantity());
+            e.getTravelers().stream().forEach(tttt->System.out.println("--------"+tttt.toString()));
+
             sku.setTravelers(e.getTravelers());
             return sku;
         }).collect(Collectors.toList()));

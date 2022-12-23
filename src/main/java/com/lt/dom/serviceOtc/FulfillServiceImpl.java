@@ -17,18 +17,21 @@ public class FulfillServiceImpl {
     private IdGenServiceImpl idGenService;
     @Autowired
     private FulfiiledItemRepository fulfiiledItemRepository;
-    @Autowired
-    private ComponentVounchRepository componentVounchRepository;
 
-
-    public void create(Reservation reservation,Traveler tra) {
+    public Fulfilled_item create(Reservation reservation,Traveler tra) {
         Fulfilled_item fulfilled_item = new Fulfilled_item();
         fulfilled_item.setBooking(reservation.getId());
         fulfilled_item.setCode(idGenService.fillmentItem_Code());
         fulfilled_item.setTravelers(Arrays.asList(tra));
         // fulfilled_item.setLog_customer_name();
-        fulfiiledItemRepository.save(fulfilled_item);
+        return fulfiiledItemRepository.save(fulfilled_item);
     }
 
+    public List<Fulfilled_item> find(Reservation reservation) {
+
+        // fulfilled_item.setLog_customer_name();
+        List<Fulfilled_item> fulfilled_items =  fulfiiledItemRepository.findAllByBooking(reservation.getId());
+        return fulfilled_items;
+    }
 
 }

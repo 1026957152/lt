@@ -24,6 +24,7 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
     implementation 'org.projectlombok:lombok:1.18.18'
     //   implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -120,7 +121,11 @@ dependencies {
 
     implementation 'org.hashids:hashids:1.0.3'
     implementation 'com.google.protobuf:protobuf-java:3.6.1'
+/*    implementation 'io.springfox:springfox-boot-starter:3.0.0'
+    implementation 'io.springfox:springfox-swagger-ui:3.0.0'*/
+    implementation 'org.springdoc:springdoc-openapi-ui:1.6.4'
 
+    implementation 'org.springframework.boot:spring-boot-starter-freemarker'
     protobuf files("proto/")
 }
 
