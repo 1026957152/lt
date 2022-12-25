@@ -3,6 +3,7 @@ package com.lt.dom.serviceOtc;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.lt.dom.OctResp.ClainQuotaStatisticsResp;
+import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.CompaignPojo;
 import com.lt.dom.otcenum.*;
@@ -30,7 +31,7 @@ import static org.springframework.transaction.annotation.Propagation.NOT_SUPPORT
 @Service
 public class CryptoServiceImpl {
 
-    Hashids hashids = new Hashids("this is my pepper");
+    static Hashids hashids = new Hashids("this is my pepper");
 
 
     public String decode(String  code) {
@@ -47,9 +48,12 @@ public class CryptoServiceImpl {
 
 
         } catch (InvalidProtocolBufferException e) {
+            throw new BookNotFoundException(Enumfailures.not_found,"解析错误");
 
-            throw new RuntimeException(e);
+           // throw new RuntimeException(e);
         }catch (Exception e){
+
+            throw new BookNotFoundException(Enumfailures.not_found,"解析错误");
 
         }
         return person.getName();
@@ -71,20 +75,20 @@ public class CryptoServiceImpl {
         return encodedString;
     }
 
-    public String hashids_encode(String  code) {
+    public static String hashids_encode(String  code) {
 
         String hash = hashids.encodeHex(code);
 
         return hash;
     }
 
-    public String hashids_encode(Long  code) {
+    public static String hashids_encode(Long  code) {
 
         String hash = hashids.encode(code);
 
         return hash;
     }
-    public String hashids_decode(String  code) {
+    public static String hashids_decode(String  code) {
 
         String numbers = hashids.decodeHex(code);
 

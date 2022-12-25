@@ -4,6 +4,7 @@ package com.lt.dom.serviceOtc.product;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.lt.dom.OctResp.ProductResp;
 import com.lt.dom.OctResp.RedemptionTryResp;
+import com.lt.dom.OctResp.RightRedemptionEntryResp;
 import com.lt.dom.config.LtConfig;
 import com.lt.dom.controllerOct.RedemptionRestController;
 import com.lt.dom.error.BookNotFoundException;
@@ -332,7 +333,39 @@ public class BusTicketServiceImpl {
     public EntityModel redeem(CodeWithLatLngVo code, Device device) {
 
 
+        logger.debug("验证 code:{}",code.getC());
+
+        if(!(code.getC().startsWith("tike_"))) {
+            if(!code.getC().startsWith("pass_")) {
+                return null;
+            }else{
+                return null;
+            }
+
+        }
+
+
         Optional<Pass> optionalVoucher = passRepository.findByCode(code.getC());
+
+
+        if(code.getC().startsWith("tike_")){
+            Optional<VoucherTicket> voucherTicketOptional = voucherTicketRepository.findByCode(code.getC());
+            if(voucherTicketOptional.isPresent()){
+                VoucherTicket voucherTicket = voucherTicketOptional.get();
+                if(voucherTicket.getType().equals(EnumVoucherType.PASS)){
+                    optionalVoucher = passRepository.findById(voucherTicket.getRelateId());
+                }
+            }
+        }
+
+
+
+        if(code.getC().startsWith("pass_")) {
+
+            optionalVoucher = passRepository.findByCode(code.getC());
+
+        }
+
 
 
 
@@ -403,7 +436,15 @@ public class BusTicketServiceImpl {
 
 
 
-        EntityModel redemptionEntryEntityModel =  EntityModel.of(Map.of("dd",redemptionEntryList));
+        EntityModel redemptionEntryEntityModel =  EntityModel.of(Map.of(
+                "total",redemptionEntryList.size(),
+                "content",redemptionEntryList.stream().map(e->{
+
+                    RightRedemptionEntryResp rightRedemptionEntry = RightRedemptionEntryResp.from(e);
+
+                    return rightRedemptionEntry;
+
+        }).collect(Collectors.toList())));
 
 
         return redemptionEntryEntityModel;

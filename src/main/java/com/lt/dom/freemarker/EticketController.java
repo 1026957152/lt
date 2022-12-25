@@ -164,7 +164,7 @@ public class EticketController {
 
         String link = null;
         try {
-            link = linkTo(methodOn(BarcodesController.class).getZxingQRCode(cryptoService.encode(voucherTicketResp.getCode()))).withSelfRel().getHref();
+            link = linkTo(methodOn(BarcodesController.class).getZxingQRCode(cryptoService.encode(voucherTicket.getCode()))).withSelfRel().getHref();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.lt.dom.serviceOtc.JsonParse.GSON;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -53,6 +54,10 @@ public class CityPassServiceImpl {
 
     @Autowired
     private ContactServiceImpl contactService;
+
+    @Autowired
+    private AvailabilityServiceImpl availabilityService;
+
 
 
     @Autowired
@@ -211,9 +216,9 @@ public class CityPassServiceImpl {
 
     private static final EnumProductType productType = EnumProductType.Pass;
     private static final EnumLineType lineType = EnumLineType.Pass;
-    private static final EnumVoucherType voucherType = EnumVoucherType.Multi_Ticket;
-
-
+    private static final EnumVoucherType voucherType = EnumVoucherType.PASS;
+    @Autowired
+    private VoucherTicketRepository voucherTicketRepository;
 
 
     public void booking_trial(List<BookingTypeTowhoVo> list) {
@@ -376,6 +381,10 @@ public class CityPassServiceImpl {
                     //cardholder.setCompany(pass.getId());
                     cardholder.setName(tra.getName());
                     cardholder.setIdentity(tra.getIdNo());
+
+
+
+
                     CompoentRightAssigtToTargeVo compoentRightAssigtToTargeVo = new CompoentRightAssigtToTargeVo();
 
 
@@ -384,6 +393,14 @@ public class CityPassServiceImpl {
 
                     Pass pass = passService.create_virtual(lineItem,cardholder,10);
                     passService.active(pass);
+
+
+
+                    VoucherTicket fulfilled_item = fulfillService.create(reservation,
+                            product,
+                            voucherType,
+                            pass.getId());
+
 
                     compoentRightAssigtToTargeVo.setPass(pass);
                     compoentRightAssigtToTargeVo.setBooking(reservation);
@@ -440,9 +457,6 @@ public class CityPassServiceImpl {
 
 
 
-
-                    Fulfilled_item fulfilled_item = fulfillService.create(reservation,tra);
-
                     if(tra.getTel_home()!= null){
 
                         try {
@@ -458,7 +472,7 @@ public class CityPassServiceImpl {
                             cityPassBooking.set过期日期(pass.getExpiringDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd")));
 
 
-                            String urllink = linkTo(methodOn(EticketController.class).dig_ticket(cryptoService.hashids_encode(pass.getId()),null)).withSelfRel().getHref();
+                            String urllink = linkTo(methodOn(EticketController.class).dig_ticket(cryptoService.hashids_encode(fulfilled_item.getId()),null)).withSelfRel().getHref();
                             cityPassBooking.setEticket(urllink);
 
 
@@ -630,19 +644,57 @@ public class CityPassServiceImpl {
 
 
 
-    public EntityModel validate(RedemBycodePojo.Code code, UserVo userVo) {
+
+
+    public RedemptionTryResp validateByDevice(Pass pass, Device device) {
 
 
 
-        if(!code.getCode().startsWith("pass_")) {
 
-            return null;
+        List<ComponentVounch> componentVounchList = validatorService.check(device.getId(),pass.getCode());
+
+        logger.error("和验证 可用核销的权益"+componentVounchList);
+
+
+        if(pass.getBooking()!= null){
+
+            bookingBaseService.checkin(pass.getBookingLine());
         }
 
-        Optional<Pass> cardholderList = passRepository.findByCode(code.getCode());
+
+        RedemptionTryResp resp = new RedemptionTryResp();
+
+        resp.setType_text(EnumRedeamptionType.PASS.toString());
+
+
+        componentRightService.sentEntries(pass.getCode(),resp,componentVounchList);
+        resp.setCrypto_code(pass.getCode());
+
+
+        return resp;
+
+
+
+    }
+
+
+
+    public EntityModel validate(VoucherTicket voucherTicket, UserVo userVo) {
+
+        logger.debug("验证 type:{}",voucherTicket.getType());
+
+        if(!voucherTicket.getType().equals(voucherType)) {
+            return null;
+
+        }
+
+
+
+        Optional<Pass> cardholderList = passRepository.findById(voucherTicket.getRelateId());
+
 
         if(cardholderList.isEmpty()) {
-            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到门票"+code.getCode());
+            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到门票"+voucherTicket.getRelateId());
         }
 
 
@@ -662,40 +714,8 @@ public class CityPassServiceImpl {
         }
 
 
-/*      if(voucher.getStatus().equals(EnumVoucherStatus.Redeemed)){
-            throw new ExistException(Enumfailures.invalid_voucher,"该券已核销,无法再次核销");
-        }*/
+        List<ComponentVounch> componentVounchList = validatorService.check(userVo.getUser_id(), userVo.getSupplier().getId(),voucher.getCode());
 
-
-
-
-        List<Validator_> validator_s = validatorRepository.findAllByTypeAndUser(EnumValidatorType.特定的人员,userVo.getUser_id());
-
-
-
-        if(validator_s.isEmpty()){
-            throw new BookNotFoundException(Enumfailures.not_found,"职工得 核销分配 对象 为空，请添加"+userVo.getPhone());
-        }
-        List<Long> triplet来自设备 =
-                validator_s.stream().map(e->e.getComponentRightId()).collect(Collectors.toList());
-
-
-        logger.error("和验证 可用核销的权益"+triplet来自设备);
-        List<ComponentVounch> components = componentVounchRepository.findAllByReference(voucher.getCode());
-
-        if(components.size() ==0){
-            throw new BookNotFoundException(Enumfailures.not_found,"该券 无可核销得 权益"+voucher.getCode());
-        }
-
-
-        List<ComponentVounch> componentVounchList = components.stream()  // TODO 找到了这里的 权限
-                //     .filter(e-> triplet来自设备.contains(e.getComponentRight()))
-                .map(e->{
-
-                    Optional<ComponentRight> componentRight = componentRightRepository.findById(e.getComponentRight());
-                    e.setName(componentRight.get().getName());
-                    return e;
-                }).collect(Collectors.toList());
 
 
         if(voucher.getBooking()!= null){
@@ -714,16 +734,18 @@ public class CityPassServiceImpl {
         RedemptionTryResp.PhotoId photoId = new RedemptionTryResp.PhotoId();
 
         photoId.setRealname(true);
-
         photoId.setFaceImage(fileStorageService.loadDocumentWithDefault(EnumDocumentType.card_cover,voucher.getCode()));
-
-        photoId.setDateOfbirth(voucher.getCardholder().getName());
+        photoId.setDateOfbirth(voucher.getCardholder().getIdentity());
 
         photoId.setSelfie(fileStorageService.loadDocumentWithDefault(EnumDocumentType.card_cover,voucher.getCode()));
 
         photoId.setDocument_front(fileStorageService.loadDocumentWithDefault(EnumDocumentType.card_cover,voucher.getCode()));
 
+        photoId.setIdentity(voucher.getCardholder().getIdentity());
+
         photoId.setName(voucher.getCardholder().getName());
+
+
 
         resp.setPhotoId(photoId);
 
@@ -743,37 +765,7 @@ public class CityPassServiceImpl {
 
         componentRightService.sentEntries(voucher.getCode(), resp,componentVounchList);
 
-
-     //   resp.setCrypto_code(pass.getCode());
-    /*    resp.setEntries(componentVounchList.stream()
-            //    .filter(e->!(e.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed)))
-                .map(e->{
-                    RedemptionTryResp.RedemptionEntryResp redemptionEntryResp = new RedemptionTryResp.RedemptionEntryResp();
-
-
-                    redemptionEntryResp.setRedeem_voucher_key(e.getRedeem_voucher_key());
-                    redemptionEntryResp.setLable(e.getName());
-                    redemptionEntryResp.setLimit(e.getLimit().intValue());
-
-                    redemptionEntryResp.setStart_date(e.getStart_date());
-                    redemptionEntryResp.setEnd_date(e.getEnd_date());
-                    redemptionEntryResp.setRemaining(e.getLimit().intValue()-e.getRedeemed_quantity().intValue());
-
-                    redemptionEntryResp.setTryRedeem(e.getTry_());
-
-                    //    redemptionEntryResp.setRemaining(Long.valueOf(e.getLimit()-e.getRedeemed_quantity()).intValue());
-                    redemptionEntryResp.setCheck_in(redemptionEntryResp.getRemaining() >= e.getTry_() && triplet来自设备.contains(e.getComponentRight()));
-                    return redemptionEntryResp;
-
-                })
-                .sorted(Comparator.comparing(RedemptionTryResp.RedemptionEntryResp::isCheck_in))
-                .collect(Collectors.toList()));
-
-        resp.setCheckin(resp.getEntries().stream().map(e->e.isCheck_in()).findAny().isPresent());
-*/
-
-
-
+        resp.setCrypto_code(cryptoService.encode(voucherTicket.getCode()));
 
         EntityModel redemptionEntryEntityModel =  EntityModel.of(resp);
 
@@ -795,24 +787,24 @@ public class CityPassServiceImpl {
 
 
 
-    public EntityModel redeem(CodeWithLatLngVo code, UserVo userVo) {
+    public EntityModel redeem(VoucherTicket voucherTicket, UserVo userVo) {
 
 
         Optional<User> user = userRepository.findById(userVo.getUser_id());
 
 
-        if(!code.getC().startsWith("pass")) {
+        if(!voucherTicket.getType().equals(voucherType)) {
 
             return null;
         }
-        Optional<Pass> optionalVoucher = passRepository.findByCode(code.getC());
+        Optional<Pass> optionalVoucher = passRepository.findById(voucherTicket.getRelateId());
 
 
 
 
 
         if(optionalVoucher.isEmpty()) {
-            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到门票"+code.getC());
+            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到门票"+voucherTicket.getRelateId());
         }
         Pass voucher =optionalVoucher.get();
 
@@ -923,7 +915,7 @@ public class CityPassServiceImpl {
             ltReqTs验证核销通知.setAmount_used(1);//:累计使用数量(包含本次)
             ltReqTs验证核销通知.setAnother_orders_id(reservation.getTrackingId()); //:本平台订单ID（天时同城）
             ltReqTs验证核销通知.setMy_orders_id(reservation.getCode()); //:第三方订单ID
-            List<Fulfilled_item> fulfilled_items = fulfillService.find(reservation);
+            List<VoucherTicket> fulfilled_items = fulfillService.find_(reservation);
 
             ltReqTs验证核销通知.setCodes(fulfilled_items.stream().map(e->e.getCode()).collect(Collectors.joining(","))); //:使用码号,多个','分割
             TsRespLt验证核销通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs验证核销通知(ltReqTs验证核销通知);

@@ -24,7 +24,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -198,7 +197,7 @@ public class UserRestController {
             User user = optionalUser.get();
 
 
-            return ResponseEntity.ok(userVoService.getBigUser(user));
+            return ResponseEntity.ok(userVoService.getBigUser(user, EnumLoginChannel.web));
 
 
     }

@@ -496,7 +496,7 @@ public class OpenidRestController {
 
 
         System.out.println("这里了   的地方士大夫撒旦 "+ user);
-        authsResp.setInfo(userVoService.getBigUser(user));
+        authsResp.setInfo(userVoService.getBigUser(user, EnumLoginChannel.web));
         authsResp.setToken(jwt);
         System.out.println("这里了   的顶顶顶顶顶顶顶夫撒旦 "+ user);
         return EntityModel.of(authsResp);
@@ -725,7 +725,7 @@ public class OpenidRestController {
 
 
         System.out.println("这里了   的地方士大夫撒旦 "+ user);
-        authsResp.setInfo(userVoService.getBigUser(user));
+        authsResp.setInfo(userVoService.getBigUser(user, EnumLoginChannel.web));
         authsResp.setToken(jwt);
         System.out.println("这里了   的顶顶顶顶顶顶顶夫撒旦 "+ user);
         return EntityModel.of(authsResp);

@@ -37,6 +37,9 @@ public class BusServiceImpl {
 
     @Autowired
     private BusStopRepository busStopRepository;
+
+    @Autowired
+    private  PolylienPointRepository polylienPointRepository;
     @Autowired
     private PlaceRepository placeRepository;
     @Autowired
@@ -101,6 +104,40 @@ public class BusServiceImpl {
 
     }
 
+
+    public BusRoute updatePolylinePoints(BusRoute busRoute, BusRouteEditReq.PolylineTab  theatreReq) {
+
+
+        List<PolylinePoint> busStopList = busRoute.getPolylinePoints();
+
+        busStopList.stream().forEach(e->{
+            System.out.println("---------------"+e.toString());
+        });
+        Map<Long,PolylinePoint> aaa = busStopList.stream().collect(Collectors.toMap(e->e.getId(),ee->ee));
+
+        BusRoute route = busRoute;
+        ;
+        route.setPolylinePoints(theatreReq.getPoints().stream().map(e->{
+
+            PolylinePoint stopRegistration = aaa.getOrDefault(e.getId(),new PolylinePoint());
+            System.out.println("新建还是其他"+stopRegistration.toString());
+            System.out.println("请求参数"+e.toString());
+
+            stopRegistration.setRoute(route);
+            stopRegistration.setLat(e.getLat());
+            stopRegistration.setLng(e.getLng());
+
+            return stopRegistration;
+        }).collect(Collectors.toList()));
+
+
+        busRoute = busRouteRepository.save(route);
+
+
+        return busRoute;
+
+
+    }
 
 
 

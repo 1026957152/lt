@@ -33,10 +33,12 @@ public class BusRouteResp extends BaseResp {
     private String name;
     private String description;
     private List stops;
-    private List<BusVehicleResp> buses;
+    private List buses;
 
     private String websocketUrl;
     private String websocketDestination;
+    private List polyline;
+    private List stopList;
 
     public static BusRouteResp of(BusRoute e) {
         BusRouteResp busRouteResp = new BusRouteResp();
@@ -107,11 +109,11 @@ public class BusRouteResp extends BaseResp {
         }).collect(Collectors.toList()));
     }
 
-    public void setBuses(List<BusVehicleResp> buses) {
+    public void setBuses(List buses) {
         this.buses = buses;
     }
 
-    public List<BusVehicleResp> getBuses() {
+    public List getBuses() {
         return buses;
     }
 
@@ -130,5 +132,21 @@ public class BusRouteResp extends BaseResp {
 
     public String getWebsocketDestination() {
         return websocketDestination;
+    }
+
+    public <R> void setPolyline(List polyline) {
+        this.polyline = polyline;
+    }
+
+    public List getPolyline() {
+        return polyline;
+    }
+
+    public <R> void setStopList(List stopList) {
+        this.stopList = stopList;
+    }
+
+    public List getStopList() {
+        return stopList;
     }
 }

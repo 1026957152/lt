@@ -16,6 +16,24 @@ import java.util.List;
 public class BusVehicleResp extends BaseResp{
 
 
+    private String number;
+    private Long id;
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
+    }
 
     public static class Live {
 
@@ -75,8 +93,10 @@ public class BusVehicleResp extends BaseResp{
 
     public static BusVehicleResp from(BusVehicle e) {
         BusVehicleResp busVehicleResp = new BusVehicleResp();
+        busVehicleResp.setId(e.getId());
         busVehicleResp.setPlateName(e.getPlateName());
         busVehicleResp.setCode(e.getCode());
+        busVehicleResp.setNumber(e.getNumber());
         busVehicleResp.setCreatedDate(e.getCreatedDate());
         busVehicleResp.setModifiedDate(e.getModifiedDate());
         return busVehicleResp;

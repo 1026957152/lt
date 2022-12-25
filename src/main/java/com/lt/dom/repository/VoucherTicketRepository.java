@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface VoucherTicketRepository extends JpaRepository<VoucherTicket
@@ -14,4 +15,8 @@ public interface VoucherTicketRepository extends JpaRepository<VoucherTicket
 
 
     Optional<VoucherTicket> findByCode(String code);
+
+    List<VoucherTicket> findAllByBooking(Long id);
+
+    Optional<VoucherTicket> findByRelateId(Long id);
 }

@@ -43,6 +43,17 @@ public class BusRoute extends Base{
     List<StopRegistration> registrations;
 
 
+    @OneToMany(mappedBy = "route", fetch = FetchType.LAZY,    cascade = CascadeType.ALL)
+    List<PolylinePoint> polylinePoints;
+
+    public List<PolylinePoint> getPolylinePoints() {
+        return polylinePoints;
+    }
+
+    public void setPolylinePoints(List<PolylinePoint> polylinePoints) {
+        this.polylinePoints = polylinePoints;
+    }
+
     public List<StopRegistration> getStops() {
         return registrations;
     }
@@ -56,7 +67,9 @@ public class BusRoute extends Base{
     }
 
 
-
+    public void addPolylinePointInList(PolylinePoint addst) {
+        polylinePoints.add(addst);
+    }
     public void addAfterStation(StopRegistration station1, StopRegistration addStation) {
         int index = this.registrations.indexOf(station1);
         this.registrations.add(index, addStation);

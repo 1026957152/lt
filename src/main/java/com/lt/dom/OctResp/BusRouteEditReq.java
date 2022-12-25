@@ -3,8 +3,10 @@ package com.lt.dom.OctResp;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.EnumWayPointType;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.hateoas.EntityModel;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -201,6 +203,100 @@ public class BusRouteEditReq extends BaseResp {
 
 
 
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public static class PolylineTab {
+        public static class PolylinePointReq {
+            @Override
+            public String toString() {
+                return ReflectionToStringBuilder.toString(this);
+            }
+            private Long id;
+
+
+            @NotNull
+            private Double lat;//Trip was soft deleted and should not be displayed.
+            @NotNull
+            private Double lng;//Trip was soft deleted and should not be displayed.
+
+            public Long getId() {
+                return id;
+            }
+
+            public void setId(Long id) {
+                this.id = id;
+            }
+
+            public Double getLat() {
+                return lat;
+            }
+
+            public void setLat(Double lat) {
+                this.lat = lat;
+            }
+
+            public Double getLng() {
+                return lng;
+            }
+
+            public void setLng(Double lng) {
+                this.lng = lng;
+            }
+
+            public static PolylinePointReq of(PolylinePoint stopRegistration) {
+
+                PolylinePointReq stopRegistrationReq = new PolylinePointReq();
+                stopRegistrationReq.setLng(stopRegistration.getLng());
+                stopRegistrationReq.setLat(stopRegistration.getLat());
+                stopRegistrationReq.setId(stopRegistration.getId());
+                return stopRegistrationReq;
+
+            }
+
+        }
+
+
+        private List<PolylinePointReq> points;
+
+        public static PolylineTab of(List<PolylinePoint> stops) {
+            PolylineTab stopTab1 = new PolylineTab();
+            stopTab1.setPoints(stops.stream().map(e->{
+                PolylinePointReq busStopReq = PolylinePointReq.of(e);
+
+                return busStopReq;
+            }).collect(Collectors.toList()));
+            return stopTab1;
+        }
+
+        public List<PolylinePointReq> getPoints() {
+            return points;
+        }
+
+        public void setPoints(List<PolylinePointReq> points) {
+            this.points = points;
+        }
     }
 
     private String code;

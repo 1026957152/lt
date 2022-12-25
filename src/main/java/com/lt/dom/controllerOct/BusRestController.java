@@ -2,10 +2,8 @@ package com.lt.dom.controllerOct;
 
 
 import com.lt.dom.OctResp.*;
-import com.lt.dom.proto.BusRouteProto;
-import com.lt.dom.proto.BusStopRespProto;
-import com.lt.dom.proto.BusVehicleRespProto;
-import com.lt.dom.proto.HomeBusProto;
+import com.lt.dom.config.Constants;
+import com.lt.dom.proto.*;
 import com.lt.dom.OctResp.home.HomeBusResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
@@ -146,18 +144,131 @@ public class BusRestController {
 
 
 
-            busRouteResp.setWebsocketUrl("ws://10.0.0.41:8080/position/socket");
-            busRouteResp.setWebsocketDestination("/topic/notification");
-            busRouteResp.setStops(busRoute.getStops().stream().map(e->{
-                BusStopResp busStopReq = BusStopResp.fromWithId(e.getStop());
 
+            busRouteResp.setStops(busRoute.getStops().stream().map(e->{
+
+                BusStopResp busStopReq = BusStopResp.fromWithId(e);
 
                 if(finalStringMap != null){
                     BusAndStopUpdateMessage.StopUpdateMessage stopUpdateMessage = finalStringMap.get(e.getStop().getCode());
 
                     if(stopUpdateMessage != null){
                         busStopReq.setLive(BusStopResp.Live.of(stopUpdateMessage));
+                    }else{
+                        busStopReq.setLive(BusStopResp.Live.of(new BusAndStopUpdateMessage.StopUpdateMessage()));
 
+                    }
+
+                }else{
+                    busStopReq.setLive(BusStopResp.Live.of(new BusAndStopUpdateMessage.StopUpdateMessage()));
+
+                }
+
+
+                busStopReq.setPlaces(e.getStop().getPlaceRegistrations().stream().map(placeR->{
+
+                    Place place = placeR.getPlace();
+                    PlaceResp placeResp = PlaceResp.from(placeR.getPlace());
+
+                    placeResp.setPhoto(fileStorageService.loadDocumentWithDefault( EnumDocumentType.place_photo,place.getCode()));
+                    EntityModel entityModel = EntityModel.of(placeResp);
+                    switch(place.getType()){
+                        case tourist_attraction:{
+                            Link link = linkTo(methodOn(AttractionRestController.class).getAttraction(place.getType_reference(), EnumUrlSourceType.normal)).withSelfRel();
+                            entityModel.add(link);
+                            placeResp.setPath("/pages/attractions/show?url="+link.getHref());
+                            placeResp.setLink(true);
+                        }
+
+                        break;
+                        case movie_theater:{
+                            Link link = linkTo(methodOn(TheatreRestController.class).getTheatre(place.getType_reference())).withSelfRel();
+                            entityModel.add(link);
+                            placeResp.setPath("/pages/venue/show?url="+link.getHref());
+                            placeResp.setLink(true);
+
+                        }
+                        break;
+                        default:
+                            placeResp.setLink(false);
+
+                    }
+                    //     entityModel.add(linkTo(methodOn(TripRestController.class).getPlace(place.getId())).withSelfRel());
+
+                    return entityModel;
+                }).collect(Collectors.toList()));
+
+                EntityModel entityModel = EntityModel.of(busStopReq);
+                entityModel.add(linkTo(methodOn(BusRestController.class).listStop(e.getStop().getId())).withSelfRel());
+                entityModel.add(linkTo(methodOn(BusRestController.class).getStop(e.getStop().getId())).withSelfRel());
+                return entityModel;
+            }).collect(Collectors.toList()));
+            busRouteResp.setStopList(busRoute.getStops().stream().map(e->{
+                return e.getId().getRouteId()+""+e.getId().getStopId();
+            }).collect(Collectors.toList()));
+
+
+            busRouteResp.setPolyline(busRoute.getPolylinePoints().stream().map(e->{
+                PolylinePointResp busStopReq = PolylinePointResp.of(e);
+                return busStopReq;
+            }).collect(Collectors.toList()));
+
+            busRouteResp.setBuses(busRoute.getBuses().stream().map(e->{
+           return e.getNumber();
+            }).collect(Collectors.toList()));
+
+/*            busRouteResp.setBuses(busRoute.getBuses().stream().map(e->{
+                BusVehicleResp busVehicleResp = BusVehicleResp.from(e);
+
+
+                if(finalBusVehicleMap != null){
+                    BusAndStopUpdateMessage.BusUpdateMessage busUpdateMessage = finalBusVehicleMap.get(e.getNumber());
+                    if(busUpdateMessage!= null){
+                        busVehicleResp.setLive(BusVehicleResp.Live.of(busUpdateMessage));
+                    }
+                }
+
+
+                return busVehicleResp;
+            }).collect(Collectors.toList()));*/
+
+            EntityModel entityModel = EntityModel.of(busRouteResp);
+            entityModel.add(linkTo(methodOn(BusRestController.class).getRoute(busRoute.getId())).withSelfRel());
+            return entityModel;
+        }).collect(Collectors.toList());
+
+/*
+        List<EntityModel> list = busRouteList.stream().map(busRoute->{
+            BusRouteResp busRouteResp = BusRouteResp.of(busRoute);
+
+
+            BusAndStopUpdateMessage.LineUpdateMessage message = lineUpdateMessageMap.get(busRoute.getCode());
+            Map<String, BusAndStopUpdateMessage.StopUpdateMessage> stringMap = null;
+            Map<String, BusAndStopUpdateMessage.BusUpdateMessage> busVehicleMap = null;
+            if(message != null){
+                stringMap = message.getStops().stream().collect(Collectors.toMap(e->e.getNumber(), e->e));
+                busVehicleMap = message.getBuses().stream().collect(Collectors.toMap(e->e.getNumber(), e->e));
+
+            }
+
+
+
+            Map<String, BusAndStopUpdateMessage.StopUpdateMessage> finalStringMap = stringMap;
+            Map<String, BusAndStopUpdateMessage.BusUpdateMessage> finalBusVehicleMap = busVehicleMap;
+
+
+
+            busRouteResp.setWebsocketUrl("ws://10.0.0.41:8080/position/socket");
+            busRouteResp.setWebsocketDestination("/topic/notification");
+            busRouteResp.setStops(busRoute.getStops().stream().map(e->{
+
+                BusStopResp busStopReq = BusStopResp.fromWithId(e.getStop());
+
+                if(finalStringMap != null){
+                    BusAndStopUpdateMessage.StopUpdateMessage stopUpdateMessage = finalStringMap.get(e.getStop().getCode());
+
+                    if(stopUpdateMessage != null){
+                        busStopReq.setLive(BusStopResp.Live.of(stopUpdateMessage));
                     }
 
                 }
@@ -198,13 +309,22 @@ public class BusRestController {
 
                 EntityModel entityModel = EntityModel.of(busStopReq);
                 entityModel.add(linkTo(methodOn(BusRestController.class).listStop(e.getStop().getId())).withSelfRel());
-
                 entityModel.add(linkTo(methodOn(BusRestController.class).getStop(e.getStop().getId())).withSelfRel());
                 return entityModel;
             }).collect(Collectors.toList()));
 
 
+            busRouteResp.setPolyline(busRoute.getPolylinePoints().stream().map(e->{
+                PolylinePointResp busStopReq = PolylinePointResp.of(e);
+                return busStopReq;
+            }).collect(Collectors.toList()));
+
             busRouteResp.setBuses(busRoute.getBuses().stream().map(e->{
+                return e.getNumber();
+            }).collect(Collectors.toList()));
+
+*/
+/*            busRouteResp.setBuses(busRoute.getBuses().stream().map(e->{
                 BusVehicleResp busVehicleResp = BusVehicleResp.from(e);
 
 
@@ -217,20 +337,68 @@ public class BusRestController {
 
 
                 return busVehicleResp;
-            }).collect(Collectors.toList()));
+            }).collect(Collectors.toList()));*//*
+
 
             EntityModel entityModel = EntityModel.of(busRouteResp);
             entityModel.add(linkTo(methodOn(BusRestController.class).getRoute(busRoute.getId())).withSelfRel());
             return entityModel;
         }).collect(Collectors.toList());
-
+*/
 
         homeBusResp.setLines(list);
 
 
 
+        Map<String,BusAndStopUpdateMessage.BusUpdateMessage> k = buffer.getLines().stream().map(e->e.getBuses())
+                .flatMap(List::stream).collect(Collectors.toMap(e->e.getNumber(),e->e));
 
 
+        Map<String,BusAndStopUpdateMessage.StopUpdateMessage> stopMap = buffer.getLines().stream().map(e->e.getStops())
+                .flatMap(List::stream).collect(Collectors.toMap(e->e.getNumber(),e->e));
+
+
+        homeBusResp.setBuses(busRouteList.stream().map(busRoute->{
+
+
+
+            return busRoute.getBuses().stream().map(bus->{
+                BusVehicleResp busVehicleResp = BusVehicleResp.from(bus);
+                BusAndStopUpdateMessage.BusUpdateMessage busUpdateMessage = k.get(bus.getNumber());
+                if(busUpdateMessage!= null){
+                    busVehicleResp.setLive(BusVehicleResp.Live.of(busUpdateMessage));
+                }
+                return busVehicleResp;
+            }).collect(Collectors.toList());
+
+        }).flatMap(List::stream).collect(Collectors.toList()));
+
+
+
+
+        homeBusResp.setStops(busRouteList.stream().map(busRoute->{
+
+            return busRoute.getStops().stream().map(bus->{
+                BusStopResp busVehicleResp = BusStopResp.fromWithId(bus);
+                BusAndStopUpdateMessage.StopUpdateMessage busUpdateMessage = stopMap.get(bus.getStop().getCode());
+                if(busUpdateMessage!= null){
+                    busVehicleResp.setLive(BusStopResp.Live.of(busUpdateMessage));
+                }else{
+                    busVehicleResp.setLive(BusStopResp.Live.of(new BusAndStopUpdateMessage.StopUpdateMessage()));
+
+                }
+                return busVehicleResp;
+            }).collect(Collectors.toList());
+
+
+        }).flatMap(List::stream).collect(Collectors.toList()));
+
+
+
+
+
+        homeBusResp.setWebsocketUrl(Constants.WEB_SOCKET_URL);
+        homeBusResp.setWebsocketDestination(Constants.WEB_SOCKET_BUS_TOPIC);
 
 
         List<Product>  productList  = productRepository
@@ -647,6 +815,23 @@ public class BusRestController {
         return entityModel;
 
     }
+    @PutMapping(value = "/routes/{ROUTE_ID}/polyline_points", produces = "application/json")
+    public EntityModel<BusRoute> updatePolylinePoints(@PathVariable long ROUTE_ID ,@RequestBody @Valid BusRouteEditReq.PolylineTab stopReqs) {
+
+        Optional<BusRoute> supplierOptional = busRouteRepository.findById(ROUTE_ID);
+        if(supplierOptional.isEmpty()) {
+            throw new BookNotFoundException("没有找到供应商","没找到");
+        }
+        BusRoute supplier = supplierOptional.get();
+        BusRoute busRoute = buseservice.updatePolylinePoints(supplier,stopReqs);
+
+        BusRouteResp busRouteResp = BusRouteResp.of(busRoute);
+        EntityModel entityModel = EntityModel.of(busRouteResp);
+        entityModel.add(linkTo(methodOn(BusRestController.class).getRoute(supplier.getId())).withSelfRel());
+        return entityModel;
+
+    }
+
 
     @PostMapping(value = "/routes/{ROUTE_ID}/stops", produces = "application/json")
     public EntityModel<BusRoute> addStop(@PathVariable long ROUTE_ID ,@RequestBody @Valid List<BusStopReq> stopReqs) {
@@ -1232,7 +1417,7 @@ public class BusRestController {
 
 
             busRouteResp.setStops(supplier.getStops().stream().map(e->{
-                BusStopRespProto busStopReq = BusStopRespProto.fromWithId(e.getStop());
+                BusStopRespProto busStopReq = BusStopRespProto.fromWithId(e);
 
                 return busStopReq;
             }).collect(Collectors.toList()));
@@ -1243,6 +1428,11 @@ public class BusRestController {
                 return busVehicleResp;
             }).collect(Collectors.toList()));
 
+
+            busRouteResp.setPolylinePoints(supplier.getPolylinePoints().stream().map(e->{
+                PolylinePointProto busVehicleResp = PolylinePointProto.of(e);
+                return busVehicleResp;
+            }).collect(Collectors.toList()));
             return busRouteResp;
         }).collect(Collectors.toList());
 

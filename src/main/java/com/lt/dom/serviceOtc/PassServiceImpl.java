@@ -266,6 +266,8 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
     }
 
     AtomicSequenceGenerator atomicSequenceGenerator = new AtomicSequenceGenerator(1);
+    @Autowired
+    private VoucherTicketRepository voucherTicketRepository;
 
 
     public Pass create_virtual(User user,Integer duration) {
@@ -555,9 +557,15 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
             System.out.println(pass.getExpiringDate());
 
 
+            Optional<VoucherTicket> voucherTicketOptional = voucherTicketRepository.findByRelateId(pass.getId());
 
-            String encodedString =
-                    cryptoService.encode(pass.getCode());
+
+            if(voucherTicketOptional.isEmpty()){
+                throw new BookNotFoundException(Enumfailures.not_found,"找不到 主人卡的券");
+            }
+            VoucherTicket voucherTicket = voucherTicketOptional.get();
+
+            String encodedString = cryptoService.encode(voucherTicket.getCode());
 
  /*           redemptionEntryResp.setRedeem_voucher_key_crypt_encode(probuff);
             redemptionEntryResp.setRedeem_voucher_key_crypt_encode_withoutPadding(encodedString);
@@ -571,7 +579,7 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
 
                     "by_logo",fileStorageService.loadDocumentWithDefault("lt.png"),
 
-                    "code",pass.getCode(),
+                    "code",voucherTicket.getCode(),
                     "number",pass.getNumber(),
                     "code_base64_src",   ZxingBarcodeGenerator.base64_png_src(encodedString),
 

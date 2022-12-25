@@ -340,7 +340,12 @@ public class IdGenServiceImpl {//** * redis lock Operation Service * *
         String no = VoucherCodes.generate(makePlanConfig);
         return no;
     }
+    CodeConfig voucherConfig = new CodeConfig(8,null,null,null,"vouc_############");
+    public String voucherCode(){
 
+        String no = VoucherCodes.generate(voucherConfig);
+        return no;
+    }
     CodeConfig ticketConfig = new CodeConfig(8,null,null,null,"tike_############");
     public String ticketCode(){
 

@@ -52,6 +52,7 @@ public class RedemptionTryResp {
         private PhotoResp selfie;
         private PhotoResp document_front;
         private String name;
+        private String identity;
 
         public void setFaceImage(PhotoResp faceImage) {
             this.faceImage = faceImage;
@@ -101,6 +102,13 @@ public class RedemptionTryResp {
             return name;
         }
 
+        public void setIdentity(String identity) {
+            this.identity = identity;
+        }
+
+        public String getIdentity() {
+            return identity;
+        }
     }
     private PhotoId photoId;
 
@@ -112,6 +120,8 @@ public class RedemptionTryResp {
         this.photoId = photoId;
     }
 
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class RedemptionEntryResp {
 
 
@@ -123,8 +133,7 @@ public class RedemptionTryResp {
         private LocalDate start_date;
         private LocalDate end_date;
         private String redeem_voucher_key_crypt;
-        private String redeem_voucher_key_crypt_encode;
-        private String redeem_voucher_key_crypt_encode_withoutPadding;
+
         private Long tryRedeem;
 
         public void setLable(String lable) {
@@ -192,21 +201,6 @@ public class RedemptionTryResp {
             return redeem_voucher_key_crypt;
         }
 
-        public void setRedeem_voucher_key_crypt_encode(String redeem_voucher_key_crypt_encode) {
-            this.redeem_voucher_key_crypt_encode = redeem_voucher_key_crypt_encode;
-        }
-
-        public String getRedeem_voucher_key_crypt_encode() {
-            return redeem_voucher_key_crypt_encode;
-        }
-
-        public void setRedeem_voucher_key_crypt_encode_withoutPadding(String redeem_voucher_key_crypt_encode_withoutPadding) {
-            this.redeem_voucher_key_crypt_encode_withoutPadding = redeem_voucher_key_crypt_encode_withoutPadding;
-        }
-
-        public String getRedeem_voucher_key_crypt_encode_withoutPadding() {
-            return redeem_voucher_key_crypt_encode_withoutPadding;
-        }
 
         public void setTryRedeem(Long tryRedeem) {
             this.tryRedeem = tryRedeem;
@@ -215,6 +209,8 @@ public class RedemptionTryResp {
         public Long getTryRedeem() {
             return tryRedeem;
         }
+
+
     }
         private EnumRedeamptionType type;
 

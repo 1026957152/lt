@@ -7,6 +7,25 @@ import java.util.List;
 public class BusAndStopUpdateMessage {
 
 
+    private List buses;
+    private List stops;
+
+    public <T> void setBuses(List buses) {
+        this.buses = buses;
+    }
+
+    public List getBuses() {
+        return buses;
+    }
+
+    public <T> void setStops(List stops) {
+        this.stops = stops;
+    }
+
+    public List getStops() {
+        return stops;
+    }
+
     public static class LineUpdateMessage {
 
         private String lineCode;
@@ -16,7 +35,16 @@ public class BusAndStopUpdateMessage {
 
         private List<BusUpdateMessage>  buses;
 
+        public LineUpdateMessage() {
+        }
 
+        public LineUpdateMessage(String key, List<StopUpdateMessage> collect, List<BusUpdateMessage> buses) {
+
+            this.lineCode = key;
+            this.stops = collect;
+
+            this.buses = buses;
+        }
 
         public List<BusUpdateMessage> getBuses() {
             return buses;
@@ -53,26 +81,28 @@ public class BusAndStopUpdateMessage {
             this.upcomingTime = upcomingTime;
         }
 
+
+
         private String upcomingTime;
-        private String upcomingDistance;
-        private String updateTime;
+        private String departure_distance;
+        private String departure_time;
 
         private String number;
 
-        public String getUpcomingDistance() {
-            return upcomingDistance;
+        public String getDeparture_distance() {
+            return departure_distance;
         }
 
-        public void setUpcomingDistance(String upcomingDistance) {
-            this.upcomingDistance = upcomingDistance;
+        public void setDeparture_distance(String departure_distance) {
+            this.departure_distance = departure_distance;
         }
 
-        public String getUpdateTime() {
-            return updateTime;
+        public String getDeparture_time() {
+            return departure_time;
         }
 
-        public void setUpdateTime(String updateTime) {
-            this.updateTime = updateTime;
+        public void setDeparture_time(String departure_time) {
+            this.departure_time = departure_time;
         }
 
         public String getNumber() {
@@ -164,24 +194,9 @@ public class BusAndStopUpdateMessage {
         }
     }
 
-    private static BusUpdateMessage bus;
-    private static StopUpdateMessage stop;
 
-    public BusUpdateMessage getBus() {
-        return bus;
-    }
 
-    public void setBus(BusUpdateMessage bus) {
-        this.bus = bus;
-    }
 
-    public StopUpdateMessage getStop() {
-        return stop;
-    }
-
-    public void setStop(StopUpdateMessage stop) {
-        this.stop = stop;
-    }
 
     public BusAndStopUpdateMessage() {
 
@@ -192,4 +207,3 @@ public class BusAndStopUpdateMessage {
     }
 
 }
-

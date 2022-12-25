@@ -2,6 +2,7 @@ package com.lt.dom.proto;
 
 import com.lt.dom.OctResp.BaseResp;
 import com.lt.dom.oct.BusStop;
+import com.lt.dom.oct.StopRegistration;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -28,6 +29,20 @@ public class BusStopRespProto extends BaseResp {
         return busStopResp;
     }
 
+
+    public static BusStopRespProto fromWithId(StopRegistration busStop) {
+
+        BusStopRespProto busStopReq = new BusStopRespProto();
+        busStopReq.setLat(busStop.getStop().getLat());
+        busStopReq.setId(busStop.getId().hashCode()+0l);
+        busStopReq.setLng(busStop.getStop().getLng());
+        busStopReq.setName(busStop.getStop().getName());
+        busStopReq.setDescription(busStop.getStop().getDescription());
+        //busStopReq.setCode(busStop.getId().hashCode()+"");
+        busStopReq.setCode(busStop.getId().getRouteId()+""+busStop.getId().getStopId());
+        busStopReq.setShortName(busStop.getStop().getShortName());
+        return busStopReq;
+    }
 
     public static BusStopRespProto fromWithId(BusStop busStop) {
 

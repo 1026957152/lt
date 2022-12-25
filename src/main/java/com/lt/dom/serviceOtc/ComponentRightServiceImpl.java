@@ -38,6 +38,9 @@ public class ComponentRightServiceImpl {
     private ComponentRepository componentRepository;
 
     @Autowired
+    private CryptoServiceImpl cryptoService;
+
+    @Autowired
     private RightRedemptionEntryRepository rightRedemptionEntryRepository;
 
     @Autowired
@@ -769,45 +772,17 @@ public class ComponentRightServiceImpl {
                 .map(e->{
                     RedemptionTryResp.RedemptionEntryResp redemptionEntryResp = new RedemptionTryResp.RedemptionEntryResp();
 
-                    SecurityUtils.encryption_base64(e.getRedeem_voucher_key());
-
-                    PersonBean.Person person = PersonBean.Person.newBuilder()
-                            .setAge(timestamp.getTime())
-                            .setName(e.getRedeem_voucher_key())
-                            .build();
-
-                    hashids.encodeHex(person.toByteString().toStringUtf8());
-
-                    String hash = hashids.encodeHex(e.getRedeem_voucher_key());
-
-                    redemptionEntryResp.setRedeem_voucher_key_crypt(hash);
-                    String numbers = hashids.decodeHex(hash);
-
-                    String probuff = Base64.getEncoder().encodeToString(person.toByteArray());
-                    System.out.println(")))))))))))+++++++++"+probuff);
-
-                    try {
-                        PersonBean.Person person1 = PersonBean.Person.parseFrom(Base64.getDecoder().decode(Base64.getEncoder().encodeToString(person.toByteArray())));
-
-                        System.out.println(")))))))))))+++++++++"+person1.toString());
-
-                    } catch (InvalidProtocolBufferException ex) {
-                        throw new RuntimeException(ex);
-                    }
 
 
-                    //  redemptionEntryResp.setRedeem_voucher_key_crypt(SecurityUtils.encryption(e.getRedeem_voucher_key()));
+
+                    ;
+
+                    redemptionEntryResp.setRedeem_voucher_key_crypt(cryptoService.encode(e.getRedeem_voucher_key()));
 
 
-                    String encodedString =
-                            Base64.getEncoder().withoutPadding().encodeToString(person.toByteArray());
-                    redemptionEntryResp.setRedeem_voucher_key_crypt_encode(probuff);
-                    redemptionEntryResp.setRedeem_voucher_key_crypt_encode_withoutPadding(encodedString);
-
-
-                    redemptionEntryResp.setRedeem_voucher_key(e.getRedeem_voucher_key());
+                    //redemptionEntryResp.setRedeem_voucher_key(e.getRedeem_voucher_key());
                     redemptionEntryResp.setLable(e.getName());
-                    redemptionEntryResp.setLimit(e.getLimit().intValue());
+                   // redemptionEntryResp.setLimit(e.getLimit().intValue());
 
                     redemptionEntryResp.setStart_date(e.getStart_date());
                     redemptionEntryResp.setEnd_date(e.getEnd_date());
@@ -815,7 +790,6 @@ public class ComponentRightServiceImpl {
                     redemptionEntryResp.setTryRedeem(e.getTry_());
 
 
-                    //    redemptionEntryResp.setRemaining(Long.valueOf(e.getLimit()-e.getRedeemed_quantity()).intValue());
                     redemptionEntryResp.setCheck_in(redemptionEntryResp.getRemaining() >= e.getTry_());
                     return redemptionEntryResp;
 
@@ -824,7 +798,7 @@ public class ComponentRightServiceImpl {
                 .collect(Collectors.toList()));
 
 
-        resp.setRedeemAllowed(resp.getEntries().stream().map(e->e.isCheck_in()).findAny().isPresent());
+        resp.setRedeemAllowed(resp.getEntries().stream().filter(e->e.isCheck_in()).findAny().isPresent());
 
 
 
@@ -832,15 +806,7 @@ public class ComponentRightServiceImpl {
 
 
 
-        PersonBean.Person person = PersonBean.Person.newBuilder()
-                .setAge(timestamp.getTime())
-                .setName(code)
-                .build();
 
-
-
-        String encodedString =
-                Base64.getEncoder().withoutPadding().encodeToString(person.toByteArray());
-        resp.setCrypto_code(encodedString);
+        resp.setCrypto_code(cryptoService.encode(code));
     }
 }

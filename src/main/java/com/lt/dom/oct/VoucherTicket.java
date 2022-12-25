@@ -16,7 +16,7 @@ public class VoucherTicket extends Base{
 //##@Column(unique=true) 
     private String code;
 
-    private long relateId;
+    private Long relateId;
     private boolean published;
     private String additionalInfo;
 

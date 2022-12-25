@@ -35,6 +35,7 @@ public class BusRouteProto extends BaseResp {
 
     private String websocketUrl;
     private String websocketDestination;
+    private List polylinePoints;
 
     public static BusRouteProto of(BusRoute e) {
         BusRouteProto busRouteResp = new BusRouteProto();
@@ -126,5 +127,13 @@ public class BusRouteProto extends BaseResp {
 
     public String getWebsocketDestination() {
         return websocketDestination;
+    }
+
+    public <R> void setPolylinePoints(List polylinePoints) {
+        this.polylinePoints = polylinePoints;
+    }
+
+    public List getPolylinePoints() {
+        return polylinePoints;
     }
 }

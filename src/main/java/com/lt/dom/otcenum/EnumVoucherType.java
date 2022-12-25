@@ -13,6 +13,7 @@ public enum EnumVoucherType {
     TICKET_THEATRE(""),
     TICKET_BUS(""),
     Multi_Ticket(""),
+    PASS(""),
 
 
 

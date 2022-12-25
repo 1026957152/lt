@@ -21,13 +21,13 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.vo.CustomUserDetails;
 import com.lt.dom.vo.IdentityVo;
 import com.lt.dom.vo.UserVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,10 +38,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
-import javax.naming.AuthenticationException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -633,18 +631,10 @@ public class LoginController {
                 new AuthenticationToken("123", Collections.emptyList()));*/
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(1,authentication);
 
+        CustomUserDetails user_ = (CustomUserDetails) authentication.getPrincipal();
 
-        Optional<UserAuthority> userAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,display.getPhone());
-
-        Optional<User> userOptional = userRepository.findById(userAuthority.get().getUser_id());
-
-
-
-
-
-
+        Optional<User> userOptional = userRepository.findById(user_.getUserAuthority().getUser_id());
 
 
 
@@ -655,87 +645,13 @@ public class LoginController {
 
 
             System.out.println("这里了   的地方士大夫撒旦 "+ user);
-            authsResp.setInfo(userVoService.getBigUser(user));
+            authsResp.setInfo(userVoService.getBigUser(user,EnumLoginChannel.web));
 
+            String jwt = jwtUtils.generateJwtToken(1,authentication);
 
             authsResp.setToken(jwt);
             System.out.println("这里了   的顶顶顶顶顶顶顶夫撒旦 "+ user);
             return EntityModel.of(authsResp);
-
- /*
-            System.out.println("=================================="+ user);
-            System.out.println("=================================="+ user.getRoles().size());
-
-
-            Optional<Employee> optional = employeeRepository.findByUserId(user.getId());
-
-
-            AuthsResp authsResp = new AuthsResp();
-
-            EntityModel<AuthsResp> entityModel = EntityModel.of(authsResp);
-            if(optional.isPresent()){
-                Optional<Supplier> optionalSupplier = supplierRepository.findById(optional.get().getSuplierId());
-                UserResp userResp = UserResp.from(user);
-                EntityModel<UserResp> userRespEntityModel = EntityModel.of(userResp);
-
-                userRespEntityModel.add(linkTo(methodOn(UserRestController.class).beGuide(user.getId())).withRel("beGuide"));
-                userRespEntityModel.add(linkTo(methodOn(UserRestController.class).postRealnameAuths(user.getId(),null)).withRel("realnameAuth"));
-                userRespEntityModel.add(linkTo(methodOn(PublicationRestController.class).pageUserPublicationResp(user.getId(),null,null,null)).withRel("getVoucherList"));
-                userRespEntityModel.add(linkTo(methodOn(UserRestController.class).pageReservation(user.getId(),null,null)).withRel("getBookingList"));
-
-
-
-                authsResp.setProfile(userRespEntityModel);
-                SupplierResp supplierResp = SupplierResp.from(optionalSupplier.get());
-                EntityModel supplierRespEntityModel = EntityModel.of(supplierResp);
-                if(optionalSupplier.isPresent()){
-                    Supplier supplier = optionalSupplier.get();
-                    supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(supplier.getId())).withRel("getSupplier"));
-                  //  supplierRespEntityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchorBycode(null,null)).withRel("redeem"));
-                    supplierRespEntityModel.add(linkTo(methodOn(RedemptionRestController.class).pageRedemptionEntry(supplier.getId(),null,null)).withRel("getRedemptionEntries"));
-                  //  supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.getId(),null)).withRel("addEmployees"));
-                    supplierRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).page_mainEmployee(supplier.getId())).withRel("getPageEmployee"));
-                    userRespEntityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchorBycode(null,null)).withRel("redeem"));
-                    userRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).getSupplier(supplier.getId())).withRel("getSupplier"));
-                    userRespEntityModel.add(linkTo(methodOn(SupplierRestController.class).getRedemptionEntry(supplier.getId())).withRel("getRedemptionEntrySummary"));
-
-
-                    if(supplier.getType().equals(EnumSupplierType.TravelAgent)){
-                        supplierRespEntityModel.add(linkTo(methodOn(TourCampaignRestController.class).createBooking(null)).withRel("createTourCampaign"));
-                        supplierRespEntityModel.add(linkTo(methodOn(ProductRestController.class).createProduct(supplier.getId(),null)).withRel("createProduct"));
-
-                    }
-
-
-                }
-
-
-                authsResp.setSupplier(supplierRespEntityModel);
-*/
-/*                authsResp.setSupplier_name(userResp.getSupplier_name());
-                authsResp.setSupplier_name(userResp.getSupplier_desc());
-                authsResp.setSupplier_type(userResp.getSupplier_type());
-                authsResp.setSupplier_bussiness_type(userResp.getSupplier_bussiness_type());
-                authsResp.setSupplier_code(userResp.getSupplier_code());
-                authsResp.setRoles(userResp.getRoles());*//*
-
-            }else {
-                UserResp userResp = UserResp.from(user);
-                EntityModel<UserResp> userRespEntityModel = EntityModel.of(userResp);
-
-                authsResp.setProfile(userRespEntityModel);
-
-            }
-
-
-
-
-            authsResp.setReal_name(user.getRealName());
-            authsResp.setFirst_name(user.getFirst_name());
-            authsResp.setLast_name(user.getLast_name());
-            authsResp.setPhone(display.getPhone());
-            authsResp.setToken(jwt);
-*/
 
 
         }else{
@@ -748,5 +664,56 @@ public class LoginController {
     }
 
 
+
+    @PostMapping(value = "/login_handset" , produces = "application/json")
+    public EntityModel<UserWithTokenResp> handsetLogin(@RequestBody AuthsReq display)  {
+
+
+
+        System.out.println(" -pC登录-----=+++++++++++"+ display.getPhone());
+
+        Gson gson = new Gson();
+        IdentityVo identityVo = new IdentityVo(EnumIdentityType.phone,display.getPhone());
+
+
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(gson.toJson(identityVo),display.getPassword()));
+
+        System.out.println(" -pC登录-----=+++++++++++"+ authentication.getPrincipal());
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(1,authentication);
+
+        CustomUserDetails user_ = (CustomUserDetails) authentication.getPrincipal();
+
+
+        Optional<User> userOptional = userRepository.findById(user_.getUserAuthority().getUser_id());
+
+
+
+        if(userOptional.isPresent()){
+
+            User user = userOptional.get();
+            UserWithTokenResp authsResp = new UserWithTokenResp();
+
+            authsResp.setInfo(userVoService.getBigUser(user, EnumLoginChannel.handset));
+
+
+            authsResp.setToken(jwt);
+
+            EntityModel entityModel =  EntityModel.of(authsResp);
+                entityModel.add(linkTo(methodOn(HandSetController.class).redeemVonchorByIdentity(null)).withRel("redeamedbyIdentity"));
+                entityModel.add(linkTo(methodOn(HandSetController.class).redeemVonchorByCryptoCode(null)).withRel("scan_redeem"));
+
+                entityModel.add(linkTo(methodOn(RedemptionRestController.class).Page_pageRedemptionEntry(1l)).withRel("Page_listRedemptionEntry"));
+
+            return entityModel;
+
+
+        }else{
+            throw new AuthenticationCredentialsNotFoundException(display.getPhone());
+
+        }
+
+    }
 
 }

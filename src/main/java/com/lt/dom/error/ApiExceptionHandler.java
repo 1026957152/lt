@@ -21,6 +21,7 @@ import javax.validation.ConstraintViolationException;
 import java.util.Locale;
 
 @RestControllerAdvice
+
 public class ApiExceptionHandler {
 
     @Autowired
