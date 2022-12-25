@@ -32,7 +32,7 @@ public class UserVoServiceImpl {
     boolean miniapp_release ;
 
     @Autowired
-    private RequestRepository requestRepository;
+    private UserAuthorityServiceImpl userAuthorityService;
     @Autowired
     private OpenidRepository openidRepository;
 
@@ -80,16 +80,19 @@ public class UserVoServiceImpl {
 
         UserResp userResp =  UserResp.from(user);
         if(web.equals(EnumLoginChannel.miniapp)){
-            Optional<Openid> optionalOpenid = openidRepository.findByUserIdAndLink(user.getId(),true);
-
-            if(optionalOpenid.isPresent()){
 
 
-                userResp = UserResp.userWithOpenidLink(Pair.with(user,optionalOpenid.get()));
+        }
+        Optional<Openid> optionalOpenid =userAuthorityService.checkWeixinBind(user);//
+        //openidRepository.findByUserIdAndLink(user.getId(),true);
+        if(optionalOpenid.isPresent()){
+            Openid openid = optionalOpenid.get();
+
+            userResp = UserResp.userWithOpenidLink(Pair.with(user,openid));
 
 
 
-            }
+            userResp.setBind(userAuthorityService.checkWeixinBind(openid,user));
 
 
         }
@@ -506,8 +509,8 @@ public class UserVoServiceImpl {
 
     public EntityModel getBigUser_(User user) {
 
+        Optional<Openid> optionalOpenid = userAuthorityService.checkWeixinBind(user);
 
-        Optional<Openid> optionalOpenid = openidRepository.findByUserIdAndLink(user.getId(),true);
         UserResp userResp = null;
         if(optionalOpenid.isPresent()){
 
@@ -903,10 +906,13 @@ public class UserVoServiceImpl {
     public UserVo getInverUser(User user) {
 
 
-        Optional<Openid> optionalOpenid = openidRepository.findByUserIdAndLink(user.getId(),true);
+        Optional<Openid> optionalOpenid = userAuthorityService.checkWeixinBind(user);
+
+
         UserVo userResp = null;
         if(optionalOpenid.isPresent()){
             userResp = UserVo.userWithOpenidLink(Pair.with(user,optionalOpenid.get()));
+            userResp.setBind(userAuthorityService.checkWeixinBind(optionalOpenid.get(),user));
         }else{
             userResp = UserVo.from(user);
         }

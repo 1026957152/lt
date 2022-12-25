@@ -1,7 +1,6 @@
 package com.lt.dom.config;
 
 import com.google.gson.Gson;
-import com.lt.dom.controllerOct.PublicationRestController;
 import com.lt.dom.error.Error401Exception;
 import com.lt.dom.oct.Privilege;
 import com.lt.dom.oct.Role;
@@ -25,7 +24,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.*;
 
 @Service("userDetailsService")
@@ -55,6 +53,7 @@ public class MyUserDetailsService implements UserDetailsService {
 
         IdentityVo identityVo = gson.fromJson(ident,IdentityVo.class);
 
+        logger.info("登录 {}, {}",identityVo.getType(),identityVo.getCredential());
 /*
         String email = identityVo.getCredential();
 
@@ -72,68 +71,48 @@ public class MyUserDetailsService implements UserDetailsService {
         Optional<User> optionalUser = Optional.empty();
         String username = null;
         UserAuthority userAuthority = null;
-        if(identityVo.getType().equals(EnumIdentityType.phone)){
 
-            Optional<UserAuthority> optionalUserAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,identityVo.getCredential());
-            if(optionalUserAuthority.isPresent()){
-                userAuthority = optionalUserAuthority.get();
-                optionalUser = userRepository.findById(userAuthority.getUser_id());
+        switch (identityVo.getType()){
+            case phone->{
+                Optional<UserAuthority> optionalUserAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,identityVo.getCredential());
+                if(optionalUserAuthority.isPresent()){
+                    userAuthority = optionalUserAuthority.get();
+                    optionalUser = userRepository.findById(userAuthority.getUserId());
 
-                username = optionalUser.get().getPhone();
+                    username = optionalUser.get().getPhone();
+                }
+
             }
-
-
-        }
-        if(identityVo.getType().equals(EnumIdentityType.weixin)){
-
-            Optional<UserAuthority> optionalUserAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.weixin,identityVo.getCredential());
-            if(optionalUserAuthority.isPresent()){
-                userAuthority = optionalUserAuthority.get();
-                optionalUser = userRepository.findById(userAuthority.getUser_id());
-                username = optionalUser.get().getOpenid();
+            case weixin -> {
+                Optional<UserAuthority> optionalUserAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.weixin,identityVo.getCredential());
+                if(optionalUserAuthority.isPresent()){
+                    userAuthority = optionalUserAuthority.get();
+                    optionalUser = userRepository.findById(userAuthority.getUserId());
+                    username = userAuthority.getIdentifier();
+                }
             }
-          //  optionalUser = userRepository.findByOpenidAndOpenidLink(identityVo.getCredential(),true);
-           // username = optionalUser.get().getOpenid();
-        }
-        if(identityVo.getType().equals(EnumIdentityType.user_code)){
-            Optional<UserAuthority> optionalUserAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.user_code,identityVo.getCredential());
-            if(optionalUserAuthority.isPresent()){
-                userAuthority = optionalUserAuthority.get();
-                optionalUser = userRepository.findById(userAuthority.getUser_id());
-                username = optionalUser.get().getCode();
+            case user_code -> {
+                Optional<UserAuthority> optionalUserAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.user_code,identityVo.getCredential());
+                if(optionalUserAuthority.isPresent()){
+                    userAuthority = optionalUserAuthority.get();
+                    optionalUser = userRepository.findById(userAuthority.getUserId());
+                    username = optionalUser.get().getCode();
+                }
             }
-          //  optionalUser = userRepository.findByCode(identityVo.getCredential());
-          //  username = optionalUser.get().getCode();
         }
+
+
         if(optionalUser.isEmpty()){
             String s = "微信，和 手机 号 找不到用户"+ identityVo.getType()+" "+identityVo.getCredential();
             System.out.println(s);
             throw new Error401Exception(Enumfailures.Missing_credentials,"找不到用户",s);
 
         }
-        //Optional<User> optionalUser = userRepository.findByUsername(email);
-
-
-
-/*
-        if(optionalUser.isEmpty()){
-             optionalUser = userRepository.findByUsername(email);
-        }
-*/
-
-
-/*        if (optionalUser.isEmpty()) {
-            System.out.println("空的吗"+email);
-            return new org.springframework.security.core.userdetails.User(
-              " ", " ", true, true, true, true, 
-              getAuthorities(Arrays.asList(
-                roleRepository.findByName("ROLE_USER"))));
-        }*/
 
 
         User user = optionalUser.get();
         user.setEnabled(true);
-        try {
+ /*       try {
             System.out.println("ddddddddddddd"+user.getRoles().size());
             System.out.println("ddddddddddddd"+user.toString());
 
@@ -141,7 +120,7 @@ public class MyUserDetailsService implements UserDetailsService {
             e.printStackTrace();
             System.out.println("ddddddddddddd"+user.toString());
 
-        }
+        }*/
 
 
         System.out.println("找到了而设备ia啊啊啊啊啊"+username+ "------"+user.getPassword()); // user.isEnabled()

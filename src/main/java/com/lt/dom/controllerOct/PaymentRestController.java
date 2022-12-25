@@ -94,6 +94,8 @@ public class PaymentRestController {
     @Autowired
     private AuthenticationFacade authenticationFacade;
 
+    @Autowired
+    private UserAuthorityServiceImpl userAuthorityService;
 
 
     @GetMapping(value = "/payments", produces = "application/json")
@@ -142,7 +144,8 @@ public class PaymentRestController {
 
         UserVo userVo = authenticationFacade.getUserVo(authentication);
 
-        Optional<Openid> optional = openidRepository.findByUserIdAndLink(userVo.getUser_id(),true);
+
+        Optional<Openid> optional = userAuthorityService.checkWeixinBind(userVo.getUser_id());
 
         if(optional.isEmpty()){
             throw new BookNotFoundException(Enumfailures.not_found,"未找到产品");
@@ -201,7 +204,8 @@ public class PaymentRestController {
         UserVo userVo = authenticationFacade.getUserVo(authentication);
 
 
-        Optional<Openid> optional = openidRepository.findByUserIdAndLink(userVo.getUser_id(),true);
+        Optional<Openid> optional = userAuthorityService.checkWeixinBind(userVo.getUser_id());
+
         if(optional.isEmpty()){
             throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到 openId");
         }

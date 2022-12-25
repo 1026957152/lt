@@ -88,7 +88,7 @@ public class AuthenticationFacade implements IAuthenticationFacade {
 
                 CustomUserDetails user_ = (CustomUserDetails) authentication.getPrincipal();
 
-                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUser_id());
+                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUserId());
                 if (!optional.isEmpty()) {
                     return userService.getInverUser(optional.get());
                 }
@@ -139,7 +139,7 @@ public class AuthenticationFacade implements IAuthenticationFacade {
 //                }
 //                System.out.println("=============不是匿名用户----- " + user_.getUsername());
 
-                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUser_id());
+                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUserId());
                 if (!optional.isEmpty()) {
                     return userService.getInverUser(optional.get());
                 }
@@ -173,7 +173,7 @@ public class AuthenticationFacade implements IAuthenticationFacade {
 
                 CustomUserDetails user_ = (CustomUserDetails) authentication.getPrincipal();
 
-                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUser_id());
+                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUserId());
 
 
                 if (!optional.isEmpty()) {
@@ -210,7 +210,7 @@ public class AuthenticationFacade implements IAuthenticationFacade {
 
                 CustomUserDetails user_ = (CustomUserDetails) authentication.getPrincipal();
 
-                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUser_id());
+                Optional<User> optional = userRepository.findById(user_.getUserAuthority().getUserId());
 
 
                 if (!optional.isEmpty()) {

@@ -22,6 +22,7 @@ import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.OpenidRepository;
 import com.lt.dom.repository.UserRepository;
 import com.lt.dom.serviceOtc.OpenidServiceImpl;
+import com.lt.dom.serviceOtc.UserAuthorityServiceImpl;
 import com.lt.dom.serviceOtc.UserServiceImpl;
 import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
 import com.lt.dom.util.RestTemplateUtil;
@@ -74,6 +75,8 @@ public class EmpowerRestController {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserAuthorityServiceImpl userAuthorityService;
 
     @Autowired
     AuthenticationTokenProvider authenticationTokenProvider;
@@ -372,7 +375,11 @@ public class EmpowerRestController {
             openid1 = optional.get();
 
             if(optional.get().getLink()){
-                Optional<User> optionalUser = userRepository.findById(openid1.getUserId());
+
+
+
+
+                Optional<User> optionalUser = userAuthorityService.getWeixinBindUser(openid1);
 
 
 

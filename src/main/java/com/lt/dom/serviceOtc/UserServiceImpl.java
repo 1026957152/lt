@@ -69,7 +69,7 @@ public class UserServiceImpl {
 
         enumIdentityTypes.forEach(x->{
             UserAuthority userAuthority = new UserAuthority();
-            userAuthority.setUser_id(finalUser.getId());
+            userAuthority.setUserId(finalUser.getId());
 
 
             EnumIdentityType type = x.getValue0();
@@ -117,11 +117,7 @@ public class UserServiceImpl {
 
         }
 
-/*
-        Optional<User> optional = userRepository.findByPhone(pojo.getPhone());
-        if(optional.isPresent()){
-            throw new ExistException(Enumfailures.username_already_exists_error, pojo.getPhone()+"手机号已经注册");
-        }*/
+
         User user = new User();
 
 
@@ -218,7 +214,7 @@ public class UserServiceImpl {
 
             if(optionalUserAuthority.isPresent()){
                 UserAuthority userAuthority = optionalUserAuthority.get();
-                userAuthority.setUser_id(user.getId());
+                userAuthority.setUserId(user.getId());
                 userAuthorityRepository.save(userAuthority);
             }else{
                 UserAuthority userAuthority = new UserAuthority();
@@ -226,7 +222,7 @@ public class UserServiceImpl {
                 userAuthority.setIdentityType(EnumIdentityType.phone);
 
                 userAuthority.setCredential(passwordEncoder.encode("123"));
-                userAuthority.setUser_id(user.getId());
+                userAuthority.setUserId(user.getId());
                 userAuthorityRepository.save(userAuthority);
             }
         }

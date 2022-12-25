@@ -23,6 +23,8 @@ import com.lt.dom.vo.UserVo;
 import org.apache.commons.lang.RandomStringUtils;
 import org.javatuples.Pair;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,11 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class PassServiceImpl {
+
+
+    private static final Logger logger = LoggerFactory.getLogger(PassServiceImpl.class);
+
+
     @Autowired
     private PassAsyncServiceImpl passAsyncService;
 
@@ -517,6 +524,8 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
     public void withMe(HomeHeroPassResp userResp, UserVo user) {
 
 
+        logger.info("查看自己的主人卡{} {}",user.getBind(),user.getUser_id());
+
         if(user == null || !user.getBind()){
 
             String link_添加卡 = linkTo(methodOn(PassRestController.class).Page_linkPass()).withSelfRel().getHref();
@@ -607,12 +616,20 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
             String path_link_hero = "/pages/onecard/show?url="+link_hero;
 
             userResp.setLable("您是否已有榆林主人卡");
+/*
             userResp.setLines(Arrays.asList(Map.of("lable","我有一张数字主人卡","path",path_添加卡,"image",EnumLayoutFeatured.添加卡.getFeature_image()),
                     Map.of("lable","我有一张实体主人卡","path",path_添加卡,"image",EnumLayoutFeatured.添加卡.getFeature_image()),
                     Map.of("lable","我帮别人激活","path",path_主人卡激活,"image",EnumLayoutFeatured.主人卡激活.getFeature_image()),
                     Map.of("lable","我没有主人卡","path",path_link_hero,"image",EnumLayoutFeatured.主人卡激活.getFeature_image())));
+*/
 
 
+
+            userResp.setLines(
+                    Arrays.asList(Map.of("lable","我有主人卡","path",path_添加卡,"image",EnumLayoutFeatured.添加卡.getFeature_image()),
+                            //      Map.of("lable","我有一张实体主人卡","path",path_添加卡,"image",EnumLayoutFeatured.添加卡.getFeature_image()),
+                            Map.of("lable","我帮别人激活","path",path_主人卡激活,"image",EnumLayoutFeatured.主人卡激活.getFeature_image()),
+                            Map.of("lable","我没有主人卡","path",path_link_hero,"image",EnumLayoutFeatured.主人卡激活.getFeature_image())));
 
 
 

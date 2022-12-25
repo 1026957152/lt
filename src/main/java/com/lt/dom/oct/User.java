@@ -26,7 +26,7 @@ public class User extends Base{
 
 
     private String nick_name;
-    private String openid;
+
     private boolean openidLink;
 
 
@@ -261,13 +261,8 @@ private String code;//	string	The ID of the user
         return nick_name;
     }
 
-    public void setOpenid(String openid) {
-        this.openid = openid;
-    }
 
-    public String getOpenid() {
-        return openid;
-    }
+
 
     public void setOpenidLink(boolean openidLink) {
         this.openidLink = openidLink;

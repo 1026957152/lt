@@ -7,24 +7,14 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Entity
-public class Openid {
+public class Openid extends Base {
 
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    @Id
-    private long id;
-    private long userId;
     private boolean link;
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
+    @Enumerated(EnumType.STRING)
     private EnumAssetType type;
 
     @NotNull
@@ -86,13 +76,7 @@ private String code;//	string	The ID of the user
         this.openid_image = openid_image;
     }
 
-    public void setUserId(long userId) {
-        this.userId = userId;
-    }
 
-    public long getUserId() {
-        return userId;
-    }
 
     public void setLink(boolean link) {
         this.link = link;

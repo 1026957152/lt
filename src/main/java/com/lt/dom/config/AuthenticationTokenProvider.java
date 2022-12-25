@@ -13,6 +13,7 @@ import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.OpenidRepository;
 import com.lt.dom.repository.RoleRepository;
 import com.lt.dom.repository.UserRepository;
+import com.lt.dom.serviceOtc.UserAuthorityServiceImpl;
 import com.lt.dom.vo.IdentityVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.*;
@@ -43,6 +44,8 @@ public class AuthenticationTokenProvider implements AuthenticationProvider {
   @Autowired
   private MyUserDetailsService userDetailsService;
 
+  @Autowired
+  private UserAuthorityServiceImpl userAuthorityService;
 
 
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -59,7 +62,7 @@ public class AuthenticationTokenProvider implements AuthenticationProvider {
     IdentityVo identityVo = gson.fromJson(authenticationToken.getToken(),IdentityVo.class);
 
 
-    Optional<Openid> optional = openidRepository.findByOpenid(identityVo.getCredential());
+    Optional<Openid> optional =  openidRepository.findByOpenid(identityVo.getCredential());
     /**TODO do the logic here and return not null authentication object*/
 
     if(optional.isEmpty()){
@@ -68,41 +71,30 @@ public class AuthenticationTokenProvider implements AuthenticationProvider {
 
       }
       Openid openid = optional.get();
-      if(!openid.getLink()){
+
+    Optional<User>  optionalUser = userAuthorityService.getWeixinBindUser(openid);
+
+      ;//
+      if(optionalUser.isEmpty()){
 
 
         System.out.println("返回匿名 AnonymousAuthenticationToken");
         return new AnonymousAuthenticationToken(optional.get().getOpenid(), optional.get().getOpenid(), AuthorityUtils.createAuthorityList("ANON"));
 
-   //     throw new Error401Exception(Enumfailures.Invalid_credentials,"无法找到绑定的 用户 user ");
 
-/*        org.springframework.security.core.userdetails.User userDetails =  new org.springframework.security.core.userdetails.User(
-                optional.get().getOpenid(), " ", true, true, true, true,
-                getAuthorities(Arrays.asList(
-                        roleRepository.findByName("ROLE_NOT_REAL_NAME"))));
-
-        UsernamePasswordAuthenticationToken authentication_ = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
-
-        //authentication_.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        return authentication_;*/
       }else{
-        Optional<User> user = userRepository.findById(openid.getUserId());
-        if(user.isEmpty()){
-          throw new Error401Exception(Enumfailures.Missing_credentials,"无法找到绑定的 用户 user ");
-
-        }
 
 
+        User user = optionalUser.get();
 
 
-        System.out.println("--token认证认证认证goggggggggggggggggggggggss"+user.get().getUsername());
+        System.out.println("--token认证认证认证goggggggggggggggggggggggss"+user.getUsername());
 
 
         //TODO 这里 给 赋值 getUsername 是否合适呀，  卫视不复制 getPhone 等
 
 
-        IdentityVo identityVo_ = new IdentityVo(EnumIdentityType.weixin,user.get().getOpenid());
+        IdentityVo identityVo_ = new IdentityVo(EnumIdentityType.weixin,openid.getOpenid());
 
         org.springframework.security.core.userdetails.UserDetails userDetails =  userDetailsService.loadUserByUsername(gson.toJson(identityVo_));
 

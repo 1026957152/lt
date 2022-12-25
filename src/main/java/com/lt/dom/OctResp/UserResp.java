@@ -274,7 +274,7 @@ public class UserResp extends BaseResp {
         openidResp.setNick_name(openid.getOpenid_name());
         openidResp.setGender(openid.getOpenid_gender());
         openidResp.setAvatar(openid.getOpenid_image());
-        openidResp.setBind(openid.getLink());
+
 
 
 

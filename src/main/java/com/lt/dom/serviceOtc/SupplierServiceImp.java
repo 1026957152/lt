@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -170,7 +169,7 @@ public class SupplierServiceImp {
         }
         UserAuthority userAuthority = optional.get();
 
-        Optional<User> optionalUser = userRepository.findById(userAuthority.getUser_id());
+        Optional<User> optionalUser = userRepository.findById(userAuthority.getUserId());
         if(optionalUser.isEmpty()){
 
             throw new BookNotFoundException(Enumfailures.not_found,"找不到用户");

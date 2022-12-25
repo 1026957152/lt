@@ -36,6 +36,8 @@ public class UserService implements IUserService {
 
     @Autowired
     private UserServiceImpl userService;
+    @Autowired
+    private UserAuthorityServiceImpl userAuthorityService;
 
     @Autowired
     private OpenidServiceImpl openidService;
@@ -260,16 +262,17 @@ public class UserService implements IUserService {
                 userPojo.setPassword("wxlinkUserReq.getUser_password()");
                 userPojo.setRoles(Arrays.asList("ROLE_ADMIN"));
 
-                User user = userService.createUser(userPojo,Arrays.asList(Pair.with(EnumIdentityType.phone,verificationToken1.getPhone())));
-                user = userService.userAuth(user,Arrays.asList(Pair.with(EnumIdentityType.weixin,openid.getOpenid())));
+                User user = userService.createUser(userPojo,
+                        Arrays.asList(Pair.with(EnumIdentityType.phone,verificationToken1.getPhone())));
+                user = userAuthorityService.userAuth(user,Arrays.asList(Pair.with(EnumIdentityType.weixin,openid.getOpenid())));
 
-                openidService.linkUser(openid,user);
+              //  openidService.linkUser(openid,user);
             }else{
-                Optional<User> optionalUser = userRepository.findById(userAuthority.get().getUser_id());
+                Optional<User> optionalUser = userRepository.findById(userAuthority.get().getUserId());
                 User user = userService.userAuth(optionalUser.get(),Arrays.asList(Pair.with(EnumIdentityType.weixin,openid.getOpenid())));
 
 
-                openidService.linkUser(openid,optionalUser.get());
+                //openidService.linkUser(openid,optionalUser.get());
             }
 
 

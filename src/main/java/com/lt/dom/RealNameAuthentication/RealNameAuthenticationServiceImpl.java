@@ -334,9 +334,9 @@ public class RealNameAuthenticationServiceImpl {
             if(!optionalUser.get().isRealNameVerified()){ //TODO 但未实名
                 user = setRealname(user,realnameAuthsReq.getReal_name(),realnameAuthsReq.getId_card());
             }
-            openid.setLink(true);
+/*            openid.setLink(true);
             openid.setUserId(user.getId());
-            openidRepository.save(openid);
+            openidRepository.save(openid);*/
             return Pair.with(user,openid);
 
         }else{

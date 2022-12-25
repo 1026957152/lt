@@ -391,7 +391,7 @@ public class LoginController {
         Optional<UserAuthority> userAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,verificationToken____.getPhone());
 
 
-        Optional<User> user = userRepository.findById(userAuthority.get().getUser_id());
+        Optional<User> user = userRepository.findById(userAuthority.get().getUserId());
 
      //   openid = openidService.linkUser(openid,user.get());
 
@@ -554,7 +554,7 @@ public class LoginController {
         String jwt = jwtUtils.generateJwtToken(1,authentication);
 
 
-        Optional<User> user = userRepository.findById(userAuthority.getUser_id());
+        Optional<User> user = userRepository.findById(userAuthority.getUserId());
 
         UserResp openidResp = UserResp.from(user.get());
 
@@ -634,7 +634,7 @@ public class LoginController {
 
         CustomUserDetails user_ = (CustomUserDetails) authentication.getPrincipal();
 
-        Optional<User> userOptional = userRepository.findById(user_.getUserAuthority().getUser_id());
+        Optional<User> userOptional = userRepository.findById(user_.getUserAuthority().getUserId());
 
 
 
@@ -686,7 +686,7 @@ public class LoginController {
         CustomUserDetails user_ = (CustomUserDetails) authentication.getPrincipal();
 
 
-        Optional<User> userOptional = userRepository.findById(user_.getUserAuthority().getUser_id());
+        Optional<User> userOptional = userRepository.findById(user_.getUserAuthority().getUserId());
 
 
 

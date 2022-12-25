@@ -13,10 +13,8 @@ public interface OpenidRepository extends JpaRepository<Openid
 
 	Optional<Openid> findByOpenid(String openid);
 
-    List<Openid> findByUserId(long id);
 
-    Optional<Openid> findByUserIdAndLink(long id, boolean b);
 
-    List<Openid> findByUserIdIn(List<Long> collect);
+
 
 }

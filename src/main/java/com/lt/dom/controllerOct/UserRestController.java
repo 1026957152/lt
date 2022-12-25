@@ -13,6 +13,8 @@ import com.lt.dom.serviceOtc.*;
 import com.lt.dom.vo.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +42,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/oct")
 public class UserRestController {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserRestController.class);
 
     @Autowired
     private BalanceRepository balanceRepository;
@@ -54,6 +57,9 @@ public class UserRestController {
     private UserAuthorityRepository userAuthorityRepository;
     @Autowired
     private PreferenceServiceImpl preferenceService;
+
+    @Autowired
+    private UserAuthorityServiceImpl userAuthorityService;
 
 
 
@@ -79,8 +85,6 @@ public class UserRestController {
     private FeatureServiceImpl featureService;
 
     @Autowired
-    private PassServiceImpl passService;
-    @Autowired
     private SupplierRepository supplierRepository;
 
 
@@ -101,8 +105,14 @@ public class UserRestController {
 
         Page<User> optionalUser = userRepository.findAll(pageable);
 
-        Map<Long,Openid> openidMap = openidRepository.findByUserIdIn(optionalUser.map(x->x.getId()).stream().collect(Collectors.toList()))
-                .stream().collect(Collectors.toMap(x->x.getUserId(),x->x));
+        Map<Long,Openid> openidMap = userAuthorityRepository.findByUserIdIn(optionalUser.map(x->x.getId()).stream().collect(Collectors.toList()))
+                .stream()
+                .filter(x->x.getIdentityType().equals(EnumIdentityType.weixin))
+                .collect(Collectors.toMap(x->x.getUserId(),x->{
+
+                    return openidRepository.findByOpenid(x.getIdentifier()).get();
+
+                }));
 
         Page<EntityModel<UserResp>> userRespPage =  optionalUser.map(x->{
             UserResp userResp = null;
@@ -140,6 +150,9 @@ public class UserRestController {
             EntityModel entityModel = EntityModel.of(UserResp.from(openid));
             entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).individual_only_for_realnameauth(null)).withRel("realnameAuth"));
             entityModel.add(linkTo(methodOn(EmpowerRestController.class).mini_getPhone(null)).withRel("getPhone"));
+
+
+
             entityModel.add(linkTo(methodOn(LoginController.class).Page_smsLogin(openid.getOpenid())).withRel("Page_phoneLogin"));
 
 
@@ -160,7 +173,7 @@ public class UserRestController {
 
              //   Optional<UserAuthority> userAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,user_.getUsername());
 
-                optionalUser = userRepository.findById(user_.getUserAuthority().getUser_id());
+                optionalUser = userRepository.findById(user_.getUserAuthority().getUserId());
 
 /*
                 List<User> userList = userRepository.findByOpenid(user_.getUsername());
@@ -289,16 +302,24 @@ public class UserRestController {
 
 
 
+        Optional<Openid>  optionalOpenid = userAuthorityService.checkWeixinBind(user);
+
+
             Map.of("更换账号","ddddd");
             EntityModel entityModel = EntityModel.of(userResp);
           //  entityModel.add(linkTo(methodOn(UserRestController.class).beGuide(user.getId())).withRel("be_guide_url"));
           //  entityModel.add(linkTo(methodOn(UserRestController.class).postRealnameAuths(user.getId(),null)).withRel("realname_auths_url"));
             userResp.setLayout(featureService.profileFill(user));
 
-        entityModel.add(linkTo(methodOn(OpenidRestController.class).Page_linkUser(user.getOpenid())).withRel("Page_linkUser"));
         entityModel.add(linkTo(methodOn(LoginController.class).Page_verification()).withRel("Page_verifyPhone"));
         entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).Page_realName()).withRel("Page_realnameAuth"));
-        entityModel.add(linkTo(methodOn(EmpowerRestController.class).wxlogout(user.getOpenid())).withRel("wxlogout"));
+
+        if(optionalOpenid.isPresent()){
+            Openid openid = optionalOpenid.get();
+            entityModel.add(linkTo(methodOn(EmpowerRestController.class).wxlogout(openid.getOpenid())).withRel("wxlogout"));
+            entityModel.add(linkTo(methodOn(OpenidRestController.class).Page_linkUser(openid.getOpenid())).withRel("Page_linkUser"));
+
+        }
 
 
         if(employeeOptional.isPresent()){

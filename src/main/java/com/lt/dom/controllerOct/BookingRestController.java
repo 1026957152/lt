@@ -99,6 +99,8 @@ public class BookingRestController {
 
     @Autowired
     private SkuRepository zonePricingRepository;
+    @Autowired
+    private UserAuthorityServiceImpl userAuthorityService;
 
 
     @Autowired
@@ -2659,7 +2661,8 @@ public class BookingRestController {
 
         UserVo userVo = authenticationFacade.getUserVo(authentication);
 
-        Optional<Openid> optional = openidRepository.findByUserIdAndLink(userVo.getUser_id(),true);
+        Optional<Openid> optional = userAuthorityService.checkWeixinBind(userVo.getUser_id());
+
 
         if(optional.isEmpty()){
             throw new BookNotFoundException(CAMPAIGN_ID,"未绑定产品");

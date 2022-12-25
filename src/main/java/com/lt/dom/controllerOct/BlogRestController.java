@@ -66,6 +66,8 @@ public class BlogRestController {
 
     @Autowired
     private OpenidRepository openidRepository;
+    @Autowired
+    private UserAuthorityServiceImpl userAuthorityService;
 
 
 
@@ -132,7 +134,10 @@ public class BlogRestController {
         BlogResp.Author author = BlogResp.Author.from(user);
 
         PhotoResp resp = new PhotoResp();
-        Optional<Openid> optional = openidRepository.findByUserId(blog.getUser()).stream().findAny();
+
+        Optional<Openid> optional = userAuthorityService.checkWeixinBind(blog.getUser());
+
+    //    Optional<Openid> optional = openidRepository.findByUserId(blog.getUser()).stream().findAny();
         if(optional.isPresent()){
             Openid openid = optional.get();
 
@@ -183,8 +188,9 @@ public class BlogRestController {
         PhotoResp resp = new PhotoResp();
 
 
+        Optional<Openid> optional = userAuthorityService.checkWeixinBind(blog.getUser());
 
-        Optional<Openid> optional = openidRepository.findByUserId(blog.getUser()).stream().findAny();
+        // Optional<Openid> optional = openidRepository.findByUserId(blog.getUser()).stream().findAny();
         if(optional.isPresent()){
             Openid openid = optional.get();
 
@@ -248,7 +254,10 @@ public class BlogRestController {
             BlogResp.Author author = BlogResp.Author.from(user);
 
             PhotoResp resp = new PhotoResp();
-            Optional<Openid> optional = openidRepository.findByUserId(e.getUser()).stream().findAny();
+
+            Optional<Openid> optional = userAuthorityService.checkWeixinBind(e.getUser());
+
+            //Optional<Openid> optional = openidRepository.findByUserId(e.getUser()).stream().findAny();
             if(optional.isPresent()){
                 Openid openid = optional.get();
 
@@ -295,7 +304,10 @@ public class BlogRestController {
             BlogResp.Author author = BlogResp.Author.from(user);
 
             PhotoResp resp = new PhotoResp();
-            Optional<Openid> optional = openidRepository.findByUserId(e.getUser()).stream().findAny();
+
+            Optional<Openid> optional = userAuthorityService.checkWeixinBind(e.getUser());
+
+          //  Optional<Openid> optional = openidRepository.findByUserId(e.getUser()).stream().findAny();
             if(optional.isPresent()){
                 Openid openid = optional.get();
 

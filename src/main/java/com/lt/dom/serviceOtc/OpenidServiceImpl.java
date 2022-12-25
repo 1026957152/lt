@@ -15,6 +15,8 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.vo.SupplierPojoVo;
 import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ import static java.util.Objects.nonNull;
 
 @Service
 public class OpenidServiceImpl {
+    private static final Logger logger = LoggerFactory.getLogger(OpenidServiceImpl.class);
 
 
     @Autowired
@@ -46,7 +49,7 @@ public class OpenidServiceImpl {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private SupplierServiceImp supplierServiceImp;
+    private UserAuthorityServiceImpl userAuthorityService;
 
     @Autowired
     JwtUtils jwtUtils;
@@ -80,16 +83,24 @@ public class OpenidServiceImpl {
 
     public Openid linkUser(Openid openid, User user) {
 
+
+
+        userAuthorityService.checkWeixinBind(openid,user);
+        User user_ = userService.userAuth(user,Arrays.asList(Pair.with(EnumIdentityType.weixin,openid.getOpenid())));
+
+/*
+
+
         List<User> userList = userRepository.findByOpenid(openid.getOpenid());
         userRepository.saveAll(userList.stream().map(e->{
-            e.setOpenid(null);
+         //   e.setOpenid(null);
             e.setOpenidLink(false);
             return e;
         }).collect(Collectors.toList()));
 
         List<Openid> openids = openidRepository.findByUserId(user.getId());
         openidRepository.saveAll(openids.stream().map(x->{
-            x.setUserId(0);
+            x.setUserId(null);
             x.setLink(false);
 
             return x;
@@ -98,20 +109,19 @@ public class OpenidServiceImpl {
         openid.setUserId(user.getId());
         openid.setLink(true);
 
-        user.setOpenid(openid.getOpenid());
+      //  user.setOpenid(openid.getOpenid());
         user.setOpenidLink(true);
         userRepository.save(user);
+*/
 
-        return openidRepository.save(openid);
+        return openid;
 
     }
 
     @Transactional
     public void unLinkUser(Openid openid) {
+        logger.info("解除绑定 openid{}, link{}, userid{}",openid.getOpenid(),openid.getLink());
 
-        openid.setLink(false);
-        openid.setUserId(0);
-        openidRepository.save(openid);
  /*       List<User> userList = userRepository.findByOpenid(openid.getOpenid());
 
 
@@ -129,8 +139,14 @@ public class OpenidServiceImpl {
             return x;
         }).collect(Collectors.toList()));
 */
+        Optional<UserAuthority> userAuthorityOptional = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.weixin,openid.getOpenid());
+        if(userAuthorityOptional.isPresent()){
+            userAuthorityRepository.delete(userAuthorityOptional.get());
 
-        userAuthorityRepository.deleteAllByIdentityTypeAndIdentifier(EnumIdentityType.weixin,openid.getOpenid());
+        }else{
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到登录收取");
+        }
+
 
 
     }

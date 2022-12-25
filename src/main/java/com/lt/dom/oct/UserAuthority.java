@@ -12,7 +12,7 @@ public class UserAuthority extends Base{
     private EnumIdentityType identityType;
     private String credential;
     private String identifier;
-    private long user_id;
+    private Long userId;
 
 
 
@@ -42,11 +42,11 @@ public class UserAuthority extends Base{
         this.identifier = identifier;
     }
 
-    public long getUser_id() {
-        return user_id;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUser_id(long user_id) {
-        this.user_id = user_id;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }
