@@ -14,6 +14,8 @@ import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.RedemBycodePojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.proto.rabit.CityPassBooking;
+import com.lt.dom.proto.rabit.EnumRabbitMessageType;
+import com.lt.dom.proto.rabit.RabbitMessage;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.BookingTypeTowhoVo;
 import com.lt.dom.serviceOtc.*;
@@ -495,8 +497,12 @@ public class CityPassServiceImpl {
 
                          //   smsService.singleSend(greetings,tra.getTel_home());
 
+                            RabbitMessage message = new RabbitMessage();
+                            message.setType(EnumRabbitMessageType.BUY_CITY_HERO_NOTIFICATION);
+                            message.setCityPassBooking(cityPassBooking);
+                            message.setPhone(tra.getTel_home());
 
-                            smsService.send_(cityPassBooking,tra.getTel_home());
+                            smsService.send_(message);
 
                         }catch (Exception e){
                             e.printStackTrace();

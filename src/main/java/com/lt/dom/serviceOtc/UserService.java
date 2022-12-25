@@ -6,10 +6,9 @@ import com.lt.dom.oct.User;
 import com.lt.dom.oct.UserAuthority;
 import com.lt.dom.oct.VerificationToken;
 import com.lt.dom.otcReq.UserPojo;
-import com.lt.dom.otcenum.EnumIdentityType;
-import com.lt.dom.otcenum.EnumSmsVerificationType;
-import com.lt.dom.otcenum.EnumVefifyStatus;
-import com.lt.dom.otcenum.Enumfailures;
+import com.lt.dom.otcenum.*;
+import com.lt.dom.proto.rabit.EnumRabbitMessageType;
+import com.lt.dom.proto.rabit.RabbitMessage;
 import com.lt.dom.repository.UserAuthorityRepository;
 import com.lt.dom.repository.VerificationTokenRepository;
 import com.lt.dom.repository.UserRepository;
@@ -159,13 +158,14 @@ public class UserService implements IUserService {
 
 
                 verificationToken = retry(verificationToken);
-                String greetings = String.format(
-                        "你的验证码是%s",
-                        verificationToken.getToken());
 
-                System.out.println("-------发了短信，发了短信");
+                RabbitMessage message = new RabbitMessage();
+                message.setType(EnumRabbitMessageType.VERIFICATION_TOEKN);
+                message.setToken(verificationToken.getToken());
+                message.setPhone(verificationToken.getPhone());
 
-                    smsService.singleSend(greetings,verificationToken.getPhone());
+
+                smsService.send_(message);
 
 
                 return verificationToken;

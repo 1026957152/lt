@@ -5,6 +5,7 @@ import com.lt.dom.OctResp.SmsResp;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.proto.rabit.CityPassBooking;
+import com.lt.dom.proto.rabit.RabbitMessage;
 import com.lt.dom.rabbit.RabbitMQConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,23 @@ public class SMSServiceImpl {
     // 服务商 AppID
     @Value("${yunpian_sms.apikey}")
     private String apikey;
-    public String send_(CityPassBooking cityPassBooking, String tel_home){
+/*    public String send_(CityPassBooking cityPassBooking, String tel_home){
+
+
+        logger.debug("发送了消息 rabit {}",cityPassBooking);
+
+        CorrelationData messageId = new CorrelationData(UUID.randomUUID().toString());
+        //第四个参数: 设置消息唯一id
+
+        CorrelationData correlationData = new CorrelationData();
+        correlationData.setId("zheaven123456");//id + 时间戳 （必须是全局唯一的）
+        rabbitTemplate.convertAndSend(RabbitMQConfig.topicExchangeName,RabbitMQConfig.routing_key,cityPassBooking,messageId);
+
+
+        return "ok. done";
+    }*/
+
+    public String send_(RabbitMessage cityPassBooking){
 
 
         logger.debug("发送了消息 rabit {}",cityPassBooking);
