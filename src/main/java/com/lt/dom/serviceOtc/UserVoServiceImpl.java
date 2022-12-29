@@ -10,6 +10,7 @@ import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.PrefereneVo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
+import com.lt.dom.util.ZxingBarcodeGenerator;
 import com.lt.dom.vo.GuideSummaryVo;
 import com.lt.dom.vo.UserVo;
 import org.javatuples.Pair;
@@ -62,6 +63,10 @@ public class UserVoServiceImpl {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private AssetServiceImpl assetService;
+
+    @Autowired
+    private CryptoServiceImpl cryptoService;
+
 
     @Autowired
     private FeatureServiceImpl featureService;
@@ -304,8 +309,7 @@ public class UserVoServiceImpl {
                 supplierRespEntityModel.add(linkTo(methodOn(BusRestController.class).Page_listStop(employee.getSuplierId())).withRel("Page_listStop"));
 
 
-
-                supplierRespEntityModel.add(linkTo(methodOn(RedemptionRestController.class).validate_by_id_number(null)).withRel("redeem_by_id_number"));
+                supplierRespEntityModel.add(linkTo(methodOn(HandSetController.class).redeemVonchorByIdentity(null)).withRel("redeem_by_id_number"));
 
 
 
@@ -496,6 +500,13 @@ public class UserVoServiceImpl {
 
 
         }
+
+
+
+
+        userResp.setCode_base64_src(cryptoService.encode_png_base64(user.getCode()));
+
+
 
 
 
@@ -710,7 +721,7 @@ public class UserVoServiceImpl {
 
 
 
-            supplierRespEntityModel.add(linkTo(methodOn(RedemptionRestController.class).validate_by_id_number(null)).withRel("redeem_by_id_number"));
+            supplierRespEntityModel.add(linkTo(methodOn(HandSetController.class).redeemVonchorByIdentity(null)).withRel("redeem_by_id_number"));
 
 
 

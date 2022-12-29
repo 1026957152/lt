@@ -19,6 +19,7 @@ import com.lt.dom.serviceOtc.*;
 import com.lt.dom.thirdTS.domainTsToLt.*;
 import com.lt.dom.vo.PlatRefundVo;
 import com.lt.dom.vo.PlatUserVo;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
@@ -67,6 +68,10 @@ public class TsToLtServiceImpl {
 
     @Autowired
     private FulfiiledItemRepository fulfiiledItemRepository;
+
+
+    @Autowired
+    private FulfillServiceImpl fulfillService;
 
 
 
@@ -601,14 +606,59 @@ public class TsToLtServiceImpl {
         BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
         bookingTypeTowhoVo.setToWhoTyp(EnumBookingOjbectType.Product);
 
-        bookingTypeTowhoVo.setTraveler(Arrays.stream(data.getPlayers()).map(e->{
-            BookingSkuPojo.TravelerReq traveler = new BookingSkuPojo.TravelerReq();
-            traveler.setId_card(e.getId_number());
-            traveler.setName(e.getName());
-            traveler.setPhone(e.getMobile());
-            traveler.setIdType(e.getId_ntype() !=null?EnumIdType.valueof(e.getId_ntype()+""):null);
-            return traveler;
-        }).collect(Collectors.toList()));
+
+        if(ObjectUtils.isNotEmpty(data.getG_batch_type()) && data.getG_batch_type()==2){
+
+
+            System.out.println("多个 身份证啊啊啊啊啊 ，多个 SIZE");
+
+            bookingTypeTowhoVo.setPurchaseMode(EnumPurchaseMode.LineItem_every_traveler);
+
+            bookingTypeTowhoVo.setTraveler(Arrays.stream(data.getPlayers()).map(e->{
+                BookingSkuPojo.TravelerReq traveler = new BookingSkuPojo.TravelerReq();
+                traveler.setId_card(e.getId_number());
+                traveler.setName(e.getName());
+                traveler.setPhone(e.getMobile());
+                traveler.setIdType(e.getId_ntype() !=null?EnumIdType.valueof(e.getId_ntype()+""):null);
+
+
+                traveler.setPhone(e.getMobile());
+                return traveler;
+            }).collect(Collectors.toList()));
+        }else{
+            System.out.println("非多人 一个身份证啊啊啊啊 一个 size   "+data.getId_number()+"dd"+data.getSize());
+
+            if(ObjectUtils.isNotEmpty(data.getId_number()) && data.getG_batch_type()==2){
+
+                System.out.println("一个身份证啊啊啊啊 一个 size   ");
+
+                bookingTypeTowhoVo.setPurchaseMode(EnumPurchaseMode.LineItem_every_traveler);
+
+                BookingSkuPojo.TravelerReq traveler = new BookingSkuPojo.TravelerReq();
+                traveler.setId_card(data.getId_number());
+                traveler.setName(data.getName());
+                traveler.setPhone(data.getMobile());
+                traveler.setIdType(data.getId_ntype() !=null?EnumIdType.valueof(data.getId_ntype()+""):null);
+
+                bookingTypeTowhoVo.setTraveler(Arrays.asList(traveler));
+            }
+
+            if(ObjectUtils.isNotEmpty(data.getId_number()) && data.getSize()>1){
+
+                System.out.println("一个身份证啊啊啊啊 多个SIZE  ");
+
+                bookingTypeTowhoVo.setPurchaseMode(EnumPurchaseMode.LineTime_one_traveler);
+
+                BookingSkuPojo.TravelerReq traveler = new BookingSkuPojo.TravelerReq();
+                traveler.setId_card(data.getId_number());
+                traveler.setName(data.getName());
+                traveler.setPhone(data.getMobile());
+                traveler.setIdType(data.getId_ntype() !=null?EnumIdType.valueof(data.getId_ntype()+""):null);
+
+                bookingTypeTowhoVo.setTraveler(Arrays.asList(traveler));
+            }
+        }
+
 
 
 
@@ -624,17 +674,23 @@ public class TsToLtServiceImpl {
 
 
 
-
+/*
         bookingTypeTowhoVo.setDeliveryFormat(EnumDeliveryFormats.虚拟卡);
 
 
         if(bookingTypeTowhoVo.getDeliveryFormat().equals(EnumDeliveryFormats.虚拟卡)){
 
-            if(data.getSize() != data.getPlayers().length){
-                throw new BookNotFoundException(Enumfailures.resource_not_found,"订单数量和 游客数量不想否");
+            if(data.getSize()==1){
 
+
+            }else{
+                if(data.getSize() != data.getPlayers().length){
+                    throw new BookNotFoundException(Enumfailures.resource_not_found,"订单数量和 游客数量不想否");
+
+                }
             }
-        }
+
+        }*/
 
 
         BookingSkuPojo bookingSkuPojo = new BookingSkuPojo();
@@ -685,8 +741,12 @@ public class TsToLtServiceImpl {
         LineItem lineItem = lineItems.get(0);
 
 
-        List<Fulfilled_item> fulfilled_items = fulfiiledItemRepository.findAllByBooking(reservation.getId());
-/*        if(lineItem.getFulfillment_behavior().equals(EnumFulfillment_behavior.Create_pass)){
+
+
+
+
+
+        /*        if(lineItem.getFulfillment_behavior().equals(EnumFulfillment_behavior.Create_pass)){
 
             Fulfilled_item. 有是个 fulfilled_item
         }*/
@@ -696,16 +756,15 @@ public class TsToLtServiceImpl {
 
         LtRespToTs下单接口.InfoDTO infoDTO = new LtRespToTs下单接口.InfoDTO();
         infoDTO.setId(reservation.getCode());  //第三方订单ID(非天时)   //必含
-        infoDTO.setIsSend(""); //是否发送' //必含
-        infoDTO.setCode(reservation.getCode()); //必含   //文字码(码号)【注:当是采购产品或审核发送的会异步返码,会通过码号推送接口推送至回调地址】
+        infoDTO.setIsSend("1"); //是否发送' //必含  及时返回码号is_send=1,否则为0
 
 
-        List<String> 码号_list = fulfilled_items.stream().map(e->e.getCode()).collect(Collectors.toList());
 
-        List<String> 码号_qrcode_list = 码号_list;
+        List<String> 码号_qrcode_list = fulfillService.findCodes(reservation);
+        infoDTO.setCode(码号_qrcode_list.get(0)); //必含   //文字码(码号)【注:当是采购产品或审核发送的会异步返码,会通过码号推送接口推送至回调地址】
 
 
-        infoDTO.setCodes(码号_list); //文字码(码号)组，一人一码的产品会有数据
+        infoDTO.setCodes(码号_qrcode_list); //文字码(码号)组，一人一码的产品会有数据
         infoDTO.setContent(reservation.getCode()); //发送内容
 
         LtRespToTs下单接口.InfoDTO.ParamsDTO paramsDTO = new  LtRespToTs下单接口.InfoDTO.ParamsDTO();

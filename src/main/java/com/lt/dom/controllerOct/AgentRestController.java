@@ -75,7 +75,7 @@ public class AgentRestController {
 
 
 /*
-    @GetMapping(value = "/agent/{SUPPLIER_ID}/agents/listThirdParty", produces = "application/json")
+    @GetMapping(value = "/agent/{SUPPLIER_ID}/agent_connections/listThirdParty", produces = "application/json")
     public EntityModel<Media> Page_listThirdParty(@PathVariable long SUPPLIER_ID ) {
 
 
@@ -143,7 +143,7 @@ public class AgentRestController {
 
         return assembler.toModel(bookingRuleList.map(e->{
 
-            AgentResp agentResp = AgentResp.from(e);
+            AgentConnectionResp agentResp = AgentConnectionResp.from(e);
 
   /*          LocationResp locationResp = new LocationResp();
             locationResp.setAddress("山西省榆阳区阜石路");
@@ -187,7 +187,7 @@ public class AgentRestController {
     }
 
 
-    @PostMapping(value = "/agents/{SUPPLIER_ID}/connect", produces = "application/json")
+    @PostMapping(value = "/agent_connections/{SUPPLIER_ID}/connect", produces = "application/json")
     public EntityModel<AgentConnection> connect(@PathVariable Long SUPPLIER_ID, @RequestBody @Valid AgentReq tripReq) {
 
         Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
@@ -216,10 +216,10 @@ public class AgentRestController {
 
     }
 
-    @PutMapping(value = "/agents/{Museum_ID}", produces = "application/json")
-    public EntityModel<AgentConnection> update(@PathVariable long Museum_ID , @RequestBody @Valid AgentEditReq.EditReq regionReq) {
+    @PutMapping(value = "/agent_connections/{AGENT_CONNECTION_ID}", produces = "application/json")
+    public EntityModel<AgentConnection> update(@PathVariable Long AGENT_CONNECTION_ID , @RequestBody @Valid AgentEditReq.EditReq regionReq) {
 
-        Optional<AgentConnection> supplierOptional = agentRepository.findById(Museum_ID);
+        Optional<AgentConnection> supplierOptional = agentRepository.findById(AGENT_CONNECTION_ID);
         if(supplierOptional.isEmpty()) {
             throw new BookNotFoundException("没有找到供应商","没找到");
         }
@@ -245,7 +245,7 @@ public class AgentRestController {
 
     }
 
-    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/agents/Page_createMuseum", produces = "application/json")
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/agent_connections/Page_createMuseum", produces = "application/json")
     public EntityModel<Museum> Page_createMuseum(@PathVariable long SUPPLIER_ID ) {
 
 
@@ -271,7 +271,7 @@ public class AgentRestController {
 
 
 
-    @GetMapping(value = "/agents/{Museum_ID}", produces = "application/json")
+    @GetMapping(value = "/agent_connections/{Museum_ID}", produces = "application/json")
     public EntityModel getThirdParty(@PathVariable long Museum_ID) {
 
         Optional<AgentConnection> validatorOptional = agentRepository.findById(Museum_ID);
@@ -283,7 +283,7 @@ public class AgentRestController {
 
 
         AgentConnection region = validatorOptional.get();
-        AgentResp thirdPartyResp = AgentResp.simpleFrom(region);
+        AgentConnectionResp thirdPartyResp = AgentConnectionResp.simpleFrom(region);
 
         thirdPartyResp.setProducts(region.getProducts().stream().map(e->{
 
@@ -319,10 +319,10 @@ public class AgentRestController {
 
 
 
-    @GetMapping(value = "/agents/{Museum_ID}/edit", produces = "application/json")
-    public EntityModel agentEdit(@PathVariable long Museum_ID) {
+    @GetMapping(value = "/agent_connections/{AGENT_CONNECTION_ID}/edit", produces = "application/json")
+    public EntityModel agentEdit(@PathVariable long AGENT_CONNECTION_ID) {
 
-        Optional<AgentConnection> validatorOptional = agentRepository.findById(Museum_ID);
+        Optional<AgentConnection> validatorOptional = agentRepository.findById(AGENT_CONNECTION_ID);
         if(validatorOptional.isEmpty()){
 
             throw new BookNotFoundException(Enumfailures.not_found,"找不到产品");
@@ -347,14 +347,14 @@ public class AgentRestController {
 
 
 
-        AgentResp agentResp = AgentResp.from(agentConnection);
+        AgentConnectionResp agentConnectionResp = AgentConnectionResp.from(agentConnection);
         Optional<Supplier> supplier = supplierRepository.findById(agentConnection.getAgent());
-        agentResp.setAgent(SupplierResp.simpleFrom(supplier.get()));
+        agentConnectionResp.setAgent(SupplierResp.simpleFrom(supplier.get()));
+        agentEditReq.setInfo(agentConnectionResp);
 
-        agentEditReq.setInfo(agentResp);
+
 
         List<Product> productList = productRepository.findAll();
-
         editReq.setParameterList(Map.of(
                 "identify_type_list",EnumIdentifiersType.List(),
                 "agent_bill_type_list",EnumAgentBilling.List(),
@@ -428,91 +428,8 @@ public class AgentRestController {
 
 
 
-/*
-
-    @PostMapping(value = "/agents/{SUPPLIER_ID}/exhibit", produces = "application/json")
-    public EntityModel<ExhibitionReq> createPlace(@PathVariable long SUPPLIER_ID , @RequestBody @Valid ExhibitionReq movieReq) {
-
-        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
-        if(supplierOptional.isEmpty()) {
-            throw new BookNotFoundException("没有找到供应商","没找到");
-        }
-
-        Supplier supplier = supplierOptional.get();
-
-
-
-
-        Exhibition place = thirdervice.createExhibit(supplier,movieReq);
-
-
-        EntityModel entityModel = EntityModel.of(place);
-
-        return entityModel;
-
-    }*/
-
-
-/*
-    @PostMapping(value = "/agents/{SUPPLIER_ID}/products", produces = "application/json")
-    public EntityModel<ThirdPartyProduct> createProduct(@PathVariable long SUPPLIER_ID , @RequestBody @Valid List<BusStopReq> movieReq) {
-
-        Optional<ThirdParty> supplierOptional = regionRepository.findById(SUPPLIER_ID);
-        if(supplierOptional.isEmpty()) {
-            throw new BookNotFoundException("没有找到供应商","没找到");
-        }
-
-        ThirdParty supplier = supplierOptional.get();
-
-
-        ThirdParty place = agentService.createThirdPartyProduct(supplier,movieReq);
-
-
-        EntityModel entityModel = EntityModel.of(place);
-
-        return entityModel;
-
-    }
-*/
-
-
-
-
-
-
-
-
-
-/*
-
-    @PostMapping(value = "/agents/{SUPPLIER_ID}/exhibit", produces = "application/json")
-    public EntityModel<ExhibitionReq> createPlace(@PathVariable long SUPPLIER_ID , @RequestBody @Valid CollectionItemReq movieReq) {
-
-        Optional<Supplier> supplierOptional = supplierRepository.findById(SUPPLIER_ID);
-        if(supplierOptional.isEmpty()) {
-            throw new BookNotFoundException("没有找到供应商","没找到");
-        }
-
-        Supplier supplier = supplierOptional.get();
-
-
-
-
-        Artwork place = thirdervice.createCollectionItem(supplier,movieReq);
-
-
-        EntityModel entityModel = EntityModel.of(place);
-
-        return entityModel;
-
-    }
-*/
-
-
-
-
     @Operation(summary = "4、删除Product对象")
-    @DeleteMapping(value = "/agents/{SUPPLIER_ID}/products/{Movie_ID}", produces = "application/json")
+    @DeleteMapping(value = "/agent_connections/{SUPPLIER_ID}/products/{Movie_ID}", produces = "application/json")
     public ResponseEntity<Void> delete(@PathVariable long SUPPLIER_ID , @PathVariable long Movie_ID) {
 
 
@@ -529,7 +446,7 @@ public class AgentRestController {
         return ResponseEntity.ok().build();
     }
     @Operation(summary = "4、删除Product对象")
-    @GetMapping(value = "/agents/{SUPPLIER_ID}/products/{Movie_ID}", produces = "application/json")
+    @GetMapping(value = "/agent_connections/{SUPPLIER_ID}/products/{Movie_ID}", produces = "application/json")
     public EntityModel get(@PathVariable long SUPPLIER_ID , @PathVariable long Movie_ID) {
 
 
@@ -550,7 +467,7 @@ public class AgentRestController {
 
 
 
-    @GetMapping(value = "/agents/{SUPPLIER_ID}/Page_listAgentProduct", produces = "application/json")
+    @GetMapping(value = "/agent_connections/{SUPPLIER_ID}/Page_listAgentProduct", produces = "application/json")
     public EntityModel<Media> Page_listAgentProduct(@PathVariable long SUPPLIER_ID ) {
 
 
@@ -577,7 +494,7 @@ public class AgentRestController {
     }
 
 
-    @GetMapping(value = "/agents/{AGENT_ID}/products", produces = "application/json")
+    @GetMapping(value = "/agent_connections/{AGENT_ID}/products", produces = "application/json")
     public PagedModel listProduct(@PathVariable long AGENT_ID ,
                                    @PageableDefault(sort = {"createdDate", "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable,
 
@@ -594,7 +511,7 @@ public class AgentRestController {
         AgentConnection region = validatorOptional.get();
 
 
-        Page<AgentProduct> bookingRuleList = agentProductRepository.findAllByAgent(region,pageable);
+        Page<AgentProduct> bookingRuleList = agentProductRepository.findAllByAgentConnection(region,pageable);
 
         return assembler.toModel(bookingRuleList.map(x->{
 
@@ -613,7 +530,7 @@ public class AgentRestController {
 
 
 
-    @GetMapping(value = "/agents/{AGENT_ID}/bookings", produces = "application/json")
+    @GetMapping(value = "/agent_connections/{AGENT_ID}/bookings", produces = "application/json")
     public PagedModel listBookings(@PathVariable long AGENT_ID ,
                                    @PageableDefault(sort = {"createdDate", "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable,
 
@@ -677,7 +594,7 @@ public class AgentRestController {
 
 
 
-    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/agents/Page_agent", produces = "application/json")
+    @GetMapping(value = "/suppliers/{SUPPLIER_ID}/agent_connections/Page_agent", produces = "application/json")
     public EntityModel<Museum> Page_agent(@PathVariable long SUPPLIER_ID ) {
 
 
@@ -701,7 +618,7 @@ public class AgentRestController {
 
     }
 
-    @GetMapping(value = "/agents/{SUPPLIER_ID}/connections", produces = "application/json")
+    @GetMapping(value = "/agent_connections/{SUPPLIER_ID}/connections", produces = "application/json")
     public PagedModel listConnection(@PathVariable Long SUPPLIER_ID,
 
                                 @PageableDefault(sort = {"createdDate", "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable,
@@ -721,7 +638,7 @@ public class AgentRestController {
 
         return assembler.toModel(bookingRuleList.map(e->{
 
-            AgentResp agentResp = AgentResp.from(e);
+            AgentConnectionResp agentResp = AgentConnectionResp.from(e);
 
 
             Optional<Supplier> supplierOptional1 = supplierRepository.findById(e.getSupplier());

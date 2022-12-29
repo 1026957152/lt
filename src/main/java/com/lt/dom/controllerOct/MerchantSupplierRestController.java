@@ -118,7 +118,7 @@ public class MerchantSupplierRestController {
 
             Optional<Supplier> supplierOptional1 = supplierRepository.findById(e.getSupplier());
 
-            AgentResp agentResp = AgentResp.toSupplier(e,supplierOptional1.get());
+            AgentConnectionResp agentResp = AgentConnectionResp.toSupplier(e,supplierOptional1.get());
 
 
             EntityModel entityModel = EntityModel.of(agentResp);
@@ -260,7 +260,7 @@ public class MerchantSupplierRestController {
 
 
         AgentConnection region = validatorOptional.get();
-        AgentResp thirdPartyResp = AgentResp.simpleFrom(region);
+        AgentConnectionResp thirdPartyResp = AgentConnectionResp.simpleFrom(region);
 
         thirdPartyResp.setProducts(region.getProducts().stream().map(e->{
 
@@ -315,7 +315,7 @@ public class MerchantSupplierRestController {
 
 
 
-        AgentResp agentResp = AgentResp.from(agentConnection);
+        AgentConnectionResp agentResp = AgentConnectionResp.from(agentConnection);
         Optional<Supplier> supplier = supplierRepository.findById(agentConnection.getAgent());
         agentResp.setAgent(SupplierResp.simpleFrom(supplier.get()));
 
@@ -469,7 +469,7 @@ public class MerchantSupplierRestController {
         AgentConnection region = validatorOptional.get();
 
 
-        Page<AgentProduct> bookingRuleList = agentProductRepository.findAllByAgent(region,pageable);
+        Page<AgentProduct> bookingRuleList = agentProductRepository.findAllByAgentConnection(region,pageable);
 
         return assembler.toModel(bookingRuleList.map(x->{
 
@@ -596,7 +596,7 @@ public class MerchantSupplierRestController {
 
         return assembler.toModel(bookingRuleList.map(e->{
 
-            AgentResp agentResp = AgentResp.from(e);
+            AgentConnectionResp agentResp = AgentConnectionResp.from(e);
 
 
             Optional<Supplier> supplierOptional1 = supplierRepository.findById(e.getSupplier());

@@ -12,6 +12,10 @@ public class LtReqTs验证核销通知 {
 
 
     public static class ToLtReqTs验证核销通知 {
+        @Override
+        public String toString() {
+            return ReflectionToStringBuilder.toString(this);
+        }
 
         private Integer amount;//:当前使用数量
         private Integer amount_used;//:累计使用数量(包含本次)

@@ -1,23 +1,21 @@
 package com.lt.dom.serviceOtc.product;
 
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.lt.dom.OctResp.ProductResp;
 import com.lt.dom.OctResp.RedemptionTryResp;
 import com.lt.dom.OctResp.RightRedemptionEntryResp;
+import com.lt.dom.OctResp.RightRedemptionSummaryRespV1;
 import com.lt.dom.config.LtConfig;
 import com.lt.dom.controllerOct.RedemptionRestController;
 import com.lt.dom.error.BookNotFoundException;
-import com.lt.dom.error.ExistException;
+import com.lt.dom.error.UnprocessableEntityException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.RedemBycodePojo;
 import com.lt.dom.otcReq.VoucherTicketResp;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
-import com.lt.dom.util.SecurityUtils;
 import com.lt.dom.vo.*;
-import org.hashids.Hashids;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
@@ -26,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -72,9 +69,16 @@ public class BusTicketServiceImpl {
 
     @Autowired
     private RedemptionServiceImpl redemptionService;
+    @Autowired
+    private VoucherServiceImpl voucherService;
+
 
     @Autowired
     private RightRedemptionEntryRepository rightRedemptionEntryRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
 
 
 
@@ -217,6 +221,11 @@ public class BusTicketServiceImpl {
                         logger.error("订单数量和 新建一个年卡 "+reservation.getPlatform());
                         compoentRightAssigtToTargeVo.setBooking(reservation);
 
+                        compoentRightAssigtToTargeVo.setBooking(reservation);
+                        compoentRightAssigtToTargeVo.setReferenceId(e.getId());
+                        compoentRightAssigtToTargeVo.setReferenceType(EnumRelatedObjectType.pass);
+                        compoentRightAssigtToTargeVo.setReference(e.getCode());
+
                         componentRightService.assingtoComponent(compoentRightAssigtToTargeVo,
                                 componentRightList.stream().map(ee->{
                                     Triplet<Component,LineItem,EnumComponentVoucherType> componentVounchLineItemPair =
@@ -328,22 +337,65 @@ public class BusTicketServiceImpl {
 
 
 
+    public EntityModel validate(VoucherTicket voucher, UserVo userVo) {
 
 
-    public EntityModel redeem(CodeWithLatLngVo code, Device device) {
-
-
-        logger.debug("验证 code:{}",code.getC());
-
-        if(!(code.getC().startsWith("tike_"))) {
-            if(!code.getC().startsWith("pass_")) {
-                return null;
-            }else{
-                return null;
-            }
-
+        if(!voucher.getType().equals(voucherType)){
+            return null;
         }
 
+
+        List<ComponentVounch> componentVounchList = validatorService.check(userVo.getUser_id(), userVo.getSupplier().getId(),voucher.getCode());
+
+
+
+        RedemptionTryResp resp = new RedemptionTryResp();
+        resp.setType_text(EnumRedeamptionType.VOUCHER.toString());
+
+
+        RedemptionTryResp.PhotoId photoId = new RedemptionTryResp.PhotoId();
+
+        photoId.setRealname(true);
+
+        photoId.setFaceImage(fileStorageService.loadDocumentWithDefault(EnumDocumentType.card_cover,voucher.getCode()));
+
+        photoId.setDateOfbirth("ddd");
+
+        photoId.setSelfie(fileStorageService.loadDocumentWithDefault(EnumDocumentType.card_cover,voucher.getCode()));
+
+        photoId.setDocument_front(fileStorageService.loadDocumentWithDefault(EnumDocumentType.card_cover,voucher.getCode()));
+
+        photoId.setName("ddd");
+
+        resp.setPhotoId(photoId);
+
+
+        componentRightService.sentEntries(voucher.getCode(), resp,componentVounchList);
+
+
+
+        EntityModel redemptionEntryEntityModel =  EntityModel.of(resp);
+
+
+        redemptionEntryEntityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchor(null)).withRel("redeemByCryptoCode"));
+        redemptionEntryEntityModel.add(linkTo(methodOn(RedemptionRestController.class).redeemVonchorByCryptoCode(null)).withRel("redeem"));
+
+        return redemptionEntryEntityModel;
+
+
+
+    }
+
+
+    public EntityModel redeem(VoucherTicket voucher, Device device) {
+
+
+        logger.debug("验证 code:{}",voucher.getCode());
+        if(!voucher.getType().equals(voucherType)){
+            return null;
+        }
+
+/*
 
         Optional<Pass> optionalVoucher = passRepository.findByCode(code.getC());
 
@@ -357,34 +409,27 @@ public class BusTicketServiceImpl {
                 }
             }
         }
-
-
-
-        if(code.getC().startsWith("pass_")) {
-
-            optionalVoucher = passRepository.findByCode(code.getC());
-
-        }
+*/
 
 
 
 
-
+/*
 
         if(optionalVoucher.isEmpty()) {
             throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到门票"+code.getC());
         }
-        Pass voucher =optionalVoucher.get();
+        Pass voucher =optionalVoucher.get();*/
 
 
-        if(voucher.getExpiringDate().isBefore(LocalDateTime.now())){
+  /*      if(voucher.getExpiringDate().isBefore(LocalDateTime.now())){
             throw new ExistException(Enumfailures.invalid_voucher,"该PASS已过期");
         }
+*/
 
-
-        if(!voucher.isActive()){
+/*        if(!voucher.isActive()){
             throw new BookNotFoundException(Enumfailures.voucher_not_active,"该PASS未激活");
-        }
+        }*/
 
         List<ComponentVounch> componentVounchList = validatorService.check(device.getId(),voucher.getCode() );
 
@@ -402,7 +447,8 @@ public class BusTicketServiceImpl {
 
         System.out.println("测试测试  "+componentVounchList.size());
         if(componentVounchList.size() == 0){
-            throw new BookNotFoundException(Enumfailures.not_found,"该券 已经 无 剩余可核销的 权益"+voucher.getCode());
+
+            throw new UnprocessableEntityException(Enumfailures.not_found,"该券 已经 无 剩余可核销的 权益"+voucher.getCode());
 
         }
 
@@ -411,23 +457,146 @@ public class BusTicketServiceImpl {
 
         verifier核销人员.setDevice(device);
 
-        Cardholder traveler用户 = cardholderRepository.findByPass(voucher).get();
+
+        RedemptionForObjectVo redemptionForObjectVo = new RedemptionForObjectVo();
+        redemptionForObjectVo.setRelatedObjectId(voucher.getId());
+        redemptionForObjectVo.setRelatedObjectType(EnumRelatedObjectType.voucher);
+        redemptionForObjectVo.setRelatedObjectCode(voucher.getCode());
+        redemptionForObjectVo.setRelatedObject_subType(voucher.getType().name());
+        redemptionForObjectVo.setLable(voucher.getLable());
+
+
+
+
+        Optional<RedemptionForCustomerVo> redemptionForCustomerVo = voucherService.Cardholder(voucher);
+
+
+
+        Pair<Redemption,List<RightRedemptionEntry>> redemptionListPair= redemptionService.redeemRight(redemptionForObjectVo,verifier核销人员,redemptionForCustomerVo,componentVounchList);
+
+        Redemption redemption = redemptionListPair.getValue0();
+        List<RightRedemptionEntry> redemptionEntryList = redemptionListPair.getValue1();
+
+        redemptionEntryList = rightRedemptionEntryRepository.saveAll(redemptionEntryList);
+
+
+
+
+        RightRedemptionSummaryRespV1 resp = new RightRedemptionSummaryRespV1();
+
+        resp.setEntries(redemptionEntryList.stream().map(e->{
+
+            RightRedemptionEntryResp rightRedemptionEntry = RightRedemptionEntryResp.from(e);
+
+            return rightRedemptionEntry;
+
+        }).collect(Collectors.toList()));
+       // resp.setTotal(redemptionEntryList.size());
+
+        resp.setValidatorChannel(verifier核销人员.getValidatorType().name());
+        resp.setValidatorCode(verifier核销人员.funGetValidatorCode());
+        resp.setCode(redemption.getCode());
+
+
+
+      //  MONEY, PERCENT or EXTERNALOFFER
+        resp.setValuetype(EnumDiscountVoucherCategory.UNIT);
+        resp.setCustomer(redemption);
+        resp.setRedeemedDateTime(redemption.getCreatedDate());
+
+        EntityModel redemptionEntryEntityModel =  EntityModel.of(resp);
+
+
+        return redemptionEntryEntityModel;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public EntityModel redeem(VoucherTicket voucher,  UserVo userVo) {
+
+
+
+
+        if(!voucher.getType().equals(voucherType)){
+            return null;
+        }
+
+
+
+
+/*
+        if(voucher.getExpiringDate().isBefore(LocalDateTime.now())){
+            throw new ExistException(Enumfailures.invalid_voucher,"该PASS已过期");
+        }
+
+
+        if(!voucher.isActive()){
+            throw new BookNotFoundException(Enumfailures.voucher_not_active,"该PASS未激活");
+        }*/
+
+
+
+
+
+        List<ComponentVounch> componentVounchList = validatorService.check(userVo.getUser_id(), userVo.getSupplier().getId(),voucher.getCode());
+
+/*        componentVounchList =  componentVounchList.stream()
+                .filter(e->!(e.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed)))
+                .map(e->{
+                    System.out.println("存在的"+e.toString());
+                    return e;
+                })
+                //       .filter(e->triplet来自设备.contains(e.getComponentRight()))
+                .collect(Collectors.toList());
+
+
+        System.out.println("测试测试  "+componentVounchList.size());
+        if(componentVounchList.size() == 0){
+            throw new BookNotFoundException(Enumfailures.not_found,"该券 已经 无 剩余可核销的 权益"+voucher.getCode());
+
+        }*/
+
+
+        User user_核销员 =userRepository.findById(userVo.getUser_id()).get(); //TODO  票务员
+
+        ValidatedByTypeVo verifier核销人员 = new ValidatedByTypeVo();
+        verifier核销人员.setValidatorType(EnumValidatorType.特定的人员);
+
+        verifier核销人员.setUser(user_核销员);
+
 
         RedemptionForObjectVo redemptionForObjectVo = new RedemptionForObjectVo();
         redemptionForObjectVo.setRelatedObjectId(voucher.getId());
         redemptionForObjectVo.setRelatedObjectType(EnumRelatedObjectType.pass);
         redemptionForObjectVo.setRelatedObjectCode(voucher.getCode());
         redemptionForObjectVo.setRelatedObject_subType(voucher.getType().name());
-        redemptionForObjectVo.setLable(voucher.getLabel());
+        redemptionForObjectVo.setLable(voucher.getLable());
 
-        RedemptionForCustomerVo redemptionForCustomerVo = new RedemptionForCustomerVo();
-
-        redemptionForCustomerVo.setId(traveler用户.getId());
-        redemptionForCustomerVo.setRealName(traveler用户.getName());
-        redemptionForCustomerVo.setCode(traveler用户.getCode());
+        Optional<RedemptionForCustomerVo> redemptionForCustomerVo = voucherService.Cardholder(voucher);
 
 
-        List<RightRedemptionEntry> redemptionEntryList = redemptionService.redeemRight(redemptionForObjectVo,verifier核销人员,redemptionForCustomerVo,componentVounchList);
+
+
+        Pair<Redemption,List<RightRedemptionEntry>> redemptionListPair= redemptionService.redeemRight(redemptionForObjectVo,verifier核销人员,redemptionForCustomerVo,componentVounchList);
+
+
+        Redemption redemption = redemptionListPair.getValue0();
+        List<RightRedemptionEntry> redemptionEntryList = redemptionListPair.getValue1();
 
         redemptionEntryList = rightRedemptionEntryRepository.saveAll(redemptionEntryList);
 
@@ -444,7 +613,7 @@ public class BusTicketServiceImpl {
 
                     return rightRedemptionEntry;
 
-        }).collect(Collectors.toList())));
+                }).collect(Collectors.toList())));
 
 
         return redemptionEntryEntityModel;
@@ -452,5 +621,4 @@ public class BusTicketServiceImpl {
 
 
     }
-
 }

@@ -7,6 +7,7 @@ import com.lt.dom.otcReq.CompaignPojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.util.CodeConfig;
+import com.lt.dom.vo.RedemptionForCustomerVo;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,10 @@ public class VoucherServiceImpl {
     private CampaignRepository campaignRepository;
     @Autowired
     private VoucherTicketRepository voucherTicketRepository;
+    @Autowired
+    private CardholderRepository cardholderRepository;
+
+
 
     @Autowired
     private VoucherRepository voucherRepository;
@@ -47,22 +52,6 @@ public class VoucherServiceImpl {
     private AssetServiceImpl assetService;
 
 
-
-    @Autowired
-    private ComponentRepository componentRepository;
-
-
-    @Autowired
-    private AttractionRepository attractionRepository;
-
-
-    @Autowired
-    private ProductServiceImpl productService;
-
-
-
-    @Autowired
-    private ComponentRightServiceImpl componentRightService;
 
 
 
@@ -255,4 +244,50 @@ public class VoucherServiceImpl {
         return vouchers;
     }
 
+    public Optional<RedemptionForCustomerVo> Cardholder(VoucherTicket voucher) {
+
+        if(voucher.getRealnameHolder()== null){
+            return Optional.empty();
+        }
+        Optional<Cardholder> cardholderOptional = cardholderRepository.findById(voucher.getRealnameHolder());
+
+        if(cardholderOptional.isEmpty()) {
+
+            return Optional.empty();
+        }
+            Cardholder traveler用户 = cardholderOptional.get();
+
+            RedemptionForCustomerVo redemptionForCustomerVo = new RedemptionForCustomerVo();
+            redemptionForCustomerVo.setId(traveler用户.getId());
+            redemptionForCustomerVo.setRealName(traveler用户.getName());
+            redemptionForCustomerVo.setCode(traveler用户.getCode());
+
+            return Optional.of(redemptionForCustomerVo);
+
+
+    }
+
+    public Optional<RedemptionForCustomerVo> Cardholder(Long voucher) {
+
+
+        if(voucher== null){
+            return Optional.empty();
+        }
+        Optional<Cardholder> cardholderOptional = cardholderRepository.findById(voucher);
+
+        if(cardholderOptional.isEmpty()) {
+
+            return Optional.empty();
+        }
+        Cardholder traveler用户 = cardholderOptional.get();
+
+        RedemptionForCustomerVo redemptionForCustomerVo = new RedemptionForCustomerVo();
+        redemptionForCustomerVo.setId(traveler用户.getId());
+        redemptionForCustomerVo.setRealName(traveler用户.getName());
+        redemptionForCustomerVo.setCode(traveler用户.getCode());
+
+        return Optional.of(redemptionForCustomerVo);
+
+
+    }
 }

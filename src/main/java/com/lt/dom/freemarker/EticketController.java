@@ -11,10 +11,7 @@ import com.lt.dom.otcenum.EnumComponentVoucherType;
 import com.lt.dom.otcenum.EnumDeliveryFormat;
 import com.lt.dom.otcenum.EnumDocumentType;
 import com.lt.dom.otcenum.EnumRelatedObjectType;
-import com.lt.dom.repository.ComponentRightRepository;
-import com.lt.dom.repository.ComponentVounchRepository;
-import com.lt.dom.repository.RightRedemptionEntryRepository;
-import com.lt.dom.repository.VoucherTicketRepository;
+import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.AssetServiceImpl;
 import com.lt.dom.serviceOtc.CryptoServiceImpl;
 import com.lt.dom.serviceOtc.FileStorageServiceImpl;
@@ -78,8 +75,8 @@ public class EticketController {
     QrcodeServiceImpl qrcodeService;
     @Autowired
     CryptoServiceImpl cryptoService;
-
-
+    @Autowired
+    private CardholderRepository cardholderRepository;
 
 
     @GetMapping(value = "/v/{VOUCHER_ID}")
@@ -114,6 +111,7 @@ public class EticketController {
             return componentResp;
         }).collect(Collectors.toList()));
 
+        Optional<Cardholder> cardholder = cardholderRepository.findById(voucherTicket.getRealnameHolder());
 
         List<RightRedemptionEntry> redemptionEntryList =
                 rightRedemptionEntryRepository.findAllByRelatedObjectTypeAndRelatedObjectId(EnumRelatedObjectType.voucher, voucherTicket.getId());
@@ -121,6 +119,7 @@ public class EticketController {
 
         VoucherTicketResp.Redemption redemption = new VoucherTicketResp.Redemption();
 
+        voucherTicketResp.setHolder(cardholder);
 
         redemption.setRedemption_entries(redemptionEntryList.stream().map(e -> {
 
@@ -147,13 +146,10 @@ public class EticketController {
         attractionTicketService.ticketShow(voucherTicketResp, voucherTicket);
 
 
-        Asset asset = assetService.getWithNew(voucherTicket.getCode(), voucherTicket.getId());
-
-
         VoucherTicketResp.DeliveryOption deliveryOption1 = new VoucherTicketResp.DeliveryOption();
         deliveryOption1.setDeliveryFormat(EnumDeliveryFormat.QRCODE);
-        deliveryOption1.setDeliveryValue(asset.getIdId());
-        deliveryOption1.setCode_base64(ZxingBarcodeGenerator.base64_png_src(asset.getIdId()));
+        deliveryOption1.setDeliveryValue(voucherTicket.getCode());
+        deliveryOption1.setCode_base64(ZxingBarcodeGenerator.base64_png_src(voucherTicket.getCode()));
         voucherTicketResp.setDeliveryOption(deliveryOption1);
 
 

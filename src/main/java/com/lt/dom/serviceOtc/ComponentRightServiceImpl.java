@@ -295,7 +295,7 @@ public class ComponentRightServiceImpl {
             redemptionForCustomerVo.setRealName(traveler用户.getRealName());
             redemptionForCustomerVo.setCode(traveler用户.getCode());
 
-            return redemptionService.redeemRightForeach(new Redemption(),x.getValue0(),redemptionForCustomerVo,x.getValue2());
+            return redemptionService.redeemRightForeach(new Redemption(),x.getValue0(),Optional.of(redemptionForCustomerVo),x.getValue2());
         }).collect(Collectors.toList());
 
         redemptionEntryList = rightRedemptionEntryRepository.saveAll(redemptionEntryList);
@@ -505,10 +505,10 @@ public class ComponentRightServiceImpl {
         component.setProduct(product.getId());
         component.setOriginalProduct(product.getId());
         component.setSupplier(burdle.getSupplierId());
-        component.setAgent(product.getSupplierId());
+        component.setAgent(royalties.getAgentProduct().getAgent().getSupplier());
         component.setSource(EnumProductComponentSource.partner);
         component.setValidate_way(EnumValidateWay.none);
-
+        component.setAgentProductCode(royalties.getAgentProduct().getCode());
         component.setType(EnumComponentVoucherType.Burdle);
 
         component.setComponentRight(0);
@@ -777,7 +777,6 @@ public class ComponentRightServiceImpl {
 
                     ;
 
-                    redemptionEntryResp.setRedeem_voucher_key_crypt(cryptoService.encode(e.getRedeem_voucher_key()));
 
 
                     //redemptionEntryResp.setRedeem_voucher_key(e.getRedeem_voucher_key());
@@ -790,7 +789,14 @@ public class ComponentRightServiceImpl {
                     redemptionEntryResp.setTryRedeem(e.getTry_());
 
 
+
                     redemptionEntryResp.setCheck_in(redemptionEntryResp.getRemaining() >= e.getTry_());
+
+                    if(redemptionEntryResp.isCheck_in()){
+                        redemptionEntryResp.setRedeem_voucher_key_crypt(cryptoService.encode(e.getRedeem_voucher_key()));
+
+                    }
+
                     return redemptionEntryResp;
 
                 })
@@ -807,6 +813,6 @@ public class ComponentRightServiceImpl {
 
 
 
-        resp.setCrypto_code(cryptoService.encode(code));
+        resp.setCrypto_code(cryptoService.decorated_encode(code));
     }
 }

@@ -68,6 +68,9 @@ public class Fulfilled_item extends Base {
             cascade = CascadeType.ALL)
     private List<Traveler> travelers;
     private EnumFulfillmentInstructionsType fulfillmentInstructionsType;
+    private Long relatedObjectId;
+    private EnumRelatedObjectType relatedObjectType;
+    private String relatedObjectCode;
 
     public EnumDeliveryFormats getDeliveryFormats() {
         return deliveryFormats;
@@ -362,5 +365,30 @@ public class Fulfilled_item extends Base {
 
     public EnumFulfillmentInstructionsType getFulfillmentInstructionsType() {
         return fulfillmentInstructionsType;
+    }
+
+    public void setRelatedObjectId(Long relatedObjectId) {
+
+        this.relatedObjectId = relatedObjectId;
+    }
+
+    public Long getRelatedObjectId() {
+        return relatedObjectId;
+    }
+
+    public void setRelatedObjectType(EnumRelatedObjectType relatedObjectType) {
+        this.relatedObjectType = relatedObjectType;
+    }
+
+    public EnumRelatedObjectType getRelatedObjectType() {
+        return relatedObjectType;
+    }
+
+    public void setRelatedObjectCode(String relatedObjectCode) {
+        this.relatedObjectCode = relatedObjectCode;
+    }
+
+    public String getRelatedObjectCode() {
+        return relatedObjectCode;
     }
 }

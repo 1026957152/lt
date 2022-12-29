@@ -19,4 +19,6 @@ public interface VoucherTicketRepository extends JpaRepository<VoucherTicket
     List<VoucherTicket> findAllByBooking(Long id);
 
     Optional<VoucherTicket> findByRelateId(Long id);
+
+    List<VoucherTicket> findAllByUser(Long id);
 }

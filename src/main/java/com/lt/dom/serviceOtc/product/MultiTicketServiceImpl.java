@@ -2,14 +2,12 @@ package com.lt.dom.serviceOtc.product;
 
 
 import com.lt.dom.OctResp.*;
-import com.lt.dom.config.LtConfig;
 import com.lt.dom.controllerOct.BookingRestController;
 import com.lt.dom.controllerOct.RedemptionRestController;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.LocationResp;
-import com.lt.dom.otcReq.RedemBycodePojo;
 import com.lt.dom.otcReq.VoucherTicketResp;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
@@ -66,7 +64,8 @@ public class MultiTicketServiceImpl {
 
     @Autowired
     private RightRedemptionEntryRepository rightRedemptionEntryRepository;
-
+    @Autowired
+    private VoucherServiceImpl voucherService;
     @Autowired
     private RedemptionServiceImpl redemptionService;
 
@@ -346,23 +345,13 @@ public class MultiTicketServiceImpl {
 
     }
 
-    public EntityModel validate(RedemBycodePojo.Code code, UserVo userVo) {
+    public EntityModel validate(VoucherTicket voucher, UserVo userVo) {
 
 
-
-        if(!code.getCode().startsWith("tike")) {
-
+        if(!voucher.getType().equals(voucherType)){
             return null;
         }
-            Optional<VoucherTicket> optionalVoucher = voucherTicketRepository.findByCode(code.getCode());
 
-
-            if(optionalVoucher.isEmpty()) {
-                throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到门票"+code.getCode());
-
-
-            }
-            VoucherTicket voucher =optionalVoucher.get();
             if(!voucher.isActive()){
                 throw new BookNotFoundException(Enumfailures.voucher_not_active,"该券状态不活跃");
             }
@@ -545,12 +534,14 @@ public class MultiTicketServiceImpl {
         redemptionForObjectVo.setRelatedObject_subType(voucher.getLable());
 
 
-        RedemptionForCustomerVo redemptionForCustomerVo = new RedemptionForCustomerVo();
-        redemptionForCustomerVo.setId(traveler用户.getId());
-        redemptionForCustomerVo.setRealName(traveler用户.getRealName());
-        redemptionForCustomerVo.setCode(traveler用户.getCode());
+        Optional<RedemptionForCustomerVo> redemptionForCustomerVo = voucherService.Cardholder(voucher);
 
-        List<RightRedemptionEntry> redemptionEntryList = redemptionService.redeemRight(redemptionForObjectVo,verifier核销人员,redemptionForCustomerVo,componentVounchList);
+
+
+        Pair<Redemption,List<RightRedemptionEntry>> redemptionListPair= redemptionService.redeemRight(redemptionForObjectVo,verifier核销人员,redemptionForCustomerVo,componentVounchList);
+
+        Redemption redemption = redemptionListPair.getValue0();
+        List<RightRedemptionEntry> redemptionEntryList = redemptionListPair.getValue1();
 
         redemptionEntryList = rightRedemptionEntryRepository.saveAll(redemptionEntryList);
 
@@ -562,7 +553,7 @@ public class MultiTicketServiceImpl {
         if(component_for_update_voucher
                 .stream().filter(e->e.getStatus().equals(EnumComponentVoucherStatus.PartialyRedeemed))
                 .findAny().isPresent()){
-            voucher.setStatus(EnumVoucherStatus.PartialyRedeemed);
+            voucher.setStatus(EnumVoucherStatus.PartiallyRedeemed);
         };
         if(component_for_update_voucher
                 .stream().filter(e->!e.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed))

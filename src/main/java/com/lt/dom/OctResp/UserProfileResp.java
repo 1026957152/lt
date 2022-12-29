@@ -51,6 +51,7 @@ public class UserProfileResp extends BaseResp {
     private EntityModel supplier;
     private String real_name;
     private Map parameterList;
+    private String code_base64_src;
 
     public Map getParameterList() {
         return parameterList;
@@ -204,9 +205,13 @@ public class UserProfileResp extends BaseResp {
         return userResp;
     }
 
+    public void setCode_base64_src(String code_base64_src) {
+        this.code_base64_src = code_base64_src;
+    }
 
-
-
+    public String getCode_base64_src() {
+        return code_base64_src;
+    }
 
 
     public static class PreferenceSpaceEdit {

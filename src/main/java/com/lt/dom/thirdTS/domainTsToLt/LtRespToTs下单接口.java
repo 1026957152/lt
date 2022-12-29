@@ -3,14 +3,18 @@ package com.lt.dom.thirdTS.domainTsToLt;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import java.util.List;
 
 @NoArgsConstructor
-@Data
+
 public class LtRespToTs下单接口 {
 
-
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
+    }
     @JsonProperty("info")
     private InfoDTO info;
     @JsonProperty("message")
@@ -21,6 +25,10 @@ public class LtRespToTs下单接口 {
     @NoArgsConstructor
     @Data
     public static class InfoDTO {
+        @Override
+        public String toString() {
+            return ReflectionToStringBuilder.toString(this);
+        }
         @JsonProperty("id")
         private String id;
         @JsonProperty("is_send")
@@ -43,6 +51,11 @@ public class LtRespToTs下单接口 {
         @NoArgsConstructor
         @Data
         public static class ParamsDTO {
+
+            @Override
+            public String toString() {
+                return ReflectionToStringBuilder.toString(this);
+            }
             @JsonProperty("is_real_code")
             private Integer isRealCode;
             @JsonProperty("qrcode_images")

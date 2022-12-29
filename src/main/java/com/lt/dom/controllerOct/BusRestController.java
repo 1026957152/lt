@@ -432,6 +432,9 @@ public class BusRestController {
             productResp.setDefault_sku(PricingTypeResp.sku_simple(pricingRate_default));
             EntityModel<ProductResp> entityModel = EntityModel.of(productResp);
             entityModel.add(linkTo(methodOn(ProductRestController.class).getProduct(e.getId())).withSelfRel());
+            entityModel.add(linkTo(methodOn(BookingRestController.class).quickPayment(pricingRate_default.getId(),null)).withRel("quick_pay"));
+
+
 
             return entityModel;
         }).collect(Collectors.toList());

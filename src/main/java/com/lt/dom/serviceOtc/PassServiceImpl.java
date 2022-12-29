@@ -574,7 +574,7 @@ public Pass active(Pass pass, PassActivePojo wxlinkUserReq) {
             }
             VoucherTicket voucherTicket = voucherTicketOptional.get();
 
-            String encodedString = cryptoService.encode(voucherTicket.getCode());
+            String encodedString = cryptoService.decorated_encode(voucherTicket.getCode());
 
  /*           redemptionEntryResp.setRedeem_voucher_key_crypt_encode(probuff);
             redemptionEntryResp.setRedeem_voucher_key_crypt_encode_withoutPadding(encodedString);

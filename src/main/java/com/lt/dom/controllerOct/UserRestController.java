@@ -61,6 +61,8 @@ public class UserRestController {
     @Autowired
     private UserAuthorityServiceImpl userAuthorityService;
 
+    @Autowired
+    private CryptoServiceImpl cryptoService;
 
 
     @Autowired
@@ -153,7 +155,7 @@ public class UserRestController {
 
 
 
-            entityModel.add(linkTo(methodOn(LoginController.class).Page_smsLogin(openid.getOpenid())).withRel("Page_phoneLogin"));
+            entityModel.add(linkTo(methodOn(LoginController.class).Page_smsLogin_miniapp_channel(openid.getOpenid())).withRel("Page_phoneLogin"));
 
 
 
@@ -256,9 +258,6 @@ public class UserRestController {
 
 
 
-/*        User user = new User();
-        user.setPhone(phone);
-        Example<User> example = Example.of(user);*/
 
         Optional<User> optionalUser = userRepository.findById(USER_ID);
 
@@ -302,6 +301,8 @@ public class UserRestController {
 
 
 
+
+
         Optional<Openid>  optionalOpenid = userAuthorityService.checkWeixinBind(user);
 
 
@@ -338,13 +339,44 @@ public class UserRestController {
             work_space_list = Arrays.asList(EnumPreferenceSpace.default_);
         }
 
+
+
+        entityModel.add(linkTo(methodOn(UserRestController.class).dynamic_user_code(user.getId())).withRel("dynamic_user_code"));
+
+
         return ResponseEntity.ok(entityModel);
 
 
     }
 
 
-    @GetMapping(value = "/supplier/{SUPPLIER_ID}/profile",produces = "application/json")
+
+
+    @GetMapping(value = "/users/{USER_ID}/dynamic_user_code",produces = "application/json")
+    public EntityModel dynamic_user_code(@PathVariable long  USER_ID) {
+
+        Optional<User> optionalUser = userRepository.findById(USER_ID);
+
+        if(optionalUser.isEmpty()) {
+            throw new BookNotFoundException(USER_ID,User.class.getSimpleName());
+
+        }
+        User user = optionalUser.get();
+
+        String crytp = cryptoService.encode_png_base64(user.getCode());
+
+        String auth_code = CryptoServiceImpl.encode(user.getCode());
+
+        Map mpas =  Map.of("code_base64_src",crytp,
+                "auth_code",auth_code);
+
+        return EntityModel.of(mpas);
+    }
+
+
+
+
+        @GetMapping(value = "/supplier/{SUPPLIER_ID}/profile",produces = "application/json")
     public ResponseEntity<EntityModel> getSupplier(@PathVariable long  SUPPLIER_ID) {
 
 /*        User user = new User();

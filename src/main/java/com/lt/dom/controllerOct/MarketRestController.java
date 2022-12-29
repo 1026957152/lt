@@ -626,6 +626,12 @@ public class MarketRestController {
 
       Optional<AgentConnection> optionalAgentConnection =  agentConnections.stream().filter(e->e.getSupplier().equals(userVo.getSupplier())).findAny();
 
+
+
+
+
+
+
         ChannelResp channelResp = new ChannelResp();
         channelResp.setName("1#");
         channelResp.setDesc_short("普通通道");
@@ -634,10 +640,15 @@ public class MarketRestController {
         if(optionalAgentConnection.isEmpty()){
             channelResp.setStatus(EnumAgentConnetionStatus.NotConnected);
             entityModel_channelResp.add(linkTo(methodOn(AgentRestController.class).createAgent(supplier.getId(),null)).withRel("createConnect"));
-
         }else{
             channelResp.setStatus(EnumAgentConnetionStatus.Connected);
         }
+
+
+
+
+
+
 
 
 

@@ -5,6 +5,7 @@ public final class Constants {
     public static final String WX_OPEN_REDIRECT_URL = "";
     public static final String WEB_SOCKET_URL = "ws://10.0.0.41:8080/position/socket";
     public static final String WEB_SOCKET_BUS_TOPIC = "/topic/notification";
+    public static final String QRCODE_DECORATED = "lt01";
 
 
     static final double GOLDEN_RATIO = 1.6180;

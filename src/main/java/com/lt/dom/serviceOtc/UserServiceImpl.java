@@ -43,6 +43,10 @@ public class UserServiceImpl {
     private RoleRepository roleRepository;
 
     @Autowired
+    private UserAuthorityServiceImpl userAuthorityService;
+
+
+    @Autowired
     private UserRepository userRepository;
     @Autowired
     private IdGenServiceImpl idGenService;
@@ -55,53 +59,6 @@ public class UserServiceImpl {
     @Autowired
     private AssetServiceImpl assetService;
 
-
-
-    public User userAuth(User finalUser, List<Pair<EnumIdentityType,String>> enumIdentityTypes) {
-
-
-        enumIdentityTypes = enumIdentityTypes.stream().filter(e->{
-            Optional<UserAuthority> userAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(e.getValue0(),e.getValue1());
-
-            return userAuthority.isEmpty();
-
-        }).collect(Collectors.toList());
-
-        enumIdentityTypes.forEach(x->{
-            UserAuthority userAuthority = new UserAuthority();
-            userAuthority.setUserId(finalUser.getId());
-
-
-            EnumIdentityType type = x.getValue0();
-            String identifier = x.getValue1();
-            userAuthority.setIdentityType(type);
-            switch (type){
-                case phone:
-                    userAuthority.setIdentifier(identifier);
-                    userAuthority.setCredential(passwordEncoder.encode("123"));
-
-                    userAuthorityRepository.save(userAuthority);
-                    break;
-                case weixin:
-                    userAuthority.setIdentifier(identifier);
-                    userAuthority.setCredential(passwordEncoder.encode("123"));
-
-                    userAuthorityRepository.save(userAuthority);
-                    break;
-                case identity_card:
-                    userAuthority.setIdentifier(identifier);
-                    userAuthority.setCredential(passwordEncoder.encode("123"));
-
-                    userAuthorityRepository.save(userAuthority);
-                    break;
-            }
-
-
-
-        });
-
-        return finalUser;
-    }
 
 
 
@@ -141,7 +98,7 @@ public class UserServiceImpl {
         user = userRepository.save(user);
 
 
-        user = userAuth(user,enumIdentityTypes);
+        user = userAuthorityService.userAuth(user,enumIdentityTypes);
 
 
         assetService.getWithNew(user);
@@ -165,6 +122,7 @@ public class UserServiceImpl {
     }
 
     public User createRoleIfNotFound(User user, List<String> name) {
+
 
         List<Role> role = roleRepository.findByNameIn(name);
         if (role.size()> 0 && role.size() == name.size()) {
@@ -192,6 +150,17 @@ public class UserServiceImpl {
         return optionalUser;
     }
 
+
+    public void verifyPhone(User user,String phone) {
+
+
+
+        user.setPhoneVerifid(true);
+            user.setPhone(phone);
+            userRepository.save(user);
+
+
+    }
 
     public void verifyPhone(VerificationToken verificationToken____) {
         Optional<User> optionalUser = userRepository.findByCode(verificationToken____.getUserCode());

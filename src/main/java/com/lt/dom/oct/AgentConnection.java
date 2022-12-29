@@ -1,5 +1,6 @@
 package com.lt.dom.oct;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.lt.dom.OctResp.EnumLongIdResp;
 import com.lt.dom.domain.SettleAccount;
 import com.lt.dom.otcenum.EnumAgentBilling;
@@ -18,6 +19,8 @@ public class AgentConnection extends Base {
 
 
 
+
+    @JsonBackReference
     @OneToMany(mappedBy= "agentConnection",
             cascade = CascadeType.ALL)  // orphanRemoval = true
     private List<AgentProduct> products;

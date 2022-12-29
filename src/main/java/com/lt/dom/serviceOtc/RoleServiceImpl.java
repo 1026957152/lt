@@ -31,7 +31,10 @@ public class RoleServiceImpl {
 
 
         System.out.println("查看具有的权限"+supplier.getBusiness_type());
-        if(supplier.getBusiness_type().equals(EnumBussinessType.government_entity)){
+
+      return Arrays.asList(EnumRole.values());
+
+   /*     if(supplier.getBusiness_type().equals(EnumBussinessType.government_entity)){
             return Arrays.asList();
         }
         if(supplier.getBusiness_type().equals(EnumBussinessType.company)){
@@ -65,7 +68,7 @@ public class RoleServiceImpl {
 
 
 
-        throw new BookNotFoundException("未知的机构 类型，找不到相关的 权限列表","");
+        throw new BookNotFoundException("未知的机构 类型，找不到相关的 权限列表","");*/
     }
 
 

@@ -26,7 +26,15 @@ public class VoucherTicket extends Base{
     @Enumerated(EnumType.STRING)
     private EnumVoucherStatus status;
     private long publishTo;
+    private Boolean partiallyRedeemable;
 
+    public Boolean getPartiallyRedeemable() {
+        return partiallyRedeemable;
+    }
+
+    public void setPartiallyRedeemable(Boolean partiallyRedeemable) {
+        this.partiallyRedeemable = partiallyRedeemable;
+    }
 
     @Enumerated(EnumType.STRING)
     private EnumDuration duration;
@@ -36,6 +44,7 @@ public class VoucherTicket extends Base{
     private String lable;
     private String data_json;
     private Long bookingLine;
+    private Long realnameHolder;
 
     public void setData_json(String data_json) {
         this.data_json = data_json;
@@ -51,6 +60,14 @@ public class VoucherTicket extends Base{
 
     public void setBookingLine(Long bookingLine) {
         this.bookingLine = bookingLine;
+    }
+
+    public Long getRealnameHolder() {
+        return realnameHolder;
+    }
+
+    public void setRealnameHolder(Long realnameHolder) {
+        this.realnameHolder = realnameHolder;
     }
 
     public static class Showtime {
@@ -318,11 +335,11 @@ public class VoucherTicket extends Base{
 
 
 
-    public void setRelateId(long relateId) {
+    public void setRelateId(Long relateId) {
         this.relateId = relateId;
     }
 
-    public long getRelateId() {
+    public Long getRelateId() {
         return relateId;
     }
 

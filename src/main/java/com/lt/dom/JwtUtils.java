@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.google.gson.Gson;
 import com.lt.dom.error.TokenRefreshException;
+import com.lt.dom.otcenum.EnumIdentityType;
 import com.lt.dom.vo.CustomUserDetails;
 import com.lt.dom.vo.LogVo;
 import org.slf4j.Logger;
@@ -30,11 +31,14 @@ public class JwtUtils {
 
 	public String generateJwtToken(int i, Authentication authentication) {
 		CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
+
+		userPrincipal.getUserAuthority().getIdentityType();
+
 		Gson gson = new Gson();
 
 
 		return Jwts.builder()
-				.setSubject(gson.toJson(new LogVo(i,userPrincipal.getUsername())))
+				.setSubject(gson.toJson(new LogVo(userPrincipal.getUserAuthority().getIdentityType(),userPrincipal.getUsername())))
 				.setIssuedAt(new Date())
 				.setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
 				.signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -52,7 +56,7 @@ public class JwtUtils {
 				.signWith(SignatureAlgorithm.HS512, jwtSecret)
 				.compact();
 	}
-	public String generateJwtToken(int i, String name) {
+	public String generateJwtToken(EnumIdentityType i, String name) {
 		Gson gson = new Gson();
 
 

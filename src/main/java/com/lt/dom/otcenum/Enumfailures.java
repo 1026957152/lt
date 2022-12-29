@@ -136,8 +136,10 @@ public enum Enumfailures {
 
 
 
-
-
+    api_error(1,"General error."),//API errors cover any other type of problem (e.g., a temporary problem with Stripe's servers), and are extremely uncommon.
+    card_error(1,"General error."),//        card_error	Card errors are the most common type of error you should expect to handle. They result when the user enters a card that can't be charged for some reason.
+    idempotency_error(1,"General error."),//        idempotency_error	Idempotency errors occur when an Idempotency-Key is re-used on a request that does not match the first request's API endpoint and parameters.
+    invalid_request_error(1,"General error."),//        invalid_request_error
 
 
 

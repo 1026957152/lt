@@ -7,7 +7,6 @@ import com.lt.dom.oct.VerificationToken;
 import com.lt.dom.otcenum.EnumSmsVerificationType;
 import com.lt.dom.vo.UserVo;
 
-import javax.transaction.Transactional;
 import java.util.Optional;
 
 public interface IUserService {
@@ -31,11 +30,27 @@ public interface IUserService {
 
     Optional<VerificationToken> getByUuid(String id);
 
-    VerificationToken verified(VerificationToken verificationToken1);
+    VerificationToken verified_change(VerificationToken verificationToken1);
 
     VerificationToken retry(VerificationToken verificationToken);
 
-    VerificationToken verified(Openid openid, VerificationToken verificationToken1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    VerificationToken verified_miniap(Openid openid, VerificationToken verificationToken1);
 
 
     UserAuthority verified_pc( VerificationToken verificationToken1);

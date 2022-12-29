@@ -2,6 +2,7 @@ package com.lt.dom.controllerOct;
 
 //https://blog.csdn.net/Dawn____Dawn/article/details/118080415
 
+import cn.hutool.core.lang.Validator;
 import com.google.gson.Gson;
 import com.lt.dom.JwtUtils;
 import com.lt.dom.OctResp.UserResp;
@@ -156,7 +157,7 @@ public class LoginController {
                             throw new BookNotFoundException(Enumfailures.resource_not_found,"验证错误");
 
                         }
-                            VerificationToken verificationToken____ = service.verified(verificationToken1);
+                            VerificationToken verificationToken____ = service.verified_change(verificationToken1);
 
 
                         VerifyPhoneResp verifyPhoneResp = new VerifyPhoneResp();
@@ -278,7 +279,7 @@ public class LoginController {
 
 
     @GetMapping(value = "/openid/{OPEN_ID}/Page_smsLogin", produces = "application/json")
-    public EntityModel Page_smsLogin(@PathVariable String OPEN_ID) {
+    public EntityModel Page_smsLogin_miniapp_channel(@PathVariable String OPEN_ID) {
 
         Optional<Openid> optional = openidRepository.findByOpenid(OPEN_ID);
 
@@ -296,7 +297,7 @@ public class LoginController {
 
         entityModel.add(linkTo(methodOn(LoginController.class).login_send_code(null)).withRel("send_verification_code"));
 
-        entityModel.add(linkTo(methodOn(LoginController.class).login_sms_confirm(optional.get().getOpenid(),null)).withRel("login"));
+        entityModel.add(linkTo(methodOn(LoginController.class).login_sms_confirm_miniapp_channel(optional.get().getOpenid(),null)).withRel("login"));
 
 
 
@@ -336,7 +337,7 @@ public class LoginController {
 
 
     @PostMapping("/openid/{OPEN_ID}/verifications/login_confirm")
-    public EntityModel login_sms_confirm(@PathVariable String OPEN_ID,@RequestBody @Valid VerifyPhoneReq request) {
+    public EntityModel login_sms_confirm_miniapp_channel(@PathVariable String OPEN_ID, @RequestBody @Valid VerifyPhoneReq request) {
 
         System.out.println(request.getId());
         System.out.println(request.getCode());
@@ -373,7 +374,7 @@ public class LoginController {
             throw new BookNotFoundException(Enumfailures.resource_not_found,"验证错误");
 
         }
-        VerificationToken verificationToken____ = service.verified(openid,verificationToken1);
+        VerificationToken verificationToken____ = service.verified_miniap(openid,verificationToken1);
 
 
       //  Optional<UserAuthority> userAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,verificationToken____.getPhone());
@@ -444,7 +445,7 @@ public class LoginController {
 
 
     @GetMapping(value = "/Page_login", produces = "application/json")
-    public EntityModel Page_login() {
+    public EntityModel Page_login_pc_channal() {
 
 
         Map map = Map.of(
@@ -456,8 +457,8 @@ public class LoginController {
 
 
         EntityModel entityModel = EntityModel.of(map);
-        entityModel.add(linkTo(methodOn(LoginController.class).Page_login()).withRel("Page_register"));
-        entityModel.add(linkTo(methodOn(LoginController.class).Page_login()).withRel("Page_reset"));
+        entityModel.add(linkTo(methodOn(LoginController.class).Page_login_pc_channal()).withRel("Page_register"));
+        entityModel.add(linkTo(methodOn(LoginController.class).Page_login_pc_channal()).withRel("Page_reset"));
 
 
 
@@ -466,7 +467,7 @@ public class LoginController {
         entityModel.add(linkTo(methodOn(LoginController.class).qqLogin(null,null,null)).withRel("login_password").expand());
 
 
-        entityModel.add(linkTo(methodOn(LoginController.class).login_sms(null)).withRel("login_sms"));
+        entityModel.add(linkTo(methodOn(LoginController.class).login_sms_pc_channel(null)).withRel("login_sms"));
 
         return entityModel;
 
@@ -506,7 +507,7 @@ public class LoginController {
 
 
     @PostMapping(value = "/login_sms" , produces = "application/json")
-    public EntityModel login_sms(@RequestBody @Valid VerifyPhoneReq request) {
+    public EntityModel login_sms_pc_channel(@RequestBody @Valid VerifyPhoneReq request) {
 
         System.out.println(request.getId());
         System.out.println(request.getCode());
@@ -616,11 +617,20 @@ public class LoginController {
 
 
 
-        System.out.println(" -pC登录-----=+++++++++++"+ display.getPhone());
+        System.out.println(" -pC登录login -----=+++++++++++"+ display.getPhone());
        // passwordEncoder.encode(display.getPassword())
 
         Gson gson = new Gson();
-        IdentityVo identityVo = new IdentityVo(EnumIdentityType.phone,display.getPhone());
+        IdentityVo identityVo = null;
+        if(Validator.isMobile(display.getPhone())){
+            identityVo = new IdentityVo(EnumIdentityType.phone,display.getPhone());
+
+        }else{
+            identityVo = new IdentityVo(EnumIdentityType.user_code,display.getPhone());
+
+        }
+
+
 
 
        Authentication authentication = authenticationManager.authenticate(

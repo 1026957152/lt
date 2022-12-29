@@ -150,9 +150,6 @@ public class RedemptionRestController {
     private TourBookingRepository tourBookingRepository;
 
     @Autowired
-    private CampaignAssignToTourProductRepository campaignAssignToTourProductRepository;
-
-    @Autowired
     private CampaignAssignToTourBookingRepository campaignAssignToTourBookingRepository;
 
 
@@ -496,12 +493,6 @@ public class RedemptionRestController {
 
 
 
-        EntityModel entityModel = multiTicketService.validate(code,userVo);
-        if(entityModel != null){
-            return entityModel;
-        }
-
-
 
 
         if(code.getCode().startsWith("TT-NI")){
@@ -592,24 +583,6 @@ public class RedemptionRestController {
 
 
 
-        if(code.getCode().startsWith("into_")){
-            User user = intoOnecodeService.byCode(code.getCode());
-
-          //  Authentication authentication = authenticationFacade.getAuthentication();
-
-            UserVo userOv = authenticationFacade.getUserVo(authentication);
-
-          //  Supplier supplier = userOv.getSupplier();
-
-            List<ComponentVounch> componentVounchList = componentVounchRepository.findAllByUser(user.getId());
-            if(componentVounchList.size() ==0){
-                throw new BookNotFoundException(Enumfailures.not_found,"该 用户无可核销得 权益"+user.getPhone());
-
-            }
-
-            return validateService.user扫文旅码(user,userOv,componentVounchList);
-        }
-
 
 
         PersonBean.Person person = null;
@@ -632,6 +605,26 @@ public class RedemptionRestController {
         }
 
 
+
+
+        if(code.getCode().startsWith("into_")){
+            User user = intoOnecodeService.byCode(code.getCode());
+
+            //  Authentication authentication = authenticationFacade.getAuthentication();
+
+            UserVo userOv = authenticationFacade.getUserVo(authentication);
+
+            //  Supplier supplier = userOv.getSupplier();
+
+            List<ComponentVounch> componentVounchList = componentVounchRepository.findAllByUser(user.getId());
+            if(componentVounchList.size() ==0){
+                throw new BookNotFoundException(Enumfailures.not_found,"该 用户无可核销得 权益"+user.getPhone());
+
+            }
+
+            return validateService.user扫文旅码(user,userOv,componentVounchList);
+        }
+
         Optional<VoucherTicket> optionalVoucher = voucherTicketRepository.findByCode(code.getCode());
 
 
@@ -641,6 +634,16 @@ public class RedemptionRestController {
         }
 
 
+        EntityModel entityModel = multiTicketService.validate(optionalVoucher.get(),userVo);
+        if(entityModel != null){
+            return entityModel;
+        }
+
+
+        entityModel = busTicketService.validate(optionalVoucher.get(),userVo);
+        if(entityModel != null){
+            return entityModel;
+        }
 
 
         throw new BookNotFoundException(Enumfailures.resource_not_found,"找不到核销券_验证");
@@ -649,7 +652,7 @@ public class RedemptionRestController {
 
 
 
-
+/*
     //TODO 这里有点问题
     @PostMapping(value = "/validate_by_id_number", produces = "application/json")
     public Object validate_by_id_number(@RequestBody OnecodeScanPojo pojo___) {
@@ -681,14 +684,62 @@ public class RedemptionRestController {
 
 
 
-    }
+    }*/
 
     @PostMapping(value = "/crypt", produces = "application/json")
     public Object getCrypto(@RequestBody RedemBycodeFromBusScannerPojo code) {
 
-        String code_st = cryptoService.encode(code.getCode());
+        String code_st = cryptoService.decorated_encode(code.getCode());
 
         return code_st;
+
+    }
+
+
+
+
+    //TODO 这里有点问题
+    @PostMapping(value = "/lookup", produces = "application/json")
+    public Object Lookup(@RequestBody RedemBycodeFromBusScannerPojo code) {
+
+
+
+
+
+        String code_st = cryptoService.decorated_decode(code.getCode());
+
+
+        Optional<VoucherTicket> voucherTicketOptional = voucherTicketRepository.findByCode(code_st);
+        if(voucherTicketOptional.isEmpty()){
+
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到券");
+        }
+
+
+        VoucherTicket voucherTicket = voucherTicketOptional.get();
+
+        List<ComponentVounch> componentVounchList = validatorService.getComponents(voucherTicket.getCode());
+
+
+        RedemptionTryResp resp = new RedemptionTryResp();
+
+
+        componentRightService.sentEntries(voucherTicket.getCode(),resp,componentVounchList);
+        //  resp.setRedeem_voucher_key(voucherTicket.getCode());
+        resp.setAvailable(resp.isRedeemAllowed());
+        resp.setRedeemAllowed(null);
+        resp.setPartiallyRedeemable(voucherTicket.getPartiallyRedeemable());
+
+        if(resp.getAvailable()){
+            resp.setRedeem_voucher_key(voucherTicket.getCode());
+
+        }
+        resp.setCrypto_code(null);
+        resp.setType_text(voucherTicket.getType().toString());
+        return resp;
+
+
+
 
     }
 
@@ -711,14 +762,14 @@ public class RedemptionRestController {
         }
 
 
-        String code_st = cryptoService.decode(code.getCode());
+        String code_st = cryptoService.decorated_decode(code.getCode());
 
-
+/*
         if(!code_st.startsWith("tike_")) {
 
             throw new BookNotFoundException(Enumfailures.not_found,"不是券");
 
-        }
+        }*/
 
         Optional<VoucherTicket> voucherTicketOptional = voucherTicketRepository.findByCode(code_st);
             if(voucherTicketOptional.isEmpty()){
@@ -741,16 +792,65 @@ public class RedemptionRestController {
             componentRightService.sentEntries(pass.getCode(),resp,componentVounchList);
             resp.setCrypto_code(pass.getCode());
 
+            resp.setType_text(voucherTicket.getType().toString());
 
-
-            resp.setType_text(EnumRedeamptionType.PASS.toString());
             return resp;
         }
 
+        List<ComponentVounch> componentVounchList = validatorService.check(device.getId(),voucherTicket.getCode());
 
 
-        throw new BookNotFoundException(Enumfailures.not_found,"不支持的 券");
+        RedemptionTryResp resp = new RedemptionTryResp();
 
+
+        componentRightService.sentEntries(voucherTicket.getCode(),resp,componentVounchList);
+
+
+        resp.setAvailable(resp.isRedeemAllowed());
+        resp.setRedeemAllowed(null);
+        if(resp.getAvailable()){
+            resp.setRedeem_voucher_key(voucherTicket.getCode());
+
+        }
+        resp.setCrypto_code(null);
+        resp.setType_text(voucherTicket.getType().toString());
+        return resp;
+
+
+
+
+
+    }
+
+
+    @PostMapping(value = "/code_availability", produces = "application/json")
+    public Object code_availability(@RequestBody RedemBycodeFromBusScannerPojo pojo_) {
+
+
+        String code_st = cryptoService.decorated_decode(pojo_.getCode());
+
+        System.out.println("参数啊啊 {}"+pojo_.toString());
+
+        logger.debug("解析 code {}",code_st);
+        Optional<VoucherTicket> voucherTicketOptional = voucherTicketRepository.findByCode(code_st);
+        if(voucherTicketOptional.isEmpty()){
+
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到券");
+        }
+
+        VoucherTicket voucherTicket = voucherTicketOptional.get();
+
+
+
+        if(Arrays.asList(EnumVoucherStatus.PartiallyRedeemed,
+                EnumVoucherStatus.InGracePeriod,
+                EnumVoucherStatus.Valid
+                ).contains(voucherTicket.getStatus())){
+
+            return Map.of("available",true);
+        }else{
+            return Map.of("available",false);
+        }
 
 
 
@@ -763,6 +863,7 @@ public class RedemptionRestController {
 
 
 
+
         Optional<Device> deviceOptional = deviceRepository.findByCode(pojo_.getDeviceCode());
 
 
@@ -770,15 +871,25 @@ public class RedemptionRestController {
             throw new BookNotFoundException(Enumfailures.not_found,"找不到设备");
         }
         Device device = deviceOptional.get();
-
+        logger.debug("设备id{} {}", device.getType(),device.getCode());
         if(!device.getType().equals(EnumDeviceType.BUS_QRCODE_READER)){
+
+
             throw new BookNotFoundException(Enumfailures.not_found,"不支持的设备");
         }
 
-        String code_st = cryptoService.decode(pojo_.getCode());
+        String code_st = cryptoService.decorated_decode(pojo_.getCode());
 
         System.out.println("参数啊啊 {}"+pojo_.toString());
 
+        logger.debug("解析 code {}",code_st);
+        Optional<VoucherTicket> voucherTicketOptional = voucherTicketRepository.findByCode(code_st);
+        if(voucherTicketOptional.isEmpty()){
+
+            throw new BookNotFoundException(Enumfailures.not_found,"找不到券");
+        }
+
+        VoucherTicket voucherTicket = voucherTicketOptional.get();
 
 
         CodeWithLatLngVo codeWithLatLngVo = new CodeWithLatLngVo();
@@ -791,107 +902,20 @@ public class RedemptionRestController {
         codeWithLatLngVo.setC(code_st);
 
 
-        EntityModel entityModel =  busTicketService.redeem(codeWithLatLngVo,device);
+        EntityModel entityModel =  redemptionService.redeem(voucherTicket,device);
 
 
         if(entityModel != null){
             return entityModel;
         }
+
+
+
         throw new BookNotFoundException(Enumfailures.not_found,"找不到核销券");
 
 
     }
 
-/*
-
-
-
-    //TODO 这里有点问题
-    @PostMapping(value = "/redemptions", produces = "application/json")
-    public Object redeemVonchorBycode(@RequestBody RedemBycodePojo pojo) {
-
-
-        Authentication authentication = authenticationFacade.getAuthentication();
-
-
-         UserDetails user_de = (UserDetails)authentication.getPrincipal();
-
-        Optional<User> optionalUser = userRepository.findByPhone(user_de.getUsername());
-
-
-        if(optionalUser.isEmpty()) {
-            throw  new BookNotFoundException(pojo.getCode(),"找不到登录用户");
-        }
-
-
-        Gson gson = new Gson();
-        RedemBycodePojo.Code code =  gson.fromJson(pojo.getCode(),RedemBycodePojo.Code.class);
-
-        User user = optionalUser.get();
-        Optional<Employee> optional = employeeRepository.findByUserId(user.getId());
-
-        Optional<Supplier> optionalSupplier = supplierRepository.findById(optional.get().getSuplierId());
-
-        // Asset asset = assetRepository.findById();
-
-        if(code.getCode().startsWith("TT-NI")){
-            Optional<Voucher> optionalVoucher = voucherRepository.findByCode(code.getCode());
-
-
-            if(optionalVoucher.isEmpty()) {
-                throw  new BookNotFoundException(pojo.getCode(),"找不到消费券");
-            }
-            Voucher voucher =optionalVoucher.get();
-            if(!voucher.isActive()){
-                throw new voucher_disabledException(voucher.getId(),"");
-            }
-            if(!voucher.getPublished()){
-                throw new voucher_not_publishException(voucher.getId(),pojo.getCode()+"券换没有被认领","券换没有被认领");
-            }
-
-
-
-            Optional<Campaign> optionalCampaign = campaignRepository.findById(voucher.getCampaign());
-            boolean v = redeemService.是否符合验证(optionalCampaign.get(),new Supplier());
-            if(v){
-                Triplet<RedemptionEntry,Redemption, PublishTowhoVo> pair= redeemService.bulkRedeemVounchor(voucher,optionalCampaign.get(),optionalSupplier.get());
-
-
-                RedemptionResp resp = RedemptionResp.from(pair);
-                EntityModel<RedemptionResp> redemptionEntryEntityModel =  EntityModel.of(resp);
-
-
-                return redemptionEntryEntityModel;
-            }else{
-                throw new Voucher_has_no_permistion_redeemException(voucher.getId(),"Foo Not Found","该商户无法核销该券");
-            }
-        }
-
-        if(code.getCode().startsWith("ctt")){
-            Optional<TourBooking> optionalTourBooking = tourBookingRepository.findByCode(pojo.getCode());
-            if(optionalTourBooking.isEmpty()) {
-                throw  new BookNotFoundException(pojo.getCode(),"找不到消费券");
-            }
-
-
-            TourBooking tourBooking = optionalTourBooking.get();
-
-            List<CampaignAssignToTourProduct> campaignAssignToTourProductList = campaignAssignToTourProductRepository.findByProduct(tourBooking.getProductId());
-
-            List<Campaign> campaigns = campaignRepository.findAllById(campaignAssignToTourProductList.stream().map(x->x.getCampaign()).collect(Collectors.toList()));
-
-            List<Triplet<RedemptionEntry,Redemption,PublishTowhoVo>> pair= redeemService.bulkRedeemVounchor(tourBooking,campaigns,optionalSupplier.get());
-            return RedemptionResp.from(pair);
-
-        }
-
-
-
-
-        throw new BookNotFoundException("找不到核销券","找不到核销券");
-    }
-
-*/
 
 
     //TODO 这里有点问题 redemptions
@@ -1007,7 +1031,7 @@ public class RedemptionRestController {
 
 
 
-        String code_de = cryptoService.decode(codeWithLatLngVo.getC());
+        String code_de = cryptoService.decorated_decode(codeWithLatLngVo.getC());
 
         System.out.println("加密前"+codeWithLatLngVo.getC()+"解密后"+code_de);
 
@@ -1026,6 +1050,10 @@ public class RedemptionRestController {
 
 
 
+        entityModel = busTicketService.redeem(optionalVoucher.get(),userOv);
+        if(entityModel != null){
+            return entityModel;
+        }
 
 
 

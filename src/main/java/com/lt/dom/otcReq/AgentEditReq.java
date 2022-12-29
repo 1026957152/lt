@@ -1,7 +1,7 @@
 package com.lt.dom.otcReq;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.lt.dom.OctResp.AgentResp;
+import com.lt.dom.OctResp.AgentConnectionResp;
 import com.lt.dom.OctResp.AssetResp;
 import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.domain.SettleAccount;
@@ -457,18 +457,18 @@ public class AgentEditReq {
 
         public static ProductTab from(AgentConnection region) {
 
-            ProductTab  agentEditReq = new ProductTab();
-            agentEditReq.setDesc(region.getDesc());
-            agentEditReq.setBilling(region.getBilling());
-            agentEditReq.setName(region.getName());
-            agentEditReq.setPartner_id(region.getPartnerId());
+            ProductTab  productTab = new ProductTab();
+            productTab.setDesc(region.getDesc());
+            productTab.setBilling(region.getBilling());
+            productTab.setName(region.getName());
+            productTab.setPartner_id(region.getPartnerId());
 
-            agentEditReq.setAgent(region.getAgent());
+            productTab.setAgent(region.getAgent());
 
-            agentEditReq.setAuthorization_code(region.getAuthorizationCode());
+            productTab.setAuthorization_code(region.getAuthorizationCode());
 
             if(region.getContact()!= null){
-                agentEditReq.setContacts(region.getContact().getIdentifiers().stream().map(e->{
+                productTab.setContacts(region.getContact().getIdentifiers().stream().map(e->{
                     IdentifierReq identifierReq = new IdentifierReq();
                     identifierReq.setId(e.getLinkId());
                     identifierReq.setType(e.getType());
@@ -478,7 +478,7 @@ public class AgentEditReq {
             }else{
                 System.out.println("ddddddddddddddddd"+"没有哦contact");
             }
-            return agentEditReq;
+            return productTab;
         }
 
 
@@ -491,14 +491,14 @@ public class AgentEditReq {
         }
     }
 
-    private AgentResp info;
+    private AgentConnectionResp info;
 
 
-    public void setInfo(AgentResp info) {
+    public void setInfo(AgentConnectionResp info) {
         this.info = info;
     }
 
-    public AgentResp getInfo() {
+    public AgentConnectionResp getInfo() {
         return info;
     }
 

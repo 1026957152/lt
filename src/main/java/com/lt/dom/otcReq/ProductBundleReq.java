@@ -1,6 +1,7 @@
 package com.lt.dom.otcReq;
 
 import com.lt.dom.otcenum.EnumPassDorationUnit;
+import com.lt.dom.otcenum.EnumProductComponentSource;
 
 
 public class ProductBundleReq {
@@ -8,14 +9,23 @@ public class ProductBundleReq {
 
 
 
-    Long id;
+    Object id;
+    private EnumProductComponentSource productSource;
 
-    public Long getId() {
+    public Object getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Object id) {
         this.id = id;
+    }
+
+    public EnumProductComponentSource getProductSource() {
+        return productSource;
+    }
+
+    public void setProductSource(EnumProductComponentSource productSource) {
+        this.productSource = productSource;
     }
 
 

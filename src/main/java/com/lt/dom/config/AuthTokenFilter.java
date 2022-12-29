@@ -102,9 +102,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 					System.out.println("解剖" + username);
 					Gson gson = new Gson();
 					LogVo logVo = gson.fromJson(username, LogVo.class);
-					if (logVo.getType() == 1) {  //手机号登录
+					if (logVo.getType() == EnumIdentityType.phone || logVo.getType() == EnumIdentityType.user_code) {  //手机号登录
 						username = logVo.getName();
-						IdentityVo identityVo = new IdentityVo(EnumIdentityType.phone,username);
+						IdentityVo identityVo = new IdentityVo(logVo.getType(),username);
 						UserDetails userDetails = userDetailsService.loadUserByUsername(gson.toJson(identityVo));
 						UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
 								userDetails, null, userDetails.getAuthorities());

@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.lt.dom.otcenum.EnumPassDorationUnit;
 import com.lt.dom.otcenum.EnumProductComponentSource;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapsId;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,7 +18,13 @@ public class ProductBundle extends Base{
     @JoinColumn(name = "product_id")
     Product product;
     private Long burdle;
+
+    @Enumerated(EnumType.STRING)
     private EnumProductComponentSource burdleProductSource;
+    private String productCode;
+
+    @Transient
+    private AgentProduct agentProduct;
 
     public Product getProduct() {
         return product;
@@ -46,6 +49,22 @@ public class ProductBundle extends Base{
 
     public EnumProductComponentSource getBurdleProductSource() {
         return burdleProductSource;
+    }
+
+    public void setProductCode(String productCode) {
+        this.productCode = productCode;
+    }
+
+    public String getProductCode() {
+        return productCode;
+    }
+
+    public void setAgentProduct(AgentProduct agentProduct) {
+        this.agentProduct = agentProduct;
+    }
+
+    public AgentProduct getAgentProduct() {
+        return agentProduct;
     }
 
 

@@ -5,6 +5,7 @@ import com.lt.dom.otcenum.EnumRedemptionfailures;
 import com.lt.dom.otcenum.Enumfailures;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -118,6 +119,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleApiException(
         BookNotFoundException ex, WebRequest request) {
 
+        ex.printStackTrace();
 
         ApiErrorResponse response =
                 new ApiErrorResponse(HttpStatus.NOT_FOUND,ex.getError().name(),
@@ -125,6 +127,32 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(response, response.getCode());
 
     }
+
+    @ExceptionHandler(UnprocessableEntityException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            UnprocessableEntityException ex, WebRequest request) {
+
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY,ex.getError().name(),
+                        ex.getMessage(),ex.getDetail());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
+    @ExceptionHandler(InternalServerErrorException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            InternalServerErrorException ex, WebRequest request) {
+
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,ex.getError().name(),
+                        ex.getMessage(),ex.getDetail());
+        return new ResponseEntity<>(response, response.getCode());
+
+    }
+
+
 
 /*    @ExceptionHandler({ MethodArgumentTypeMismatchException.class })
     public ResponseEntity<Object> handleMethodArgumentTypeMismatch(
@@ -393,15 +421,17 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(response, response.getCode());
 
     }
-/*
+
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleAll(Exception ex, WebRequest request) {
+
+        ex.printStackTrace();
         ApiErrorResponse apiError = new ApiErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR, "default error handler",request.getContextPath(),ex.getLocalizedMessage());
+                HttpStatus.INTERNAL_SERVER_ERROR, Enumfailures._500.name(),request.getContextPath(),ex.getLocalizedMessage());
         return new ResponseEntity<Object>(
                 apiError, new HttpHeaders(), apiError.getCode());
     }
-*/
+
 
 
 /*    @Override

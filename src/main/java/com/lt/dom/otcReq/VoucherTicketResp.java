@@ -3,6 +3,7 @@ package com.lt.dom.otcReq;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.JwtUtils;
 import com.lt.dom.OctResp.AssetResp;
+import com.lt.dom.OctResp.CardholderResp;
 import com.lt.dom.OctResp.PhotoResp;
 import com.lt.dom.OctResp.PublicationEntryResp;
 import com.lt.dom.oct.*;
@@ -38,6 +39,8 @@ public class VoucherTicketResp {
     private Redemption redemption;
     private LocalDateTime modifiedDate;
     private LocalDateTime createdDate;
+    private CardholderResp holder;
+    private String name;
 
     public void setPerformance(EntityModel performance) {
         this.performance = performance;
@@ -77,6 +80,25 @@ public class VoucherTicketResp {
 
     public LocalDateTime getCreatedDate() {
         return createdDate;
+    }
+
+    public void setHolder(Optional<Cardholder> holder) {
+
+        if(holder!= null){
+
+            CardholderResp cardholderResp = CardholderResp.Desensitizedfrom(holder.get());
+            this.holder = cardholderResp;
+
+        }
+
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 
 

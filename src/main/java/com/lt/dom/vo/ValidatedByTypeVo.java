@@ -62,4 +62,15 @@ public class ValidatedByTypeVo {
 
         return null;
     }
+    public String funGetValidatorCode() {
+
+        if(validatorType.equals(EnumValidatorType.特定的人员)){
+            return user.getCode();
+        }
+        if(validatorType.equals(EnumValidatorType.特定机器)){
+            return device.getCode();
+        }
+
+        return null;
+    }
 }

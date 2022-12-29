@@ -2,13 +2,17 @@ package com.lt.dom.serviceOtc;
 
 import com.lt.dom.OctResp.ValidatorEditResp;
 import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.UnprocessableEntityException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.ComponentRightValidatorUpdatePojo;
 import com.lt.dom.otcenum.EnumComponentVoucherStatus;
 import com.lt.dom.otcenum.EnumValidatorType;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
+import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
 import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class ValidatorServiceImpl {
+    Logger logger = LoggerFactory.getLogger(ValidatorServiceImpl.class);
 
     @Autowired
     private WriteoffEquipServiceImpl writeoffEquipService;
@@ -249,6 +254,7 @@ public class ValidatorServiceImpl {
     public List<ComponentVounch> check(Long user_id, Long supplier, String code) {
 
 
+        logger.info("查看 和小人鱼是否有权限核销");
         List<Validator_> validator_s = validatorRepository.findAllByTypeAndUser(EnumValidatorType.特定的人员,user_id);
 
         if(validator_s.isEmpty()){
@@ -256,13 +262,15 @@ public class ValidatorServiceImpl {
         }
 
 
-        List<Long> triplet来自设备 = validator_s.stream().map(e->e.getComponentRightId()).collect(Collectors.toList());
+        List<Long> triplet来自设备 = validator_s.stream()
+                .filter(e->e.isActive())
+                .map(e->e.getComponentRightId()).collect(Collectors.toList());
 
 
         List<ComponentVounch> components = componentVounchRepository.findAllByReference(code);
 
         if(components.size() ==0){
-            throw new BookNotFoundException(Enumfailures.not_found,"该券 无可核销得 权益"+code);
+            throw new UnprocessableEntityException(Enumfailures.not_found,"rrr该券 已经 无 剩余可核销的 权益"+code);
         }
 
         List<Product> productList = productRepository.findAllBySupplierId(supplier);
@@ -337,5 +345,14 @@ public class ValidatorServiceImpl {
 
 
         return componentVounchList;
+    }
+
+    public List<ComponentVounch> getComponents(String code) {
+
+
+        List<ComponentVounch> components = componentVounchRepository.findAllByReference(code);
+
+
+        return components;
     }
 }

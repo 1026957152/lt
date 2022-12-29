@@ -3,12 +3,15 @@ package com.lt.dom.serviceOtc;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.lt.dom.OctResp.ClainQuotaStatisticsResp;
+import com.lt.dom.config.Constants;
 import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.UnprocessableEntityException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.CompaignPojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.util.CodeConfig;
+import com.lt.dom.util.ZxingBarcodeGenerator;
 import com.lt.dom.vo.PersonBean;
 import org.hashids.Hashids;
 import org.javatuples.Pair;
@@ -34,7 +37,7 @@ public class CryptoServiceImpl {
     static Hashids hashids = new Hashids("this is my pepper");
 
 
-    public String decode(String  code) {
+    public static String decode(String  code) {
 
 
 
@@ -48,19 +51,19 @@ public class CryptoServiceImpl {
 
 
         } catch (InvalidProtocolBufferException e) {
-            throw new BookNotFoundException(Enumfailures.not_found,"解析错误");
+            throw new UnprocessableEntityException(Enumfailures.invalid_request_error,"解析错误");
 
            // throw new RuntimeException(e);
         }catch (Exception e){
+            throw new UnprocessableEntityException(Enumfailures.invalid_request_error,"解析错误");
 
-            throw new BookNotFoundException(Enumfailures.not_found,"解析错误");
 
         }
         return person.getName();
     }
 
 
-    public String encode(String  code) {
+    public static String encode(String  code) {
         LocalDateTime now = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(now);
 
@@ -103,4 +106,28 @@ public class CryptoServiceImpl {
         return numbers;
     }
 
+    public static String encode_png_base64(String code) {
+
+        return  ZxingBarcodeGenerator.base64_png_src(encode(code));
+
+    }
+
+
+    public String decorated_encode(String code){
+
+        return Constants.QRCODE_DECORATED + encode(code);
+
+    }
+    public String decorated_decode(String code){
+      //  String newName = code.substring(0,4)+'x'+myName.substring(5);
+
+        if(code.substring(0,Constants.QRCODE_DECORATED.length()).equals(Constants.QRCODE_DECORATED)){
+            return decode(code.substring(Constants.QRCODE_DECORATED.length()));
+        };
+
+        throw new UnprocessableEntityException(Enumfailures.invalid_request_error,"位置 前置识别字符"+code.substring(0,Constants.QRCODE_DECORATED.length()));
+
+
+
+    }
 }

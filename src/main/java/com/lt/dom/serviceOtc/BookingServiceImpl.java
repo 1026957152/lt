@@ -462,7 +462,7 @@ public class BookingServiceImpl {
         Reservation reservation = new Reservation();
 
 
-            reservation.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
+           // reservation.setAdditional_info(JSONObject.valueToString(pojo.getAdditional_info()));
             reservation.setCode(idGenService.bookingNo());
             reservation.setTrackingId(userVo.getTracking_id());
 
@@ -645,12 +645,14 @@ public class BookingServiceImpl {
 
             lineItem.setDeliveryFormats(e.getDeliveryFormat());
             lineItem.setRemark(e.getRemark());
-
+            lineItem.setPurchaseMode(e.getPurchaseMode());
 
             lineItem = lineItemRepository.save(lineItem);
 
 
             LineItem finalLineItem = lineItem;
+
+
             lineItem.setTravelers(e.getTraveler().stream().map(travelerReq -> {
                 Traveler traveler = new Traveler();
 
@@ -665,7 +667,7 @@ public class BookingServiceImpl {
             }).collect(Collectors.toList()));
 
             multiTicketService.booking(lineItem,product);
-            cityPassService.booking(lineItem,product,pricingRate);
+            cityPassService.booking(lineItem,product,pricingRate,e);
             attractionTicketService.booking(lineItem,product);
             showtimeTicketService.booking(lineItem,product);
             busTicketService.booking(lineItem,product);

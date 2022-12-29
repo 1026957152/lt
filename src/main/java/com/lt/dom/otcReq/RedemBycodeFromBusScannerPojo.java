@@ -2,14 +2,19 @@ package com.lt.dom.otcReq;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
+import javax.validation.constraints.NotEmpty;
+
 public class RedemBycodeFromBusScannerPojo {
 
     
 
+    @NotEmpty
 private String code;
     private float latitude;
     private float longitude;
     private Long device;
+
+    @NotEmpty
     private String deviceCode;
 
     public float getLatitude() {

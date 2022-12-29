@@ -8,12 +8,15 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-public class Employee {
+public class Employee extends Base{
 
 
     private LocalDateTime created_at;
 
+
+    @Enumerated(EnumType.STRING)
     private EnumEmployeeStatus status;
+    private String name;
 
     public LocalDateTime getCreated_at() {
         return created_at;
@@ -23,20 +26,8 @@ public class Employee {
         this.created_at = created_at;
     }
 
-    @Version
-    private Integer version;
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    private long id;
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
     private Long userId;
     private Long suplierId;
@@ -116,5 +107,13 @@ private String code;
 
     public void setStatus(EnumEmployeeStatus status) {
         this.status = status;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 }

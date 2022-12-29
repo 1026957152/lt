@@ -23,9 +23,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -148,6 +150,8 @@ public class TSRestController {
 
             return ltRespToTs产品列表;
         }
+
+
         if (tsReqLt产品列表.getMethod().equals(EnumMethord.item_orders)){
             if(tsReqLt产品列表.get_pid().equals("dddddd")){
                 throw new BookNotFoundException(Enumfailures.not_found,"找不断哦合作商"+tsReqLt产品列表.get_pid());
@@ -163,9 +167,14 @@ public class TSRestController {
                 LtRespToTs下单接口.InfoDTO infoDTO  = tsToLtService.getTsReqLt下单接口(agent,tsReqLt产品列表1);
                 LtRespToTs下单接口 ltRespToTs产品列表 = new LtRespToTs下单接口();
 
+
                 ltRespToTs产品列表.setInfo(infoDTO);
                 ltRespToTs产品列表.setSuccess(true);
                 ltRespToTs产品列表.setMessage("成功");
+
+
+                System.out.println("TsReqLt下单接口 返回给天使的数据 "+ltRespToTs产品列表.toString());
+
                 return ltRespToTs产品列表;
             }catch (Exception e){
 
@@ -436,7 +445,7 @@ public class TSRestController {
         ltReqTs验证核销通知.setAmount_used(1);//:累计使用数量(包含本次)
         ltReqTs验证核销通知.setAnother_orders_id("ddd"); //:本平台订单ID（天时同城）
         ltReqTs验证核销通知.setMy_orders_id("ddd"); //:第三方订单ID
-        ltReqTs验证核销通知.setCodes(""); //:使用码号,多个','分割
+        ltReqTs验证核销通知.setCodes(Arrays.asList("re").stream().collect(Collectors.joining(","))); //:使用码号,多个','分割
 
 
         TsRespLt验证核销通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs验证核销通知(ltReqTs验证核销通知);

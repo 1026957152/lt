@@ -31,4 +31,6 @@ public interface ComponentVounchRepository extends JpaRepository<ComponentVounch
     List<ComponentVounch> findAllByReservation(long id);
 
     Page<ComponentVounch> findAllByAgent(Long id, Pageable pageable);
+
+    List<ComponentVounch> findAllByUserOrderByCreatedDate(Long id);
 }

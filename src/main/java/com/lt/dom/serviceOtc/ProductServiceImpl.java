@@ -124,8 +124,8 @@ public class ProductServiceImpl {
 
 
     Gson gson = new Gson();
-
-
+    @Autowired
+    private AgentProductRepository agentProductRepository;
 
 
     @Transactional
@@ -825,18 +825,37 @@ public class ProductServiceImpl {
         Map<Long,Product> burdles = new HashMap<>();
 
         List<ProductBundle> productBundleList = pojo.getBundles().stream().map(e->{
-            Product burdle = productRepository.findById(e.getId()).get();
-            ProductBundle productBundle = new ProductBundle();
-            productBundle.setProduct(finalProduct);
-            productBundle.setBurdle(burdle.getId());
-            productBundle.setBurdleProductSource(EnumProductComponentSource.partner);
-            burdles.put(burdle.getId(),burdle);
+            if(e.getProductSource().equals(EnumProductComponentSource.partner)){
 
-            return productBundle;
+                AgentProduct agentProduct = agentProductRepository.findByCode((String)e.getId()).get();
+                ProductBundle productBundle = new ProductBundle();
+                productBundle.setProduct(finalProduct);
+                productBundle.setBurdle(agentProduct.getId().getProductId());
+                productBundle.setProductCode(agentProduct.getCode());
+                productBundle.setAgentProduct(agentProduct);
+                productBundle.setBurdleProductSource(e.getProductSource());
+                burdles.put(agentProduct.getId().getProductId(),agentProduct.getProduct());
+                return productBundle;
+            }
+            if(e.getProductSource().equals(EnumProductComponentSource.own)){
+
+                Product burdle = productRepository.findById(((Integer)e.getId()).longValue()).get();
+                ProductBundle productBundle = new ProductBundle();
+                productBundle.setProduct(finalProduct);
+                productBundle.setProductCode(burdle.getCode());
+                productBundle.setBurdle(burdle.getId());
+                productBundle.setBurdleProductSource(e.getProductSource());
+                burdles.put(burdle.getId(),burdle);
+                return productBundle;
+            }
+            return null;
+
+
         }).collect(Collectors.toList());
+
         product.getBundles().stream().forEach(e->{
             System.out.println("--保存的元素 啊啊 ----------"+ e.getBurdle());
-            System.out.println("--保存的元素 啊啊 ----------"+ burdles.get(e.getBurdle()).getSupplierId());
+           // System.out.println("--保存的元素 啊啊 ----------"+ burdles.get(e.getBurdle()).getSupplierId());
         });
 
         product.getBundles().clear();

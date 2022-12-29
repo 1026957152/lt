@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1678,11 +1679,7 @@ public class BookingRestController {
         Map<Long, Product> longProductMap = productList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
 
 
-
-
-
         BookingSkuPojo pojo1 = new BookingSkuPojo();
-
 
 
         pojo1.setSkus(pojo.getSkus().stream().map(e->{
@@ -1760,6 +1757,11 @@ public class BookingRestController {
             bookingTypeTowhoVo.setProduct(product);
             bookingTypeTowhoVo.setSku(pricingRate);
             bookingTypeTowhoVo.setQuantity(e.getQuantity().longValue());
+
+            if(product.getType().equals(EnumProductType.Pass)){
+                bookingTypeTowhoVo.setPurchaseMode(EnumPurchaseMode.LineItem_every_traveler);
+
+            }
 
 
 
@@ -1841,68 +1843,90 @@ public class BookingRestController {
 
 
     @Operation(summary = "2、下单购买")
-    @PostMapping(value = "/bookings/quick", produces = "application/json")
-    public ResponseEntity quickPayment(@RequestBody @Valid BookingSkuPojo pojo) {
+    @PostMapping(value = "/sku/{PRICE_TYPE_ID}/bookings/quick", produces = "application/json")
+    public Map quickPayment(@PathVariable Long PRICE_TYPE_ID,HttpServletRequest request) {
 
 
         Authentication authentication = authenticationFacade.getAuthentication();
 
         UserVo userVo = authenticationFacade.getUserVo(authentication);
 
+        Optional<PricingRate> pricingRateOptional = pricingTypeRepository.findById(PRICE_TYPE_ID);
 
-        List<PricingRate> pricingRates = pricingTypeRepository.findAllById(pojo.getSkus().stream().map(ee->ee.getId()).collect(Collectors.toList()));
+        PricingRate pricingRate = pricingRateOptional.get();
 
-        Map<Long, PricingRate> pricingTypeMap = pricingRates.stream().collect(Collectors.toMap(e->e.getId(), e->e));
+        Optional<Product> productOptional = productRepository.findById(pricingRate.getProductId());
+
+        BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
+        bookingTypeTowhoVo.setToWhoTyp(EnumBookingOjbectType.Product);
+
+        bookingTypeTowhoVo.setProduct(productOptional.get());
+        bookingTypeTowhoVo.setSku(pricingRate);
+        bookingTypeTowhoVo.setQuantity(1l);
+
+
+        BookingSkuPojo.TravelerReq traveler = new BookingSkuPojo.TravelerReq();
+        traveler.setName(userVo.getReal_name());
+        traveler.setId_card(userVo.getId_card());
+        traveler.setPhone(userVo.getPhone());
+        bookingTypeTowhoVo.setTraveler(Arrays.asList(traveler));
 
 
 
-        List<Product> productList = productRepository.findAllById(pricingRates.stream().map(e->e.getProductId()).collect(Collectors.toList()));
-
-
-        Map<Long, Product> longProductMap = productList.stream().collect(Collectors.toMap(e->e.getId(),e->e));
 
 
 
-        List<BookingTypeTowhoVo> list =  pojo.getSkus().stream().map(e->{
+
+        List<BookingTypeTowhoVo> list = Arrays.asList(bookingTypeTowhoVo);
+
+/*        pojo.getSkus().stream().map(e->{
             PricingRate pricingRate = pricingTypeMap.get(e.getId());
 
             Product product = longProductMap.get(pricingRate.getProductId());
             Assert.notNull(product, "产品不能为空");
 
-            BookingTypeTowhoVo bookingTypeTowhoVo = new BookingTypeTowhoVo();
-            bookingTypeTowhoVo.setToWhoTyp(EnumBookingOjbectType.Product);
 
-            bookingTypeTowhoVo.setProduct(product);
-            bookingTypeTowhoVo.setSku(pricingRate);
-            bookingTypeTowhoVo.setQuantity(e.getQuantity().longValue());
-
-
-
-            return bookingTypeTowhoVo;
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toList());*/
 
 
         PlatUserVo platUserVo = new PlatUserVo();
         platUserVo.setPlatform(EnumPlatform.DERECT);
         platUserVo.setUserVo(userVo);
 
+        BookingSkuPojo bookingSkuPojo = new BookingSkuPojo();
 
 
-        Triplet<Reservation,List<LineItem>,PlatUserVo > booking = bookingService.bookingWithPayment(list,pojo,platUserVo);
+        Triplet<Reservation,List<LineItem>,PlatUserVo > booking = bookingService.bookingWithPayment(list,bookingSkuPojo,platUserVo);
 
         Reservation reservation = booking.getValue0();
 
 
         BookingResp resp = BookingResp.toResp_LIST(Pair.with(booking.getValue0(),booking.getValue1()));
 
+        logger.debug("用户id:{}",userVo.getUser_id());
+        Optional<Openid> optional = userAuthorityService.checkWeixinBind(userVo.getUser_id());
+        ChargeMetadataVo chargeMetadataVo = new ChargeMetadataVo();
+        //  chargeMetadataVo.setCampaign(campaign.getId());
+        //   chargeMetadataVo.setCampaign_code(campaign.getCode());
+        //   chargeMetadataVo.setVolume_up_voucher(voucher.getId());
+        chargeMetadataVo.setPayer(userVo.getUser_id());
+        // chargeMetadataVo.setBooking(reservation.getId());
+        String metadata = new Gson().toJson(chargeMetadataVo);
+
+        List<Payment> optionalReservation = paymentRepository.findByReference(booking.getValue0().getCode());
+        Payment payment = optionalReservation.get(0);
+
+        String ip = HttpUtils.getRequestIP(request);
+
+        int totalAmount = payment.getAmount();
+        // 微信的支付单位是分所以要转换一些单位
+        long  totalproce =Long.parseUnsignedLong(totalAmount+"");//Long.parseUnsignedLong(totalAmount*100+"");
+
+        Map  charge = paymentService.createCharge(ip,payment.getCode(),reservation,totalproce,optional.get().getOpenid(),userVo,metadata, payment);
 
 
-        EntityModel entityModel = EntityModel.of(resp);
 
-        entityModel.add(linkTo(methodOn(BookingRestController.class).选择支付方式_并完成发出支付请求(reservation.getId(),null)).withRel("pay_url"));
-
-
-        return ResponseEntity.ok(entityModel);
+        return charge;
 
     }
 

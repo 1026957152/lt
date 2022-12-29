@@ -7,8 +7,11 @@ import com.lt.dom.repository.ProductRepository;
 import com.lt.dom.repository.ReservationRepository;
 import com.lt.dom.repository.SupplierRepository;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
 import com.lt.dom.thirdTS.domainLtToTs.*;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +27,7 @@ import java.util.*;
 
 @Service
 public class LtToTsServiceImpl {
+    Logger logger = LoggerFactory.getLogger(LtToTsServiceImpl.class);
 
 
     String baseUrl_请求地址 = "http://ylltjs.sjdzp.com/Api/LocalCom/api.json?g_cid=95029";//
@@ -38,6 +42,8 @@ public class LtToTsServiceImpl {
     //TODO 验证核销通知(第三方通知天时同城)
 
     public TsRespLt验证核销通知 ltReqTs验证核销通知(LtReqTs验证核销通知.ToLtReqTs验证核销通知 to) {
+
+        logger.debug("核销天时同城订单 myorder{}, 另外订单{}，码号{}",to.getMy_orders_id(),to.getAnother_orders_id(),to.getCodes());
 
 
 
@@ -85,7 +91,14 @@ public class LtToTsServiceImpl {
             System.out.println("getStatusCode"+responseEntity.getStatusCode());
             TsRespLt验证核销通知 buffer = responseEntity.getBody();
             System.out.println("返回数据"+buffer.getMessage());
+         System.out.println("返回数据"+buffer);
 
+         if(buffer.getSuccess().equals("false")){
+             logger.debug("核销推送，天使系统返回 不成功,",buffer.getMessage());
+         }else{
+             logger.debug("核销推送，天使系统返回 成功");
+
+         }
             return buffer;
 
         }
@@ -351,7 +364,7 @@ public class LtToTsServiceImpl {
     public TsRespLt码号推送通知 ltReqTs码号推送通知(LtReqTs码号推送通知.ToLtReqTs码号推送通知 to) {
 
 
-
+        logger.info("TsRespLt码号推送通知 {}, {}, {}", to.getOrders_id(),to.getOut_code(),to.getOut_codes());
 
         LtReqTs码号推送通知 ltReqTs码号推送通知 = to.To();
         ltReqTs码号推送通知.set_pid(合作伙伴ID);
@@ -402,7 +415,7 @@ public class LtToTsServiceImpl {
 
         System.out.println("getStatusCode"+responseEntity.getStatusCode());
         TsRespLt码号推送通知 buffer = responseEntity.getBody();
-        System.out.println("登录获得的 accessToken"+buffer.getMessage());
+        System.out.println("登录获得的 accessToken"+buffer);
 
         return buffer;
 

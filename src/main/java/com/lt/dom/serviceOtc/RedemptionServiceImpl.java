@@ -1,6 +1,10 @@
 package com.lt.dom.serviceOtc;
 
+import com.lt.dom.OctResp.RightRedemptionEntryResp;
+import com.lt.dom.OctResp.RightRedemptionSummaryRespV1;
+import com.lt.dom.controllerOct.RedemptionRestController;
 import com.lt.dom.error.BookNotFoundException;
+import com.lt.dom.error.UnprocessableEntityException;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
@@ -9,9 +13,12 @@ import com.lt.dom.vo.RedemptionForObjectVo;
 import com.lt.dom.vo.ValidatedByTypeVo;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -29,6 +36,9 @@ import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatc
 
 @Service
 public class RedemptionServiceImpl {
+
+    private static final Logger logger = LoggerFactory.getLogger(RedemptionServiceImpl.class);
+
     @Autowired
     private ScenarioAssignmentRepository scenarioAssignmentRepository;
     @Autowired
@@ -40,6 +50,14 @@ public class RedemptionServiceImpl {
 
     @Autowired
     private DeviceRepository deviceRepository;
+
+    @Autowired
+    private ValidatorServiceImpl validatorService;
+    @Autowired
+    private VoucherServiceImpl voucherService;
+
+
+
 
 
     @Autowired
@@ -327,9 +345,9 @@ public class RedemptionServiceImpl {
     }
 
 
-    public  List<RightRedemptionEntry> redeemRight(RedemptionForObjectVo voucher,
+    public  Pair<Redemption,List<RightRedemptionEntry>> redeemRight(RedemptionForObjectVo voucher,
                                                    ValidatedByTypeVo  verifier核销人员,
-                                                   RedemptionForCustomerVo traveler用户,
+                                                   Optional<RedemptionForCustomerVo> traveler用户_,
                                                    List<ComponentVounch> componentVounchList) {
 
 
@@ -347,9 +365,13 @@ public class RedemptionServiceImpl {
         redemption.setValidatorType(verifier核销人员.getValidatorType());
         redemption.setValidator(verifier核销人员.funGetValidator());
 
-        redemption.setCustomer(traveler用户.getId());
-        redemption.setLog_Customer_name(traveler用户.getRealName());
-        redemption.setLog_Customer_code(traveler用户.getCode());
+        if(traveler用户_.isPresent()){
+            RedemptionForCustomerVo traveler用户 = traveler用户_.get();
+            redemption.setCustomer(traveler用户.getId());
+            redemption.setLog_Customer_name(traveler用户.getRealName());
+            redemption.setLog_Customer_code(traveler用户.getCode());
+
+        }
 
 
 
@@ -382,16 +404,16 @@ public class RedemptionServiceImpl {
 
                 .map(x->{
 
-                    return redeemRightForeach(finalRedemption,verifier核销人员,traveler用户,x);
+                    return redeemRightForeach(finalRedemption,verifier核销人员,traveler用户_,x);
 
                 }).collect(Collectors.toList());
 
 
 
-        return redemptionEntryList;
+        return Pair.with(redemption,redemptionEntryList);
     }
 
-    public RightRedemptionEntry redeemRightForeach(Redemption redemption ,ValidatedByTypeVo  verifier核销人员, RedemptionForCustomerVo traveler用户, ComponentVounch voucher权益) {
+    public RightRedemptionEntry redeemRightForeach(Redemption redemption ,ValidatedByTypeVo  verifier核销人员, Optional<RedemptionForCustomerVo> traveler用户, ComponentVounch voucher权益) {
 
 
         if(voucher权益.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed)){
@@ -463,9 +485,12 @@ public class RedemptionServiceImpl {
 
 
         entry.setRedemption(redemption.getId());
-        entry.setCustomer_id(traveler用户.getId());
+        if(traveler用户.isPresent()){
+            entry.setCustomer_id(traveler用户.get().getId());
 
-        entry.setLog_Customer_name(traveler用户.getRealName());
+            entry.setLog_Customer_name(traveler用户.get().getRealName());
+        }
+
 
         entry.setValidatorType(verifier核销人员.getValidatorType());
 
@@ -512,5 +537,128 @@ public class RedemptionServiceImpl {
 
     }
 
+
+
+    public EntityModel redeem(VoucherTicket voucher, Device device) {
+
+
+        logger.debug("验证 code:{}",voucher.getCode());
+
+/*
+
+        Optional<Pass> optionalVoucher = passRepository.findByCode(code.getC());
+
+
+        if(code.getC().startsWith("tike_")){
+            Optional<VoucherTicket> voucherTicketOptional = voucherTicketRepository.findByCode(code.getC());
+            if(voucherTicketOptional.isPresent()){
+                VoucherTicket voucherTicket = voucherTicketOptional.get();
+                if(voucherTicket.getType().equals(EnumVoucherType.PASS)){
+                    optionalVoucher = passRepository.findById(voucherTicket.getRelateId());
+                }
+            }
+        }
+*/
+
+
+
+
+/*
+
+        if(optionalVoucher.isEmpty()) {
+            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到门票"+code.getC());
+        }
+        Pass voucher =optionalVoucher.get();*/
+
+
+  /*      if(voucher.getExpiringDate().isBefore(LocalDateTime.now())){
+            throw new ExistException(Enumfailures.invalid_voucher,"该PASS已过期");
+        }
+*/
+
+/*        if(!voucher.isActive()){
+            throw new BookNotFoundException(Enumfailures.voucher_not_active,"该PASS未激活");
+        }*/
+
+        List<ComponentVounch> componentVounchList = validatorService.check(device.getId(),voucher.getCode() );
+
+
+        componentVounchList =  componentVounchList.stream()
+                .filter(e->!(e.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed)))
+                .map(e->{
+                    System.out.println("存在的"+e.toString());
+                    return e;
+                })
+                //       .filter(e->triplet来自设备.contains(e.getComponentRight()))
+                .collect(Collectors.toList());
+
+
+        System.out.println("测试测试  "+componentVounchList.size());
+        if(componentVounchList.size() == 0){
+
+            throw new UnprocessableEntityException(Enumfailures.not_found,"该券 已经 无 剩余可核销的 权益"+voucher.getCode());
+
+        }
+
+        ValidatedByTypeVo verifier核销人员 = new ValidatedByTypeVo();
+        verifier核销人员.setValidatorType(EnumValidatorType.特定机器);
+
+        verifier核销人员.setDevice(device);
+
+
+        RedemptionForObjectVo redemptionForObjectVo = new RedemptionForObjectVo();
+        redemptionForObjectVo.setRelatedObjectId(voucher.getId());
+        redemptionForObjectVo.setRelatedObjectType(EnumRelatedObjectType.voucher);
+        redemptionForObjectVo.setRelatedObjectCode(voucher.getCode());
+        redemptionForObjectVo.setRelatedObject_subType(voucher.getType().name());
+        redemptionForObjectVo.setLable(voucher.getLable());
+
+
+
+
+        Optional<RedemptionForCustomerVo> redemptionForCustomerVo = voucherService.Cardholder(voucher);
+
+
+
+        Pair<Redemption,List<RightRedemptionEntry>> redemptionListPair= redeemRight(redemptionForObjectVo,verifier核销人员,redemptionForCustomerVo,componentVounchList);
+
+        Redemption redemption = redemptionListPair.getValue0();
+        List<RightRedemptionEntry> redemptionEntryList = redemptionListPair.getValue1();
+
+        redemptionEntryList = rightRedemptionEntryRepository.saveAll(redemptionEntryList);
+
+
+
+
+        RightRedemptionSummaryRespV1 resp = new RightRedemptionSummaryRespV1();
+
+        resp.setEntries(redemptionEntryList.stream().map(e->{
+
+            RightRedemptionEntryResp rightRedemptionEntry = RightRedemptionEntryResp.from(e);
+
+            return rightRedemptionEntry;
+
+        }).collect(Collectors.toList()));
+        // resp.setTotal(redemptionEntryList.size());
+
+        resp.setValidatorChannel(verifier核销人员.getValidatorType().name());
+        resp.setValidatorCode(verifier核销人员.funGetValidatorCode());
+        resp.setCode(redemption.getCode());
+
+
+
+        //  MONEY, PERCENT or EXTERNALOFFER
+        resp.setValuetype(EnumDiscountVoucherCategory.UNIT);
+        resp.setCustomer(redemption);
+        resp.setRedeemedDateTime(redemption.getCreatedDate());
+
+        EntityModel redemptionEntryEntityModel =  EntityModel.of(resp);
+
+
+        return redemptionEntryEntityModel;
+
+
+
+    }
 
 }

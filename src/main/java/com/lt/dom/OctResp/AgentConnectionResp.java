@@ -9,7 +9,7 @@ import com.lt.dom.otcenum.EnumThirdParty;
 import java.time.LocalDate;
 import java.util.List;
 
-public class AgentResp extends BaseResp{
+public class AgentConnectionResp extends BaseResp{
 
 
 
@@ -42,10 +42,10 @@ public class AgentResp extends BaseResp{
     private SupplierResp agent;
     private SupplierResp supplier;
 
-    public static AgentResp toSupplier(AgentConnection e, Supplier supplier) {
+    public static AgentConnectionResp toSupplier(AgentConnection e, Supplier supplier) {
 
 
-        AgentResp agentResp = new AgentResp();
+        AgentConnectionResp agentResp = new AgentConnectionResp();
         agentResp.setName(supplier.getName());
         agentResp.setCode(supplier.getCode());
         agentResp.setStatus(e.getStatus());
@@ -81,16 +81,16 @@ public class AgentResp extends BaseResp{
         this.last_booked = last_booked;
     }
 
-    public static AgentResp simpleFrom(AgentConnection region) {
-        AgentResp resp = new AgentResp();
+    public static AgentConnectionResp simpleFrom(AgentConnection region) {
+        AgentConnectionResp resp = new AgentConnectionResp();
         resp.setName(region.getName());
         resp.setCode(region.getCode());
         resp.setDescription(region.getDesc());
         return resp;
 
     }
-    public static AgentResp from(AgentConnection region) {
-        AgentResp resp = new AgentResp();
+    public static AgentConnectionResp from(AgentConnection region) {
+        AgentConnectionResp resp = new AgentConnectionResp();
         resp.setName(region.getName());
         resp.setCode(region.getCode());
 /*        resp.setPlatform(region.getPlatform());

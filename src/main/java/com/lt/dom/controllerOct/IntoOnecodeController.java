@@ -10,19 +10,13 @@ import com.lt.dom.error.ExistException;
 import com.lt.dom.error.Voucher_has_no_permistion_redeemException;
 import com.lt.dom.error.voucher_not_publishException;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.OnecodeScanPojo;
-import com.lt.dom.otcReq.PassActivePojo;
-import com.lt.dom.otcReq.PassCreatePojo;
-import com.lt.dom.otcReq.RedemByCryptoCodePojo;
+import com.lt.dom.otcReq.*;
 import com.lt.dom.otcenum.EnumCampaignToTourBookingStatus;
 import com.lt.dom.otcenum.EnumVoucherStatus;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.PublishTowhoVo;
-import com.lt.dom.serviceOtc.AuthenticationFacade;
-import com.lt.dom.serviceOtc.IntoOnecodeServiceImpl;
-import com.lt.dom.serviceOtc.PassServiceImpl;
-import com.lt.dom.serviceOtc.ValidateServiceImpl;
+import com.lt.dom.serviceOtc.*;
 import com.lt.dom.thiirdAli.idfaceIdentity.IdfaceIdentityOcrService;
 import com.lt.dom.thiirdAli.idfaceIdentity.IdfaceIdentityVo;
 import com.lt.dom.util.ZxingBarcodeGenerator;
@@ -72,23 +66,25 @@ public class IntoOnecodeController {
 
     @Autowired
     private ValidateServiceImpl validateService;
+    @Autowired
+    private VoucherTicketRepository voucherTicketRepository;
 
-/*
-
-
-    @GetMapping(value = "/passes", produces = "application/json")
-    public PagedModel getPassList( Pageable pageable, PagedResourcesAssembler<EntityModel<Pass>> assembler) {
-
-        Page<Pass> validatorOptional = passRepository.findAll(pageable);
+    /*
 
 
-        return assembler.toModel(validatorOptional.map(e->{
-            PassResp passResp = PassResp.from(e);
-            EntityModel entityModel = EntityModel.of(e);
-            return entityModel;
-        }));
-    }
-*/
+        @GetMapping(value = "/passes", produces = "application/json")
+        public PagedModel getPassList( Pageable pageable, PagedResourcesAssembler<EntityModel<Pass>> assembler) {
+
+            Page<Pass> validatorOptional = passRepository.findAll(pageable);
+
+
+            return assembler.toModel(validatorOptional.map(e->{
+                PassResp passResp = PassResp.from(e);
+                EntityModel entityModel = EntityModel.of(e);
+                return entityModel;
+            }));
+        }
+    */
 @GetMapping(value = "/onecode", produces = "application/json")
 public PagedModel getPassList( Pageable pageable, PagedResourcesAssembler<EntityModel<Pass>> assembler) {
 
@@ -114,8 +110,13 @@ public PagedModel getPassList( Pageable pageable, PagedResourcesAssembler<Entity
 
         IntoOnecode intoOnecode = intoOnecodeService.getAvailability(validatorOptional.get());
 
-        List<ComponentVounch> componentVounchList = componentVounchRepository.findAllByUser(user.getId());
-        IntoOnecodeResp intoOnecodeResp = IntoOnecodeResp.from(user,intoOnecode);
+
+        List<VoucherTicket> voucherTickets = voucherTicketRepository.findAllByUser(user.getId());
+
+
+
+        List<ComponentVounch> componentVounchList = componentVounchRepository.findAllByUserOrderByCreatedDate(user.getId());
+        IntoOnecodeResp intoOnecodeResp = IntoOnecodeResp.desensitizedfrom(user,intoOnecode);
 
 
 
@@ -133,6 +134,7 @@ public PagedModel getPassList( Pageable pageable, PagedResourcesAssembler<Entity
 
 
 
+
         intoOnecodeResp.setComponentVounch(componentVounchList.stream().map(e->{
             Supplier supplier = longSupplierMap.get(e.getSupplier());
             ComponentRight componentRight = componentRightMap.get(e.getComponentRight());
@@ -144,6 +146,21 @@ public PagedModel getPassList( Pageable pageable, PagedResourcesAssembler<Entity
             entityModel.add(linkTo(methodOn(ComponentRightRestController.class).getComponentVoucher(e.getId())).withSelfRel());
 
             return componentVounchResp;
+
+        }).collect(Collectors.toList()));
+
+        //intoOnecodeResp.setVouchers(voucherTickets.stream().map(e->{
+
+
+        intoOnecodeResp.setComponentVounch(voucherTickets.stream().map(e->{
+            VoucherTicketResp voucherTicketResp = VoucherTicketResp.from(e);
+
+            voucherTicketResp.setName(e.getLable());
+            voucherTicketResp.setCode_base64_src(CryptoServiceImpl.encode_png_base64(e.getCode()));
+
+            EntityModel entityModel = EntityModel.of(voucherTicketResp);
+            entityModel.add(linkTo(methodOn(ComponentRightRestController.class).getComponentVoucher(e.getId())).withSelfRel());
+            return entityModel;
 
         }).collect(Collectors.toList()));
         EntityModel entityModel = EntityModel.of(intoOnecodeResp);

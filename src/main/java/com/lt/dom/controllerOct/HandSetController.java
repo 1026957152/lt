@@ -11,6 +11,7 @@ import com.lt.dom.otcenum.EnumValidatorType;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.AuthenticationFacade;
+import com.lt.dom.serviceOtc.FulfillServiceImpl;
 import com.lt.dom.serviceOtc.IntoOnecodeServiceImpl;
 import com.lt.dom.serviceOtc.ValidateServiceImpl;
 import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
@@ -47,6 +48,11 @@ public class HandSetController {
 
     @Autowired
     private PassRepository passRepository;
+
+    @Autowired
+    private FulfillServiceImpl fulfillService;
+
+
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -176,7 +182,11 @@ public class HandSetController {
 
         RedemBycodePojo.Code redemBycodePojo = new RedemBycodePojo.Code();
         redemBycodePojo.setCode(cardholderList.get(0).getIdentity());
-        EntityModel entityModel = cityPassService.validate_by_idnumber(redemBycodePojo,userOv_景区检票员);
+
+        List<VoucherTicket> voucherTickets = fulfillService.find_(cardholderList.get(0));
+
+
+        EntityModel entityModel = cityPassService.validate_by_idnumber(voucherTickets,userOv_景区检票员);
 
 
         if(entityModel!= null){

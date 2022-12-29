@@ -490,7 +490,7 @@ public class OpenidRestController {
 
 
 
-        String jwt = jwtUtils.generateJwtToken(1,user.getPhone());
+        String jwt = jwtUtils.generateJwtToken(EnumIdentityType.phone,user.getPhone());
 
         UserWithTokenResp authsResp = new UserWithTokenResp();
 
@@ -703,7 +703,7 @@ public class OpenidRestController {
 
 
         User user = userService.createUser(userPojo,Arrays.asList(Pair.with(EnumIdentityType.phone,userPojo.getPhone())));
-        supplierServiceImp.成为员工(supplier,user);
+        supplierServiceImp.成为员工(supplier,user, null);
 
 
      //   applyForApprovalService.create(EnumRequestType.Merchants_settled,wxlinkUserReq,user);
@@ -719,7 +719,7 @@ public class OpenidRestController {
         settleAccountService.add(supplier,settleAccountPojo);
 
 
-        String jwt = jwtUtils.generateJwtToken(1,user.getPhone());
+        String jwt = jwtUtils.generateJwtToken(EnumIdentityType.phone,user.getPhone());
 
         UserWithTokenResp authsResp = new UserWithTokenResp();
 

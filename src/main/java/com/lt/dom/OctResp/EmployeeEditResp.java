@@ -35,7 +35,24 @@ public class EmployeeEditResp {
 
     private String lastName;
     private String phone;
+    private String name;
 
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
 
     private String email;
 
@@ -58,7 +75,7 @@ private String code;
     public void setStatus_text(String status_text) {
         this.status_text = status_text;
     }
-
+/*
     public static EmployeeEditResp sigleElementfrom(Triplet<Supplier,Employee, User> triplet) {
         EmployeeEditResp employeeResp = new EmployeeEditResp();
 
@@ -80,8 +97,8 @@ private String code;
 
 
         return employeeResp;
-    }
-
+    }*/
+/*
     public static EntityModel<EmployeeEditResp> pageElementfrom(Triplet<Supplier,Employee, User> triplet) {
         EmployeeEditResp employeeResp = new EmployeeEditResp();
 
@@ -103,7 +120,7 @@ private String code;
 
 
         return entityModel;
-    }
+    }*/
     public static EmployeeEditResp pageElementfrom(Pair<Employee, User> pair) {
         EmployeeEditResp employeeResp = new EmployeeEditResp();
 
@@ -113,8 +130,8 @@ private String code;
         employeeResp.setCreated_at(employee.getCreated_at());
         employeeResp.setStatus_text(employee.getStatus().toString());
      //   employeeResp.setSuplier(employee.getValue0().getName());
-        employeeResp.setPhone(user.getPhone());
-        employeeResp.setReal_name(user.getRealName()==null?"": user.getRealName());
+        employeeResp.setPhone(employee.getPhone());
+        employeeResp.setName(employee.getName());
 
         employeeResp.setCode(employee.getCode());
         System.out.println("=================================="+ user.getRoles().size());

@@ -4,10 +4,7 @@ package com.lt.dom.OctResp;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lt.dom.controllerOct.BookingRestController;
 import com.lt.dom.controllerOct.EmployeeRestController;
-import com.lt.dom.oct.Employee;
-import com.lt.dom.oct.Role;
-import com.lt.dom.oct.Supplier;
-import com.lt.dom.oct.User;
+import com.lt.dom.oct.*;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.springframework.hateoas.EntityModel;
@@ -20,7 +17,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class EmployeeResp {
+public class EmployeeResp extends BaseResp {
 
 
 
@@ -44,8 +41,9 @@ private String code;
     private List<RoleResp> roles;
     private String real_name;
     private String status_text;
-    private LocalDateTime created_at;
+
     private String nick_name;
+    private String name;
 
     public static EmployeeResp sigleElementfrom(Employee triplet) {
         EmployeeResp employeeResp = new EmployeeResp();
@@ -54,7 +52,7 @@ private String code;
 
         employeeResp.setSuplier(triplet.getSuplierId()+"");
         employeeResp.setPhone(triplet.getPhone());
-        employeeResp.setCreated_at(triplet.getCreated_at());
+
         employeeResp.setStatus_text(triplet.getStatus().toString());
         employeeResp.setCode(triplet.getCode());
 
@@ -76,7 +74,7 @@ private String code;
 
         employeeResp.setSuplier(triplet.getValue0().getName());
         employeeResp.setPhone(triplet.getValue2().getPhone());
-        employeeResp.setCreated_at(employee.getCreated_at());
+
         employeeResp.setStatus_text(employee.getStatus().toString());
         employeeResp.setCode(triplet.getValue1().getCode());
         List<Role> roles = triplet.getValue2().getRoles().stream().collect(Collectors.toList());
@@ -92,18 +90,22 @@ private String code;
 
     public static EntityModel<EmployeeResp> pageElementfrom(Triplet<Supplier,Employee, User> triplet) {
         EmployeeResp employeeResp = new EmployeeResp();
-
+        Supplier supplier = triplet.getValue0();
         Employee employee = triplet.getValue1();
         User user = triplet.getValue2();
 
-        employeeResp.setSuplier(triplet.getValue0().getName());
-        employeeResp.setPhone(user.getPhone());
-        employeeResp.setCreated_at(employee.getCreated_at());
+        employeeResp.setSuplier(supplier.getName());
+
+
         employeeResp.setStatus_text(employee.getStatus().toString());
-        employeeResp.setNick_name(user.getNick_name()==null?"": user.getNick_name());
-        employeeResp.setReal_name(user.getRealName()==null?"": user.getRealName());
-        employeeResp.setCode(user.getCode());
-        List<Role> roles = triplet.getValue2().getRoles().stream().collect(Collectors.toList());
+        employeeResp.setName(employee.getName());
+        employeeResp.setPhone(employee.getPhone());
+        employeeResp.setCode(employee.getCode());
+        employeeResp.setCreatedDate(employee.getCreatedDate());
+        employeeResp.setModifiedDate(employee.getModifiedDate());
+
+
+        List<Role> roles = user.getRoles().stream().collect(Collectors.toList());
         employeeResp.setRoles(RoleResp.fromWithoutModel(roles));
 
 
@@ -118,7 +120,7 @@ private String code;
         User user = pair.getValue1();
         Employee employee = pair.getValue0();
 
-        employeeResp.setCreated_at(employee.getCreated_at());
+
         employeeResp.setStatus_text(employee.getStatus().toString());
      //   employeeResp.setSuplier(employee.getValue0().getName());
         employeeResp.setPhone(user.getPhone());
@@ -203,13 +205,6 @@ private String code;
         return real_name;
     }
 
-    public void setCreated_at(LocalDateTime created_at) {
-        this.created_at = created_at;
-    }
-
-    public LocalDateTime getCreated_at() {
-        return created_at;
-    }
 
     public void setNick_name(String nick_name) {
         this.nick_name = nick_name;
@@ -217,5 +212,13 @@ private String code;
 
     public String getNick_name() {
         return nick_name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 }

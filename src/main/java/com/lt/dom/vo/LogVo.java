@@ -1,14 +1,16 @@
 package com.lt.dom.vo;
 
+import com.lt.dom.otcenum.EnumIdentityType;
+
 public class LogVo {
-    private int type;
+    private EnumIdentityType type;
     private String name;
 
-    public int getType() {
+    public EnumIdentityType getType() {
         return type;
     }
 
-    public void setType(int type) {
+    public void setType(EnumIdentityType type) {
         this.type = type;
     }
 
@@ -20,7 +22,7 @@ public class LogVo {
         this.name = name;
     }
 
-    public LogVo(int i, String username) {
+    public LogVo(EnumIdentityType i, String username) {
 
         this.type = i;
         this.name = username;

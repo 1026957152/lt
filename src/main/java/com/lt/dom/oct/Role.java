@@ -1,10 +1,14 @@
 package com.lt.dom.oct;
 
+import com.lt.dom.OctResp.EnumLongIdResp;
+import com.lt.dom.OctResp.EnumResp;
+import com.lt.dom.otcenum.EnumRole;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 public class Role {
@@ -128,5 +132,14 @@ public class Role {
     }
     // getters and setters are not shown for brevity
 
+    public static List List(List<Role> componentRightMap) {
+        return componentRightMap.stream().map(x->{
+            EnumResp enumResp = new EnumResp();
+            enumResp.setId(x.getName());
+
+            enumResp.setText(EnumRole.valueOf(x.getName()).toString());
+            return enumResp;
+        }).collect(Collectors.toList());
+    }
 
 }

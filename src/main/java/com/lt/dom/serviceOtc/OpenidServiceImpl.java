@@ -86,7 +86,7 @@ public class OpenidServiceImpl {
 
 
         userAuthorityService.checkWeixinBind(openid,user);
-        User user_ = userService.userAuth(user,Arrays.asList(Pair.with(EnumIdentityType.weixin,openid.getOpenid())));
+        User user_ = userAuthorityService.userAuth(user,Arrays.asList(Pair.with(EnumIdentityType.weixin,openid.getOpenid())));
 
 /*
 

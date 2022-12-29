@@ -1,5 +1,7 @@
 package com.lt.dom.OctResp;
 
+import cn.hutool.core.util.DesensitizedUtil;
+import cn.hutool.crypto.CryptoException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lt.dom.oct.Cardholder;
@@ -48,14 +50,27 @@ public class CardholderResp {
     private PhotoResp back;
     private String identity;
     private String uuid;
+    public static CardholderResp Desensitizedfrom(Cardholder cardholder) {
+
+        CardholderResp cardholderResp = new CardholderResp();
+        cardholderResp.setName(DesensitizedUtil.chineseName(cardholder.getName()));//cardholder.getName());
+        cardholderResp.setIdentity(DesensitizedUtil.idCardNum(cardholder.getIdentity(),1,2));
+        cardholderResp.setType(cardholder.getType());
+        cardholderResp.setPhoneNumber(DesensitizedUtil.mobilePhone(cardholder.getPhoneNumber()));
+
+        return cardholderResp;
+    }
 
     public static CardholderResp from(Cardholder cardholder) {
+
         CardholderResp cardholderResp = new CardholderResp();
         cardholderResp.setName(cardholder.getName());
         cardholderResp.setIdentity(cardholder.getIdentity());
         cardholderResp.setType(cardholder.getType());
         cardholderResp.setPhoneNumber(cardholder.getPhoneNumber());
         cardholderResp.setUuid(cardholder.getUuid());
+
+
 
 
         return cardholderResp;

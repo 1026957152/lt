@@ -12,6 +12,7 @@ import com.lt.dom.serviceOtc.*;
 import com.lt.dom.vo.SupplierPojoVo;
 import com.lt.dom.vo.UserVo;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.Builder;
 import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -482,7 +483,7 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
 
     @Operation(summary = "4、成为员工")
     @PostMapping(value = "/suppliers/{SUPPLIER_ID}/employees", produces = "application/json")
-    public ResponseEntity linkEmployee(@PathVariable long SUPPLIER_ID, @RequestBody @Valid EmployerPojo employerPojo) {
+    public ResponseEntity linkEmployee(@PathVariable long SUPPLIER_ID, @RequestBody @Valid EmployerLinkPojo employerPojo) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
         if(optionalSupplier.isEmpty()) {
@@ -509,9 +510,23 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
 
     }
 
+
+    @GetMapping(value = "/users/{SUPPLIER_ID}/auth_code", produces = "application/json")
+    public ResponseEntity getUserAuthCode(@PathVariable long SUPPLIER_ID) {
+
+        Optional<User> optionalSupplier = userRepository.findById(SUPPLIER_ID);
+
+        ;
+
+        return ResponseEntity.ok(CryptoServiceImpl.encode(optionalSupplier.get().getCode()));
+
+
+    }
+/*
+
     @Operation(summary = "4、成为员工")
     @PostMapping(value = "/suppliers/{SUPPLIER_ID}/employees/create", produces = "application/json")
-    public ResponseEntity createEmployee(@PathVariable long SUPPLIER_ID, @RequestBody @Valid EmployerPojo employerPojo) {
+    public ResponseEntity createEmployee(@PathVariable long SUPPLIER_ID, @RequestBody @Valid EmployerLinkPojo employerPojo) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
         if(optionalSupplier.isEmpty()) {
@@ -538,7 +553,7 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
 
 
 
-        Employee triplet = supplierService.createEmployee(supplier,employerPojo,hasEnumRoles);
+        Triplet<Supplier,Employee,User>  triplet = supplierService.linkEmployee(supplier,employerPojo,hasEnumRoles);
 
 
 
@@ -546,12 +561,15 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
 
 
     }
+*/
 
 
 
     @Operation(summary = "3、list所有员工")
     @GetMapping(value = "/suppliers/{SUPPLIER_ID}/employees", produces = "application/json")
-    public PagedModel listEmployee(@PathVariable long SUPPLIER_ID, Pageable pageable, PagedResourcesAssembler<EntityModel<EmployeeResp>> assembler) {
+    public PagedModel listEmployee(@PathVariable long SUPPLIER_ID,
+                                   @PageableDefault(sort = {"createdDate", "modifiedDate"}, direction = Sort.Direction.DESC) final Pageable pageable,
+                                   PagedResourcesAssembler<EntityModel<EmployeeResp>> assembler) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(SUPPLIER_ID);
         if(optionalSupplier.isEmpty()) {
@@ -560,9 +578,11 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
         }
         Supplier supplier = optionalSupplier.get();
 
-        Page<Employee> employees = employeeRepository.findBySuplierId(supplier.getId(),pageable);
+        Page<Employee> employees = employeeRepository.findBySuplierIdAndStatus(supplier.getId(),EnumEmployeeStatus.active,pageable);
 
-        List<User> users = userRepository.findAllById(employees.stream().map(x->x.getUserId()).collect(Collectors.toList()));
+        List<User> users = userRepository.findAllById(employees.stream()
+                        .filter(e->e.getUserId()!= null)
+                .map(x->x.getUserId()).collect(Collectors.toList()));
         Map<Long,User> userMap = users.stream().collect(Collectors.toMap(x->x.getId(),x->x));
 
 
@@ -797,10 +817,17 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
         }
         Supplier supplier = optionalSupplier.get();
 
-        List<String> enumRoles = Arrays.asList(EnumRole.ROLE_BANK_STAFF).stream().map(e->e.name()).collect(Collectors.toList());
+        List<String> enumRoles = roleService.get(supplier).stream().map(e->e.name()).collect(Collectors.toList());
         List<Role> roles = roleRepository.findAll();
-        EntityModel entityModel =  EntityModel.of( Map.of(
 
+
+
+        Map parameterList = new HashMap();
+        parameterList.put("role_list",Role.List(roles.stream().filter(e->enumRoles.contains(e.getName())).collect(toList())));
+
+
+        EntityModel entityModel =  EntityModel.of( Map.of(
+                "parameterList",parameterList,
                 "roles", roles.stream().filter(e->enumRoles.contains(e.getName())).map(x->{
                     EnumResp enumResp = new EnumResp();
                     enumResp.setId(x.getName());
@@ -810,7 +837,7 @@ Map maps  =         Map.of("roles", roles.stream().map(x->{
                 }).collect(Collectors.toList())));
 
 
-        entityModel.add(linkTo(methodOn(SupplierRestController.class).createEmployee(supplier.getId(),null)).withRel("create"));
+        entityModel.add(linkTo(methodOn(SupplierRestController.class).linkEmployee(supplier.getId(),null)).withRel("create"));
 
 
         return entityModel;

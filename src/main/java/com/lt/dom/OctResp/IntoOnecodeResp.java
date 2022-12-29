@@ -1,9 +1,11 @@
 package com.lt.dom.OctResp;
 
+import cn.hutool.core.util.DesensitizedUtil;
 import com.lt.dom.controllerOct.BarcodesController;
 import com.lt.dom.oct.IntoOnecode;
 import com.lt.dom.oct.User;
 import com.lt.dom.otcenum.EnumAssetType;
+import com.lt.dom.serviceOtc.CryptoServiceImpl;
 import com.lt.dom.util.ZxingBarcodeGenerator;
 
 import java.util.List;
@@ -26,6 +28,7 @@ public class IntoOnecodeResp {
     private String code_base64;
     private String code_base64_src;
     private String code_note;
+    private List vouchers;
 
     public String getUsername() {
         return username;
@@ -35,7 +38,7 @@ public class IntoOnecodeResp {
         this.username = username;
     }
 
-    private List<ComponentVounchResp> componentVounch;
+    private List componentVounch;
 
     public static IntoOnecodeResp from(User user, IntoOnecode intoOnecode) {
         IntoOnecodeResp intoOnecodeResp = new IntoOnecodeResp();
@@ -52,11 +55,34 @@ public class IntoOnecodeResp {
 
 
         intoOnecodeResp.setCode_note("请出示二维码，核验权益");
-        intoOnecodeResp.setCode_base64_src(ZxingBarcodeGenerator.base64_png_src(intoOnecode.getIdId()));
-
+     //   intoOnecodeResp.setCode_base64_src(ZxingBarcodeGenerator.base64_png_src(intoOnecode.getIdId()));
+        intoOnecodeResp.setCode_base64_src(CryptoServiceImpl.encode_png_base64(intoOnecode.getIdId()));
         intoOnecodeResp.setUrl(link);
         return intoOnecodeResp;
     }
+
+    public static IntoOnecodeResp desensitizedfrom(User user, IntoOnecode intoOnecode) {
+        IntoOnecodeResp intoOnecodeResp = new IntoOnecodeResp();
+        intoOnecodeResp.setCode(intoOnecode.getIdId());
+        intoOnecodeResp.setType(intoOnecode.getType());
+
+
+        intoOnecodeResp.setUsername(DesensitizedUtil.chineseName(user.getRealName()));
+        String link = null;
+        try {
+            link = linkTo(methodOn(BarcodesController.class).getZxingQRCode(intoOnecode.getIdId())).withRel("editProduct").getHref();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        intoOnecodeResp.setCode_note("请出示二维码，核验权益");
+        //   intoOnecodeResp.setCode_base64_src(ZxingBarcodeGenerator.base64_png_src(intoOnecode.getIdId()));
+        intoOnecodeResp.setCode_base64_src(CryptoServiceImpl.encode_png_base64(intoOnecode.getIdId()));
+        intoOnecodeResp.setUrl(link);
+        return intoOnecodeResp;
+    }
+
 
 
     public EnumAssetType getType() {
@@ -83,11 +109,11 @@ public class IntoOnecodeResp {
         this.url = url;
     }
 
-    public  void setComponentVounch(List<ComponentVounchResp> componentVounch) {
+    public  void setComponentVounch(List componentVounch) {
         this.componentVounch = componentVounch;
     }
 
-    public List<ComponentVounchResp> getComponentVounch() {
+    public List getComponentVounch() {
         return componentVounch;
     }
 
@@ -113,6 +139,16 @@ public class IntoOnecodeResp {
 
     public String getCode_note() {
         return code_note;
+    }
+
+    public <R> void setVouchers(List vouchers) {
+
+
+        this.vouchers = vouchers;
+    }
+
+    public List getVouchers() {
+        return vouchers;
     }
 
     /*    "qr":{

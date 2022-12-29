@@ -2,6 +2,7 @@ package com.lt.dom.serviceOtc;
 
 import com.lt.dom.OctResp.EmployeeEditResp;
 import com.lt.dom.OctResp.SupplierEditResp;
+import com.lt.dom.controllerOct.EmployeeRestController;
 import com.lt.dom.domain.SettleAccount;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.oct.*;
@@ -10,6 +11,8 @@ import com.lt.dom.otcenum.*;
 import com.lt.dom.repository.*;
 import com.lt.dom.vo.SupplierPojoVo;
 import org.javatuples.Triplet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class SupplierServiceImp {
+
+    Logger logger = LoggerFactory.getLogger(EmployeeRestController.class);
+
     @Autowired
     private SupplierRepository supplierRepository;
     @Autowired
@@ -46,16 +52,18 @@ public class SupplierServiceImp {
 
 
 
-    public Employee 成为员工(Supplier referral, User user){
+    public Employee 成为员工(Supplier referral, User user, EmployerLinkPojo o){
 
         List<Employee> employees = employeeRepository.findBySuplierId(referral.getId());
 
 
         if(employees.stream() // 如果存在，且 不活跃，则激活。
-                .filter(x->x.getUserId() == user.getId())
-                .filter(x->x.getStatus().equals(EnumEmployeeStatus.active)).findAny().isPresent()){
+                .filter(x->x.getStatus().equals(EnumEmployeeStatus.active))
+                .filter(x->x.getUserId().equals(user.getId()))
+             .findAny().isPresent()){
             throw new BookNotFoundException(Enumfailures.resource_not_found,"已经是公司 职工");
         }
+
 
 
         employeeRepository.saveAll(employeeRepository.findAllByUserId(user.getId()).stream() // TODO 把仙子服务的全部给 不服务
@@ -72,6 +80,8 @@ public class SupplierServiceImp {
         if(employeeOptional.isPresent()){
             Employee employee = employeeOptional.get();
             employee.setStatus(EnumEmployeeStatus.active);
+            employee.setPhone(o.getPhone());
+            employee.setName(o.getName());
             employee =employeeRepository.save(employee);
             return employee;
         }
@@ -79,15 +89,17 @@ public class SupplierServiceImp {
 
 
 
-        Employee royaltyRuleData = new Employee();
-        royaltyRuleData.setCode(idGenService.employeeNo());
-        royaltyRuleData.setSuplierId(referral.getId());
-        royaltyRuleData.setUserId(user.getId());
-        royaltyRuleData.setCreated_at(LocalDateTime.now());
-        royaltyRuleData.setStatus(EnumEmployeeStatus.active);
+        Employee employee = new Employee();
+        employee.setCode(idGenService.employeeNo());
+        employee.setSuplierId(referral.getId());
+        employee.setUserId(user.getId());
+        employee.setCreated_at(LocalDateTime.now());
+        employee.setStatus(EnumEmployeeStatus.active);
+        employee.setPhone(o.getPhone());
+        employee.setName(o.getName());
 
-        royaltyRuleData = employeeRepository.save(royaltyRuleData);
-        return royaltyRuleData;
+        employee = employeeRepository.save(employee);
+        return employee;
 
     }
 
@@ -160,7 +172,12 @@ public class SupplierServiceImp {
 
     }
 
-    public Triplet<Supplier,Employee,User> linkEmployee(Supplier supplier, EmployerPojo employerPojo, List<String> hasEnumRoles) {
+    public Triplet<Supplier,Employee,User> linkEmployee(Supplier supplier, EmployerLinkPojo employerPojo, List<String> hasEnumRoles) {
+
+
+        String auth_code = CryptoServiceImpl.decode(employerPojo.getAuth_code());
+
+/*
 
         Optional<UserAuthority> optional = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,employerPojo.getPhone());
         if(optional.isEmpty()){
@@ -170,14 +187,31 @@ public class SupplierServiceImp {
         UserAuthority userAuthority = optional.get();
 
         Optional<User> optionalUser = userRepository.findById(userAuthority.getUserId());
+*/
+
+        Optional<User> optionalUser = userRepository.findByCode(auth_code);
+
         if(optionalUser.isEmpty()){
 
             throw new BookNotFoundException(Enumfailures.not_found,"找不到用户");
         }
         User user = optionalUser.get();
-        Employee employee = 成为员工(supplier,user);
+
+
+        Employee employee = 成为员工(supplier,user,employerPojo);
+
+     //   List<String> hasEnumRoles  = employerPojo.getRoles().stream().filter(x-> enumRoles.contains(x)).collect(Collectors.toList());
+
+        logger.debug("这里 看提交来的  {}",employerPojo.getRoles());
+
+        user = userService.createRoleIfNotFound(user,employerPojo.getRoles());
+        user = userRepository.save(user);
+
+
         return Triplet.with(supplier,employee,user);
     }
+
+
 
 
     public Employee createEmployee(Supplier supplier, EmployerPojo employerPojo, List<String> hasEnumRoles) {
@@ -189,7 +223,7 @@ public class SupplierServiceImp {
         }
         User user = optional.get();
 
-        Employee employee = 成为员工(supplier,user);
+        Employee employee = 成为员工(supplier,user, null);
         return employee;
 /*
         UserPojo userPojo = new UserPojo();
@@ -219,14 +253,18 @@ public class SupplierServiceImp {
         Optional<User> users = userRepository.findById(employee.getUserId());
         User user = users.get();
 
-        List<Role> roleList = roleRepository.findByNameIn(employerPojo.getRoles());
 
-        user = userService.createRoleIfNotFound(user,roleList.stream().map(e->e.getName()).collect(Collectors.toList()));
+        user = userService.createRoleIfNotFound(user,employerPojo.getRoles());
+
         user = userRepository.save(user);
         employerPojo.getRoles();
+        employee.setName(employerPojo.getName());
+        employee.setPhone(employerPojo.getPhone());
+
+        employee = employeeRepository.save(employee);
         return Triplet.with(optionalSupplier.get(),employee,user);
     }
-    public Triplet<Supplier,Employee,User> updateEmployeeBackup(Employee employee, EmployerUpdatePojo employerPojo) {
+ /*   public Triplet<Supplier,Employee,User> updateEmployeeBackup(Employee employee, EmployerUpdatePojo employerPojo) {
 
         Optional<Supplier> optionalSupplier = supplierRepository.findById(employee.getSuplierId());
 
@@ -240,5 +278,5 @@ public class SupplierServiceImp {
         user = userRepository.save(user);
         employerPojo.getRoles();
         return Triplet.with(optionalSupplier.get(),employee,user);
-    }
+    }*/
 }

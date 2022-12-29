@@ -27,6 +27,7 @@ public class Component extends Base{   // 这个是 下单的时候， 从 produ
     @NotNull
     private EnumComponentVoucherType type;
     private Long agent;
+    private String agentProductCode;
 
     public EnumComponentVoucherType getType() {
         return type;
@@ -360,5 +361,13 @@ public class Component extends Base{   // 这个是 下单的时候， 从 produ
 
     public Long getAgent() {
         return agent;
+    }
+
+    public void setAgentProductCode(String agentProductCode) {
+        this.agentProductCode = agentProductCode;
+    }
+
+    public String getAgentProductCode() {
+        return agentProductCode;
     }
 }

@@ -26,6 +26,9 @@ public class RedemptionTryResp {
     private String type_text;
 
     private Boolean redeemAllowed;
+    private Boolean partiallyRedeemable;
+    private String redeem_voucher_key;
+    private Boolean available;
 
     public void setType_text(String type_text) {
         this.type_text = type_text;
@@ -42,6 +45,31 @@ public class RedemptionTryResp {
 
     public Boolean isRedeemAllowed() {
         return redeemAllowed;
+    }
+
+    public void setPartiallyRedeemable(Boolean partiallyRedeemable) {
+        this.partiallyRedeemable = partiallyRedeemable;
+    }
+
+    public Boolean getPartiallyRedeemable() {
+        return partiallyRedeemable;
+    }
+
+    public void setRedeem_voucher_key(String redeem_voucher_key) {
+
+        this.redeem_voucher_key = redeem_voucher_key;
+    }
+
+    public String getRedeem_voucher_key() {
+        return redeem_voucher_key;
+    }
+
+    public void setAvailable(Boolean available) {
+        this.available = available;
+    }
+
+    public Boolean getAvailable() {
+        return available;
     }
 
     public static class PhotoId {

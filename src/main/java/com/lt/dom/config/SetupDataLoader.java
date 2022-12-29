@@ -379,7 +379,7 @@ public class SetupDataLoader implements
         supplierPojoVo.setSupplierName("榆林市旅游投资发展有限公司");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
-        supplierService.成为员工(supplier,user);
+        supplierService.成为员工(supplier,user, null);
         Openid openid = openidService.setupData("oq1Er5Y7M9J4FnM262owaZHihOgQ");
         openidService.linkUser(openid,user);
 
@@ -407,7 +407,7 @@ public class SetupDataLoader implements
         supplierPojoVo.setSupplierName("榆林市文化和旅游局");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
-        supplierService.成为员工(supplier,user);
+        supplierService.成为员工(supplier,user, null);
 
 
 
@@ -445,7 +445,7 @@ public class SetupDataLoader implements
         supplierPojoVo.setSupplierName("榆林国际旅行社有限责任公司");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
-        supplierService.成为员工(supplier,user);
+        supplierService.成为员工(supplier,user, null);
 
     }
 
@@ -471,7 +471,7 @@ public class SetupDataLoader implements
         supplierPojoVo.setSupplierName("榆林市红石峡生态公园有限责任公司");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
-         supplierService.成为员工(supplier,user);
+         supplierService.成为员工(supplier,user, null);
         return supplier;
     }
 
@@ -509,7 +509,7 @@ public class SetupDataLoader implements
         supplierPojoVo.setSupplierName("榆林农村商业银行");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
-        supplierService.成为员工(supplier,user);
+        supplierService.成为员工(supplier,user, null);
 
     }
 
@@ -538,7 +538,7 @@ public class SetupDataLoader implements
         supplierPojoVo.setSupplierName("横山支行");
         Supplier supplier = supplierService.createSupplier(supplierPojoVo,EnumSupplierStatus.Active);
 
-        supplierService.成为员工(supplier,user);
+        supplierService.成为员工(supplier,user, null);
 
     }
 

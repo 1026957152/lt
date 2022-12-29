@@ -242,23 +242,26 @@ public class YxdRestController {
 
 
     @GetMapping(value = "/validate", produces = "application/json")
-    public TsRespLt验证核销通知 ltReqTs验证核销通知() {
+    public TsRespLt验证核销通知 ltReqTs验证核销通知(@RequestBody LtReqTs验证核销通知.ToLtReqTs验证核销通知 ltReqTs验证核销通知) {
 
 
 
 
+        System.out.println("ddddddddd"+ltReqTs验证核销通知.toString());
 
 
-        LtReqTs验证核销通知.ToLtReqTs验证核销通知 ltReqTs验证核销通知 = new LtReqTs验证核销通知.ToLtReqTs验证核销通知();
+       // LtReqTs验证核销通知.ToLtReqTs验证核销通知 ltReqTs验证核销通知 = new LtReqTs验证核销通知.ToLtReqTs验证核销通知();
 
 
 
 
+/*
         ltReqTs验证核销通知.setAmount(4);//:当前使用数量
         ltReqTs验证核销通知.setAmount_used(1);//:累计使用数量(包含本次)
         ltReqTs验证核销通知.setAnother_orders_id("ddd"); //:本平台订单ID（天时同城）
         ltReqTs验证核销通知.setMy_orders_id("ddd"); //:第三方订单ID
         ltReqTs验证核销通知.setCodes("12,11"); //:使用码号,多个','分割
+*/
 
 
         TsRespLt验证核销通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs验证核销通知(ltReqTs验证核销通知);
@@ -277,17 +280,22 @@ public class YxdRestController {
 
 
     @GetMapping(value = "/send", produces = "application/json")
-    public TsRespLt码号推送通知 ltReqTs码号推送通知() {
+    public TsRespLt码号推送通知 ltReqTs码号推送通知(@RequestBody LtReqTs码号推送通知.ToLtReqTs码号推送通知 toLtReqTs码号推送通知) {
 
 
 
-        LtReqTs码号推送通知.ToLtReqTs码号推送通知 toLtReqTs码号推送通知 = new LtReqTs码号推送通知.ToLtReqTs码号推送通知();
+        //LtReqTs码号推送通知.ToLtReqTs码号推送通知 toLtReqTs码号推送通知 = new LtReqTs码号推送通知.ToLtReqTs码号推送通知();
 
 
 
-        toLtReqTs码号推送通知.setOrders_id("this.orders_id");//本平台订单ID（天时同城）
-        toLtReqTs码号推送通知.setOut_orders_id("this.out_orders_id");//out_orders_id:第三方平台订单ID
-        toLtReqTs码号推送通知.setOut_code("this.out_code");//out_code:码号，存在多个码号时默认展示第一个
+
+
+
+/*        toLtReqTs码号推送通知.setOrders_id("this.orders_id");//TODO 必填 本平台订单ID（天时同城）
+        toLtReqTs码号推送通知.setOut_orders_id("this.out_orders_id");//TODO 必填 out_orders_id:第三方平台订单ID
+        toLtReqTs码号推送通知.setOut_code("this.out_code");//TODO 必填 out_code:码号，存在多个码号时默认展示第一个
+        */
+     /*
         toLtReqTs码号推送通知.setOut_codes("this.out_codes");//out_codes:多个码号时以英文逗号分隔(,)
 
         toLtReqTs码号推送通知.setQrcode_images("this.qrcode_images");//qrcode_images:二维码图片，多个用英文逗号(,)分隔
@@ -302,7 +310,7 @@ public class YxdRestController {
         toLtReqTs码号推送通知.setIs_real_code("this.is_real_code");//is_real_code:是否真实码号
         toLtReqTs码号推送通知.setPost_tracking_no("this.is_real_code");//is_real_code:是否真实码号
 
-
+*/
         TsRespLt码号推送通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs码号推送通知(toLtReqTs码号推送通知);
 
         return ltReqTs退单审核通知;

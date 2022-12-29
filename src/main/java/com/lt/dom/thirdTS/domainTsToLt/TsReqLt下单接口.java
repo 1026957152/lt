@@ -3,6 +3,7 @@ package com.lt.dom.thirdTS.domainTsToLt;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.lt.dom.thirdTS.EnumMethord;
+import org.apache.commons.lang3.ObjectUtils;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.springframework.security.core.parameters.P;
@@ -21,69 +22,76 @@ public class TsReqLt下单接口 extends TsReqLtBase {
 
 
     private Integer item_id;//产品ID
+    private Integer id_ntype;
 
-   public static TsReqLt下单接口 from_(MultiValueMap<String, String> ob_) {
+    public static TsReqLt下单接口 from_(MultiValueMap<String, String> ob_) {
         TsReqLt下单接口 tsReqLtBase = new TsReqLt下单接口();
-       tsReqLtBase.setItem_id(Integer.valueOf(ob_.getFirst("item_id")));
+        tsReqLtBase.setItem_id(Integer.valueOf(ob_.getFirst("item_id")));
 
-       tsReqLtBase.setOrders_id(ob_.getFirst("orders_id"));
-       tsReqLtBase.setSize(Integer.valueOf( ob_.getFirst("size")));
-       tsReqLtBase.setIs_pay(Integer.valueOf(  ob_.getFirst("is_pay")));
-       tsReqLtBase.setMobile((String)  ob_.getFirst("mobile"));
-       tsReqLtBase.setName((String)  ob_.getFirst("name"));
-       tsReqLtBase.setId_number((String)  ob_.getFirst("id_number"));
-       tsReqLtBase.setStart_date_auto((String)  ob_.getFirst("start_date_auto"));
-       tsReqLtBase.setRemark((String)  ob_.getFirst("remark"));
+        tsReqLtBase.setOrders_id(ob_.getFirst("orders_id"));
+        tsReqLtBase.setSize(Integer.valueOf( ob_.getFirst("size")));
+        tsReqLtBase.setIs_pay(Integer.valueOf(  ob_.getFirst("is_pay")));
+        tsReqLtBase.setMobile((String)  ob_.getFirst("mobile"));
+        tsReqLtBase.setName((String)  ob_.getFirst("name"));
+        tsReqLtBase.setId_number((String)  ob_.getFirst("id_number"));
+        tsReqLtBase.setStart_date_auto((String)  ob_.getFirst("start_date_auto"));
+        tsReqLtBase.setRemark((String)  ob_.getFirst("remark"));
 
-       tsReqLtBase.setPrice((String)  ob_.getFirst("price"));
-       tsReqLtBase.setShuttle_address((String)  ob_.getFirst("shuttle_address"));
-       tsReqLtBase.setPlate_number((String)  ob_.getFirst("plate_number"));
-       tsReqLtBase.setPlate_number((String)  ob_.getFirst("post_address"));
-
-
-       LocalDate localDate =  LocalDate.parse((String)ob_.getFirst("start_date2"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
-       tsReqLtBase.setStart_date2(localDate);
-       LocalDateTime localDateTime =  LocalDateTime.parse((String)ob_.getFirst("start_date"), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-
-       tsReqLtBase.setStart_date(localDateTime);
+        tsReqLtBase.setPrice((String)  ob_.getFirst("price"));
+        tsReqLtBase.setShuttle_address((String)  ob_.getFirst("shuttle_address"));
+        tsReqLtBase.setPlate_number((String)  ob_.getFirst("plate_number"));
+        tsReqLtBase.setPlate_number((String)  ob_.getFirst("post_address"));
 
 
+        LocalDate localDate =  LocalDate.parse((String)ob_.getFirst("start_date2"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-       tsReqLtBase.setG_batch_type(Integer.valueOf( ob_.getFirst("g_batch_type")));
-       tsReqLtBase.setTime_slot((String) ob_.getFirst("time_slot"));
+        tsReqLtBase.setStart_date2(localDate);
+        LocalDateTime localDateTime =  LocalDateTime.parse((String)ob_.getFirst("start_date"), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+
+        tsReqLtBase.setStart_date(localDateTime);
+        if(ObjectUtils.isNotEmpty( ob_.getFirst("g_batch_type"))){
+            tsReqLtBase.setG_batch_type(Integer.valueOf( ob_.getFirst("g_batch_type")));
+        }
+
+        if(ObjectUtils.isEmpty(tsReqLtBase.getId_number())){
 
 
-       List<Player> playerList = ob_.keySet().stream().filter(e->e.startsWith("players[")).map(e->{
+
+            List<Player> playerList = ob_.keySet().stream().filter(e->e.startsWith("players[")).map(e->{
 
 
-          String num =  e.replaceAll("[^0-9]+", " ").trim().split(" ")[0];
-           System.out.println("这里是需要"+num);
-          return Triplet.with(num,e,ob_.getFirst(e));
-       }).collect(Collectors.groupingBy(e->e.getValue0(),Collectors.collectingAndThen(Collectors.toList(),list->{
+                String num =  e.replaceAll("[^0-9]+", " ").trim().split(" ")[0];
+                System.out.println("这里是需要"+num);
+                return Triplet.with(num,e,ob_.getFirst(e));
+            }).collect(Collectors.groupingBy(e->e.getValue0(),Collectors.collectingAndThen(Collectors.toList(),list->{
 
-           Optional<String> name = list.stream().filter(e->{
-               System.out.println(e.toString());
-               return e.getValue1().endsWith("name]");
-           }).map(e->e.getValue2()).findAny();
+                Optional<String> name = list.stream().filter(e->{
+                    System.out.println(e.toString());
+                    return e.getValue1().endsWith("name]");
+                }).map(e->e.getValue2()).findAny();
 
-           Optional<String> mobile = list.stream().filter(e->e.getValue1().endsWith("mobile]")).map(e->e.getValue2()).findAny();
+                Optional<String> mobile = list.stream().filter(e->e.getValue1().endsWith("mobile]")).map(e->e.getValue2()).findAny();
 
-           Optional<String> id_number = list.stream().filter(e->e.getValue1().endsWith("id_number]")).map(e->e.getValue2()).findAny();
-           Optional<String> Id_ntype = list.stream().filter(e->e.getValue1().endsWith("id_ntype]")).map(e->e.getValue2()).findAny();
+                Optional<String> id_number = list.stream().filter(e->e.getValue1().endsWith("id_number]")).map(e->e.getValue2()).findAny();
+                Optional<String> Id_ntype = list.stream().filter(e->e.getValue1().endsWith("id_ntype]")).map(e->e.getValue2()).findAny();
 
-           Player player = new Player();
-           player.setName(name.orElse(null));
-           player.setMobile(mobile.orElse(null));
-           player.setId_number(id_number.orElse(null));
-           player.setId_ntype(Id_ntype.orElse(null));
+                Player player = new Player();
+                player.setName(name.orElse(null));
+                player.setMobile(mobile.orElse(null));
+                player.setId_number(id_number.orElse(null));
+                player.setId_ntype(Id_ntype.orElse(null));
 
-           return player;
-       }))).values().stream().toList();
+                return player;
+            }))).values().stream().toList();
 
-       System.out.println("====playerList=========="+ playerList);
-       tsReqLtBase.setPlayers(playerList.toArray(Player[]::new));
-       ;
+            System.out.println("====playerList=========="+ playerList);
+            tsReqLtBase.setPlayers(playerList.toArray(Player[]::new));
+        }
+
+        tsReqLtBase.setTime_slot((String) ob_.getFirst("time_slot"));
+
+
+        ;
         return tsReqLtBase;
     }
 
@@ -262,7 +270,13 @@ public class TsReqLt下单接口 extends TsReqLtBase {
 
     private Player[] players ;//s[1][id_number];//:412825199010026766
 
+    public Integer getId_ntype() {
+        return id_ntype;
+    }
 
+    public void setId_ntype(Integer id_ntype) {
+        this.id_ntype = id_ntype;
+    }
 
 
     public static class Player {

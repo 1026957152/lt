@@ -15,6 +15,8 @@ import com.lt.dom.repository.UserRepository;
 import com.lt.dom.vo.UserVo;
 import org.apache.commons.lang.RandomStringUtils;
 import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,9 @@ import java.util.UUID;
 @Service
 @Transactional
 public class UserService implements IUserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserAuthorityServiceImpl.class);
+
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -190,13 +195,14 @@ public class UserService implements IUserService {
 
 
 
-        String greetings = String.format(
-                "你的验证码是%s",
-                myToken.getToken());
 
-        System.out.println("-------发了短信，发了短信"+myToken.getToken());
-        smsService.singleSend(greetings,myToken.getPhone());
+        RabbitMessage message = new RabbitMessage();
+        message.setType(EnumRabbitMessageType.VERIFICATION_TOEKN);
+        message.setToken(myToken.getToken());
+        message.setPhone(myToken.getPhone());
 
+
+        smsService.send_(message);
         return myToken;
     }
     @Override
@@ -210,7 +216,7 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public VerificationToken verified(VerificationToken verificationToken1) {
+    public VerificationToken verified_change(VerificationToken verificationToken1) {
 
 
 
@@ -239,18 +245,29 @@ public class UserService implements IUserService {
 
     }
 
+
+    //TODO 微信新建注册
     @Override
     @Transactional
-    public VerificationToken verified(Openid openid, VerificationToken verificationToken1) {
+    public VerificationToken verified_miniap(Openid openid, VerificationToken verificationToken1) {
 
-
+        logger.debug("短信验证");
         verificationToken1.setStatus(EnumVefifyStatus.approved);
         verificationToken1 = tokenRepository.save(verificationToken1);
-        if(verificationToken1.getType().equals(EnumSmsVerificationType.login_miniapp)){
+        if(!verificationToken1.getType().equals(EnumSmsVerificationType.login_miniapp)) {
 
-            Optional<UserAuthority> userAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,verificationToken1.getPhone());
 
-            if(userAuthority.isEmpty()){
+            return null;
+        }
+
+        logger.debug("短信验证，来自于 小程序");
+
+
+        Optional<UserAuthority> userAuthorityOptional = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,verificationToken1.getPhone());
+
+            if(userAuthorityOptional.isEmpty()){
+
+                logger.debug("短信验证，来自于 小程序，没有找到 登录记录，需要新建");
 
 
                 UserPojo userPojo = new UserPojo();
@@ -262,26 +279,42 @@ public class UserService implements IUserService {
                 userPojo.setPassword("wxlinkUserReq.getUser_password()");
                 userPojo.setRoles(Arrays.asList("ROLE_ADMIN"));
 
+
                 User user = userService.createUser(userPojo,
                         Arrays.asList(Pair.with(EnumIdentityType.phone,verificationToken1.getPhone())));
                 user = userAuthorityService.userAuth(user,Arrays.asList(Pair.with(EnumIdentityType.weixin,openid.getOpenid())));
 
+                userService.verifyPhone(user,user.getPhone());
+
               //  openidService.linkUser(openid,user);
             }else{
-                Optional<User> optionalUser = userRepository.findById(userAuthority.get().getUserId());
-                User user = userService.userAuth(optionalUser.get(),Arrays.asList(Pair.with(EnumIdentityType.weixin,openid.getOpenid())));
+                logger.debug("短信验证，来自于 小程序，找到了 登录记录");
 
+                UserAuthority userAuthority = userAuthorityOptional.get();
+
+                Optional<User> optionalUser = userRepository.findById(userAuthority.getUserId());
+                User user = userAuthorityService.userAuth(optionalUser.get(),Arrays.asList(Pair.with(EnumIdentityType.weixin,openid.getOpenid())));
+
+                userService.verifyPhone(user,user.getPhone());
 
                 //openidService.linkUser(openid,optionalUser.get());
             }
 
 
-        }else{
+        return verificationToken1;
+
+/*
+
+        if(verificationToken1.getType().equals(EnumSmsVerificationType.login_pc)){
+            Optional<UserAuthority> userAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,verificationToken1.getPhone());
+
+            Optional<User> optionalUser = userRepository.findById(userAuthority.get().getUserId());
+
             userService.verifyPhone(verificationToken1);
         }
+*/
 
 
-        return verificationToken1;
     }
 
 
@@ -293,7 +326,10 @@ public class UserService implements IUserService {
 
         verificationToken1.setStatus(EnumVefifyStatus.approved);
         verificationToken1 = tokenRepository.save(verificationToken1);
-        if(verificationToken1.getType().equals(EnumSmsVerificationType.login_pc)){
+        if(verificationToken1.getType().equals(EnumSmsVerificationType.login_pc)) {
+            throw new BookNotFoundException(Enumfailures.resource_not_found,"登录失败");
+
+        }
 
             Optional<UserAuthority> userAuthority = userAuthorityRepository.findByIdentityTypeAndIdentifier(EnumIdentityType.phone,verificationToken1.getPhone());
 
@@ -302,10 +338,9 @@ public class UserService implements IUserService {
                 return userAuthority.get();
             }
 
-        }
+
 
         throw new BookNotFoundException(Enumfailures.resource_not_found,"登录失败");
-
 
 
     }

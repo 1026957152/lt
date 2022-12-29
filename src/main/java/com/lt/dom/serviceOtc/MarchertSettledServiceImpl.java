@@ -186,7 +186,7 @@ public class MarchertSettledServiceImpl {
 
 
 
-        supplierServiceImp.成为员工(supplier,user);
+        supplierServiceImp.成为员工(supplier,user, null);
 
 
 

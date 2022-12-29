@@ -2,16 +2,13 @@ package com.lt.dom.serviceOtc.product;
 
 
 import cn.hutool.core.util.ObjectUtil;
-import com.lt.dom.FulfiiledItemRepository;
 import com.lt.dom.OctResp.*;
 import com.lt.dom.controllerOct.RedemptionRestController;
-import com.lt.dom.controllerOct.VoucherTicketPcRestController;
-import com.lt.dom.controllerOct.VoucherTicketRestController;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.error.ExistException;
+import com.lt.dom.error.UnprocessableEntityException;
 import com.lt.dom.freemarker.EticketController;
 import com.lt.dom.oct.*;
-import com.lt.dom.otcReq.RedemBycodePojo;
 import com.lt.dom.otcenum.*;
 import com.lt.dom.proto.rabit.CityPassBooking;
 import com.lt.dom.proto.rabit.EnumRabbitMessageType;
@@ -20,7 +17,9 @@ import com.lt.dom.repository.*;
 import com.lt.dom.requestvo.BookingTypeTowhoVo;
 import com.lt.dom.serviceOtc.*;
 import com.lt.dom.thirdTS.LtToTsServiceImpl;
+import com.lt.dom.thirdTS.domainLtToTs.LtReqTs码号推送通知;
 import com.lt.dom.thirdTS.domainLtToTs.LtReqTs验证核销通知;
+import com.lt.dom.thirdTS.domainLtToTs.TsRespLt码号推送通知;
 import com.lt.dom.thirdTS.domainLtToTs.TsRespLt验证核销通知;
 import com.lt.dom.vo.*;
 import org.apache.commons.lang.RandomStringUtils;
@@ -33,14 +32,12 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.lt.dom.serviceOtc.JsonParse.GSON;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -94,7 +91,8 @@ public class CityPassServiceImpl {
     @Autowired
     private RightRedemptionEntryRepository rightRedemptionEntryRepository;
 
-
+    @Autowired
+    private VoucherServiceImpl voucherService;
 
 
     @Autowired
@@ -286,7 +284,7 @@ public class CityPassServiceImpl {
         }
         String pattern = "^(6127|6108)\\d{2}[1-9]\\d{3}((0[1-9])|(1[0-2]))(0[1-9]|([1|2][0-9])|3[0-1])((\\d{4})|\\d{3}X)$";
 
-        passService.allowedHolder(id_number_list, pattern);
+       // passService.allowedHolder(id_number_list, null);
 
     }
 
@@ -295,7 +293,7 @@ public class CityPassServiceImpl {
 
 
 
-    public void booking(LineItem lineItem, Product product, PricingRate pricingRate) {
+    public void booking(LineItem lineItem, Product product, PricingRate pricingRate, BookingTypeTowhoVo e) {
         if(!product.getType().equals(productType)){
             return;
         }
@@ -305,12 +303,21 @@ public class CityPassServiceImpl {
         lineItem.setStatus(EnumLineItemStatus.Executing);
         lineItem.setBillingTriggerRule(EnumBillingTriggerRule.WithoutFulfillment);
 
+
+
         logger.debug("这里来看看 base_code_price {}  unitPrice{}",lineItem.getBase_cost_price(),lineItem.getUnitPrice());
       //  lineItem.setBase_cost_price(pricingRate.getNet().floatValue());
 
         lineItem.setFulfillmentInstructionsType(EnumFulfillmentInstructionsType.DIGITAL);
-        lineItem.setDeliveryFormats(EnumDeliveryFormats.虚拟卡);
+
         lineItem.setFulfillment_behavior(EnumFulfillment_behavior.Create_pass);
+
+        if(EnumPurchaseMode.LineItem_every_traveler.equals(e.getPurchaseMode())){
+            lineItem.setDeliveryFormats(EnumDeliveryFormats.虚拟卡);
+        }
+        if(EnumPurchaseMode.LineTime_one_traveler.equals(e.getPurchaseMode())){
+            lineItem.setDeliveryFormats(EnumDeliveryFormats.激活码);
+        }
     }
 
     public void fullfil(Reservation reservation, List<LineItem> lineItemList, PlatUserVo user) {
@@ -333,24 +340,6 @@ public class CityPassServiceImpl {
 
 
 
-/*
-
-        lineItemRepository.saveAll(list.stream().map(e->{
-
-            e.setFullfullmentStatus(EnumProductBookingFullfullmentStatus.Ordered);
-
-            return e;
-        }).collect(Collectors.toList()));
-*/
-
-
-
-/*
-        Map<String,List<Traveler>> travelers = travelerRepository.findAllByBooking(reservation.getId())
-                .stream().collect(Collectors.groupingBy(e->e.getReferSku()));
-
-*/
-
         List<LineItem> finalLineItemList = lineItemList;
         IntStream.range(0,lineItemList.size()).forEach(i-> {
             LineItem lineItem = finalLineItemList.get(i);
@@ -371,73 +360,74 @@ public class CityPassServiceImpl {
                 System.out.println("订单数量和 提供的游客数量不相符"+ traveler.size());
 
 
-                if(lineItem.getQuantity() != traveler.size()){
+                if(EnumPurchaseMode.LineItem_every_traveler.equals(lineItem.getPurchaseMode())){
+                    if(lineItem.getQuantity() != traveler.size()){
 
-                    logger.error("订单数量{},和 供的游客数量{} 不相符 " ,lineItem.getQuantity(),traveler.size());
-                    System.out.println("订单数量和 提供的游客数量不相符");
-                    throw new BookNotFoundException(Enumfailures.resource_not_found,"订单数和 游客数不相符");
-                }
-                traveler.stream().forEach(tra->{
+                        logger.error("订单数量{},和 供的游客数量{} 不相符 " ,lineItem.getQuantity(),traveler.size());
+                        System.out.println("订单数量和 提供的游客数量不相符");
+                        throw new BookNotFoundException(Enumfailures.resource_not_found,"订单数和 游客数不相符");
+                    }
+                    traveler.stream().forEach(tra->{
 
-                    Cardholder cardholder = new Cardholder();
-                    //cardholder.setCompany(pass.getId());
-                    cardholder.setName(tra.getName());
-                    cardholder.setIdentity(tra.getIdNo());
-
-
-
-
-                    CompoentRightAssigtToTargeVo compoentRightAssigtToTargeVo = new CompoentRightAssigtToTargeVo();
-
-
-                    logger.error("订单数量和 新建一个年卡 "+reservation.getPlatform());
-
-
-                    Pass pass = passService.create_virtual(lineItem,cardholder,10);
-                    passService.active(pass);
+                        Cardholder cardholder = new Cardholder();
+                        //cardholder.setCompany(pass.getId());
+                        cardholder.setName(tra.getName());
+                        cardholder.setIdentity(tra.getIdNo());
 
 
 
-                    VoucherTicket fulfilled_item = fulfillService.create(reservation,
-                            product,
-                            voucherType,
-                            pass.getId());
+
+                        CompoentRightAssigtToTargeVo compoentRightAssigtToTargeVo = new CompoentRightAssigtToTargeVo();
 
 
-                    compoentRightAssigtToTargeVo.setPass(pass);
-                    compoentRightAssigtToTargeVo.setBooking(reservation);
-                    compoentRightAssigtToTargeVo.setReferenceId(pass.getId());
-                    compoentRightAssigtToTargeVo.setReferenceType(EnumRelatedObjectType.pass);
-                    compoentRightAssigtToTargeVo.setReference(pass.getCode());
+                        logger.error("订单数量和 新建一个年卡 "+reservation.getPlatform());
+
+
+                        Pass pass = passService.create_virtual(lineItem,cardholder,10);
+                        passService.active(pass);
 
 
 
-                    if(user.getPlatform().equals(EnumPlatform.TS)){
+                        VoucherTicket voucherTicket = fulfillService.create(reservation,
+                                product,
+                                voucherType,
+                                pass.getId(),cardholder);
+
+
+                        compoentRightAssigtToTargeVo.setPass(pass);
+                        compoentRightAssigtToTargeVo.setBooking(reservation);
+                        compoentRightAssigtToTargeVo.setReferenceId(voucherTicket.getId());
+                        compoentRightAssigtToTargeVo.setReferenceType(EnumRelatedObjectType.voucher);
+                        compoentRightAssigtToTargeVo.setReference(voucherTicket.getCode());
+
+
+
+                        if(user.getPlatform().equals(EnumPlatform.TS)){
 /*                        Pass pass = passService.create_virtual(lineItem,cardholder,10);
                         compoentRightAssigtToTargeVo.setPass(pass);*/
 
-                    }
+                        }
 
-                    if(reservation.getPlatform().equals(EnumPlatform.DERECT)){
-                        logger.error("订单数量和 新建一个年卡 ");
-                        //   Pass pass = passService.create_virtual(lineItem,cardholder,user.getUser().getId(),10);
-                        if(user.getUser().isRealNameVerified()){
-                            if(pass.getCardholder().getName().equals(user.getUser().getRealName())
-                                    && pass.getCardholder().getIdentity().equals(user.getUser().getIdCard())){
-                                passService.link(pass, user.getUser());
-                                //  throw new BookNotFoundException(Enumfailures.not_found,"该卡已激活，您非该卡持卡人");
+                        if(reservation.getPlatform().equals(EnumPlatform.DERECT)){
+                            logger.error("订单数量和 新建一个年卡 ");
+                            //   Pass pass = passService.create_virtual(lineItem,cardholder,user.getUser().getId(),10);
+                            if(user.getUser().isRealNameVerified()){
+                                if(pass.getCardholder().getName().equals(user.getUser().getRealName())
+                                        && pass.getCardholder().getIdentity().equals(user.getUser().getIdCard())){
+                                    passService.link(pass, user.getUser());
+                                    //  throw new BookNotFoundException(Enumfailures.not_found,"该卡已激活，您非该卡持卡人");
+
+                                }
 
                             }
-
                         }
-                    }
 
 
 
 
-                    Long limit = 2l;
+                        Long limit = 1000l;
 
-                    List<Component> componentRightList = componentRepository.findAllByProduct(lineItem.getProduct());
+                        List<Component> componentRightList = componentRepository.findAllByProduct(lineItem.getProduct());
 
 /*                    if(true){
                         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -446,75 +436,80 @@ public class CityPassServiceImpl {
                     }*/
 
 
-                    componentRightService.assingtoComponent(compoentRightAssigtToTargeVo,
-                            componentRightList.stream().map(e->{
-                                Triplet<Component,LineItem,EnumComponentVoucherType> componentVounchLineItemPair =
-                                        Triplet.with(e,lineItem,e.getType());
-                                return componentVounchLineItemPair;
-                            }).collect(Collectors.toList()),
-                            limit);
+                        componentRightService.assingtoComponent(compoentRightAssigtToTargeVo,
+                                componentRightList.stream().map(e->{
+                                    Triplet<Component,LineItem,EnumComponentVoucherType> componentVounchLineItemPair =
+                                            Triplet.with(e,lineItem,e.getType());
+                                    return componentVounchLineItemPair;
+                                }).collect(Collectors.toList()),
+                                limit);
 
 
 
 
 
 
-                    if(tra.getTel_home()!= null){
+                        if(tra.getTel_home()!= null){
 
-                        try {
-
-
-                            CityPassBooking cityPassBooking = new CityPassBooking();
-                            cityPassBooking.set姓名(cardholder.getName());
-                            cityPassBooking.set码号(fulfilled_item.getCode());
-                            cityPassBooking.setSKU名称(lineItem.getTitle());
-                            cityPassBooking.set购买数量("1");
-
-                            cityPassBooking.set开始日期(pass.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd")));
-                            cityPassBooking.set过期日期(pass.getExpiringDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd")));
+                            try {
 
 
-                            String urllink = linkTo(methodOn(EticketController.class).dig_ticket(cryptoService.hashids_encode(fulfilled_item.getId()),null)).withSelfRel().getHref();
-                            cityPassBooking.setEticket(urllink);
+                                CityPassBooking cityPassBooking = new CityPassBooking();
+                                cityPassBooking.set姓名(cardholder.getName());
+                                cityPassBooking.set码号(voucherTicket.getCode());
+                                cityPassBooking.setSKU名称(lineItem.getTitle());
+                                cityPassBooking.set购买数量("1");
+
+                                cityPassBooking.set开始日期(pass.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd")));
+                                cityPassBooking.set过期日期(pass.getExpiringDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd")));
 
 
-                            Optional<String> contact =  contactService.find_phone(EnumRelatedObjectType.product,lineItem.getProduct());
-                            if(contact.isPresent()){
-                                cityPassBooking.set客服电话( contact.get());
+                                String urllink = linkTo(methodOn(EticketController.class).dig_ticket(cryptoService.hashids_encode(voucherTicket.getId()),null)).withSelfRel().getHref();
+                                cityPassBooking.setEticket(urllink);
 
+
+                                Optional<String> contact =  contactService.find_phone(EnumRelatedObjectType.product,lineItem.getProduct());
+                                if(contact.isPresent()){
+                                    cityPassBooking.set客服电话( contact.get());
+
+                                }
+
+
+
+                                String greetings = String.format(
+                                        "尊敬的%s，凭此电子票（门票码号%s）扫描（或告知门票码号）验证成功即可进入，%s%s张；有效期%s至%s，客服电话：%s",
+                                        cityPassBooking.get姓名(),
+                                        cityPassBooking.get码号(),
+                                        cityPassBooking.getSKU名称(),
+                                        cityPassBooking.get购买数量(),
+                                        cityPassBooking.get开始日期(),
+                                        cityPassBooking.get过期日期(),cityPassBooking.get客服电话());
+
+                                //   smsService.singleSend(greetings,tra.getTel_home());
+
+                                RabbitMessage message = new RabbitMessage();
+                                message.setType(EnumRabbitMessageType.BUY_CITY_HERO_NOTIFICATION);
+                                message.setCityPassBooking(cityPassBooking);
+                                message.setPhone(tra.getTel_home());
+
+                                smsService.send_(message);
+
+                            }catch (Exception e){
+                                e.printStackTrace();
+
+                                logger.error("短信发送失败 {} ",e.getMessage());
                             }
-
-
-
-                            String greetings = String.format(
-                                    "尊敬的%s，凭此电子票（门票码号%s）扫描（或告知门票码号）验证成功即可进入，%s%s张；有效期%s至%s，客服电话：%s",
-                                    cityPassBooking.get姓名(),
-                                    cityPassBooking.get码号(),
-                                    cityPassBooking.getSKU名称(),
-                                    cityPassBooking.get购买数量(),
-                                    cityPassBooking.get开始日期(),
-                                    cityPassBooking.get过期日期(),cityPassBooking.get客服电话());
-
-                         //   smsService.singleSend(greetings,tra.getTel_home());
-
-                            RabbitMessage message = new RabbitMessage();
-                            message.setType(EnumRabbitMessageType.BUY_CITY_HERO_NOTIFICATION);
-                            message.setCityPassBooking(cityPassBooking);
-                            message.setPhone(tra.getTel_home());
-
-                            smsService.send_(message);
-
-                        }catch (Exception e){
-                            e.printStackTrace();
-
-                            logger.error("短信发送失败 {} ",e.getMessage());
                         }
-                    }
 
 
-                });
+                    });
+                }
+
+
             }
             if(lineItem.getDeliveryFormats().equals(EnumDeliveryFormats.激活码)){
+
+
                 List<IntelliCode> codes =  IntStream.range(0,lineItem.getQuantity()).mapToObj(e-> {
                     IntelliCode intelliCode = new IntelliCode();
                     intelliCode.setCode(idGenService.nextId("jh_"));
@@ -526,13 +521,54 @@ public class CityPassServiceImpl {
                     intelliCode.setStatus(EnumIntelliCodeStatus.not_redeemed);
                     intelliCode.setBooking(lineItem.getBooking());
 
+                    fulfillService.create(reservation,EnumRelatedObjectType.product,intelliCode.getId(),intelliCode.getCode());
                     return intelliCode;
                 }).collect(Collectors.toList());
 
 
-                intelliCodeRepository.saveAll(codes);
+
+
+                codes = intelliCodeRepository.saveAll(codes);
                 lineItem.setDeliveryFormats(EnumDeliveryFormats.激活码);
 
+
+                System.out.println("dddddd"+ user.getPlatform());
+                if(user.getPlatform().equals(EnumPlatform.TS)){
+
+/*
+
+                    LtReqTs码号推送通知.ToLtReqTs码号推送通知 toLtReqTs码号推送通知 = new LtReqTs码号推送通知.ToLtReqTs码号推送通知();
+
+                    toLtReqTs码号推送通知.setOrders_id(reservation.getTrackingId());//TODO 必填 本平台订单ID（天时同城）
+                    toLtReqTs码号推送通知.setOut_orders_id(reservation.getCode());//TODO 必填 out_orders_id:第三方平台订单ID
+                    toLtReqTs码号推送通知.setOut_code(reservation.getCode());//TODO 必填 out_code:码号，存在多个码号时默认展示第一个
+
+
+                  //  toLtReqTs码号推送通知.setOut_codes(Arrays.asList("1","2","3","999").stream().collect(Collectors.joining(",")));//out_codes:多个码号时以英文逗号分隔(,)
+                    TsRespLt码号推送通知 ltReqTs码号推送通知 = ltToTsService.ltReqTs码号推送通知(toLtReqTs码号推送通知);
+
+
+
+
+                    LtReqTs验证核销通知.ToLtReqTs验证核销通知 ltReqTs验证核销通知 = new LtReqTs验证核销通知.ToLtReqTs验证核销通知();
+
+                    ltReqTs验证核销通知.setAmount(1);//:当前使用数量
+                    ltReqTs验证核销通知.setAmount_used(1);//:累计使用数量(包含本次)
+                    ltReqTs验证核销通知.setAnother_orders_id(reservation.getTrackingId()); //:本平台订单ID（天时同城）
+                    ltReqTs验证核销通知.setMy_orders_id(reservation.getCode()); //:第三方订单ID
+                    List<VoucherTicket> fulfilled_items = fulfillService.find_(reservation);
+
+                    //     ltReqTs验证核销通知.setCodes(fulfilled_items.stream().map(e->e.getCode()).collect(Collectors.joining(","))); //:使用码号,多个','分割
+
+                    ltReqTs验证核销通知.setCodes(Arrays.asList(reservation.getCode()).stream().collect(Collectors.joining(","))); //:使用码号,多个','分割
+
+                    TsRespLt验证核销通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs验证核销通知(ltReqTs验证核销通知);
+
+
+*/
+
+
+                }
 
             }
 
@@ -585,23 +621,17 @@ public class CityPassServiceImpl {
 
 
 
-    public EntityModel validate_by_idnumber(RedemBycodePojo.Code code, UserVo userVo) {
+    public EntityModel validate_by_idnumber(List<VoucherTicket> voucherTickets, UserVo userVo) {
 
 
 
-        List<Cardholder> cardholderList = cardholderRepository.findByIdentity(code.getCode());
-
-
-        if(cardholderList.isEmpty()) {
-
-            return null;
-        }
-
-        Cardholder cardholder = cardholderList.get(0);
+        List<VoucherTicket> voucherTicket_city_pass = voucherTickets.stream().filter(e->e.getType().equals(voucherType)).collect(Collectors.toList());
 
 
 
-        Pass pass = cardholder.getPass();
+        Optional<Pass> voucherTicket = passRepository.findById(voucherTicket_city_pass.get(0).getId());
+
+        Pass pass = voucherTicket.get();
 
 
 
@@ -706,15 +736,7 @@ public class CityPassServiceImpl {
 
 
         Pass voucher =cardholderList.get();
-/*
-        List<Cardholder> cardholderList = cardholderRepository.findByIdentity(code.getCode());
 
-        if(cardholderList.isEmpty()) {
-            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到门票"+code.getCode());
-        }
-        */
-
-      //  Pass voucher =cardholderList.get(0).getPass();
         if(!voucher.isActive()){
             throw new BookNotFoundException(Enumfailures.voucher_not_active,"该券状态不活跃");
         }
@@ -879,14 +901,14 @@ public class CityPassServiceImpl {
         redemptionForObjectVo.setRelatedObject_subType(voucher.getType().name());
         redemptionForObjectVo.setLable(voucher.getLabel());
 
-        RedemptionForCustomerVo redemptionForCustomerVo = new RedemptionForCustomerVo();
 
-        redemptionForCustomerVo.setId(traveler用户.getId());
-        redemptionForCustomerVo.setRealName(traveler用户.getName());
-        redemptionForCustomerVo.setCode(traveler用户.getCode());
+        Optional<RedemptionForCustomerVo> redemptionForCustomerVo = voucherService.Cardholder(voucher.getCardholder().getId());
 
+        Pair<Redemption,List<RightRedemptionEntry>> redemptionListPair= redemptionService.redeemRight(redemptionForObjectVo,verifier核销人员,redemptionForCustomerVo,componentVounchList);
 
-        List<RightRedemptionEntry> redemptionEntryList = redemptionService.redeemRight(redemptionForObjectVo,verifier核销人员,redemptionForCustomerVo,componentVounchList);
+        Redemption redemption = redemptionListPair.getValue0();
+        List<RightRedemptionEntry> redemptionEntryList = redemptionListPair.getValue1();
+
 
         redemptionEntryList = rightRedemptionEntryRepository.saveAll(redemptionEntryList);
 
@@ -917,14 +939,50 @@ public class CityPassServiceImpl {
         if(reservationOptional.get().getPlatform().equals(EnumPlatform.TS)){
             LtReqTs验证核销通知.ToLtReqTs验证核销通知 ltReqTs验证核销通知 = new LtReqTs验证核销通知.ToLtReqTs验证核销通知();
 
-            ltReqTs验证核销通知.setAmount(4);//:当前使用数量
+            ltReqTs验证核销通知.setAmount(1);//:当前使用数量
             ltReqTs验证核销通知.setAmount_used(1);//:累计使用数量(包含本次)
             ltReqTs验证核销通知.setAnother_orders_id(reservation.getTrackingId()); //:本平台订单ID（天时同城）
             ltReqTs验证核销通知.setMy_orders_id(reservation.getCode()); //:第三方订单ID
             List<VoucherTicket> fulfilled_items = fulfillService.find_(reservation);
 
-            ltReqTs验证核销通知.setCodes(fulfilled_items.stream().map(e->e.getCode()).collect(Collectors.joining(","))); //:使用码号,多个','分割
+       //     ltReqTs验证核销通知.setCodes(fulfilled_items.stream().map(e->e.getCode()).collect(Collectors.joining(","))); //:使用码号,多个','分割
+            ltReqTs验证核销通知.setCodes("3"); //:使用码号,多个','分割
+
             TsRespLt验证核销通知 ltReqTs退单审核通知 = ltToTsService.ltReqTs验证核销通知(ltReqTs验证核销通知);
+
+
+
+
+
+
+
+
+
+
+
+            LtReqTs码号推送通知.ToLtReqTs码号推送通知 toLtReqTs码号推送通知 = new LtReqTs码号推送通知.ToLtReqTs码号推送通知();
+
+            toLtReqTs码号推送通知.setOrders_id(reservation.getTrackingId());//TODO 必填 本平台订单ID（天时同城）
+            toLtReqTs码号推送通知.setOut_orders_id(reservation.getCode());//TODO 必填 out_orders_id:第三方平台订单ID
+            toLtReqTs码号推送通知.setOut_code(reservation.getCode());//TODO 必填 out_code:码号，存在多个码号时默认展示第一个
+
+
+            toLtReqTs码号推送通知.setOut_codes(Arrays.asList("1","2","3","999").stream().collect(Collectors.joining(",")));//out_codes:多个码号时以英文逗号分隔(,)
+
+/*
+            toLtReqTs码号推送通知.setQrcode_images(Arrays.asList("1","2","3").stream().collect(Collectors.joining(",")));//qrcode_images:二维码图片，多个用英文逗号(,)分隔
+            toLtReqTs码号推送通知.setQrcode_image("this.qrcode_image");//qrcode_image:二维码图片
+            toLtReqTs码号推送通知.setQrcode_href("this.qrcode_href");////qrcode_href:二维码链接
+            toLtReqTs码号推送通知.setQrcode("this.qrcode");//qrcode:二维码数据(用于生成二维码图片)
+
+            toLtReqTs码号推送通知.setOut_money_send("this.out_money_send");//out_money_send:采购发送费
+            toLtReqTs码号推送通知.setOut_money_one("this.out_money_one");//out_money_one:采购单价
+            toLtReqTs码号推送通知.setOut_send_content("this.out_send_content");//out_send_content:发送内容
+            toLtReqTs码号推送通知.setIs_real_code("this.is_real_code");//is_real_code:是否真实码号
+
+*/
+
+            TsRespLt码号推送通知 ltReqTs码号推送通知 = ltToTsService.ltReqTs码号推送通知(toLtReqTs码号推送通知);
 
         }
 
@@ -960,6 +1018,137 @@ public class CityPassServiceImpl {
         }
 
     }
+
+
+
+
+
+    public EntityModel redeem(VoucherTicket voucher, Device device) {
+
+
+        logger.debug("验证 code:{}",voucher.getCode());
+        if(!voucher.getType().equals(voucherType)){
+            return null;
+        }
+
+/*
+
+        Optional<Pass> optionalVoucher = passRepository.findByCode(code.getC());
+
+
+        if(code.getC().startsWith("tike_")){
+            Optional<VoucherTicket> voucherTicketOptional = voucherTicketRepository.findByCode(code.getC());
+            if(voucherTicketOptional.isPresent()){
+                VoucherTicket voucherTicket = voucherTicketOptional.get();
+                if(voucherTicket.getType().equals(EnumVoucherType.PASS)){
+                    optionalVoucher = passRepository.findById(voucherTicket.getRelateId());
+                }
+            }
+        }
+*/
+
+
+
+
+/*
+
+        if(optionalVoucher.isEmpty()) {
+            throw  new BookNotFoundException(Enumfailures.resource_not_found,"找不到门票"+code.getC());
+        }
+        Pass voucher =optionalVoucher.get();*/
+
+
+  /*      if(voucher.getExpiringDate().isBefore(LocalDateTime.now())){
+            throw new ExistException(Enumfailures.invalid_voucher,"该PASS已过期");
+        }
+*/
+
+/*        if(!voucher.isActive()){
+            throw new BookNotFoundException(Enumfailures.voucher_not_active,"该PASS未激活");
+        }*/
+
+        List<ComponentVounch> componentVounchList = validatorService.check(device.getId(),voucher.getCode() );
+
+
+
+        componentVounchList =  componentVounchList.stream()
+                .filter(e->!(e.getStatus().equals(EnumComponentVoucherStatus.AlreadyRedeemed)))
+                .map(e->{
+                    System.out.println("存在的"+e.toString());
+                    return e;
+                })
+                //       .filter(e->triplet来自设备.contains(e.getComponentRight()))
+                .collect(Collectors.toList());
+
+
+        System.out.println("测试测试  "+componentVounchList.size());
+        if(componentVounchList.size() == 0){
+
+            throw new UnprocessableEntityException(Enumfailures.not_found,"该券 已经 无 剩余可核销的 权益"+voucher.getCode());
+
+        }
+
+        ValidatedByTypeVo verifier核销人员 = new ValidatedByTypeVo();
+        verifier核销人员.setValidatorType(EnumValidatorType.特定机器);
+
+        verifier核销人员.setDevice(device);
+
+
+        RedemptionForObjectVo redemptionForObjectVo = new RedemptionForObjectVo();
+        redemptionForObjectVo.setRelatedObjectId(voucher.getId());
+        redemptionForObjectVo.setRelatedObjectType(EnumRelatedObjectType.voucher);
+        redemptionForObjectVo.setRelatedObjectCode(voucher.getCode());
+        redemptionForObjectVo.setRelatedObject_subType(voucher.getType().name());
+        redemptionForObjectVo.setLable(voucher.getLable());
+
+
+
+
+        Optional<RedemptionForCustomerVo> redemptionForCustomerVo = voucherService.Cardholder(voucher);
+
+
+
+        Pair<Redemption,List<RightRedemptionEntry>> redemptionListPair= redemptionService.redeemRight(redemptionForObjectVo,verifier核销人员,redemptionForCustomerVo,componentVounchList);
+
+        Redemption redemption = redemptionListPair.getValue0();
+        List<RightRedemptionEntry> redemptionEntryList = redemptionListPair.getValue1();
+
+        redemptionEntryList = rightRedemptionEntryRepository.saveAll(redemptionEntryList);
+
+
+
+
+        RightRedemptionSummaryRespV1 resp = new RightRedemptionSummaryRespV1();
+
+        resp.setEntries(redemptionEntryList.stream().map(e->{
+
+            RightRedemptionEntryResp rightRedemptionEntry = RightRedemptionEntryResp.from(e);
+
+            return rightRedemptionEntry;
+
+        }).collect(Collectors.toList()));
+        // resp.setTotal(redemptionEntryList.size());
+
+        resp.setValidatorChannel(verifier核销人员.getValidatorType().name());
+        resp.setValidatorCode(verifier核销人员.funGetValidatorCode());
+        resp.setCode(redemption.getCode());
+
+
+
+        //  MONEY, PERCENT or EXTERNALOFFER
+        resp.setValuetype(EnumDiscountVoucherCategory.UNIT);
+        resp.setCustomer(redemption);
+        resp.setRedeemedDateTime(redemption.getCreatedDate());
+
+        EntityModel redemptionEntryEntityModel =  EntityModel.of(resp);
+
+
+        return redemptionEntryEntityModel;
+
+
+
+    }
+
 
 
 }

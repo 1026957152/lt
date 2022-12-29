@@ -74,6 +74,7 @@ public class UserResp extends BaseResp {
     private EntityModel defaultPass;
     private String status_text;
     private Map fuctionLayout;
+    private String code_base64_src;
 
 
 /*    nick_name 昵称：
@@ -542,5 +543,13 @@ public class UserResp extends BaseResp {
 
     public Map getFuctionLayout() {
         return fuctionLayout;
+    }
+
+    public void setCode_base64_src(String code_base64_src) {
+        this.code_base64_src = code_base64_src;
+    }
+
+    public String getCode_base64_src() {
+        return code_base64_src;
     }
 }

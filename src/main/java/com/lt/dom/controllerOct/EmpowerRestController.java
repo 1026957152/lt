@@ -11,11 +11,8 @@ import com.lt.dom.config.WxConfig;
 import com.lt.dom.error.BookNotFoundException;
 import com.lt.dom.minapp.CommonUtil;
 import com.lt.dom.minapp.Token;
-import com.lt.dom.minapp.UserService;
 import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.EmpowerGetPhoneReq;
-import com.lt.dom.otcReq.OpenidResp;
-import com.lt.dom.otcReq.UserPojo;
 import com.lt.dom.otcReq.WxloginReq;
 import com.lt.dom.otcenum.EnumIdentityType;
 import com.lt.dom.otcenum.Enumfailures;
@@ -24,7 +21,6 @@ import com.lt.dom.repository.UserRepository;
 import com.lt.dom.serviceOtc.OpenidServiceImpl;
 import com.lt.dom.serviceOtc.UserAuthorityServiceImpl;
 import com.lt.dom.serviceOtc.UserServiceImpl;
-import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
 import com.lt.dom.util.RestTemplateUtil;
 import org.apache.commons.collections.map.HashedMap;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -38,7 +34,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -383,7 +378,7 @@ public class EmpowerRestController {
 
 
 
-              String jwt = jwtUtils.generateJwtToken(0, openid);
+              String jwt = jwtUtils.generateJwtToken(EnumIdentityType.weixin, openid);
 
 
                 UserResp openidResp = UserResp.userWithOpenidLink(Pair.with(optionalUser.get(),openid1));
@@ -414,11 +409,11 @@ public class EmpowerRestController {
         entityModel.add(linkTo(methodOn(RealnameAuthRestController.class).postRealnameAuths(null)).withRel("realnameAuth"));
         entityModel.add(linkTo(methodOn(EmpowerRestController.class).mini_getPhone(null)).withRel("getPhone"));
 
-        entityModel.add(linkTo(methodOn(LoginController.class).Page_smsLogin(openid)).withRel("Page_phoneLogin"));
+        entityModel.add(linkTo(methodOn(LoginController.class).Page_smsLogin_miniapp_channel(openid)).withRel("Page_phoneLogin"));
 
         entityModel.add(linkTo(methodOn(LoginController.class).login_send_code(null)).withRel("send_verification_code"));
 
-        entityModel.add(linkTo(methodOn(LoginController.class).login_sms_confirm(openid,null)).withRel("login"));
+        entityModel.add(linkTo(methodOn(LoginController.class).login_sms_confirm_miniapp_channel(openid,null)).withRel("login"));
 
 
 /*        Authentication authentication = authenticationTokenProvider.authenticate(
@@ -426,7 +421,7 @@ public class EmpowerRestController {
         SecurityContextHolder.getContext().setAuthentication(authentication);*/
 
 
-        String jwt = jwtUtils.generateJwtToken(0, openid);
+        String jwt = jwtUtils.generateJwtToken(EnumIdentityType.weixin, openid);
         openidResp.setToken(jwt);
 
         System.out.println("====================:"+openid);

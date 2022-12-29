@@ -12,10 +12,13 @@ import com.lt.dom.otcenum.EnumRole;
 import com.lt.dom.otcenum.Enumfailures;
 import com.lt.dom.repository.*;
 import com.lt.dom.serviceOtc.*;
+import com.lt.dom.serviceOtc.product.CityPassServiceImpl;
 import com.lt.dom.vo.UserVo;
 import io.swagger.v3.oas.annotations.Operation;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +41,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 @RequestMapping("/oct")
 public class EmployeeRestController {
+    Logger logger = LoggerFactory.getLogger(EmployeeRestController.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -279,10 +283,10 @@ public class EmployeeRestController {
 
         EmployeeEditResp employeeResp = EmployeeEditResp.pageElementfrom(Pair.with(employee,optionalUser.get()));
 
-        Map<String,Role> userMap = user.getRoles().stream().collect(Collectors.toMap(e->e.getName(),e->e));
+/*        Map<String,Role> userMap = user.getRoles().stream().collect(Collectors.toMap(e->e.getName(),e->e));
 
 
-        List<EnumRole> enumRoles = roleService.get(supplier);
+        List<EnumRole> enumRoles = roleService.get(supplier);*/
 
 
         List<Role> roleList = roleRepository.findAll();
@@ -350,12 +354,23 @@ public class EmployeeRestController {
     @DeleteMapping(value = "/employees/{EMPLOYEE_ID}", produces = "application/json")
     public ResponseEntity delete(@PathVariable long EMPLOYEE_ID) {
 
-    Optional<Employee> optional = employeeRepository.findById(EMPLOYEE_ID);
+
+        Authentication authentication =  authenticationFacade.getAuthentication();
+
+        UserVo userVo = authenticationFacade.getUserVo(authentication);
+
+
+        Optional<Employee> optional = employeeRepository.findById(EMPLOYEE_ID);
     if(optional.isEmpty()) {
         throw new BookNotFoundException(EMPLOYEE_ID,"找不到供应商");
     }
+
+
     Employee employee = optional.get();
 
+    if(userVo.getUser_id().equals(employee.getUserId())){
+        throw new BookNotFoundException(Enumfailures.resource_not_found,"不能删除自己");
+    }
 
         preferenceService.whenDeleteEmployee(employee);
         employee.setUserId(null);

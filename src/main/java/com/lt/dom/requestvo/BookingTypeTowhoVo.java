@@ -4,6 +4,7 @@ import com.lt.dom.oct.*;
 import com.lt.dom.otcReq.BookingSkuPojo;
 import com.lt.dom.otcenum.EnumBookingOjbectType;
 import com.lt.dom.otcenum.EnumDeliveryFormats;
+import com.lt.dom.otcenum.EnumPurchaseMode;
 import com.lt.dom.vo.NegotiatedPricingType;
 
 import javax.validation.Valid;
@@ -37,6 +38,7 @@ public class BookingTypeTowhoVo {
     private String remark;
     private Float base_cost_price;
     private Integer retail;
+    private EnumPurchaseMode purchaseMode;
 
     public List<Sku> getSkus() {
         return skus;
@@ -93,6 +95,14 @@ public class BookingTypeTowhoVo {
 
     public void setRetail(Integer retail) {
         this.retail = retail;
+    }
+
+    public void setPurchaseMode(EnumPurchaseMode purchaseMode) {
+        this.purchaseMode = purchaseMode;
+    }
+
+    public EnumPurchaseMode getPurchaseMode() {
+        return purchaseMode;
     }
 
     public static class Sku {

@@ -70,6 +70,8 @@ public class LineItem extends Base {
     private Float cost_price_tax;
     private Boolean checkin = false;
     private LocalDateTime checkin_at;
+    @Enumerated(EnumType.STRING)
+    private EnumPurchaseMode purchaseMode;
 
     public Float getBase_cost_price() {
         return base_cost_price;
@@ -460,5 +462,13 @@ public class LineItem extends Base {
 
     public LocalDateTime getCheckin_at() {
         return checkin_at;
+    }
+
+    public void setPurchaseMode(EnumPurchaseMode purchaseMode) {
+        this.purchaseMode = purchaseMode;
+    }
+
+    public EnumPurchaseMode getPurchaseMode() {
+        return purchaseMode;
     }
 }
